@@ -1,0 +1,1 @@
+location.href('https://www.reddit.com');
