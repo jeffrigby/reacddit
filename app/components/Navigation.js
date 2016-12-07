@@ -41,7 +41,7 @@ class Navigation extends React.Component {
     }
 
     getSubreddits(reset) {
-        let url = 'http://reddit.dev/json/subreddits/lean';
+        let url = '/json/subreddits/lean';
         if  (reset === true) {
             url += '/true';
         }
