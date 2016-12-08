@@ -23,9 +23,6 @@ class App extends React.Component {
                 </div>
                 <div id="main">
                     <div className="col-md-12">
-                        <p className="visible-xs">
-                            <button type="button" className="btn btn-primary btn-xs" data-toggle="offcanvas"><i className="glyphicon glyphicon-chevron-left"></i></button>
-                        </p>
                         <div className="list-group" id="entries">
                             {this.props.children}
                         </div>

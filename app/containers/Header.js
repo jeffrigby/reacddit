@@ -9,6 +9,10 @@ class Header extends React.Component {
         super(props);
     }
 
+    showSubs() {
+        jQuery('.row-offcanvas').toggleClass('active');
+    }
+
     render() {
         let renderedHeader;
         if (!this.props.accessToken) {
@@ -42,6 +46,9 @@ class Header extends React.Component {
                             <span className="icon-bar"></span>
                             <span className="icon-bar"></span>
                             <span className="icon-bar"></span>
+                        </button>
+                        <button type="button" className="btn btn-primary btn-xs navbar-toggle" data-toggle="offcanvas" onClick={this.showSubs}>
+                            <i className="glyphicon glyphicon-chevron-left"></i>
                         </button>
                         <a className="navbar-brand" href="#">RedditJS</a>
                     </div>
