@@ -1,4 +1,58 @@
-body { padding-top: 70px; }
+body,html,.row-offcanvas {
+  height:100%;
+}
+
+body {
+  padding-top: 50px;
+}
+
+#sidebar {
+  width: inherit;
+  min-width: 200px;
+  max-width: 200px;
+  //background-color:#f5f5f5;
+  float: left;
+  height:100%;
+  position:relative;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+#main {
+  height:100%;
+  overflow:auto;
+}
+
+#sidebar, #main {
+  padding-top: 20px;
+}
+
+/*
+ * off Canvas sidebar
+ * --------------------------------------------------
+ */
+@media screen and (max-width: 768px) {
+  .row-offcanvas {
+    position: relative;
+    -webkit-transition: all 0.25s ease-out;
+    -moz-transition: all 0.25s ease-out;
+    transition: all 0.25s ease-out;
+    width:calc(100% + 200px);
+  }
+
+  .row-offcanvas-left
+  {
+    left: -200px;
+  }
+
+  .row-offcanvas-left.active {
+    left: 0;
+  }
+
+  .sidebar-offcanvas {
+    position: absolute;
+    top: 0;
+  }
+}
 
 div.entry {
 	div.ratio-bg {
@@ -20,13 +74,13 @@ div.entry {
 
 	.entry-interior {
 		max-width: 1110px;
-		margin: 0 auto;
+		//margin: 0 auto;
 		position: relative;
 	}
 
 	.title {
 		//    text-align: center;
-		padding-right: 25px;
+		padding-right: 75px;
 	}
 
 	.vote {
@@ -99,20 +153,27 @@ div.entry {
 		cursor: default;
 	}
 
-	#searchclear {
-		position: absolute;
-		right: 5px;
-		top: 0;
-		bottom: 0;
-		height: 14px;
-		margin: auto;
-		font-size: 14px;
-		cursor: pointer;
-		color: #ccc;
-	}
+
+    #subreddit-filter-group {
+      .form-group-sm {
+        position: relative;
+        #searchclear {
+          position: absolute;
+          right: 5px;
+          top: 0;
+          bottom: 0;
+          height: 14px;
+          margin: auto;
+          font-size: 10px;
+          cursor: pointer;
+          color: #ccc;
+        }
+      }
+    }
 
 	ul.nav {
 		li {
+			font-size: 90%;
 			div.sub-dead a {
 				color: #d3d3d3;
 			}

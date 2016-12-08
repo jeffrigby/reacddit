@@ -222,6 +222,7 @@ class Navigation extends React.Component {
         const subreddits = this.state.subreddits;
         const filterText = this.state.filterText;
         const filteredSubreddits = subreddits.filter(this.checkFilter.bind(this));
+        const sort = this.props.params.sort ? this.props.params.sort : 'hot';
 
         let navItems;
         let subredditsActive = 0;
@@ -253,7 +254,7 @@ class Navigation extends React.Component {
                 </div>
 
                 <div style={subredditsActive === 0 ? {display: 'none'} : null} id="subreddit-filter-group">
-                    <div className="btn-group">
+                    <div className="form-group-sm ">
                         <input
                             type="search"
                             className="form-control"
@@ -271,16 +272,15 @@ class Navigation extends React.Component {
                         <span className="glyphicon glyphicon-info-sign"></span> No subreddits found
                     </div>
 
+
+                    {!filterText &&
+                    ( <ul className="nav">
+                            <li><div><Link to={'/r/mine/' + sort} title="Show all subreddits" activeClassName="activeSubreddit">Front</Link></div></li>
+                            <li><div><Link to={'/r/friends/' + sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link></div></li>
+                            <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
+                    </ul>)
+                    }
                     <ul className="nav">
-                        {!filterText &&
-                        <li id="allSubs">
-                            <div>
-                                <Link to={'/r/mine/' + this.props.params.sort} title="Show all subreddits" activeClassName="activeSubreddit">Front</Link><br />
-                                <Link to={'/r/friends/' + this.props.params.sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link><br />
-                                <a href="/r/myrandom" onClick={this.randomSub}>Random</a>
-                            </div>
-                        </li>
-                        }
                         {navItems}
                     </ul>
                 </nav>
