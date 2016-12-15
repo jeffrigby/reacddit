@@ -37,8 +37,8 @@ class SortTop extends React.Component {
         const sortValue = sort[this.props.sortTop];
 
         return (
-            <div className="dropdown">
-                <button className="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <div style={{'display': 'inline-block'}}>
+                <button className="btn btn-default btn-xs dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <span className="glyphicon glyphicon-time"></span> {sortValue} <span className="caret"></span>
                 </button>
                 <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">

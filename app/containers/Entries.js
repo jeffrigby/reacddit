@@ -309,15 +309,15 @@ class Entries extends React.Component {
     }
 
     render() {
-        const accessToken = cookie.load('accessToken');
-        if (!accessToken) {
-            return (
-                <div>
-                    <h4>Login</h4>
-                    <a href="/api/reddit-login">Login</a> to view entries.
-                </div>
-            );
-        }
+        // const accessToken = cookie.load('accessToken');
+        // if (!accessToken) {
+        //     return (
+        //         <div>
+        //             <h4>Login</h4>
+        //             <a href="/api/reddit-login">Login</a> to view entries.
+        //         </div>
+        //     );
+        // }
 
         let loading = '';
         if (this.state.loading === 1) {

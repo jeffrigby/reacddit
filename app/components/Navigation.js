@@ -22,7 +22,11 @@ class Navigation extends React.Component {
     componentDidMount() {
         jQuery(document).keypress(this.handleNavHotkey.bind(this));
         jQuery(window).on('load resize', this.resizeNavigation);
-        this.getSubreddits();
+        if (this.props.accessToken) {
+            this.getSubreddits();
+        } else {
+            this.getDefaultSubreddits();
+        }
         this.setInterval(this.lastUpdated.bind(this), 300000);
     }
 
@@ -48,6 +52,28 @@ class Navigation extends React.Component {
         jQuery.getJSON(url, (data) => {
             this.setState({
                 subreddits: data.subreddits,
+                loading: 0
+            });
+            this.lastUpdated();
+            this.resizeNavigation();
+        });
+    }
+
+    getDefaultSubreddits() {
+        const url = 'https://www.reddit.com/subreddits/default.json?limit=100';
+        const subreddits = [];
+        jQuery.getJSON(url, (rsp) => {
+            jQuery.each(rsp.data.children, (idx, value) => {
+                const data = value.data;
+                subreddits.push(data);
+            });
+            subreddits.sort((a, b) => {
+                if(a.display_name.toLowerCase() < b.display_name.toLowerCase()) return -1;
+                if(a.display_name.toLowerCase() > b.display_name.toLowerCase()) return 1;
+                return 0;
+            });
+            this.setState({
+                subreddits: subreddits,
                 loading: 0
             });
             this.lastUpdated();
@@ -120,8 +146,8 @@ class Navigation extends React.Component {
         });
 
         jQuery.each(items, (idx, val) => {
-            if (typeof updatedDates[val.id] !== 'undefined') {
-                items[idx].lastUpdate = updatedDates[val.id];
+            if (typeof updatedDates[val.name] !== 'undefined') {
+                items[idx].lastUpdate = updatedDates[val.name];
             }
         });
         return this.replaceSubreddits(items);
@@ -168,7 +194,11 @@ class Navigation extends React.Component {
             subreddits: [],
             loading: 1
         });
-        this.getSubreddits(true);
+        if (this.props.accessToken) {
+            this.getSubreddits(true);
+        } else {
+            this.getDefaultSubreddits();
+        }
     }
 
     reloadSubredditsClick(e) {
@@ -199,11 +229,11 @@ class Navigation extends React.Component {
     }
 
     render() {
+        let login;
         if (!this.props.accessToken) {
-            return (
-                <div id="subreddits">
-                    <h4>Subreddits</h4>
-                    <a href="/api/reddit-login">Login</a> to view subreddits.
+            login = (
+                <div id="login">
+                    <a href="/api/reddit-login">Login</a> to view your subreddits.
                 </div>
             );
         }
@@ -231,7 +261,7 @@ class Navigation extends React.Component {
             navItems = filteredSubreddits
                 .map((item) => {
                     return (
-                        <NavigationItem item={item} key={item.id} sort={this.props.params.sort} />
+                        <NavigationItem item={item} key={item.name} sort={this.props.params.sort} />
                     );
                 }, this);
 
@@ -246,6 +276,8 @@ class Navigation extends React.Component {
 
         return (
             <div id="subreddits">
+                {login}
+
                 <div className="alert alert-info" id="subreddits-loading" role="alert" style={subredditsActive > 0 ? {display: 'none'} : null}>
                     <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Getting subreddits.
                 </div>

@@ -13,8 +13,8 @@ class Sort extends React.Component {
         const currentSort = this.props.sort ? this.props.sort : 'hot';
 
         return (
-            <div className="dropdown sortDropDown">
-                <button className="btn btn-default dropdown-toggle" type="button" id="sortDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <div style={{'display': 'inline-block'}}>
+                <button type="button" className="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span className="glyphicon glyphicon-time"></span> <span className="dropdownActive">{currentSort}</span> <span className="caret"></span>
                 </button>
                 <ul className="dropdown-menu" aria-labelledby="sortDropdownMenu">
