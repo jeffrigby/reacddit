@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react';
 import Navigation from './Navigation';
 import Header from '../containers/Header';
+import SubredditActions from '../containers/SubredditActions';
 import cookie from 'react-cookie';
 
 class App extends React.Component {
@@ -10,13 +11,13 @@ class App extends React.Component {
 
     render() {
         const accessToken = cookie.load('accessToken');
-
         return(<div>
             <Header params={this.props.params} query={this.props.location.query} accessToken={accessToken} />
             <div className="row-offcanvas row-offcanvas-left">
                 <div id="sidebar" className="sidebar-offcanvas">
                     <div className="col-md-12">
                         <div id="subreddits-nav">
+                            <SubredditActions params={this.props.params} query={this.props.location.query} accessToken={accessToken} />
                             <Navigation params={this.props.params} query={this.props.location.query} accessToken={accessToken} />
                         </div>
                     </div>

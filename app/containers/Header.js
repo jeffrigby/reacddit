@@ -1,6 +1,4 @@
 import React, { PropTypes } from 'react';
-import Sort from '../components/Sort';
-import SortTop from '../components/SortTop';
 // import { connect } from 'react-redux';
 // import { Link } from 'react-router';
 
@@ -14,9 +12,6 @@ class Header extends React.Component {
     }
 
     render() {
-        const sort = this.props.params.sort ? this.props.params.sort : 'hot';
-        const sortTop = this.props.query.t ? this.props.query.t : 'day';
-        const subreddit = this.props.params.subreddit ? this.props.params.subreddit : 'mine';
         return (
             <div className="navbar navbar-inverse navbar-fixed-top">
                 <div className="navbar-header">
@@ -34,8 +29,7 @@ class Header extends React.Component {
 
                 <div className="collapse navbar-collapse">
                     <div className="btn-group">
-                        <Sort sort={sort} subreddit={subreddit}/>
-                        <SortTop sort={sort} sortTop={sortTop} subreddit={subreddit}/>
+
                     </div>
                 </div>
             </div>

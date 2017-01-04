@@ -128,15 +128,16 @@ div.entry {
 }
 
 #header {
-  .sortDropDown {
-    .dropdown-menu li a, .dropdownActive {
-      text-transform: capitalize;
-    }
-  }
+
 }
 
 #subreddits-nav {
 	position: fixed;
+	.sortDropDown {
+		.dropdown-menu li a, .dropdownActive {
+			text-transform: capitalize;
+		}
+	}
 	#subreddits nav {
 		overflow-y: scroll;
 		margin: 10px 0;
@@ -152,7 +153,6 @@ div.entry {
 		color: transparent !important;
 		cursor: default;
 	}
-
 
     #subreddit-filter-group {
       .form-group-sm {
