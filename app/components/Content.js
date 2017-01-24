@@ -5,6 +5,7 @@ import Video from './contentTypes/Video';
 import IFrame4x4 from './contentTypes/IFrame4x4';
 import Thumb from './contentTypes/Thumb';
 import Self from './contentTypes/Self';
+import ImgurAlbum from './contentTypes/ImgurAlbum';
 
 /**
  * Import all actions as an object.
@@ -30,6 +31,9 @@ class Content extends React.Component {
                     break;
                 case 'iframe16x9':
                     content = <IFrame16x9 content={this.props.content} />;
+                    break;
+                case 'imgur_album':
+                    content = <ImgurAlbum content={this.props.content} />;
                     break;
                 case 'thumb':
                     content = <Thumb content={this.props.content} />;

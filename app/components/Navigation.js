@@ -1,7 +1,8 @@
 import React, { PropTypes } from 'react';
 import NavigationItem from './NavigationItem';
 import {Link, browserHistory} from 'react-router';
-
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
 
 class Navigation extends React.Component {
     constructor(props) {
@@ -9,6 +10,7 @@ class Navigation extends React.Component {
         this.state = {
             subreddits: [],
             loading: 1,
+            onlyNew: 0,
             filterText: ''
         };
 
@@ -96,8 +98,11 @@ class Navigation extends React.Component {
 
     handleNavHotkey(event) {
         switch (event.charCode) {
-            case 76:
+            case 76: // shift-l
                 this.reloadSubreddits();
+                break;
+            case 82: // shift-R
+                this.randomSubPush();
                 break;
             default:
                 break;
@@ -220,8 +225,16 @@ class Navigation extends React.Component {
         return false;
     }
 
+    toggleOnlyNew(item) {
+        return item;
+    }
+
     randomSub(e) {
         e.preventDefault();
+        this.randomSubPush();
+    }
+
+    randomSubPush() {
         const subreddits = this.state.subreddits;
         const randomSubreddit = subreddits[Math.floor(Math.random() * subreddits.length)];
         const url = randomSubreddit.url + (this.props.params.sort ? this.props.params.sort : 'hot');
@@ -296,6 +309,11 @@ class Navigation extends React.Component {
                             value={filterText}
                         />
                         <span id="searchclear" className="glyphicon glyphicon-remove-circle" onClick={this.clearSearch.bind(this)}></span>
+                    </div>
+                    <div className="checkbox">
+                        <label>
+                            <input type="checkbox" id="subreddit-filter-only-new" onClick={this.toggleOnlyNew.bind(this)} /> Show only new
+                        </label>
                     </div>
                 </div>
 

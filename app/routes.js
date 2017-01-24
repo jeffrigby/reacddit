@@ -10,6 +10,7 @@ export default (
         <Route component={App}>
             <IndexRoute component={Entries} />
             <Route path="/r/:subreddit(/:sort)" component={Entries} />
+            <Route path="/u/:subreddit(/:sort)" component={Entries} />
             <Route path="/hot" component={Entries} />
             <Route path="/new" component={Entries} />
             <Route path="/top" component={Entries} />

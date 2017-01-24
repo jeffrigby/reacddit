@@ -49,7 +49,7 @@ class Entry extends React.Component {
                     <small className="meta clearfix">
                                 <span className="date-author meta-sub">
                                     Submitted <TimeAgo date={timeago}/> by <span className="author">
-                                    <a href={'http://www.reddit.com/u/' + entry.author} target="_blank">{entry.author}</a></span> to <span className="subreddit meta-sub"><Link to={subUrl}>/r/{entry.subreddit}</Link></span>
+                                    <a href={'http://www.reddit.com/u/' + entry.author} target="_blank">{entry.author}</a> <Link to={'/u/' + entry.author}>{entry.author} INTERNAL</Link></span> to <span className="subreddit meta-sub"><Link to={subUrl}>/r/{entry.subreddit}</Link></span>
                                 </span>
                         <span className="source meta-sub">{entry.domain}</span>
                         <span className="comments meta-sub"><a href={'http://www.reddit.com/' + entry.permalink} target="_blank">comments <span className="badge">{entry.num_comments}</span></a></span>

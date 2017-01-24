@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Entry from '../components/Entry';
-import cookie from 'react-cookie';
+// import cookie from 'react-cookie';
 
 const onePxSrc = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
@@ -249,7 +249,7 @@ class Entries extends React.Component {
     }
 
     getEntriesUrl(props, reload) {
-        let url = '/json/r/' + props.subreddit + '/' + props.sort;
+        let url = '/json/' + props.entryType + '/' + props.subreddit + '/' + props.sort;
         const query = [];
 
         if (props.debug) {
@@ -357,6 +357,7 @@ class Entries extends React.Component {
 Entries.propTypes = {
     params: PropTypes.object,
     location: PropTypes.object,
+    entryType: PropTypes.string,
     sort: PropTypes.string,
     subreddit: PropTypes.string,
     sortTop: PropTypes.string,
@@ -367,9 +368,14 @@ Entries.propTypes = {
 };
 
 const mapStateToProps = (state, ownProps) => {
+    const currentUrl = ownProps.location.pathname;
+    const entryType = currentUrl.substring(2, 1);
+    const defaultSort = (entryType === 'u') ? 'new' : 'hot';
+
     return {
+        entryType: entryType ? entryType : 'r',
         subreddit: ownProps.params.subreddit ? ownProps.params.subreddit : 'mine',
-        sort: ownProps.params.sort ? ownProps.params.sort : 'hot',
+        sort: ownProps.params.sort ? ownProps.params.sort : defaultSort,
         sortTop: ownProps.location.query.t ? ownProps.location.query.t : '',
         after: ownProps.location.query.after ? ownProps.location.query.after : '',
         before: ownProps.location.query.before ? ownProps.location.query.before : '',

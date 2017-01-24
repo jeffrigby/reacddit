@@ -55,76 +55,85 @@ body {
 }
 
 div.entry {
-	div.ratio-bg {
-		background-color: black;
-		div.ratio-container {
-			max-width: 100%;
-			margin: 0 auto;
-			.ratio.loading {
-				background: url(/bundles/redditgallery/images/loading_black.gif) no-repeat center #000000;
-			}
-			img, iframe, video {
-				max-width: 100%;
-			}
-		}
-	}
-	.meta span.meta-sub {
-		padding-right: 1em;
-	}
+  div.ratio-bg {
+    background-color: black;
+    div.ratio-container {
+      max-width: 100%;
+      margin: 0 auto;
+      .ratio.loading {
+        background: url(/bundles/redditgallery/images/loading_black.gif) no-repeat center #000000;
+      }
+      img, iframe, video {
+        max-width: 100%;
+      }
+    }
+  }
+  .meta span.meta-sub {
+    padding-right: 1em;
+  }
 
-	.entry-interior {
-		max-width: 1110px;
-		//margin: 0 auto;
-		position: relative;
-	}
+  .entry-interior {
+    max-width: 1110px;
+    //margin: 0 auto;
+    position: relative;
+  }
 
-	.title {
-		//    text-align: center;
-		padding-right: 75px;
-	}
+  .title {
+    //    text-align: center;
+    padding-right: 75px;
+  }
 
-	.vote {
-		position: absolute;
-		top: 0;
-		right: 0;
-		button {
-			padding-left: 3px;
-			padding-right: 3px;
-		}
-	}
+  .vote {
+    position: absolute;
+    top: 0;
+    right: 0;
+    button {
+      padding-left: 3px;
+      padding-right: 3px;
+    }
+  }
 
-	.embed-container {
-		position: relative;
-		padding-bottom: 100%;
-		height: 0;
-		overflow: hidden;
-		iframe, object, embed {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-		}
-	}
+  .embed-container {
+    position: relative;
+    padding-bottom: 100%;
+    height: 0;
+    overflow: hidden;
+    iframe, object, embed {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
 
-	.iframe_4x4 {
-		width: 1024px;
-		height:1024px;
-		max-width: 100%;
-	}
+  .iframe_4x4 {
+    width: 1024px;
+    height:1024px;
+    max-width: 100%;
+  }
 
-	img.reddit-thumb {
-		width: 140px;
-		height: 140px;
-	}
+  img.reddit-thumb {
+    width: 140px;
+    height: 140px;
+  }
 
-	iframe {
-		border: 0;
-	}
+  iframe {
+    border: 0;
+  }
 
-	.stretch {
-		width: 100%;
-	}
+  .stretch {
+    width: 100%;
+  }
+
+  .albumEntry {
+    position: relative;
+    .albumNav {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  }
 }
 
 #header {
@@ -132,27 +141,27 @@ div.entry {
 }
 
 #subreddits-nav {
-	position: fixed;
-	.sortDropDown {
-		.dropdown-menu li a, .dropdownActive {
-			text-transform: capitalize;
-		}
-	}
-	#subreddits nav {
-		overflow-y: scroll;
-		margin: 10px 0;
-		width: 100%;
-	}
-	.subtoggle {
-		cursor: pointer;
-	}
-	#current-sort {
-		text-transform: capitalize;
-	}
-	.glyphicon-none {
-		color: transparent !important;
-		cursor: default;
-	}
+  position: fixed;
+  .sortDropDown {
+    .dropdown-menu li a, .dropdownActive {
+      text-transform: capitalize;
+    }
+  }
+  #subreddits nav {
+    overflow-y: scroll;
+    margin: 10px 0;
+    width: 100%;
+  }
+  .subtoggle {
+    cursor: pointer;
+  }
+  #current-sort {
+    text-transform: capitalize;
+  }
+  .glyphicon-none {
+    color: transparent !important;
+    cursor: default;
+  }
 
     #subreddit-filter-group {
       .form-group-sm {
@@ -171,48 +180,48 @@ div.entry {
       }
     }
 
-	ul.nav {
-		li {
-			font-size: 90%;
-			div.sub-dead a {
-				color: #d3d3d3;
-			}
-			div.sub-stale a {
-				color: #d3d3d3;
-			}
-			div.sub-new a, div.sub-today {
-				font-weight: bold;
-			}
-		}
-	}
+  ul.nav {
+    li {
+      font-size: 90%;
+      div.sub-dead a {
+        color: #d3d3d3;
+      }
+      div.sub-stale a {
+        color: #d3d3d3;
+      }
+      div.sub-new a, div.sub-today {
+        font-weight: bold;
+      }
+    }
+  }
 
 }
 
 #sr-header {
-	#sr-title {
-		text-transform: uppercase;
-		margin-bottom: 0;
-	}
-	#current-sort {
-		text-transform: uppercase;
-	}
+  #sr-title {
+    text-transform: uppercase;
+    margin-bottom: 0;
+  }
+  #current-sort {
+    text-transform: uppercase;
+  }
 }
 
 
 
 .glyphicon-refresh-animate {
-	-animation: spin .7s infinite linear;
-	-webkit-animation: spin2 .7s infinite linear;
+  -animation: spin .7s infinite linear;
+  -webkit-animation: spin2 .7s infinite linear;
 }
 
 @-webkit-keyframes spin2 {
-	from { -webkit-transform: rotate(0deg);}
-	to { -webkit-transform: rotate(360deg);}
+  from { -webkit-transform: rotate(0deg);}
+  to { -webkit-transform: rotate(360deg);}
 }
 
 @keyframes spin {
-	from { transform: scale(1) rotate(0deg);}
-	to { transform: scale(1) rotate(360deg);}
+  from { transform: scale(1) rotate(0deg);}
+  to { transform: scale(1) rotate(360deg);}
 }
 
 
