@@ -83,6 +83,10 @@ div.entry {
     padding-right: 75px;
   }
 
+  .black-bg {
+    background-color: black;
+  }
+
   .vote {
     position: absolute;
     top: 0;
@@ -132,6 +136,7 @@ div.entry {
       position: absolute;
       top: 0;
       left: 0;
+      z-index: 10000;
     }
   }
 }
@@ -163,22 +168,35 @@ div.entry {
     cursor: default;
   }
 
-    #subreddit-filter-group {
-      .form-group-sm {
-        position: relative;
-        #searchclear {
-          position: absolute;
-          right: 5px;
-          top: 0;
-          bottom: 0;
-          height: 14px;
-          margin: auto;
-          font-size: 10px;
-          cursor: pointer;
-          color: #ccc;
-        }
+  #subreddit-filter-group {
+    .form-group-sm {
+      position: relative;
+      #searchclear {
+        position: absolute;
+        right: 5px;
+        top: 0;
+        bottom: 0;
+        height: 14px;
+        margin: auto;
+        font-size: 10px;
+        cursor: pointer;
+        color: #ccc;
       }
     }
+  }
+
+  .nav-divider {
+    height: 1px;
+    width:100%;
+    display:block; /* for use on default inline elements like span */
+    margin: 9px 0;
+    overflow: hidden;
+    background-color: #e5e5e5;
+  }
+
+  .subreddit-options {
+    display: none;
+  }
 
   ul.nav {
     li {

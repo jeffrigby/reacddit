@@ -1,6 +1,6 @@
 import React, { PropTypes }  from 'react';
 
-const Image = ({ content }) => {
+const Image = ({ content, preload }) => {
     // limit the height of images
     const maxHeight = 650;
     if (content.height > maxHeight) {
@@ -17,34 +17,20 @@ const Image = ({ content }) => {
         imgClass += ' ' + content.class;
     }
 
-    let image;
-    if (content.preload === true) {
-        image = (<img
-            src={content.src}
-            alt={content.title}
-            data-thumb={content.thumb}
-            data-orig={content.src}
-            className={imgClass} />);
-    } else {
-        image = (<img
-            src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-            alt={content.title}
-            data-thumb={content.thumb}
-            data-orig={content.src}
-            className={imgClass} />);
-    }
+    const src = preload === true ? content.src : 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
     return (<div className="ratio-bg">
         <div style={contStyle} className="ratio-container">
             <div style={ratioStyle} className="ratio embed-responsive">
-                {image}
+               <img src={src} alt={content.title} className={imgClass} />
             </div>
         </div>
     </div>);
 };
 
 Image.propTypes = {
-    content: PropTypes.object
+    content: PropTypes.object,
+    preload: PropTypes.bool
 };
 
 export default Image;

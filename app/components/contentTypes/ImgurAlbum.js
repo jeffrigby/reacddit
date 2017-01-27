@@ -1,5 +1,5 @@
 import React, { PropTypes }  from 'react';
-import Video from './Video';
+import VideoComp from './VideoComp';
 import Image from './Image';
 
 class ImgurAlbum extends React.Component {
@@ -44,22 +44,22 @@ class ImgurAlbum extends React.Component {
         const ratioStyle = {paddingBottom: ratio + '%'};
         const totalSlides = this.props.content.images_count;
         const currentSlide = this.state.imgNum + 1;
+        const load = this.state.preload || this.props.preload ? true : false;
         let imgClass = 'unloaded embed-responsive-item';
         if (content.class) {
             imgClass += ' ' + content.class;
         }
 
         const currentImage = content.images[this.state.imgNum];
-        currentImage.preload = this.state.preload;
         let render;
         if (currentImage.animated) {
-            render = <Video content={currentImage} key={currentImage.id} />;
+            render = <VideoComp content={currentImage} key={currentImage.id} preload={load} />;
         } else {
             // Full Image
             // currentImage.src = currentImage.link;
             currentImage.src = '//i.imgur.com/' + currentImage.id + 'h.jpg';
             // grabbig 1024x1024 version
-            render = <Image content={currentImage} key={currentImage.id} />;
+            render = <Image content={currentImage} key={currentImage.id} preload={load} />;
         }
 
         return (<div className="ratio-bg albumEntry">
@@ -82,7 +82,8 @@ class ImgurAlbum extends React.Component {
 }
 
 ImgurAlbum.propTypes = {
-    content: PropTypes.object
+    content: PropTypes.object,
+    preload: PropTypes.bool
 };
 
 module.exports = ImgurAlbum;

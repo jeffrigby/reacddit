@@ -243,13 +243,8 @@ class Navigation extends React.Component {
 
     render() {
         let login;
-        if (!this.props.accessToken) {
-            login = (
-                <div id="login">
-                    <a href="/api/reddit-login">Login</a> to view your subreddits.
-                </div>
-            );
-        }
+        let friends;
+
 
 
         if (this.state.loading === 1) {
@@ -266,6 +261,16 @@ class Navigation extends React.Component {
         const filterText = this.state.filterText;
         const filteredSubreddits = subreddits.filter(this.checkFilter.bind(this));
         const sort = this.props.params.sort ? this.props.params.sort : 'hot';
+
+        if (!this.props.accessToken) {
+            login = (
+                <div id="login">
+                    <a href="/api/reddit-login">Login</a> to view your subreddits.
+                </div>
+            );
+        } else {
+            friends = <li><div><Link to={'/r/friends/' + sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link></div></li>;
+        }
 
         let navItems;
         let subredditsActive = 0;
@@ -299,7 +304,7 @@ class Navigation extends React.Component {
                 </div>
 
                 <div style={subredditsActive === 0 ? {display: 'none'} : null} id="subreddit-filter-group">
-                    <div className="form-group-sm ">
+                    <div className="form-group-sm">
                         <input
                             type="search"
                             className="form-control"
@@ -310,10 +315,12 @@ class Navigation extends React.Component {
                         />
                         <span id="searchclear" className="glyphicon glyphicon-remove-circle" onClick={this.clearSearch.bind(this)}></span>
                     </div>
-                    <div className="checkbox">
-                        <label>
-                            <input type="checkbox" id="subreddit-filter-only-new" onClick={this.toggleOnlyNew.bind(this)} /> Show only new
-                        </label>
+                    <div className="subreddit-options">
+                        <div className="checkbox">
+                            <label>
+                                <input type="checkbox" id="subreddit-filter-only-new" onClick={this.toggleOnlyNew.bind(this)} /> Show only new
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -326,10 +333,13 @@ class Navigation extends React.Component {
                     {!filterText &&
                     ( <ul className="nav">
                             <li><div><Link to={'/r/mine/' + sort} title="Show all subreddits" activeClassName="activeSubreddit">Front</Link></div></li>
-                            <li><div><Link to={'/r/friends/' + sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link></div></li>
+                            {friends}
                             <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
                     </ul>)
                     }
+
+                    <div className="nav-divider"></div>
+
                     <ul className="nav">
                         {navItems}
                     </ul>

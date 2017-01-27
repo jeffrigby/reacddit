@@ -9,8 +9,8 @@ export default (
 	<Route path="/" component={LayoutContainer}>
         <Route component={App}>
             <IndexRoute component={Entries} />
-            <Route path="/r/:subreddit(/:sort)" component={Entries} />
-            <Route path="/u/:subreddit(/:sort)" component={Entries} />
+            <Route path="/r/:target(/:sort)" component={Entries} />
+            <Route path="/user/:target/submitted(/:sort)" component={Entries} />
             <Route path="/hot" component={Entries} />
             <Route path="/new" component={Entries} />
             <Route path="/top" component={Entries} />
