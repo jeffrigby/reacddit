@@ -1,11 +1,8 @@
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import Entry from '../components/Entry';
-// import cookie from 'react-cookie';
+import { listingsSort, listingsSortTop, listingsTarget, listingsListType } from '../redux/actions/listings';
 
-const onePxSrc = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-
-// import { Link } from 'react-router';
 class Entries extends React.Component {
     constructor(props) {
         super(props);
@@ -18,16 +15,45 @@ class Entries extends React.Component {
     componentDidMount() {
         jQuery(document).keypress(this.handleHotkey.bind(this));
         jQuery(window).on('load resize scroll', () => {this.scrollResize = true;});
+        this.setRedux();
         this.getEntries();
         this.setInterval(this.monitorEntries.bind(this), 500);
     }
 
     componentWillReceiveProps(newProps) {
-        this.setState(this.getState(newProps), () => {this.getEntries(newProps, true);});
+        if (
+            this.props.target !== newProps.target ||
+            this.props.sortTop !== newProps.sortTop ||
+            this.props.sort !== newProps.sort ||
+            this.props.userType !== newProps.userType
+        ) {
+            this.setState(this.getState(newProps), () => {this.getEntries(newProps, true);});
+        }
+    }
+
+    componentWillUpdate() {
+        this.setRedux();
     }
 
     componentWillUnmount() {
         this.intervals.map(clearInterval);
+    }
+
+    setRedux() {
+        if (this.props.listingsSort !== this.props.sort) {
+            this.props.setSort(this.props.sort);
+        }
+        if (this.props.listingsSortTop !== this.props.sortTop) {
+            this.props.setSortTop(this.props.sortTop);
+        }
+
+        if (this.props.listingsTarget !== this.props.target) {
+            this.props.setTarget(this.props.target);
+        }
+
+        if (this.props.listingsListType !== this.props.entryType) {
+            this.props.setListType(this.props.entryType);
+        }
     }
 
     setInterval() {
@@ -78,16 +104,16 @@ class Entries extends React.Component {
             let focused = 0;
             const stateEntries = this.state.entries;
             jQuery.each(entries, (idx, entry) => {
+                const inFocus = this.isInViewport(entry, -50);
                 const visible = this.isInViewport(entry, 500);
-                if (visible) {
-                    stateEntries[entry.id].loaded = true;
-                    if (focused === 0) {
-                        this.setFocus(entry);
-                        focused = 1;
-                    }
+                if (inFocus && focused === 0) {
+                    stateEntries[entry.id].focused = true;
+                    focused = 1;
                 } else {
-                    stateEntries[entry.id].loaded = false;
+                    stateEntries[entry.id].focused = false;
                 }
+
+                stateEntries[entry.id].loaded = visible ? true : false;
             });
 
             this.setState({
@@ -96,15 +122,6 @@ class Entries extends React.Component {
 
             this.checkLoadMore();
         }
-    }
-
-    setFocus(entry) {
-        if (jQuery(entry).hasClass('focused')) {
-            return;
-        }
-
-        jQuery('div.entry.focused').removeClass('focused');
-        jQuery(entry).addClass('focused');
     }
 
     checkLoadMore() {
@@ -132,7 +149,7 @@ class Entries extends React.Component {
     nextEntry() {
         let focus = jQuery('div.entry.focused');
         if (focus.length === 0) {
-            focus =  jQuery('div.entry:first').addClass('focused');
+            focus =  jQuery('div.entry:first');
         }
         const goto = focus.next('div.entry');
         if (goto.length > 0) {
@@ -159,7 +176,7 @@ class Entries extends React.Component {
         if (props.entryType === 'r') {
             url = '/json/' + props.entryType + '/' + props.target + '/' + props.sort;
         } else if (props.entryType === 'u') {
-            url = '/json/user/' + props.target + '/submitted/' + props.sort;
+            url = '/json/user/' + props.target + '/' + props.userType + '/' + props.sort;
         }
 
         const query = [];
@@ -207,30 +224,82 @@ class Entries extends React.Component {
         const url = this.getEntriesUrl(newProps, reload);
 
         jQuery.getJSON(url, (result) => {
-            const entries = reload ? result.entries : jQuery.extend({}, this.state.entries, result.entries);
+            // this part needs work.
+            const entriesObj = result.entries;
+            // const entriesObjPre = {};
+            // const entriesObjPost = {};
+            let i = 0;
+            for (const prop in entriesObj) {
+                if (entriesObj.hasOwnProperty(prop)) {
+                    // SHould I preload this?
+                    if (i <= 2) {
+                        entriesObj[prop].loaded = true;
+                    }
+
+                    const domainStr = entriesObj[prop].domain.replace('.', '');
+                    if (typeof this['_render' + domainStr] === 'function') {
+                        const renderedContent = this['_render' + domainStr](entriesObj[prop]);
+                        entriesObj[prop].content = renderedContent;
+                    }
+
+                    // if (i <= 3) {
+                    //     entriesObjPre[prop] = entriesObj[prop];
+                    // } else {
+                    //     entriesObjPost[prop] = entriesObj[prop];
+                    // }
+                    i++;
+                }
+            }
+
             this.setState({
-                entries: entries,
+                entries: reload ? entriesObj : jQuery.extend({}, this.state.entries, entriesObj),
                 after: result.after,
                 before: result.before,
                 loading: 0
             });
-            // window.setTimeout(() => {this.scrollResize = true;}, 250);
-            // window.setTimeout(() => {this.scrollResize = true;}, 500);
-            // window.setTimeout(() => {this.scrollResize = true;}, 750);
+
+            // console.log(entriesObjPre);
+            // console.log(entriesObjPost);
+
+            // if (reload) {
+            //     // Render the first 4.
+            //     this.setState({
+            //         entries: entriesObjPre,
+            //         after: result.after,
+            //         before: result.before,
+            //         loading: 1
+            //     });
+            //
+            //     // Attach the rest of them.
+            //     this.setState({
+            //         entries: jQuery.extend({}, this.state.entries, entriesObjPost),
+            //         after: result.after,
+            //         before: result.before,
+            //         loading: 0
+            //     });
+            // } else {
+            //     this.setState({
+            //         entries: reload ? entriesObj : jQuery.extend({}, this.state.entries, entriesObj),
+            //         after: result.after,
+            //         before: result.before,
+            //         loading: 0
+            //     });
+            // }
         });
     }
 
-    render() {
-        // const accessToken = cookie.load('accessToken');
-        // if (!accessToken) {
-        //     return (
-        //         <div>
-        //             <h4>Login</h4>
-        //             <a href="/api/reddit-login">Login</a> to view entries.
-        //         </div>
-        //     );
-        // }
+    _renderwankflixcom(entry) {
+        const pattern = /(\d+).html$/i;
+        const url = entry.url.match(pattern);
+        const id = url[1];
+        return {
+            'type': 'iframe16x9',
+            'src': 'http://wankflix.com/embed/' + id
+        };
+    }
 
+    render() {
+        // console.log(this.state);
         let loading = '';
         if (this.state.loading === 1) {
             loading = <div className="alert alert-info" id="content-loading" role="alert"><span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Getting entries from Reddit.</div>;
@@ -241,12 +310,10 @@ class Entries extends React.Component {
         const entriesObject = this.state.entries;
         const entriesKeys = Object.keys(entriesObject);
         let lastKey;
-        let incrm = 0;
         if (entriesKeys.length > 0) {
             entries = Object.keys(this.state.entries).map((key) => {
                 entriesObject[key].lastID = lastKey ? lastKey : null;
                 lastKey = key;
-                incrm++;
                 return (
                     <Entry
                         entry={entriesObject[key]}
@@ -254,8 +321,8 @@ class Entries extends React.Component {
                         debug={this.state.debug}
                         sort={this.state.sort}
                         sortTop={this.state.sortTop}
-                        incrm={incrm}
                         loaded={entriesObject[key].loaded}
+                        focused={entriesObject[key].focused}
                     />
                 );
             });
@@ -280,11 +347,20 @@ Entries.propTypes = {
     entryType: PropTypes.string,
     sort: PropTypes.string,
     target: PropTypes.string,
+    userType: PropTypes.string,
     sortTop: PropTypes.string,
     after: PropTypes.string,
     before: PropTypes.string,
     limit: PropTypes.string,
-    debug: PropTypes.bool
+    debug: PropTypes.bool,
+    setSort: PropTypes.func.isRequired,
+    setSortTop: PropTypes.func.isRequired,
+    setTarget: PropTypes.func.isRequired,
+    setListType: PropTypes.func.isRequired,
+    listingsSort: PropTypes.string,
+    listingsSortTop: PropTypes.string,
+    listingsTarget: PropTypes.string,
+    listingsListType: PropTypes.string
 };
 
 const mapStateToProps = (state, ownProps) => {
@@ -295,19 +371,26 @@ const mapStateToProps = (state, ownProps) => {
     return {
         entryType: entryType ? entryType : 'r',
         target: ownProps.params.target ? ownProps.params.target : 'mine',
+        userType: ownProps.params.userType ? ownProps.params.userType : 'submitted',
         sort: ownProps.params.sort ? ownProps.params.sort : defaultSort,
-        sortTop: ownProps.location.query.t ? ownProps.location.query.t : '',
+        sortTop: ownProps.location.query.t ? ownProps.location.query.t : 'day',
         after: ownProps.location.query.after ? ownProps.location.query.after : '',
         before: ownProps.location.query.before ? ownProps.location.query.before : '',
         limit: ownProps.location.query.limit ? ownProps.location.query.limit : '',
-        debug: ownProps.location.query.debug ? true : false
+        debug: ownProps.location.query.debug ? true : false,
+        listingsSort: state.listingsSort,
+        listingsSortTop: state.listingsSortTop,
+        listingsTarget: state.listingsTarget,
+        listingsListType: state.listingsListType,
     };
 };
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        // onSortTopChange: sortTop => dispatch(storeSortTop(sortTop)),
-        // onSortChange: sort => dispatch(storeSort(sort))
+        setSort: (sort) => dispatch(listingsSort(sort)),
+        setSortTop: (sortTop) => dispatch(listingsSortTop(sortTop)),
+        setTarget: (target) => dispatch(listingsTarget(target)),
+        setListType: (listType) => dispatch(listingsListType(listType)),
     };
 };
 

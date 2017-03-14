@@ -39,7 +39,7 @@ class Content extends React.Component {
                     content = <Thumb content={this.props.content} preload={this.props.preload} />;
                     break;
                 case 'self':
-                    content = <Self content={this.props.content} preload={this.props.preload} />;
+                    content = <Self content={this.props.content} preload={this.props.preload} name={this.props.name} />;
                     break;
                 default:
                     break;
@@ -57,7 +57,8 @@ class Content extends React.Component {
 
 Content.propTypes = {
     content: PropTypes.object,
-    preload: PropTypes.bool
+    preload: PropTypes.bool,
+    name: PropTypes.string
 };
 
 export default Content;

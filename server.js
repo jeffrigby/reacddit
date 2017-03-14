@@ -1,5 +1,6 @@
 var webpack = require('webpack');
 var WebpackDevServer = require('webpack-dev-server');
+var fs = require("fs");
 var config = require('./webpack.config');
 
 new WebpackDevServer(webpack(config), {
@@ -11,6 +12,11 @@ new WebpackDevServer(webpack(config), {
     // It suppress everything except error, so it has to be set to false as well
     // to see success build.
     noInfo: false,
+//     https: {
+//         cert: fs.readFileSync("/usr/local/etc/nginx/ssl/reddit.crt"),
+//         key: fs.readFileSync("/usr/local/etc/nginx/ssl/reddit.key")
+// //      cacert: fs.readFileSync("path-to-cacert-file.pem")
+//     },
     stats: {
       // Config for minimal console.log mess.
       assets: false,

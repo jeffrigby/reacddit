@@ -31,13 +31,13 @@ module.exports = {
           inject: 'body',
           filename: 'index.html'
         }),
-        new webpack.optimize.OccurenceOrderPlugin(),
+        new webpack.optimize.OccurrenceOrderPlugin(),
         new CopyWebpackPlugin([
             { from: 'images', to: 'images'},
             { from: 'iframe.html'}
         ]),
         new webpack.HotModuleReplacementPlugin(),
-        //new webpack.NoErrorsPlugin(),
+        // new webpack.NoErrorsPlugin(),
         new webpack.DefinePlugin({
           'process.env.NODE_ENV': JSON.stringify('development')
         })

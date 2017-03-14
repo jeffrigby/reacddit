@@ -1,13 +1,17 @@
 import React, { PropTypes }  from 'react';
 import Content from '../Content';
 
-const Self = ({ content, preload }) => {
-    const html = <div dangerouslySetInnerHTML={{__html: content.html}}></div>;
+const Self = ({ content, preload, name }) => {
+    let rawhtml = content.html;
+    rawhtml = rawhtml.replace(/<a\s+href=/gi, '<a target="_blank" href=');
+    const html = <div dangerouslySetInnerHTML={{__html: rawhtml}}></div>;
     let inlineRendered;
     if (content.inline.length > 0) {
+        let i = 0;
         inlineRendered = content.inline
             .map((item) => {
-                const guid = ('0000' + (Math.random() * Math.pow(36, 4) << 0).toString(36)).slice(-4);
+                i++;
+                const guid = 'inline' + name + i;
                 return <div className="inline-render" key={guid}><Content content={item} preload={preload} /></div>;
             }, this);
     }
@@ -20,7 +24,8 @@ const Self = ({ content, preload }) => {
 
 Self.propTypes = {
     content: PropTypes.object,
-    preload: PropTypes.bool
+    preload: PropTypes.bool,
+    name: PropTypes.string
 };
 
 export default Self;

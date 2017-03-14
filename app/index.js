@@ -4,7 +4,7 @@ import { render } from 'react-dom';
 import { browserHistory } from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux';
 import { AppContainer } from 'react-hot-loader';
-import configureStore from './store/configureStore';
+import configureStore from './redux/store/configureStore';
 import Root from './containers/Root';
 import './styles/main.scss';
 

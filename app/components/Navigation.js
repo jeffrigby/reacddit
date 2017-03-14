@@ -1,19 +1,14 @@
 import React, { PropTypes } from 'react';
 import NavigationItem from './NavigationItem';
 import {Link, browserHistory} from 'react-router';
+import { connect } from 'react-redux';
+import { subredditsFetchData, subredditsFetchDefaultData, subredditsFetchLastUpdated, subredditsFilter} from '../redux/actions/subreddits';
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
 class Navigation extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            subreddits: [],
-            loading: 1,
-            onlyNew: 0,
-            filterText: ''
-        };
-
         this.randomSub = this.randomSub.bind(this);
     }
 
@@ -25,11 +20,14 @@ class Navigation extends React.Component {
         jQuery(document).keypress(this.handleNavHotkey.bind(this));
         jQuery(window).on('load resize', this.resizeNavigation);
         if (this.props.accessToken) {
-            this.getSubreddits();
+            this.props.fetchSubreddits(true, false);
         } else {
-            this.getDefaultSubreddits();
+            this.props.fetchDefaultSubreddits();
         }
-        this.setInterval(this.lastUpdated.bind(this), 300000);
+    }
+
+    componentDidUpdate() {
+        this.resizeNavigation();
     }
 
     componentWillUnmount() {
@@ -42,64 +40,29 @@ class Navigation extends React.Component {
 
     resizeNavigation() {
         let vph = jQuery(window).height();
-        vph = vph - 200;
+        vph = vph - 150;
         jQuery('#subreddits nav').css('max-height', vph + 'px');
     }
 
-    getSubreddits(reset) {
-        let url = '/json/subreddits/lean';
-        if  (reset === true) {
-            url += '/true';
-        }
-        jQuery.getJSON(url, (data) => {
-            this.setState({
-                subreddits: data.subreddits,
-                loading: 0
-            });
-            this.lastUpdated();
-            this.resizeNavigation();
-        });
-    }
-
-    getDefaultSubreddits() {
-        const url = 'https://www.reddit.com/subreddits/default.json?limit=100';
-        const subreddits = [];
-        jQuery.getJSON(url, (rsp) => {
-            jQuery.each(rsp.data.children, (idx, value) => {
-                const data = value.data;
-                subreddits.push(data);
-            });
-            subreddits.sort((a, b) => {
-                if(a.display_name.toLowerCase() < b.display_name.toLowerCase()) return -1;
-                if(a.display_name.toLowerCase() > b.display_name.toLowerCase()) return 1;
-                return 0;
-            });
-            this.setState({
-                subreddits: subreddits,
-                loading: 0
-            });
-            this.lastUpdated();
-            this.resizeNavigation();
-        });
-    }
-
     filterData(item) {
-        const queryText = item.target.value.toLowerCase();
+        const queryText = item.target.value;
         if (!queryText) {
-            return this.setState({
-                filterText: ''
-            });
+            return this.props.setFilter('');
         }
-
-        return this.setState({
-            filterText: queryText
-        });
+        return this.props.setFilter(queryText);
     }
 
     handleNavHotkey(event) {
         switch (event.charCode) {
             case 76: // shift-l
-                this.reloadSubreddits();
+                fetch('https://www.reddit.com/r/randnsfw', {mode: 'cors'}).then((response) => {
+                    if (!response.ok) {
+                        throw Error(response.statusText);
+                    }
+                    console.log(response);
+                    return response;
+                });
+                // this.reloadSubreddits();
                 break;
             case 82: // shift-R
                 this.randomSubPush();
@@ -110,99 +73,14 @@ class Navigation extends React.Component {
     }
 
     clearSearch() {
-        return this.setState({
-            filterText: ''
-        });
-    }
-
-    lastUpdatedRequest(url) {
-        return jQuery.getJSON(url).then((res) => res);
-    }
-
-    filterAjax(promises) {
-        const results = [];
-        let remaining = promises.length;
-        const d = jQuery.Deferred();
-
-        for (let i = 0; i < promises.length; i++) {
-            promises[i].then((res) => {
-                results.push(res); // on success, add to results
-            }).always(() => {
-                remaining--; // always mark as finished
-                if(!remaining) d.resolve(results);
-            });
-        }
-        return d.promise(); // return a promise on the remaining values
-    }
-
-    lastUpdateReplace() {
-        const updatedDates = {};
-        const items = this.state.subreddits;
-
-        const responses = arguments;
-        jQuery.each(responses[0], (idx, value) => {
-            if (value.data.children.length > 0) {
-                const created = value.data.children[0].data.created_utc;
-                const subid = value.data.children[0].data.subreddit_id;
-                updatedDates[subid] = created;
-            } else {
-                // Broken for some reason.
-            }
-        });
-
-        jQuery.each(items, (idx, val) => {
-            if (typeof updatedDates[val.name] !== 'undefined') {
-                items[idx].lastUpdate = updatedDates[val.name];
-            }
-        });
-        return this.replaceSubreddits(items);
-    }
-
-    replaceSubreddits(subreddits) {
-        this.setState({
-            subreddits: subreddits
-        });
-    }
-
-    lastUpdated() {
-        if (jQuery('#subreddits ul.nav li').length === 0) {
-            window.setTimeout(this.lastUpdated.bind(this), 1000);
-            return;
-        }
-
-        const items = this.state.subreddits;
-        let deferreds = [];
-        let i = 0;
-
-        jQuery.each(items, (idx, value) => {
-            if (value.url !== '/r/mine' && value.quarantine === false) {
-                const url = 'https://www.reddit.com' + value.url + 'new.json?limit=1&sort=new';
-                const promise = this.lastUpdatedRequest(url);
-
-                deferreds.push(promise);
-                i++;
-                if (i >= 50) {
-                    this.filterAjax(deferreds).then(this.lastUpdateReplace.bind(this));
-                    i = 0;
-                    deferreds = [];
-                }
-            }
-        });
-
-        if (deferreds.length > 0) {
-            this.filterAjax(deferreds).then(this.lastUpdateReplace.bind(this));
-        }
+        this.props.setFilter('');
     }
 
     reloadSubreddits() {
-        this.setState({
-            subreddits: [],
-            loading: 1
-        });
         if (this.props.accessToken) {
-            this.getSubreddits(true);
+            this.props.fetchSubreddits(true);
         } else {
-            this.getDefaultSubreddits();
+            this.props.fetchDefaultSubreddits();
         }
     }
 
@@ -211,18 +89,40 @@ class Navigation extends React.Component {
         this.reloadSubreddits();
     }
 
-    checkFilter(item) {
-        const filterText = this.state.filterText;
+    filterSubreddits(subreddits) {
+        if (this.isEmpty(subreddits)) {
+            return {};
+        }
+
+        const filterText = this.props.filter.toLowerCase();
         // No filter defined
         if (!filterText) {
-            return true;
+            return subreddits;
         }
 
-        if (item.display_name.toLowerCase().indexOf(filterText) !== -1) {
-            return true;
+        const filteredSubreddits = {};
+        for (const key in subreddits) {
+            if (subreddits.hasOwnProperty(key)) {
+                if (subreddits[key].display_name.toLowerCase().indexOf(filterText) !== -1) {
+                    filteredSubreddits[key] = subreddits[key];
+                }
+            }
         }
 
-        return false;
+        return filteredSubreddits;
+    }
+
+    generateNavItems(subreddits) {
+        const lastUpdated = this.props.lastUpdated;
+        const navigationItems = [];
+        for (const key in subreddits) {
+            if (subreddits.hasOwnProperty(key)) {
+                const item = subreddits[key];
+                const subLastUpdated = lastUpdated[item.name] ? lastUpdated[item.name] : 0;
+                navigationItems.push(<NavigationItem item={item} key={item.name} lastUpdated={subLastUpdated} />);
+            }
+        }
+        return navigationItems;
     }
 
     toggleOnlyNew(item) {
@@ -235,19 +135,26 @@ class Navigation extends React.Component {
     }
 
     randomSubPush() {
-        const subreddits = this.state.subreddits;
-        const randomSubreddit = subreddits[Math.floor(Math.random() * subreddits.length)];
+        const subreddits = this.props.subreddits;
+        const keys = Object.keys(subreddits);
+        const randomSubreddit = subreddits[keys[ keys.length * Math.random() << 0]];
         const url = randomSubreddit.url + (this.props.params.sort ? this.props.params.sort : 'hot');
         browserHistory.push(url);
     }
 
+    isEmpty(obj) {
+        for(const key in obj) {
+            if(obj.hasOwnProperty(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     render() {
-        let login;
-        let friends;
+        const subreddits = this.props.subreddits;
 
-
-
-        if (this.state.loading === 1) {
+        if (this.props.isLoading || this.isEmpty(subreddits)) {
             return (
                 <div id="subreddits">
                     <div className="alert alert-info" id="subreddits-loading" role="alert">
@@ -257,53 +164,42 @@ class Navigation extends React.Component {
             );
         }
 
-        const subreddits = this.state.subreddits;
-        const filterText = this.state.filterText;
-        const filteredSubreddits = subreddits.filter(this.checkFilter.bind(this));
+        if (this.props.hasErrored) {
+            return (
+                <div className="alert alert-danger" id="subreddits-load-error" role="alert" style={{display: 'none'}}>
+                    <span className="glyphicon glyphicon glyphicon-alert"></span> Error loading subreddits.
+                    <a href="" style={subredditsActive === 0 ? {display: 'none'} : null} onClick={this.reloadSubredditsClick.bind(this)}>Click here to try again.</a>
+                </div>
+            );
+        }
+
+        let login;
+        let friends;
+        const filterText = this.props.filter;
+        const filteredSubreddits = this.filterSubreddits(subreddits);
         const sort = this.props.params.sort ? this.props.params.sort : 'hot';
 
         if (!this.props.accessToken) {
-            login = (
-                <div id="login">
-                    <a href="/api/reddit-login">Login</a> to view your subreddits.
-                </div>
-            );
+            login = (<li><div id="login"><a href="/api/reddit-login">Login</a> to view your subreddits.</div></li>);
         } else {
-            friends = <li><div><Link to={'/r/friends/' + sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link></div></li>;
+            friends = (
+                <li><div><Link to={'/r/friends/' + sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link></div></li>
+            );
         }
 
         let navItems;
         let subredditsActive = 0;
 
-        if (subreddits.length > 0) {
-            navItems = filteredSubreddits
-                .map((item) => {
-                    return (
-                        <NavigationItem item={item} key={item.name} sort={this.props.params.sort} />
-                    );
-                }, this);
-
+        if (!this.isEmpty(filteredSubreddits)) {
+            navItems = this.generateNavItems(filteredSubreddits);
             subredditsActive = 1;
         }
 
-        // Use short syntax
-        let notFound = 0;
-        if (navItems.length === 0) {
-            notFound = 1;
-        }
+        const notFound = this.isEmpty(navItems) ? 1 : 0;
 
         return (
             <div id="subreddits">
-                {login}
-
-                <div className="alert alert-info" id="subreddits-loading" role="alert" style={subredditsActive > 0 ? {display: 'none'} : null}>
-                    <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Getting subreddits.
-                </div>
-                <div className="alert alert-danger" id="subreddits-load-error" role="alert" style={{display: 'none'}}>
-                    <span className="glyphicon glyphicon glyphicon-alert"></span> Error loading subreddits.
-                </div>
-
-                <div style={subredditsActive === 0 ? {display: 'none'} : null} id="subreddit-filter-group">
+                <div id="subreddit-filter-group">
                     <div className="form-group-sm">
                         <input
                             type="search"
@@ -313,6 +209,7 @@ class Navigation extends React.Component {
                             id="subreddit-filter"
                             value={filterText}
                         />
+
                         <span id="searchclear" className="glyphicon glyphicon-remove-circle" onClick={this.clearSearch.bind(this)}></span>
                     </div>
                     <div className="subreddit-options">
@@ -332,8 +229,10 @@ class Navigation extends React.Component {
 
                     {!filterText &&
                     ( <ul className="nav">
+                            {login}
                             <li><div><Link to={'/r/mine/' + sort} title="Show all subreddits" activeClassName="activeSubreddit">Front</Link></div></li>
                             {friends}
+                            <li><div><Link to={'/r/popular/' + sort} title="Show popular posts">Popular</Link></div></li>
                             <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
                     </ul>)
                     }
@@ -355,7 +254,35 @@ class Navigation extends React.Component {
 Navigation.propTypes = {
     params: PropTypes.object,
     query: PropTypes.object,
-    accessToken: PropTypes.object
+    accessToken: PropTypes.object,
+    fetchSubreddits: PropTypes.func.isRequired,
+    fetchDefaultSubreddits: PropTypes.func.isRequired,
+    fetchLastUpdated: PropTypes.func.isRequired,
+    setFilter: PropTypes.func.isRequired,
+    subreddits: PropTypes.object.isRequired,
+    lastUpdated: PropTypes.object.isRequired,
+    hasErrored: PropTypes.bool.isRequired,
+    isLoading: PropTypes.bool.isRequired,
+    filter: PropTypes.string.isRequired,
 };
 
-module.exports = Navigation;
+const mapStateToProps = (state) => {
+    return {
+        subreddits: state.subreddits,
+        lastUpdated: state.lastUpdated,
+        hasErrored: state.subredditsHasErrored,
+        isLoading: state.subredditsIsLoading,
+        filter: state.subredditsFilter
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        fetchSubreddits: (auth, reload) => dispatch(subredditsFetchData(auth, reload)),
+        fetchDefaultSubreddits: () => dispatch(subredditsFetchDefaultData()),
+        setFilter: (filterText) => dispatch(subredditsFilter(filterText)),
+        fetchLastUpdated: (subreddits, lastUpdated) => dispatch(subredditsFetchLastUpdated(subreddits, lastUpdated))
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Navigation);

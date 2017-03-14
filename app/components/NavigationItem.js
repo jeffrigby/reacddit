@@ -1,6 +1,9 @@
 import React, { PropTypes } from 'react';
 import Common from '../common.js';
 import {Link} from 'react-router';
+import { connect } from 'react-redux';
+import { subredditsCurrent} from '../redux/actions/subreddits';
+
 
 class NavigationItem extends React.Component {
     constructor(props) {
@@ -19,8 +22,8 @@ class NavigationItem extends React.Component {
         let classNameStr;
         let subLabel;
 
-        if (this.props.item.lastUpdate > 0) {
-            const seconds = this.lastUpdatedDiff(this.props.item.lastUpdate);
+        if (this.props.lastUpdated > 0) {
+            const seconds = this.lastUpdatedDiff(this.props.lastUpdated);
             const deadSecs = ((365 / 2) * 24 * 3600); // 6 months
             const staleSecs = ((365 / 12) * 1 * 24 * 3600); // 3 months
             const todaySecs = (24 * 3600); // 1 day
@@ -50,7 +53,21 @@ class NavigationItem extends React.Component {
 
 NavigationItem.propTypes = {
     item: PropTypes.object,
-    sort: PropTypes.string
+    sort: PropTypes.string.isRequired,
+    lastUpdated: PropTypes.number,
+    setCurrentSubreddit: PropTypes.func.isRequired,
 };
 
-module.exports = NavigationItem;
+const mapStateToProps = (state) => {
+    return {
+        sort: state.listingsSort
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setCurrentSubreddit: (subreddit) => dispatch(subredditsCurrent(subreddit)),
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(NavigationItem);

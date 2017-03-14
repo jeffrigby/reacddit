@@ -1,6 +1,7 @@
 import React, { PropTypes }  from 'react';
 import {browserHistory} from 'react-router';
-
+import { connect } from 'react-redux';
+import { listingsSortTop } from '../redux/actions/listings';
 
 /**
  * Import all actions as an object.
@@ -13,9 +14,10 @@ class SortTop extends React.Component {
 
     onClick(e) {
         e.preventDefault();
-        const sortTopKey = jQuery(e.target).data('key');
+        const sortTopKey = e.target.dataset.key;
         const sort = this.props.sort ? this.props.sort : 'hot';
-        browserHistory.push('/r/' + this.props.subreddit + '/' + sort + '/?t=' + sortTopKey);
+        const target = this.props.target ? this.props.target : 'mine';
+        browserHistory.push('/r/' + target + '/' + sort + '/?t=' + sortTopKey);
     }
 
     getSorts() {
@@ -29,7 +31,7 @@ class SortTop extends React.Component {
     }
 
     render() {
-        if (this.props.sort !== 'top' && this.props.sort !== 'controversial') {
+        if (this.props.sort !== 'top' && this.props.sort !== 'controversial' || this.props.target === 'friends') {
             return null;
         }
 
@@ -54,9 +56,24 @@ class SortTop extends React.Component {
 }
 
 SortTop.propTypes = {
-    sort: PropTypes.string,
-    sortTop: PropTypes.string,
-    subreddit: PropTypes.string,
+    target: PropTypes.string,
+    sort: PropTypes.string.isRequired,
+    sortTop: PropTypes.string.isRequired,
+    setSortTop: PropTypes.func.isRequired
 };
 
-export default SortTop;
+const mapStateToProps = (state) => {
+    return {
+        sort: state.listingsSort,
+        sortTop: state.listingsSortTop,
+        target: state.listingsTarget
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setSortTop: (sortTop) => dispatch(listingsSortTop(sortTop)),
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SortTop);

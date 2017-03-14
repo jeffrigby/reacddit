@@ -1,15 +1,9 @@
 import React, { PropTypes }  from 'react';
 
 const IFrame4x4 = ({ content, preload }) => {
-    let iframe;
-    if (preload) {
-        iframe = <iframe src={content.src}  data-orig={content.src} scrolling="no" className="loaded iframe_4x4 preload" allowFullScreen></iframe>;
-    } else {
-        iframe = <iframe src="/iframe.html" data-orig={content.src} scrolling="no" className="unloaded iframe_4x4" allowFullScreen></iframe>;
-    }
-
+    const src = preload ? content.src : 'about:blank';
     return (<div className="embed-container">
-        <iframe src="/iframe.html" data-orig={content.src} scrolling="no" className="unloaded iframe_4x4"></iframe>
+        <iframe src={src} scrolling="no" className="iframe_4x4" allowFullScreen></iframe>
     </div>);
 };
 
