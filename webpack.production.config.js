@@ -22,7 +22,7 @@ module.exports = {
         // webpack gives your modules and chunks ids to identify them. Webpack can vary the
         // distribution of the ids to get the smallest id length for often used ids with
         // this plugin
-        new webpack.optimize.OccurrenceOrderPlugin(),
+        new webpack.optimize.OccurenceOrderPlugin(),
 
         // handles creating an index.html file and injecting assets. necessary because assets
         // change name because the hash part changes. We want hash name changes to bust cache
@@ -58,43 +58,44 @@ module.exports = {
         })
     ],
 
+    // ESLint options
+    eslint: {
+        configFile: '.eslintrc',
+        failOnWarning: false,
+        failOnError: false
+    },
+
     module: {
-        rules: [
-            {
-                enforce: "pre",
-                test: /\.js$/,
-                exclude: /node_modules/,
-                loader: "eslint-loader",
-                options: {
-                    configFile: '.eslintrc',
-                    failOnWarning: false,
-                    failOnError: false
-                }
-            },
+        // Runs before loaders
+        preLoaders: [
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
-                loader: "babel-loader",
-            },
-            {
-                test: /\.json?$/,
-                loader: 'json-loader'
-            },
-            {
-                test: /\.scss$/,
-                // we extract the styles into their own .css file instead of having
-                // them inside the js.
-                loader: ExtractTextPlugin.extract({
-                    fallback: 'style-loader',
-                    use: ['css-loader', 'sass-loader']
-                })
-            }, {
-                test: /\.woff(2)?(\?[a-z0-9#=&.]+)?$/,
-                loader: 'url?limit=10000&mimetype=application/font-woff'
-            }, {
-                test: /\.(ttf|eot|svg)(\?[a-z0-9#=&.]+)?$/,
-                loader: 'file-loader'
+                loader: 'eslint'
             }
         ],
-    }
+        // loaders handle the assets, like transforming sass to css or jsx to js.
+        loaders: [{
+            test: /\.js?$/,
+            exclude: /node_modules/,
+            loader: 'babel'
+        }, {
+            test: /\.json?$/,
+            loader: 'json'
+        }, {
+            test: /\.scss$/,
+            // we extract the styles into their own .css file instead of having
+            // them inside the js.
+            loader: ExtractTextPlugin.extract('style', 'css!postcss!sass')
+        }, {
+            test: /\.woff(2)?(\?[a-z0-9#=&.]+)?$/,
+            loader: 'url?limit=10000&mimetype=application/font-woff'
+        }, {
+            test: /\.(ttf|eot|svg)(\?[a-z0-9#=&.]+)?$/,
+            loader: 'file'
+        }]
+    },
+    postcss: [
+        require('autoprefixer')
+    ]
 };

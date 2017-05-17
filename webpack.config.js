@@ -31,7 +31,7 @@ module.exports = {
           inject: 'body',
           filename: 'index.html'
         }),
-        new webpack.optimize.OccurrenceOrderPlugin(),
+        new webpack.optimize.OccurenceOrderPlugin(),
         new CopyWebpackPlugin([
             { from: 'images', to: 'images'},
             { from: 'iframe.html'}

@@ -55,14 +55,7 @@ class Navigation extends React.Component {
     handleNavHotkey(event) {
         switch (event.charCode) {
             case 76: // shift-l
-                fetch('https://www.reddit.com/r/randnsfw', {mode: 'cors'}).then((response) => {
-                    if (!response.ok) {
-                        throw Error(response.statusText);
-                    }
-                    console.log(response);
-                    return response;
-                });
-                // this.reloadSubreddits();
+                this.reloadSubreddits();
                 break;
             case 82: // shift-R
                 this.randomSubPush();
@@ -232,7 +225,6 @@ class Navigation extends React.Component {
                             {login}
                             <li><div><Link to={'/r/mine/' + sort} title="Show all subreddits" activeClassName="activeSubreddit">Front</Link></div></li>
                             {friends}
-                            <li><div><Link to={'/r/popular/' + sort} title="Show popular posts">Popular</Link></div></li>
                             <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
                     </ul>)
                     }

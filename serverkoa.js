@@ -1,38 +1,29 @@
+/*!
+ * koa-todo - app.js
+ * Copyright(c) 2014 dead_horse <dead_horse@qq.com>
+ * MIT Licensed
+ */
+
 'use strict';
 
 /**
  * Module dependencies.
  */
 
-const Koa = require('koa');
-const middlewares = require('koa-middlewares');
-const path = require("path");
-const serve = require("koa-static-cache");
-const convert = require('koa-convert');
-const router = require('koa-router')();
-import historyApiFallback from 'connect-history-api-fallback';
-const app = new Koa();
-// import reactrouter from 'koa-react-router';
+var middlewares = require('koa-middlewares');
+// var routes = require('./routes');
+// var config = require('./config');
+var path = require('path');
+var http = require('http');
+var koa = require('koa');
 
-const config = {
-    version: "1.0",
+var config = {
+    version: version,
     debug: process.env.NODE_ENV !== 'production',
-    port: process.env.PORT || 3000,
-    root: path.normalize(path.join(__dirname, "/"))
+    port: process.env.PORT || 3000
 };
 
-const STATIC_FILES_MAP = {};
-const SERVE_OPTIONS = { maxAge: 365 * 24 * 60 * 60 };
-
-/** Apply middlwares
- *
- */
-// This rewrites all routes requests to the root /index.html file
-// (ignoring file requests). If you want to implement isomorphic
-// rendering, you'll want to remove this middleware.
-// app.use(historyApiFallback({
-//     verbose: false
-// }));
+var app = koa();
 
 /**
  * ignore favicon
@@ -45,30 +36,29 @@ app.use(middlewares.favicon());
 app.use(middlewares.rt());
 
 /**
- * Logger
+ * static file server
  */
-app.use(middlewares.logger());
+app.use(middlewares.staticCache(path.join(__dirname, 'dist'), {
+    buffer: !config.debug,
+    maxAge: config.debug ? 0 : 60 * 60 * 24 * 7
+}));
+app.use(middlewares.bodyParser());
 
+if (config.debug && process.env.NODE_ENV !== 'test') {
+    app.use(middlewares.logger());
+}
 
-// app.use(require('koa-static')(root, opts));
+/**
+ * router
+ */
+// app.use(middlewares.router(app));
+// routes(app);
 
-app.use(serve('./dist', SERVE_OPTIONS, STATIC_FILES_MAP));
-// this last middleware catches any request that isn't handled by
-// koa-static or koa-router, ie your index.html in your example
-app.use(function* index() {
-    yield send(this, './dist/index.html');
-});
+app.get('/', home);
 
-//
-// router.get('/info', function *(next) {
-//     this.body = "SOmething else";
-// });
-//
-// app
-//     .use(router.routes())
-//     .use(router.allowedMethods());
-//
-// app.use('*', serve(path.join(config.root, "build", "public"), SERVE_OPTIONS, STATIC_FILES_MAP));
+app = module.exports = http.createServer(app.callback());
 
-app.listen(config.port);
-console.log('$ open http://127.0.0.1:' + config.port);
+if (!module.parent) {
+    app.listen(config.port);
+    console.log('$ open http://127.0.0.1:' + config.port);
+}

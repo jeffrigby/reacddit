@@ -142,7 +142,7 @@ export function subredditsFetchData(reset) {
         }
         dispatch(subredditsIsLoading(true));
 
-        fetch(url)
+        fetch(url, { credentials: 'include' })
             .then((response) => {
                 if (!response.ok) {
                     throw Error(response.statusText);
