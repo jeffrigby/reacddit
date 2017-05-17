@@ -8,7 +8,7 @@
     "start": "node server",
     "startexp": "cross-env NODE_ENV=production babel-node ./serverexpress.js",
     "startkoa": "cross-env NODE_ENV=production babel-node ./serverkoa.js",
-    "build": "rimraf dist && node_modules/.bin/webpack --config ./webpack.production.config.js --progress --profile --colors",
+    "build": "rimraf dist && node_modules/webpack/bin/webpack.js --config ./webpack.production.config.js --progress --profile --colors",
     "serve": "cross-env NODE_ENV=production babel-node ./serverexpress.js",
     "eslint": "eslint ."
   },
