@@ -225,6 +225,7 @@ class Navigation extends React.Component {
                             {login}
                             <li><div><Link to={'/r/mine/' + sort} title="Show all subreddits" activeClassName="activeSubreddit">Front</Link></div></li>
                             {friends}
+                            <li><div><Link to={'/r/popular/' + sort} title="Show popular subreddits" activeClassName="activeSubreddit">Popular</Link></div></li>
                             <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
                     </ul>)
                     }
