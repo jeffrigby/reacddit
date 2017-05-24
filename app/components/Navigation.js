@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { subredditsFetchData, subredditsFetchDefaultData, subredditsFetchLastUpdated, subredditsFilter} from '../redux/actions/subreddits';
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
+import cookie from 'react-cookie';
 
 class Navigation extends React.Component {
     constructor(props) {
@@ -147,6 +148,7 @@ class Navigation extends React.Component {
     render() {
         const subreddits = this.props.subreddits;
 
+
         if (this.props.isLoading || this.isEmpty(subreddits)) {
             return (
                 <div id="subreddits">
@@ -166,19 +168,11 @@ class Navigation extends React.Component {
             );
         }
 
-        let login;
-        let friends;
         const filterText = this.props.filter;
         const filteredSubreddits = this.filterSubreddits(subreddits);
         const sort = this.props.params.sort ? this.props.params.sort : 'hot';
-
-        if (!this.props.accessToken) {
-            login = (<li><div id="login"><a href="/api/reddit-login">Login</a> to view your subreddits.</div></li>);
-        } else {
-            friends = (
-                <li><div><Link to={'/r/friends/' + sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link></div></li>
-            );
-        }
+        const redditUser = cookie.load('redditUser');
+        const accessToken = this.props.accessToken;
 
         let navItems;
         let subredditsActive = 0;
@@ -222,11 +216,15 @@ class Navigation extends React.Component {
 
                     {!filterText &&
                     ( <ul className="nav">
-                            {login}
+                            {!accessToken && (<li><div id="login"><a href="/api/reddit-login">Login</a> to view your subreddits.</div></li>)}
                             <li><div><Link to={'/r/mine/' + sort} title="Show all subreddits" activeClassName="activeSubreddit">Front</Link></div></li>
-                            {friends}
                             <li><div><Link to={'/r/popular/' + sort} title="Show popular subreddits" activeClassName="activeSubreddit">Popular</Link></div></li>
                             <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
+                            {accessToken && (<li><div><Link to={'/r/friends/' + sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link></div></li>)}
+                            {accessToken && (<li><div><Link to={'/user/' + redditUser + '/submitted/' + sort} title="Submitted" activeClassName="activeSubreddit">Submitted</Link></div></li>)}
+                            {accessToken && (<li><div><Link to={'/user/' + redditUser + '/upvoted/' + sort} title="Upvoted" activeClassName="activeSubreddit">Upvoted</Link></div></li>)}
+                            {accessToken && (<li><div><Link to={'/user/' + redditUser + '/downvoted/' + sort} title="Downvoted" activeClassName="activeSubreddit">Downvoted</Link></div></li>)}
+                            {accessToken && (<li><div><Link to={'/user/' + redditUser + '/saved/' + sort} title="Saved" activeClassName="activeSubreddit">Saved</Link></div></li>)}
                     </ul>)
                     }
 
