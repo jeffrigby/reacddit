@@ -221,10 +221,10 @@ class Navigation extends React.Component {
                             <li><div><Link to={'/r/popular/' + sort} title="Show popular subreddits" activeClassName="activeSubreddit">Popular</Link></div></li>
                             <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
                             {accessToken && (<li><div><Link to={'/r/friends/' + sort} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</Link></div></li>)}
-                            {accessToken && (<li><div><Link to={'/user/' + redditUser + '/submitted/' + sort} title="Submitted" activeClassName="activeSubreddit">Submitted</Link></div></li>)}
-                            {accessToken && (<li><div><Link to={'/user/' + redditUser + '/upvoted/' + sort} title="Upvoted" activeClassName="activeSubreddit">Upvoted</Link></div></li>)}
-                            {accessToken && (<li><div><Link to={'/user/' + redditUser + '/downvoted/' + sort} title="Downvoted" activeClassName="activeSubreddit">Downvoted</Link></div></li>)}
-                            {accessToken && (<li><div><Link to={'/user/' + redditUser + '/saved/' + sort} title="Saved" activeClassName="activeSubreddit">Saved</Link></div></li>)}
+                            {redditUser && (<li><div><Link to={'/user/' + redditUser + '/submitted/' + sort} title="Submitted" activeClassName="activeSubreddit">Submitted</Link></div></li>)}
+                            {redditUser && (<li><div><Link to={'/user/' + redditUser + '/upvoted/' + sort} title="Upvoted" activeClassName="activeSubreddit">Upvoted</Link></div></li>)}
+                            {redditUser && (<li><div><Link to={'/user/' + redditUser + '/downvoted/' + sort} title="Downvoted" activeClassName="activeSubreddit">Downvoted</Link></div></li>)}
+                            {redditUser && (<li><div><Link to={'/user/' + redditUser + '/saved'} title="Saved" activeClassName="activeSubreddit">Saved</Link></div></li>)}
                     </ul>)
                     }
 

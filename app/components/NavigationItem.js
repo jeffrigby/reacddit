@@ -18,7 +18,11 @@ class NavigationItem extends React.Component {
 
     render() {
         const sort = this.props.sort ? this.props.sort : '';
-        const href = Common.stripTrailingSlash(this.props.item.url) + '/' + sort;
+        let href;
+        href = Common.stripTrailingSlash(this.props.item.url) + '/' + sort;
+        if (this.props.sort === 'top' && this.props.sortTop) {
+            href += '/?t=' + this.props.sortTop;
+        }
         let classNameStr;
         let subLabel;
 
@@ -54,13 +58,15 @@ class NavigationItem extends React.Component {
 NavigationItem.propTypes = {
     item: PropTypes.object,
     sort: PropTypes.string.isRequired,
+    sortTop: PropTypes.string,
     lastUpdated: PropTypes.number,
     setCurrentSubreddit: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => {
     return {
-        sort: state.listingsSort
+        sort: state.listingsSort,
+        sortTop: state.listingsSortTop
     };
 };
 
