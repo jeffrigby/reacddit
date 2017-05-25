@@ -236,11 +236,13 @@ class Entries extends React.Component {
                         entriesObj[prop].loaded = true;
                     }
 
+/*
                     const domainStr = entriesObj[prop].domain.replace('.', '');
                     if (typeof this['_render' + domainStr] === 'function') {
                         const renderedContent = this['_render' + domainStr](entriesObj[prop]);
                         entriesObj[prop].content = renderedContent;
                     }
+*/
 
                     // if (i <= 3) {
                     //     entriesObjPre[prop] = entriesObj[prop];
