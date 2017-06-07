@@ -25,7 +25,6 @@ export function listingsStatus(listingStatus) {
 export function listingsFetchEntries(url) {
   return (dispatch) => {
     dispatch(listingsStatus('loading'));
-    console.log('fetch', url);
     fetch(url, { credentials: 'same-origin' })
       .then((response) => {
         if (!response.ok) {

@@ -193,8 +193,11 @@ class Navigation extends React.Component {
               id="subreddit-filter"
               value={filterText}
             />
-
-            <span id="searchclear" className="glyphicon glyphicon-remove-circle" onClick={this.clearSearch} />
+            {filterText && (
+            <button id="searchclear" onClick={this.clearSearch} >
+              <span className="glyphicon glyphicon-remove-circle" />
+            </button>
+            )}
           </div>
           <div className="subreddit-options">
             <div className="checkbox">

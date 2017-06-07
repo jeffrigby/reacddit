@@ -196,14 +196,16 @@ div.entry {
       position: relative;
       #searchclear {
         position: absolute;
-        right: 5px;
-        top: 0;
+        right: 0;
+        top: -2px;
         bottom: 0;
         height: 14px;
         margin: auto;
         font-size: 10px;
         cursor: pointer;
         color: #ccc;
+        border: 0;
+        background-color: transparent;
       }
     }
   }
