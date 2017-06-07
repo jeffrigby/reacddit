@@ -1,27 +1,63 @@
-export function listingsSort(sort) {
-    return {
-        type: 'LISTINGS_SORT',
-        sort
-    };
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
+
+export function listingsFilter(listFilter) {
+  return {
+    type: 'LISTINGS_FILTER',
+    listFilter,
+  };
 }
 
-export function listingsSortTop(sortTop) {
-    return {
-        type: 'LISTINGS_SORT_TOP',
-        sortTop
-    };
+export function listingsEntries(listEntries) {
+  return {
+    type: 'LISTINGS_ENTRIES',
+    listEntries,
+  };
 }
 
-export function listingsTarget(target) {
-    return {
-        type: 'LISTINGS_TARGET',
-        target
-    };
+export function listingsStatus(listingStatus) {
+  return {
+    type: 'LISTINGS_STATUS',
+    listingStatus,
+  };
 }
 
-export function listingsListType(listType) {
-    return {
-        type: 'LISTINGS_LIST_TYPE',
-        listType
-    };
+export function listingsFetchEntries(url) {
+  return (dispatch) => {
+    dispatch(listingsStatus('loading'));
+    console.log('fetch', url);
+    fetch(url, { credentials: 'same-origin' })
+      .then((response) => {
+        if (!response.ok) {
+          throw Error(response.statusText);
+        }
+        dispatch(listingsStatus('loaded'));
+        return response;
+      })
+      .then(response => response.json())
+      .then((json) => {
+        const data = Object.assign({}, json, { requestUrl: url });
+        dispatch(listingsEntries(data));
+        return json;
+      })
+      .catch(() => {
+        dispatch(listingsStatus('error'));
+      });
+  };
+}
+
+export function listingsFetch() {
+  return (dispatch, getState) => {
+    const currentState = getState();
+    const url = currentState.listingsFilter.url;
+    if (!url) {
+      return false;
+    } else if (url === currentState.listingsEntries.requestUrl) {
+      return false;
+    } else if (currentState.listingsStatus === 'loading') {
+      return false;
+    }
+    dispatch(listingsFetchEntries(url));
+    return true;
+  };
 }

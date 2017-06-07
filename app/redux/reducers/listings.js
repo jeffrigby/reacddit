@@ -1,40 +1,29 @@
-export function listingsSort(state = 'hot', action) {
-    switch (action.type) {
-        case 'LISTINGS_SORT':
-            return action.sort;
+export function listingsFilter(state = { sort: 'hot' }, action) {
+  switch (action.type) {
+    case 'LISTINGS_FILTER':
+      return action.listFilter;
 
-        default:
-            return state;
-    }
+    default:
+      return state;
+  }
 }
 
-export function listingsSortTop(state = 'day', action) {
-    switch (action.type) {
-        case 'LISTINGS_SORT_TOP':
-            return action.sortTop;
+export function listingsEntries(state = {}, action) {
+  switch (action.type) {
+    case 'LISTINGS_ENTRIES':
+      return action.listEntries;
 
-        default:
-            return state;
-    }
+    default:
+      return state;
+  }
 }
 
-export function listingsTarget(state = 'mine', action) {
-    switch (action.type) {
-        case 'LISTINGS_TARGET':
-            return action.target;
+export function listingsStatus(state = 'unloaded', action) {
+  switch (action.type) {
+    case 'LISTINGS_STATUS':
+      return action.listingStatus;
 
-        default:
-            return state;
-    }
+    default:
+      return state;
+  }
 }
-
-export function listingsListType(state = 'r', action) {
-    switch (action.type) {
-        case 'LISTINGS_LIST_TYPE':
-            return action.listType;
-
-        default:
-            return state;
-    }
-}
-

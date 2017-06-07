@@ -1,22 +1,23 @@
 import { combineReducers } from 'redux';
-import { subreddits, subredditsHasErrored, subredditsIsLoading, lastUpdated, subredditsFilter, subredditsCurrent } from './subreddits';
-import { listingsSort, listingsSortTop, listingsTarget, listingsListType } from './listings';
-import { authInfo } from './auth';
 import { routerReducer } from 'react-router-redux';
+import { subreddits, subredditsHasErrored, subredditsIsLoading, lastUpdated, subredditsFilter, subredditsCurrent } from './subreddits';
+import * as listings from './listings';
+// import { authInfo } from './auth';
 
-const rootReducer = combineReducers({
-    subreddits,
-    lastUpdated,
-    subredditsHasErrored,
-    subredditsIsLoading,
-    subredditsFilter,
-    subredditsCurrent,
-    listingsSort,
-    listingsSortTop,
-    listingsTarget,
-    listingsListType,
-    authInfo,
-    routing: routerReducer
-});
+const hardCoded = {
+  subreddits,
+  lastUpdated,
+  subredditsHasErrored,
+  subredditsIsLoading,
+  subredditsFilter,
+  subredditsCurrent,
+  listings,
+  // authInfo,
+  router: routerReducer,
+};
+
+const combined = Object.assign({}, hardCoded, listings);
+
+const rootReducer = combineReducers(combined);
 
 export default rootReducer;

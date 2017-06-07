@@ -1,79 +1,69 @@
-import React, { PropTypes }  from 'react';
-import {browserHistory} from 'react-router';
+import React, { PropTypes } from 'react';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { listingsSortTop } from '../redux/actions/listings';
 
 /**
  * Import all actions as an object.
  */
-
 class SortTop extends React.Component {
-    constructor(props) {
-        super(props);
+  render() {
+    if (
+      (this.props.listingFilter.sort !== 'top' && this.props.listingFilter.sort !== 'controversial') ||
+      this.props.listingFilter.target === 'friends'
+    ) {
+      return null;
     }
 
-    onClick(e) {
-        e.preventDefault();
-        const sortTopKey = e.target.dataset.key;
-        const sort = this.props.sort ? this.props.sort : 'hot';
-        const target = this.props.target ? this.props.target : 'mine';
-        browserHistory.push('/r/' + target + '/' + sort + '/?t=' + sortTopKey);
-    }
+    const sortArgs = {
+      hour: 'past hour',
+      day: 'past 24 hour',
+      month: 'past month',
+      year: 'past year',
+      all: 'all time',
+    };
 
-    getSorts() {
-        return {
-            'hour': 'past hour',
-            'day': 'past 24 hour',
-            'month': 'past month',
-            'year': 'past year',
-            'all': 'all time'
-        };
-    }
+    const sortValue = sortArgs[this.props.listingFilter.sortTop];
+    const sort = this.props.listingFilter.sort;
+    const target = this.props.listingFilter.target;
+    const listType = this.props.listingFilter.listType;
+    const url = `/${listType}/${target}/${sort}?t=`;
 
-    render() {
-        if (this.props.sort !== 'top' && this.props.sort !== 'controversial' || this.props.target === 'friends') {
-            return null;
-        }
-
-        const sort = this.getSorts();
-        const sortValue = sort[this.props.sortTop];
-
-        return (
-            <div style={{'display': 'inline-block'}}>
-                <button className="btn btn-default btn-xs dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                    <span className="glyphicon glyphicon-time"></span> {sortValue} <span className="caret"></span>
-                </button>
-                <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
-                    <li><a href="#" onClick={this.onClick.bind(this)} data-key="hour">past hour</a></li>
-                    <li><a href="#" onClick={this.onClick.bind(this)} data-key="day">past 24 hours</a></li>
-                    <li><a href="#" onClick={this.onClick.bind(this)} data-key="month">past month</a></li>
-                    <li><a href="#" onClick={this.onClick.bind(this)} data-key="year">past year</a></li>
-                    <li><a href="#" onClick={this.onClick.bind(this)} data-key="all">all time</a></li>
-                </ul>
-            </div>
-        );
-    }
+    return (
+      <div style={{ display: 'inline-block' }}>
+        <button
+          className="btn btn-default btn-xs dropdown-toggle"
+          type="button"
+          id="dropdownMenu1"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="true"
+        >
+          <span className="glyphicon glyphicon-time" /> {sortValue} <span className="caret" />
+        </button>
+        <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
+          <li><Link to={`${url}hour`}>past hour</Link></li>
+          <li><Link to={`${url}day`}>past 24 hours</Link></li>
+          <li><Link to={`${url}month`}>past month</Link></li>
+          <li><Link to={`${url}year`}>past year</Link></li>
+          <li><Link to={`${url}all`}>all time</Link></li>
+        </ul>
+      </div>
+    );
+  }
 }
 
 SortTop.propTypes = {
-    target: PropTypes.string,
-    sort: PropTypes.string.isRequired,
-    sortTop: PropTypes.string.isRequired,
-    setSortTop: PropTypes.func.isRequired
+  listingFilter: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = (state) => {
-    return {
-        sort: state.listingsSort,
-        sortTop: state.listingsSortTop,
-        target: state.listingsTarget
-    };
+SortTop.defaultProps = {
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        setSortTop: (sortTop) => dispatch(listingsSortTop(sortTop)),
-    };
-};
+const mapStateToProps = state => ({
+  listingFilter: state.listingsFilter,
+});
+
+const mapDispatchToProps = dispatch => ({
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(SortTop);

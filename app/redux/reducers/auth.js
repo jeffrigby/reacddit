@@ -1,9 +1,11 @@
-export function authInfo(state = {}, action) {
-    switch (action.type) {
-        case 'AUTH_INFO':
-            return action.authInfo;
+const authInfo = (state = {}, action) => {
+  switch (action.type) {
+    case 'AUTH_INFO':
+      return action.authInfo;
 
-        default:
-            return state;
-    }
-}
+    default:
+      return state;
+  }
+};
+
+export default authInfo;

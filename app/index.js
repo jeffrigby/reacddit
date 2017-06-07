@@ -1,31 +1,36 @@
 import 'babel-polyfill';
 import React from 'react';
-import { render } from 'react-dom';
-import { browserHistory } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
+import ReactDOM from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
-import configureStore from './redux/store/configureStore';
-import Root from './containers/Root';
+import { Provider } from 'react-redux';
+import { ConnectedRouter } from 'react-router-redux';
+import createHistory from 'history/createBrowserHistory';
+import configureStore from './redux/configureStore';
 import './styles/main.scss';
+import Root from './containers/Root';
 
-const store = configureStore();
-const history = syncHistoryWithStore(browserHistory, store);
+// Create a history of your choosing (we're using a browser history in this case)
+const history = createHistory();
+const store = configureStore({}, history);
 
-render(
-    <AppContainer>
-        <Root store={store} history={history} />
-    </AppContainer>,
-    document.getElementById('root')
-);
+const render = (Component) => {
+  ReactDOM.render(
+    <Provider store={store}>
+      <ConnectedRouter history={history}>
+        <AppContainer>
+          <Component />
+        </AppContainer>
+      </ConnectedRouter>
+    </Provider>,
+    document.getElementById('root'),
+  );
+};
+
+render(Root);
 
 if (module.hot) {
-    module.hot.accept('./containers/Root', () => {
-        const NewRoot = require('./containers/Root').default;
-        render(
-            <AppContainer>
-                <NewRoot store={store} history={history} />
-            </AppContainer>,
-            document.getElementById('root')
-        );
-    });
+  module.hot.accept('./containers/Root', () => {
+    const NewRoot = require('./containers/Root').default;
+    render(NewRoot);
+  });
 }

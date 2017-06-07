@@ -1,5 +1,12 @@
-if (process.env.NODE_ENV === 'production') {
-    module.exports = require('./Root.prod');
-} else {
-    module.exports = require('./Root.dev');
-}
+import React from 'react';
+import DevTools from './DevTools';
+import App from '../components/App';
+
+const RouteTest = () => (
+  <div>
+    <App />
+    <DevTools />
+  </div>
+);
+
+export default RouteTest;
