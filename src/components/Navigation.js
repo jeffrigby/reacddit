@@ -1,9 +1,10 @@
 import React, { PropTypes } from 'react';
 import { NavLink } from 'react-router-dom';
-import cookie from 'react-cookie';
+import Cookies from 'universal-cookie';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { subredditsFetchData, subredditsFetchDefaultData, subredditsFilter } from '../redux/actions/subreddits';
+import { debugMode } from '../redux/actions/auth';
 import NavigationItem from './NavigationItem';
 import Common from '../common';
 
@@ -20,13 +21,16 @@ class Navigation extends React.Component {
 
   constructor(props) {
     super(props);
+    const cookies = new Cookies();
+    this.lastKeyPressed = null;
     this.randomSub = this.randomSub.bind(this);
     this.filterData = this.filterData.bind(this);
     this.handleNavHotkey = this.handleNavHotkey.bind(this);
     this.reloadSubredditsClick = this.reloadSubredditsClick.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
-    this.accessToken = cookie.load('accessToken');
-    this.redditUser = cookie.load('redditUser');
+    this.accessToken = cookies.get('accessToken');
+    this.redditUser = cookies.get('redditUser');
+    // const authInfo = this.props.fetchAuthInfo();
   }
 
   componentWillMount() {
@@ -64,16 +68,63 @@ class Navigation extends React.Component {
   }
 
   handleNavHotkey(event) {
+    const sort = (this.props.sort ? this.props.sort : 'hot');
+    console.log(event.charCode);
+
+    // {!filterText &&
+    // (<ul className="nav">
+    //   {!this.accessToken && (<li><div id="login"><a href="/api/reddit-login">Login</a> to view your subreddits.</div></li>)}
+    //   <li><div><NavLink to={`/r/mine/${sort}`} title="Show all subreddits" activeClassName="activeSubreddit">Front</NavLink></div></li>
+    //   <li><div><NavLink to={`/r/popular/${sort}`} title="Show popular posts">Popular</NavLink></div></li>
+    //   <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
+    //   {this.accessToken && (<li><div><NavLink to={`/r/friends/${sort}`} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</NavLink></div></li>)}
+    //   {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/submitted/${sort}`} title="Submitted" activeClassName="activeSubreddit">Submitted</NavLink></div></li>)}
+    //   {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/upvoted/${sort}`} title="Upvoted" activeClassName="activeSubreddit">Upvoted</NavLink></div></li>)}
+    //   {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/downvoted/${sort}`} title="Downvoted" activeClassName="activeSubreddit">Downvoted</NavLink></div></li>)}
+    //   {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/saved`} title="Saved" activeClassName="activeSubreddit">Saved</NavLink></div></li>)}
+    //
+    // </ul>)
+
+
+      // Navigation key commands
+    if (this.lastKeyPressed === 103) {
+      // Logged in only
+      if (this.redditUser) {
+        switch (event.charCode) {
+          case 102: // gf
+            this.props.push(`/r/friends/${sort}`);
+            break;
+          default:
+            break;
+        }
+      }
+
+      switch (event.charCode) {
+        case 104: // gh
+          this.props.push('/');
+          break;
+        case 112: // gp
+          this.props.push(`/r/popular/${sort}`);
+          break;
+        case 114: // gr
+          this.randomSubPush();
+          break;
+        default:
+          break;
+      }
+    }
+
     switch (event.charCode) {
+      case 206: // opt-shift-d
+        this.props.setDebug(!this.props.debug);
+        break;
       case 76: // shift-l
         this.reloadSubreddits();
-        break;
-      case 82: // shift-R
-        this.randomSubPush();
         break;
       default:
         break;
     }
+    this.lastKeyPressed = event.charCode;
   }
 
   clearSearch() {
@@ -152,7 +203,7 @@ class Navigation extends React.Component {
       return (
         <div id="subreddits">
           <div className="alert alert-info" id="subreddits-loading" role="alert">
-            <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" />            Getting subreddits.
+            <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" /> Getting subreddits.
           </div>
         </div>
       );
@@ -253,9 +304,14 @@ Navigation.propTypes = {
   hasErrored: PropTypes.bool.isRequired,
   isLoading: PropTypes.bool.isRequired,
   filter: PropTypes.string.isRequired,
+  // authInfo: PropTypes.object,
+  debug: PropTypes.bool.isRequired,
+  setDebug: PropTypes.func.isRequired,
+  // fetchAuthInfo: PropTypes.func.isRequired,
 };
 
 Navigation.defaultProps = {
+  // authInfo: {},
 };
 
 const mapStateToProps = state => ({
@@ -265,12 +321,16 @@ const mapStateToProps = state => ({
   hasErrored: state.subredditsHasErrored,
   isLoading: state.subredditsIsLoading,
   filter: state.subredditsFilter,
+  // authInfo: state.authInfo,
+  debug: state.debugMode,
 });
 
 const mapDispatchToProps = dispatch => ({
   fetchSubreddits: (auth, reload) => dispatch(subredditsFetchData(auth, reload)),
   fetchDefaultSubreddits: () => dispatch(subredditsFetchDefaultData()),
+  // fetchAuthInfo: () => dispatch(authInfoFetch()),
   setFilter: filterText => dispatch(subredditsFilter(filterText)),
+  setDebug: debug => dispatch(debugMode(debug)),
   // fetchLastUpdated: (subreddits, lastUpdated) => dispatch(subredditsFetchLastUpdated(subreddits, lastUpdated)),
   push: url => dispatch(push(url)),
 });

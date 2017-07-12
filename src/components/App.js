@@ -3,9 +3,6 @@ import { Route } from 'react-router-dom';
 import React from 'react';
 import Navigation from './Navigation';
 import Header from '../containers/Header';
-// import cookie from 'react-cookie';
-// import { BrowserRouter, Match } from 'react-router';
-
 import Entries from '../containers/Entries';
 // import RouteTest from '../components/RouteTest';
 
@@ -37,15 +34,3 @@ const App = () => (
 );
 
 export default App;
-
-// <Header params={this.props.params} query={this.props.location.query}
-// accessToken={accessToken} location={this.props.location} />
-// <Navigation params={this.props.params} query={this.props.location.query}
-// accessToken={accessToken} />
-// <Match path="/r/:target(/:sort)" component={Entries} />
-// <Match path="/user/:target/:userType(/:sort)" component={Entries} />
-// <Match path="/hot" component={Entries} />
-// <Match path="/new" component={Entries} />
-// <Match path="/top" component={Entries} />
-// <Match path="/controversial" component={Entries} />
-// <Match path="/rising" component={Entries} />

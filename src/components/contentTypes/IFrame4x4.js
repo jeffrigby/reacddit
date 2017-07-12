@@ -1,15 +1,15 @@
-import React, { PropTypes }  from 'react';
+import React, { PropTypes } from 'react';
 
-const IFrame4x4 = ({ content, preload }) => {
-    const src = preload ? content.src : 'about:blank';
-    return (<div className="embed-container">
-        <iframe src={src} scrolling="no" className="iframe_4x4" allowFullScreen></iframe>
-    </div>);
+const IFrame4x4 = ({ content, load }) => {
+  const src = load ? content.src : 'about:blank';
+  return (<div className="embed-container">
+    <iframe src={src} scrolling="no" className="iframe_4x4" allowFullScreen />
+  </div>);
 };
 
 IFrame4x4.propTypes = {
-    content: PropTypes.object,
-    preload: PropTypes.bool
+  content: PropTypes.object.isRequired,
+  load: PropTypes.bool.isRequired,
 };
 
 export default IFrame4x4;

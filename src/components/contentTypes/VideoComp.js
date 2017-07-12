@@ -1,52 +1,57 @@
-import React, { PropTypes }  from 'react';
-import Video from 'react-html5video';
+import React, { PropTypes } from 'react';
+// import Video from 'react-html5video';
 
-const VideoComp = ({ content, preload }) => {
-    // limit the height of images
-    const maxHeight = 650;
-    if (content.height > maxHeight) {
-        content.width = (content.width * maxHeight) / content.height;
-        content.height = maxHeight;
-    }
+const VideoComp = ({ content, load }) => {
+  const contentRender = content;
 
-    const width = content.height > 800 ? ((content.width * 800) / content.height) : content.width;
-    const contStyle = {width: width + 'px'};
-    const ratio = (content.height / content.width) * 100;
-    const ratioStyle = {paddingBottom: ratio + '%'};
-    const videoId = 'video-' + content.id;
-    let video;
-    if (preload === true) {
-        video = (
-            <Video
-                autoPlay
-                loop
-                muted
-                id={videoId}
-                key={videoId}
-                poster={content.thumb}
-                className="loaded embed-responsive-item preload">
-                <source id="webmsource" src={content.webm} type="video/webm"></source>
-                <source id="mp4source" src={content.mp4} type="video/mp4"></source>
-            </Video>
-        );
-    } else {
-        video = (
-            <img src={content.thumb} className="embed-responsive-item" />
-        );
-    }
+  // limit the height of video
+  const maxHeight = 650;
+  if (contentRender.height > maxHeight) {
+    contentRender.width = (contentRender.width * maxHeight) / contentRender.height;
+    contentRender.height = maxHeight;
+  }
 
-    return (<div className="ratio-bg">
-        <div style={contStyle} className="ratio-container">
-            <div style={ratioStyle} className="ratio embed-responsive">
-                {video}
-            </div>
-        </div>
-    </div>);
+  const width = contentRender.height > 800 ? ((contentRender.width * 800) / contentRender.height) : contentRender.width;
+  const contStyle = { width: `${width}px` };
+  const ratio = (contentRender.height / contentRender.width) * 100;
+  const ratioStyle = { paddingBottom: `${ratio}%` };
+  const videoId = `video-${contentRender.id}`;
+
+  // load = false;
+  let video;
+  if (load === true) {
+    video = (
+      <video
+        autoPlay
+        loop
+        muted
+        id={videoId}
+        key={videoId}
+        poster={contentRender.thumb}
+        className="loaded embed-responsive-item preload"
+      >
+        <source id="webmsource" src={contentRender.webm} type="video/webm" />
+        <source id="mp4source" src={contentRender.mp4} type="video/mp4" />
+      </video>
+    );
+  } else {
+    video = (
+      <img src={contentRender.thumb} className="embed-responsive-item" alt={contentRender.id} />
+    );
+  }
+
+  return (<div className="ratio-bg">
+    <div style={contStyle} className="ratio-container">
+      <div style={ratioStyle} className="ratio embed-responsive">
+        {video}
+      </div>
+    </div>
+  </div>);
 };
 
 VideoComp.propTypes = {
-    content: PropTypes.object,
-    preload: PropTypes.bool
+  content: PropTypes.object.isRequired,
+  load: PropTypes.bool.isRequired,
 };
 
 export default VideoComp;
