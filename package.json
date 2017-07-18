@@ -6,7 +6,7 @@
   "scripts": {
     "test": "",
     "start": "node server",
-    "build": "rimraf dist && node_modules/webpack/bin/webpack.js --config ./webpack.production.config.js --progress --profile --colors"
+    "build": "rimraf dist && node_modules/webpack/bin/webpack.js --config ./webpack.config.prod.js --progress --profile --colors"
   },
   "keywords": [
     "es6",
@@ -58,6 +58,7 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^5.0.3",
     "eslint-plugin-react": "^7.0.1",
+    "extract-text-webpack-plugin": "^2.1.2",
     "fsevents": "^1.1.2",
     "html-webpack-plugin": "^2.29.0",
     "koa-webpack-middleware": "^1.0.5",

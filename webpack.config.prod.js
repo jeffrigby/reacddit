@@ -7,19 +7,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 module.exports = {
   devtool: 'inline-source-map',
   entry: [
-    'react-hot-loader/patch',
-    // activate HMR for React
-
-    'webpack-dev-server/client?http://localhost:3000',
-    // bundle the client for webpack-dev-server
-    // and connect to the provided endpoint
-
-    'webpack/hot/only-dev-server',
-    // bundle the client for hot reloading
-    // only- means to only hot reload for successful updates
-
     path.join(__dirname, 'src/index.js'),
-    // the entry point of our app
   ],
   output: {
     path: path.join(__dirname, '/dist/'),
@@ -27,26 +15,24 @@ module.exports = {
     publicPath: '/',
   },
   context: path.join(__dirname, 'src'),
-  devServer: {
-    // This is required for older versions of webpack-dev-server
-    // if you use absolute 'to' paths. The path should be an
-    // absolute path to your build destination.
-    outputPath: path.join(__dirname, 'dist'),
-  },
   plugins: [
     new HtmlWebpackPlugin({
       template: 'index.tpl.html',
       inject: 'body',
       filename: 'index.html',
     }),
-    new webpack.optimize.OccurrenceOrderPlugin(),
+    new webpack.optimize.UglifyJsPlugin({
+      compressor: {
+        warnings: false,
+        screw_ie8: true,
+      },
+    }),
     new CopyWebpackPlugin([
       { from: 'images', to: 'images' },
     ]),
-    new webpack.HotModuleReplacementPlugin(),
     new ExtractTextPlugin('styles.css'),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('development'),
+      'process.env.NODE_ENV': JSON.stringify('production'),
     }),
   ],
   module: {
