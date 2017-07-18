@@ -27,23 +27,3 @@ export function listingsStatus(state = 'unloaded', action) {
       return state;
   }
 }
-
-export function listingsFocus(state = '', action) {
-  switch (action.type) {
-    case 'LISTINGS_FOCUS':
-      return action.focused;
-
-    default:
-      return state;
-  }
-}
-
-export function listingsVisible(state = [], action) {
-  switch (action.type) {
-    case 'LISTINGS_VISIBLE':
-      return action.visible;
-
-    default:
-      return state;
-  }
-}

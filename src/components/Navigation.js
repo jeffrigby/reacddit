@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import { connect } from 'react-redux';
@@ -7,9 +8,6 @@ import { subredditsFetchData, subredditsFetchDefaultData, subredditsFilter } fro
 import { debugMode } from '../redux/actions/auth';
 import NavigationItem from './NavigationItem';
 import Common from '../common';
-
-// require('es6-promise').polyfill();
-// require('isomorphic-fetch');
 
 class Navigation extends React.Component {
   static resizeNavigation() {
@@ -69,22 +67,6 @@ class Navigation extends React.Component {
 
   handleNavHotkey(event) {
     const sort = (this.props.sort ? this.props.sort : 'hot');
-    console.log(event.charCode);
-
-    // {!filterText &&
-    // (<ul className="nav">
-    //   {!this.accessToken && (<li><div id="login"><a href="/api/reddit-login">Login</a> to view your subreddits.</div></li>)}
-    //   <li><div><NavLink to={`/r/mine/${sort}`} title="Show all subreddits" activeClassName="activeSubreddit">Front</NavLink></div></li>
-    //   <li><div><NavLink to={`/r/popular/${sort}`} title="Show popular posts">Popular</NavLink></div></li>
-    //   <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
-    //   {this.accessToken && (<li><div><NavLink to={`/r/friends/${sort}`} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</NavLink></div></li>)}
-    //   {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/submitted/${sort}`} title="Submitted" activeClassName="activeSubreddit">Submitted</NavLink></div></li>)}
-    //   {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/upvoted/${sort}`} title="Upvoted" activeClassName="activeSubreddit">Upvoted</NavLink></div></li>)}
-    //   {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/downvoted/${sort}`} title="Downvoted" activeClassName="activeSubreddit">Downvoted</NavLink></div></li>)}
-    //   {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/saved`} title="Saved" activeClassName="activeSubreddit">Saved</NavLink></div></li>)}
-    //
-    // </ul>)
-
 
       // Navigation key commands
     if (this.lastKeyPressed === 103) {
@@ -93,6 +75,18 @@ class Navigation extends React.Component {
         switch (event.charCode) {
           case 102: // gf
             this.props.push(`/r/friends/${sort}`);
+            break;
+          case 117: // gu
+            this.props.push(`/user/${this.redditUser}/upvoted/${sort}`);
+            break;
+          case 100: // gd
+            this.props.push(`/user/${this.redditUser}/downvoted/${sort}`);
+            break;
+          case 98: // gb
+            this.props.push(`/user/${this.redditUser}/submitted/${sort}`);
+            break;
+          case 115: // gs
+            this.props.push(`/user/${this.redditUser}/saved`);
             break;
           default:
             break;
@@ -118,7 +112,7 @@ class Navigation extends React.Component {
       case 206: // opt-shift-d
         this.props.setDebug(!this.props.debug);
         break;
-      case 76: // shift-l
+      case 82: // shift-R
         this.reloadSubreddits();
         break;
       default:

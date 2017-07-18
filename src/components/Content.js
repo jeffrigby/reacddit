@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import IFrame16x9 from './contentTypes/IFrame16x9';
@@ -9,8 +10,7 @@ import Thumb from './contentTypes/Thumb';
 import Self from './contentTypes/Self';
 import ImgurAlbum from './contentTypes/ImgurAlbum';
 
-const Content = ({ content, name, listingsVisible }) => {
-  const load = listingsVisible.includes(name);
+const Content = ({ content, name, load }) => {
   let contentRendered = '';
   if (content.type) {
     switch (content.type) {
@@ -51,7 +51,7 @@ const Content = ({ content, name, listingsVisible }) => {
 Content.propTypes = {
   content: PropTypes.object.isRequired,
   name: PropTypes.string.isRequired,
-  listingsVisible: PropTypes.array.isRequired, // eslint-disable-line react/no-unused-prop-types
+  load: PropTypes.bool.isRequired,
 };
 
 Content.defaultProps = {
@@ -59,7 +59,6 @@ Content.defaultProps = {
 };
 
 const mapStateToProps = (state, ownProps) => ({
-  listingsVisible: state.listingsVisible,
 });
 
 const mapDispatchToProps = dispatch => ({

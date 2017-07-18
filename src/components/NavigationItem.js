@@ -1,8 +1,8 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import Common from '../common';
-// import { subredditsCurrent } from '../redux/actions/subreddits';
 
 class NavigationItem extends React.Component {
   static lastUpdatedDiff(lastUpdated) {
@@ -34,7 +34,10 @@ class NavigationItem extends React.Component {
   }
 
   render() {
-    const sort = this.props.sort ? this.props.sort : '';
+    let sort = this.props.sort ? this.props.sort : '';
+    if (sort === 'top') {
+      sort = `${sort}?t=${this.props.sortTop}`;
+    }
     const href = `${Common.stripTrailingSlash(this.props.item.url)}/${sort}`;
     const classNameStr = this.getDiffClassName();
     const subLabel = (classNameStr === 'sub-new' ? <span className="label label-success">New</span> : null);
@@ -56,16 +59,19 @@ class NavigationItem extends React.Component {
 NavigationItem.propTypes = {
   item: PropTypes.object.isRequired,
   sort: PropTypes.string.isRequired,
+  sortTop: PropTypes.string,
   lastUpdated: PropTypes.number,
 };
 
 NavigationItem.defaultProps = {
   lastUpdated: 0,
+  sortTop: '',
 };
 
 
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
+  sortTop: state.listingsFilter.sortTop,
 });
 
 const mapDispatchToProps = dispatch => ({

@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 // import Video from 'react-html5video';
 
 const VideoComp = ({ content, load }) => {
@@ -35,8 +36,9 @@ const VideoComp = ({ content, load }) => {
       </video>
     );
   } else {
+    // replace with thumb if loading is too slow.
     video = (
-      <img src={contentRender.thumb} className="embed-responsive-item" alt={contentRender.id} />
+      <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" className="embed-responsive-item" alt={contentRender.id} />
     );
   }
 

@@ -1,10 +1,11 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { isEqual } from 'lodash';
 import * as listings from '../redux/actions/listings';
 import Entry from '../components/Entry';
 
 const queryString = require('query-string');
-const VisibilitySensor = require('react-visibility-sensor');
 
 class Entries extends React.Component {
   static nextEntry() {
@@ -66,92 +67,8 @@ class Entries extends React.Component {
     }
   }
 
-  constructor(props) {
-    super(props);
-    this.loadMore = this.loadMore.bind(this);
-    this.monitorEntriesInterval = null;
-    this.scrollResize = true;
-    this.scrollResizeStop = false;
-    this.monitorEntries = this.monitorEntries.bind(this);
-    // this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
-  }
-
-  componentDidMount() {
-    jQuery(document).keypress(Entries.handleEntriesHotkey);
-    this.setRedux(this.props.match, this.props.location);
-    jQuery(window).on('load resize scroll', () => { this.scrollResize = true; });
-    this.monitorEntriesInterval = setInterval(this.monitorEntries, 500);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setRedux(nextProps.match, nextProps.location);
-  }
-
-  shouldComponentUpdate(nextProps) {
-    if (JSON.stringify(nextProps.listingsFilter) !== JSON.stringify(this.props.listingsFilter)) {
-      return true;
-    }
-    if (this.props.listingsStatus !== nextProps.listingsStatus) {
-      return true;
-    }
-
-    // if (this.props.listingsVisible !== nextProps.listingsVisible) {
-    //   return true;
-    // }
-
-    if (this.props.entries !== nextProps.entries) {
-      return true;
-    }
-
-    if (this.props.debug !== nextProps.debug) {
-      return true;
-    }
-
-    return false;
-  }
-
-  componentDidUpdate(prevProps) {
-    if (JSON.stringify(prevProps.listingsFilter) !== JSON.stringify(this.props.listingsFilter)) {
-      this.props.getEntries(this.props.listingsFilter);
-    }
-  }
-
-  setRedux(match, location) {
+  static createEntriesUrl(filter) {
     const qs = queryString.parse(location.search);
-    const sort = match.params.sort || 'hot';
-    const sortTop = qs.t || 'day';
-    const target = match.params.target || 'mine';
-    const before = qs.before || '';
-    const after = qs.after || '';
-    const limit = qs.limit || '20';
-    const userType = match.params.userType || '';
-    let listType = match.params.listType || 'r';
-    if (listType === 'user') listType = 'u';
-    const url = this.getEntriesUrl();
-
-    const listingsFilter = this.props.listingsFilter;
-    const newListingsFilter = {
-      listType,
-      sort,
-      sortTop,
-      target,
-      before,
-      after,
-      limit,
-      userType,
-      url,
-    };
-
-    if (JSON.stringify(listingsFilter) !== JSON.stringify(newListingsFilter)) {
-      this.props.setFilter(newListingsFilter);
-      // console.log('called');
-      // this.props.getEntries(newListingsFilter, this.props.location.search);
-    }
-  }
-
-  getEntriesUrl() {
-    const qs = queryString.parse(location.search);
-    const filter = this.props.listingsFilter;
 
     if (!filter.target || !filter.sort) {
       return null;
@@ -170,9 +87,14 @@ class Entries extends React.Component {
       }
     }
 
-    if (!qs.limit) {
-      qs.limit = '20';
+    // Reset the default query strings
+    qs.limit = filter.limit;
+    qs.before = filter.before;
+    qs.after = filter.after;
+    if (filter.sort === 'top') {
+      qs.t = filter.sortTop;
     }
+    Object.keys(qs).forEach(key => (!qs[key]) && delete qs[key]);
 
     const qsStr = `?${queryString.stringify(qs)}`;
 
@@ -182,14 +104,97 @@ class Entries extends React.Component {
     return url;
   }
 
-  loadMore(isVisible) {
-    if (isVisible) {
-      const loadedStatus = this.props.listingsStatus;
-      if (loadedStatus === 'loaded') {
-        this.props.getMoreEntries();
-      }
+  constructor(props) {
+    super(props);
+    this.monitorEntriesInterval = null;
+    this.scrollResize = true;
+    this.scrollResizeStop = true;
+    this.initTriggered = null;
+    this.monitorEntries = this.monitorEntries.bind(this);
+    this.state = {
+      focused: null,
+      visible: [],
+    };
+    // this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
+  }
+
+  componentDidMount() {
+    this.scrollResizeStop = false;
+    jQuery(document).keypress(Entries.handleEntriesHotkey);
+    this.setRedux(this.props.match, this.props.location);
+    jQuery(window).on('load resize scroll', () => { this.scrollResize = true; });
+    this.monitorEntriesInterval = setInterval(this.monitorEntries, 500);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const matchCompare = isEqual(nextProps.match, this.props.match);
+    const locationCompare = isEqual(nextProps.location, this.props.location);
+    if (!matchCompare || !locationCompare) {
+      this.setRedux(nextProps.match, nextProps.location);
     }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (!isEqual(nextProps.listingsFilter, this.props.listingsFilter)) {
+      return true;
+    }
+    if (this.props.listingsStatus !== nextProps.listingsStatus) {
+      return true;
+    }
+
+    if (this.props.entries !== nextProps.entries) {
+      return true;
+    }
+
+    if (this.props.debug !== nextProps.debug) {
+      return true;
+    }
+
+    if (this.state.focused !== nextState.focused) {
+      return true;
+    }
+
+    if (!isEqual(this.state.visible, nextState.visible)) {
+      return true;
+    }
+
     return false;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!isEqual(prevProps.listingsFilter, this.props.listingsFilter)) {
+      this.props.getEntries(this.props.listingsFilter);
+    }
+  }
+
+  componentWillUnmount() {
+    this.scrollResizeStop = true;
+  }
+
+  setRedux(match, location) {
+    const qs = queryString.parse(location.search);
+
+    let listType = match.params.listType || 'r';
+    if (listType === 'user') listType = 'u';
+
+    const newListingsFilter = {
+      sort: match.params.sort || 'hot',
+      sortTop: qs.t || 'day',
+      target: match.params.target || 'mine',
+      before: qs.before || '',
+      after: qs.after || '',
+      limit: qs.limit || '20',
+      userType: match.params.userType || '',
+      listType,
+    };
+
+    newListingsFilter.url = Entries.createEntriesUrl(newListingsFilter);
+
+    const listingsFilter = this.props.listingsFilter;
+
+    if (!isEqual(listingsFilter, newListingsFilter)) {
+      this.props.setFilter(newListingsFilter);
+    }
   }
 
   monitorEntries() {
@@ -201,21 +206,21 @@ class Entries extends React.Component {
       const visibleContent = [];
       let visibleItr = 'looking';
       let newVisible = false;
-      const currentVisible = this.props.listingsVisible;
+      let newFocuseId = null;
       jQuery.each(entries, (idx, entry) => {
-        const inFocus = Entries.isInViewport(entry, -50);
-        const visible = Entries.isInViewport(entry, 500);
-        if (inFocus && focused === 0) {
-          if (this.props.listingsFocused !== entry.id) {
-            this.props.setFocus(entry.id);
+        if (focused === 0) {
+          const inFocus = Entries.isInViewport(entry, -50);
+          if (inFocus) {
+            newFocuseId = entry.id;
+            focused = 1;
           }
-          focused = 1;
         }
+        const visible = Entries.isInViewport(entry, 500);
 
         if (visible) {
           visibleItr = 'visible';
           visibleContent.push(entry.id);
-          if (!currentVisible.includes(entry.id) && !newVisible) {
+          if (!newVisible) {
             newVisible = true;
           }
         }
@@ -228,15 +233,23 @@ class Entries extends React.Component {
         return true;
       });
 
-      if (newVisible || (currentVisible.length !== currentVisible.length)) {
-        this.props.setVisible(visibleContent);
-      }
+      this.setState({
+        focused: newFocuseId,
+        visible: visibleContent,
+      });
+
+      this.checkLoadMore();
+    }
+  }
+
+  checkLoadMore() {
+    const loadedStatus = this.props.listingsStatus;
+    if (loadedStatus === 'loaded' && jQuery(window).scrollTop() + jQuery(window).height() > jQuery(document).height() - 2500) {
+      this.props.getMoreEntries();
     }
   }
 
   render() {
-    const jsonUrl = this.getEntriesUrl();
-
     if (this.props.listingsStatus === 'unloaded' || this.props.listingsStatus === 'loading') {
       return (
         <div className="alert alert-info" id="content-loading" role="alert">
@@ -278,15 +291,29 @@ class Entries extends React.Component {
 
     let entries = '';
     const entriesObject = this.props.listingsEntries.entries;
+    let focused = '';
+    let visible = {};
+    if (this.props.listingsEntries.type === 'init' && this.props.listingsEntries.requestUrl !== this.initTriggered) {
+      focused = this.props.listingsEntries.preload.focus;
+      visible = this.props.listingsEntries.preload.visible;
+      this.initTriggered = this.props.listingsEntries.requestUrl;
+    } else {
+      focused = this.state.focused;
+      visible = this.state.visible;
+    }
     const entriesKeys = Object.keys(entriesObject);
     if (entriesKeys.length > 0) {
-      entries = entriesKeys.map(key =>
-        <Entry
+      entries = entriesKeys.map((key) => {
+        const isFocused = focused === entriesObject[key].name;
+        const isVisible = visible.includes(entriesObject[key].name);
+        return (<Entry
           entry={entriesObject[key]}
           key={entriesObject[key].id}
           loaded={entriesObject[key].loaded}
-        />,
-      );
+          focused={isFocused}
+          visible={isVisible}
+        />);
+      });
     }
 
     return (
@@ -298,7 +325,7 @@ class Entries extends React.Component {
             Sort: {this.props.listingsFilter.sort}<br />
             SortTop: {this.props.listingsFilter.sortTop}<br />
             Type: {this.props.listingsFilter.listType}<br />
-            URL: {jsonUrl}
+            URL: {this.props.listingsFilter.url}
           </pre>
         </div>
         }
@@ -306,7 +333,6 @@ class Entries extends React.Component {
         <div className="footer-status">
           {footerStatus}
         </div>
-        <VisibilitySensor onChange={this.loadMore} />
       </div>
     );
   }
@@ -316,22 +342,18 @@ Entries.propTypes = {
   match: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   location: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   setFilter: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  setFocus: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  setVisible: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
+  setStatus: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   getEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   getMoreEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsEntries: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsFilter: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsStatus: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
-  listingsFocused: PropTypes.string, // eslint-disable-line react/no-unused-prop-types
-  listingsVisible: PropTypes.array.isRequired, // eslint-disable-line react/no-unused-prop-types
   entries: PropTypes.object,
   debug: PropTypes.bool,
 };
 
 Entries.defaultProps = {
   entries: {},
-  listingsFocused: null,
   debug: false,
 };
 
@@ -339,16 +361,13 @@ const mapStateToProps = (state, ownProps) => ({
   listingsFilter: state.listingsFilter,
   listingsEntries: state.listingsEntries,
   listingsStatus: state.listingsStatus,
-  listingsFocused: state.listingsFocused,
-  listingsVisible: state.listingsVisible,
   entries: state.listingsEntries.entries,
   debug: state.debugMode,
 });
 
 const mapDispatchToProps = dispatch => ({
   setFilter: filter => dispatch(listings.listingsFilter(filter)),
-  setFocus: focused => dispatch(listings.listingsFocus(focused)),
-  setVisible: visible => dispatch(listings.listingsVisible(visible)),
+  setStatus: status => dispatch(listings.listingsStatus(status)),
   getEntries: (filter, query) => dispatch(listings.listingsFetch(filter, query)),
   getMoreEntries: () => dispatch(listings.listingsFetchNext()),
 });

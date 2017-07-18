@@ -1,11 +1,8 @@
-// import React, { PropTypes } from 'react';
 import { Route } from 'react-router-dom';
 import React from 'react';
 import Navigation from './Navigation';
 import Header from '../containers/Header';
 import Entries from '../containers/Entries';
-// import RouteTest from '../components/RouteTest';
-
 
 const App = () => (
   <div>

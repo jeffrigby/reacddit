@@ -24,24 +24,9 @@ export function listingsStatus(listingStatus) {
   };
 }
 
-export function listingsFocus(focused) {
-  return {
-    type: 'LISTINGS_FOCUS',
-    focused,
-  };
-}
-
-export function listingsVisible(visible) {
-  return {
-    type: 'LISTINGS_VISIBLE',
-    visible,
-  };
-}
-
 export function listingsFetchEntries(url) {
   return (dispatch) => {
     dispatch(listingsStatus('loading'));
-    dispatch(listingsFocus(null));
     fetch(url, { credentials: 'same-origin' })
       .then((response) => {
         if (!response.ok) {
@@ -51,19 +36,23 @@ export function listingsFetchEntries(url) {
       })
       .then(response => response.json())
       .then((json) => {
-        const data = Object.assign({}, json, { requestUrl: url });
-        dispatch(listingsEntries(data));
-        return json;
-      })
-      .then((json) => {
         // if (json.entries.length) {
         const entryKeys = Object.keys(json.entries);
-        if (entryKeys[0]) {
-          dispatch(listingsFocus(entryKeys[0]));
-          // get first three items to preload
-          const visible = entryKeys.slice(0, 5);
-          dispatch(listingsVisible(visible));
-        }
+        const newJson = update(json, {
+          preload: { $set: {
+            focus: entryKeys[0],
+            visible: entryKeys.slice(0, 5),
+          } },
+        });
+        return newJson;
+      })
+      .then((json) => {
+        // Replace an empty array
+        const data = update(json, {
+          requestUrl: { $set: url },
+          type: { $set: 'init' },
+        });
+        dispatch(listingsEntries(data));
         return json;
       })
       .then((json) => {
@@ -95,6 +84,7 @@ export function listingsFetchNext() {
         const newListings = update(currentState.listingsEntries, {
           after: { $set: json.after },
           entries: { $merge: json.entries },
+          type: { $set: 'more' },
         });
         dispatch(listingsEntries(newListings));
         return json;

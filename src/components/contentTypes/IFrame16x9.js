@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 
 const IFrame16x9 = ({ content, load }) => {
   const src = load ? content.src : 'about:blank';

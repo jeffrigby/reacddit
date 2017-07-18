@@ -1,9 +1,11 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import Content from '../Content';
 
 const Self = ({ content, load, name }) => {
   let rawhtml = content.html;
   rawhtml = rawhtml.replace(/<a\s+href=/gi, '<a target="_blank" href=');
+  // eslint-disable-next-line react/no-danger
   const html = <div dangerouslySetInnerHTML={{ __html: rawhtml }} />;
   let inlineRendered;
   if (content.inline.length > 0) {

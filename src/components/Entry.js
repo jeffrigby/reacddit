@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import TimeAgo from '@jshimko/react-time-ago';
@@ -25,7 +26,10 @@ class Entry extends React.Component {
     if (this.props.entry !== nextProps.entry) {
       return true;
     }
-    if (this.props.listingsFocus !== nextProps.listingsFocus) {
+    if (this.props.focused !== nextProps.focused) {
+      return true;
+    }
+    if (this.props.visible !== nextProps.visible) {
       return true;
     }
     return false;
@@ -36,8 +40,8 @@ class Entry extends React.Component {
     const timeago = entry.created_raw * 1000;
     const subUrl = `/r/${entry.subreddit}`;
     const contentObj = typeof entry.content === 'object' ? entry.content : {};
-    const classes = this.props.listingsFocus === entry.name ? 'entry list-group-item focused' : 'entry list-group-item';
-    const content = <Content content={contentObj} name={entry.name} />;
+    const classes = this.props.focused ? 'entry list-group-item focused' : 'entry list-group-item';
+    const content = <Content content={contentObj} name={entry.name} load={this.props.visible} />;
     const authorFlair = entry.author_flair_text ? <span className="badge">{entry.author_flair_text}</span> : null;
     const linkFlair = entry.link_flair_text ? <span className="label label-default">{entry.link_flair_text}</span> : null;
     const debugString = process.env.NODE_ENV === 'development' && this.props.debug ? <div className="debug"><pre>{JSON.stringify(entry, null, '\t')}</pre></div> : '';
@@ -86,8 +90,10 @@ class Entry extends React.Component {
 Entry.propTypes = {
   entry: PropTypes.object.isRequired,
   listingFilter: PropTypes.object.isRequired,
-  listingsFocus: PropTypes.string.isRequired,
+  // listingsFocus: PropTypes.string.isRequired,
   debug: PropTypes.bool.isRequired,
+  focused: PropTypes.bool.isRequired,
+  visible: PropTypes.bool.isRequired,
   // listingEntries: PropTypes.object.isRequired,
   // push: PropTypes.func.isRequired,
   // authInfo: PropTypes.object,
@@ -95,12 +101,12 @@ Entry.propTypes = {
 
 Entry.defaultProps = {
   authInfo: {},
-  listingsFocus: null,
+  // listingsFocus: null,
 };
 
 const mapStateToProps = state => ({
   listingFilter: state.listingsFilter,
-  listingsFocus: state.listingsFocus,
+  // listingsFocus: state.listingsFocus,
   debug: state.debugMode,
   // authInfo: state.authInfo,
 });
