@@ -3,16 +3,11 @@ import Promise from 'es6-promise';
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
-export function subredditsHasErrored(bool) {
+export function subredditsStatus(status, message) {
   return {
-    type: 'SUBREDDITS_HAS_ERRORED',
-    hasErrored: bool,
-  };
-}
-export function subredditsIsLoading(bool) {
-  return {
-    type: 'SUBREDDITS_IS_LOADING',
-    isLoading: bool,
+    type: 'SUBREDDITS_STATUS',
+    status,
+    message,
   };
 }
 
@@ -20,20 +15,6 @@ export function subredditsFetchDataSuccess(subreddits) {
   return {
     type: 'SUBREDDITS_FETCH_DATA_SUCCESS',
     subreddits,
-  };
-}
-
-export function subredditsFilter(filter) {
-  return {
-    type: 'SUBREDDITS_FILTER',
-    filter,
-  };
-}
-
-export function subredditsCurrent(subreddit) {
-  return {
-    type: 'SUBREDDITS_CURRENT_SUBREDDIT',
-    subreddit,
   };
 }
 
@@ -99,13 +80,13 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
 export function subredditsFetchDefaultData() {
   const url = 'https://www.reddit.com/subreddits/default.json?limit=100';
   return (dispatch) => {
-    dispatch(subredditsIsLoading(true));
+    dispatch(subredditsStatus('loading'));
     fetch(url)
             .then((response) => {
               if (!response.ok) {
                 throw Error(response.statusText);
               }
-              dispatch(subredditsIsLoading(false));
+              dispatch(subredditsStatus('loaded'));
               return response;
             })
             .then(response => response.json())
@@ -135,7 +116,9 @@ export function subredditsFetchDefaultData() {
               return subreddits;
             })
             .then(subreddits => dispatch(subredditsFetchLastUpdated(subreddits)))
-            .catch((e) => { dispatch(subredditsHasErrored(true)); });
+            .catch((e) => {
+              dispatch(subredditsStatus('error', e.toString()));
+            });
   };
 }
 
@@ -145,14 +128,14 @@ export function subredditsFetchData(reset) {
     if (reset === true) {
       url += '/true';
     }
-    dispatch(subredditsIsLoading(true));
+    dispatch(subredditsStatus('loading'));
 
     fetch(url, { credentials: 'same-origin' })
       .then((response) => {
         if (!response.ok) {
           throw Error(response.statusText);
         }
-        dispatch(subredditsIsLoading(false));
+        dispatch(subredditsStatus('loaded'));
         return response;
       })
       .then(response => response.json())
@@ -167,7 +150,9 @@ export function subredditsFetchData(reset) {
         return subredditsKey;
       })
       .then(subreddits => dispatch(subredditsFetchLastUpdated(subreddits)))
-      .catch(() => { dispatch(subredditsHasErrored(true)); });
+      .catch((e) => {
+        dispatch(subredditsStatus('error', e.toString()));
+      });
   };
 }
 

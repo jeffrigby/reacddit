@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { subredditsFetchData, subredditsFetchDefaultData, subredditsFilter } from '../redux/actions/subreddits';
+import { subredditsFetchData, subredditsFetchDefaultData } from '../redux/actions/subreddits';
 import { debugMode } from '../redux/actions/auth';
 import NavigationItem from './NavigationItem';
 import Common from '../common';
@@ -28,11 +28,9 @@ class Navigation extends React.Component {
     this.clearSearch = this.clearSearch.bind(this);
     this.accessToken = cookies.get('accessToken');
     this.redditUser = cookies.get('redditUser');
-    // const authInfo = this.props.fetchAuthInfo();
-  }
-
-  componentWillMount() {
-    this.intervals = [];
+    this.state = {
+      subredditsFilter: '',
+    };
   }
 
   componentDidMount() {
@@ -49,20 +47,12 @@ class Navigation extends React.Component {
     Navigation.resizeNavigation();
   }
 
-  componentWillUnmount() {
-    this.intervals.map(clearInterval);
-  }
-
-  setInterval(...args) {
-    this.intervals.push(setInterval(...args));
-  }
-
   filterData(item) {
     const queryText = item.target.value;
     if (!queryText) {
-      return this.props.setFilter('');
+      return this.setState({ subredditsFilter: '' });
     }
-    return this.props.setFilter(queryText);
+    return this.setState({ subredditsFilter: queryText });
   }
 
   handleNavHotkey(event) {
@@ -122,7 +112,7 @@ class Navigation extends React.Component {
   }
 
   clearSearch() {
-    this.props.setFilter('');
+    this.setState({ subredditsFilter: '' });
   }
 
   reloadSubreddits() {
@@ -143,7 +133,7 @@ class Navigation extends React.Component {
       return {};
     }
 
-    const filterText = this.props.filter.toLowerCase();
+    const filterText = this.state.subredditsFilter.toLowerCase();
     // No filter defined
     if (!filterText) {
       return subreddits;
@@ -193,7 +183,7 @@ class Navigation extends React.Component {
   render() {
     const subreddits = this.props.subreddits;
 
-    if (this.props.isLoading || Common.isEmpty(subreddits)) {
+    if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
       return (
         <div id="subreddits">
           <div className="alert alert-info" id="subreddits-loading" role="alert">
@@ -202,18 +192,17 @@ class Navigation extends React.Component {
         </div>
       );
     }
-
-    if (this.props.hasErrored) {
+    if (subreddits.status === 'error') {
       return (
-        <div className="alert alert-danger" id="subreddits-load-error" role="alert" style={{ display: 'none' }}>
-          <span className="glyphicon glyphicon glyphicon-alert" /> Error loading subreddits.
-          <a href="" onClick={this.reloadSubredditsClick}>Click here to try again.</a>
+        <div className="alert alert-danger small" id="subreddits-load-error" role="alert">
+          <span className="glyphicon glyphicon glyphicon-alert" /> Error loading subreddits<br />
+          <a href="" onClick={this.reloadSubredditsClick}>try again.</a>
         </div>
       );
     }
 
-    const filterText = this.props.filter;
-    const filteredSubreddits = this.filterSubreddits(subreddits);
+    const filterText = this.state.subredditsFilter;
+    const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
     const sort = this.props.sort ? this.props.sort : 'hot';
 
     let navItems;
@@ -290,42 +279,27 @@ Navigation.propTypes = {
   sort: PropTypes.string.isRequired,
   fetchSubreddits: PropTypes.func.isRequired,
   fetchDefaultSubreddits: PropTypes.func.isRequired,
-  // fetchLastUpdated: PropTypes.func.isRequired,
-  setFilter: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   subreddits: PropTypes.object.isRequired,
   lastUpdated: PropTypes.object.isRequired,
-  hasErrored: PropTypes.bool.isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  filter: PropTypes.string.isRequired,
-  // authInfo: PropTypes.object,
   debug: PropTypes.bool.isRequired,
   setDebug: PropTypes.func.isRequired,
-  // fetchAuthInfo: PropTypes.func.isRequired,
 };
 
 Navigation.defaultProps = {
-  // authInfo: {},
 };
 
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
   subreddits: state.subreddits,
   lastUpdated: state.lastUpdated,
-  hasErrored: state.subredditsHasErrored,
-  isLoading: state.subredditsIsLoading,
-  filter: state.subredditsFilter,
-  // authInfo: state.authInfo,
   debug: state.debugMode,
 });
 
 const mapDispatchToProps = dispatch => ({
   fetchSubreddits: (auth, reload) => dispatch(subredditsFetchData(auth, reload)),
   fetchDefaultSubreddits: () => dispatch(subredditsFetchDefaultData()),
-  // fetchAuthInfo: () => dispatch(authInfoFetch()),
-  setFilter: filterText => dispatch(subredditsFilter(filterText)),
   setDebug: debug => dispatch(debugMode(debug)),
-  // fetchLastUpdated: (subreddits, lastUpdated) => dispatch(subredditsFetchLastUpdated(subreddits, lastUpdated)),
   push: url => dispatch(push(url)),
 });
 
