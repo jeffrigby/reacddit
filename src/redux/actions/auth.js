@@ -8,6 +8,6 @@ export function debugMode(bool) {
 export function disableHotKeys(bool) {
   return {
     type: 'DISABLE_HOTKEYS',
-    debugMode: bool,
+    disableHotKeys: bool,
   };
 }

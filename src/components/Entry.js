@@ -9,9 +9,13 @@ import Content from './Content';
 // import Content from './Content';
 
 class Entry extends React.Component {
-  // constructor(props) {
-  //   super(props);
-  // }
+  constructor(props) {
+    super(props);
+    this.state = {
+      showDebug: false,
+    };
+    this.showDebug = this.showDebug.bind(this);
+  }
 
   shouldComponentUpdate(nextProps, nextState) {
     if (this.props.listingFilter.sort !== nextProps.listingFilter.sort) {
@@ -32,7 +36,15 @@ class Entry extends React.Component {
     if (this.props.visible !== nextProps.visible) {
       return true;
     }
+    if (this.state.showDebug !== nextState.showDebug) {
+      return true;
+    }
     return false;
+  }
+
+  showDebug(event) {
+    this.setState({ showDebug: true });
+    event.preventDefault();
   }
 
   render() {
@@ -44,7 +56,7 @@ class Entry extends React.Component {
     const content = <Content content={contentObj} name={entry.name} load={this.props.visible} />;
     const authorFlair = entry.author_flair_text ? <span className="badge">{entry.author_flair_text}</span> : null;
     const linkFlair = entry.link_flair_text ? <span className="label label-default">{entry.link_flair_text}</span> : null;
-    const debugString = process.env.NODE_ENV === 'development' && this.props.debug ? <div className="debug"><pre>{JSON.stringify(entry, null, '\t')}</pre></div> : '';
+    const debug = process.env.NODE_ENV === 'development' && this.props.debug;
     return (
       <div className={classes} key={entry.url_id} id={entry.name}>
         <div className="entry-interior">
@@ -67,9 +79,16 @@ class Entry extends React.Component {
                 comments <span className="badge">{entry.num_comments}</span>
                 </a>
               </span>
+              {debug && (
+                <span>
+                  <a href="#showDebug" onClick={this.showDebug}>Show Debug</a>
+                </span>
+                )}
             </small>
           </div>
-          {debugString}
+          {this.state.showDebug && (
+            <div className="debug"><pre>{JSON.stringify(entry, null, '\t')}</pre></div>
+          )}
         </div>
       </div>
     );

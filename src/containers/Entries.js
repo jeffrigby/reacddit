@@ -53,13 +53,13 @@ class Entries extends React.Component {
 
   static handleEntriesHotkey(event) {
     switch (event.charCode) {
-      case 106:
+      case 106: // j
         Entries.nextEntry();
         break;
-      case 107:
+      case 107: // k
         Entries.prevEntry();
         break;
-      case 71:
+      case 46: // .
         Entries.scrollToBottom();
         break;
       default:
@@ -239,6 +239,11 @@ class Entries extends React.Component {
       });
 
       this.checkLoadMore();
+    }
+
+    // Check if iframe is focused. If it is, unfocus it.
+    if (document.activeElement.tagName === 'IFRAME') {
+      window.focus();
     }
   }
 

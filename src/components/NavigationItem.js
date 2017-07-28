@@ -11,7 +11,7 @@ class NavigationItem extends React.Component {
   }
 
   getDiffClassName() {
-    let classNameStr;
+    let classNameStr = '';
     if (this.props.lastUpdated > 0) {
       const seconds = NavigationItem.lastUpdatedDiff(this.props.lastUpdated);
       const deadSecs = ((365 / 2) * 24 * 3600); // 6 months
@@ -30,17 +30,22 @@ class NavigationItem extends React.Component {
       }
     }
 
+    if (this.props.trigger) {
+      classNameStr += ' mark highlighted';
+    }
+
     return classNameStr;
   }
 
   render() {
     let sort = this.props.sort ? this.props.sort : '';
-    if (sort === 'top') {
+    if (sort === 'top' || sort === 'controversial') {
       sort = `${sort}?t=${this.props.sortTop}`;
     }
     const href = `${Common.stripTrailingSlash(this.props.item.url)}/${sort}`;
     const classNameStr = this.getDiffClassName();
-    const subLabel = (classNameStr === 'sub-new' ? <span className="label label-success">New</span> : null);
+    const subLabel = (classNameStr.indexOf('sub-new') !== -1 ? <span className="label label-success">New</span> : null);
+    const trigger = this.props.trigger ? '>' : '';
 
     return (
       <li>
@@ -49,7 +54,7 @@ class NavigationItem extends React.Component {
             to={href}
             title={this.props.item.public_description}
             activeClassName="activeSubreddit"
-          >{this.props.item.display_name}</NavLink> {subLabel}
+          >{trigger} {this.props.item.display_name}</NavLink> {subLabel}
         </div>
       </li>
     );
@@ -60,6 +65,7 @@ NavigationItem.propTypes = {
   item: PropTypes.object.isRequired,
   sort: PropTypes.string.isRequired,
   sortTop: PropTypes.string,
+  trigger: PropTypes.bool.isRequired,
   lastUpdated: PropTypes.number,
 };
 

@@ -135,7 +135,6 @@ export function subredditsFetchData(reset) {
         if (!response.ok) {
           throw Error(response.statusText);
         }
-        dispatch(subredditsStatus('loaded'));
         return response;
       })
       .then(response => response.json())

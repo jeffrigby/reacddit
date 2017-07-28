@@ -1,4 +1,4 @@
-export function listingsFilter(state = { sort: 'hot' }, action) {
+export function listingsFilter(state = { sort: 'hot', sortTop: 'day' }, action) {
   switch (action.type) {
     case 'LISTINGS_FILTER':
       return action.listFilter;

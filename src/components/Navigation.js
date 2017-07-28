@@ -4,10 +4,10 @@ import { NavLink } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import { isEmpty } from 'lodash';
 import { subredditsFetchData, subredditsFetchDefaultData } from '../redux/actions/subreddits';
-import { debugMode } from '../redux/actions/auth';
+import { debugMode, disableHotKeys } from '../redux/actions/auth';
 import NavigationItem from './NavigationItem';
-import Common from '../common';
 
 class Navigation extends React.Component {
   static resizeNavigation() {
@@ -20,21 +20,28 @@ class Navigation extends React.Component {
   constructor(props) {
     super(props);
     const cookies = new Cookies();
-    this.lastKeyPressed = null;
     this.randomSub = this.randomSub.bind(this);
     this.filterData = this.filterData.bind(this);
     this.handleNavHotkey = this.handleNavHotkey.bind(this);
+    this.handleNavHotkeyKeyDown = this.handleNavHotkeyKeyDown.bind(this);
     this.reloadSubredditsClick = this.reloadSubredditsClick.bind(this);
     this.clearSearch = this.clearSearch.bind(this);
+    this.enableHotkeys = this.enableHotkeys.bind(this);
+    this.disableHotkeys = this.disableHotkeys.bind(this);
     this.accessToken = cookies.get('accessToken');
     this.redditUser = cookies.get('redditUser');
+    this.lastKeyPressed = null;
+    this.filterActive = false;
+    this.subredditTarget = null;
     this.state = {
       subredditsFilter: '',
+      subredditTargetIdx: 0,
     };
   }
 
   componentDidMount() {
     jQuery(document).keypress(this.handleNavHotkey);
+    jQuery(document).keydown(this.handleNavHotkeyKeyDown);
     jQuery(window).on('load resize', Navigation.resizeNavigation);
     if (this.accessToken) {
       this.props.fetchSubreddits(true, false);
@@ -55,64 +62,152 @@ class Navigation extends React.Component {
     return this.setState({ subredditsFilter: queryText });
   }
 
+  handleNavHotkeyKeyDown(event) {
+    if (this.filterActive) {
+      // up down arrows move the navigation
+      const filter = jQuery('#subreddit-filter');
+      switch (event.key) {
+        case 'ArrowUp': {
+          const nextIdx = this.state.subredditTargetIdx - 1;
+          if (nextIdx >= 0) {
+            this.setState({
+              subredditTargetIdx: nextIdx,
+            });
+          }
+          event.preventDefault();
+          break;
+        }
+        case 'ArrowDown': {
+          const nextIdx = this.state.subredditTargetIdx + 1;
+          this.setState({
+            subredditTargetIdx: nextIdx,
+          });
+          event.preventDefault();
+          break;
+        }
+        case 'Enter':
+        case 'ArrowRight': {
+          this.props.push(this.subredditTarget);
+          filter.blur();
+          event.preventDefault();
+          break;
+        }
+        case 'Escape':
+          if (!filter.val()) {
+            filter.blur();
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
   handleNavHotkey(event) {
-    const sort = (this.props.sort ? this.props.sort : 'hot');
+    const pressedKey = event.key;
+
+    // Clear filter IDX
+    if (this.filterActive) {
+      this.setState({
+        subredditTargetIdx: 0,
+      });
+    }
+
+    if (!this.props.disableHotkeys) {
+      const sort = (this.props.sort ? this.props.sort : 'hot');
 
       // Navigation key commands
-    if (this.lastKeyPressed === 103) {
-      // Logged in only
-      if (this.redditUser) {
-        switch (event.charCode) {
-          case 102: // gf
-            this.props.push(`/r/friends/${sort}`);
+      if (this.lastKeyPressed === 'g') {
+        // Logged in only
+        if (this.redditUser) {
+          switch (pressedKey) {
+            case 'f':
+              this.props.push('/r/friends');
+              break;
+            case 'u':
+              this.props.push(`/user/${this.redditUser}/upvoted/${sort}`);
+              break;
+            case 'd':
+              this.props.push(`/user/${this.redditUser}/downvoted/${sort}`);
+              break;
+            case 'b':
+              this.props.push(`/user/${this.redditUser}/submitted/${sort}`);
+              break;
+            case 's':
+              this.props.push(`/user/${this.redditUser}/saved`);
+              break;
+            default:
+              break;
+          }
+        }
+
+        switch (pressedKey) {
+          case 'h':
+            this.props.push('/');
             break;
-          case 117: // gu
-            this.props.push(`/user/${this.redditUser}/upvoted/${sort}`);
+          case 'p':
+            this.props.push(`/r/popular/${sort}`);
             break;
-          case 100: // gd
-            this.props.push(`/user/${this.redditUser}/downvoted/${sort}`);
-            break;
-          case 98: // gb
-            this.props.push(`/user/${this.redditUser}/submitted/${sort}`);
-            break;
-          case 115: // gs
-            this.props.push(`/user/${this.redditUser}/saved`);
+          case 'r':
+            this.randomSubPush();
             break;
           default:
             break;
         }
       }
 
-      switch (event.charCode) {
-        case 104: // gh
-          this.props.push('/');
+      switch (pressedKey) {
+        case 'Î': // opt-shift-d
+          this.props.setDebug(!this.props.debug);
           break;
-        case 112: // gp
-          this.props.push(`/r/popular/${sort}`);
+        case '?':
+          jQuery('#hotkeys').modal();
           break;
-        case 114: // gr
-          this.randomSubPush();
+        case 'R': // shift-R
+          this.reloadSubreddits();
+          break;
+        case 'F':
+          jQuery('#subreddit-filter').focus();
+          this.setState({ subredditsFilter: '' });
+          event.preventDefault();
           break;
         default:
           break;
       }
-    }
 
-    switch (event.charCode) {
-      case 206: // opt-shift-d
-        this.props.setDebug(!this.props.debug);
-        break;
-      case 82: // shift-R
-        this.reloadSubreddits();
-        break;
-      default:
-        break;
+      // Not logged in globals
+      if (!this.redditUser) {
+        switch (pressedKey) {
+          case 'L': // shift-L
+            location.href = '/api/reddit-login';
+            break;
+          default:
+            break;
+        }
+      }
+
+
+      this.lastKeyPressed = pressedKey;
     }
-    this.lastKeyPressed = event.charCode;
   }
 
   clearSearch() {
     this.setState({ subredditsFilter: '' });
+  }
+
+  disableHotkeys() {
+    this.props.setDisableHotkeys(true);
+    this.filterActive = true;
+    this.subredditTarget = null;
+    this.setState({
+      subredditTargetIdx: 0,
+    });
+  }
+
+  enableHotkeys() {
+    this.props.setDisableHotkeys(false);
+    this.filterActive = false;
+    this.subredditTarget = null;
   }
 
   reloadSubreddits() {
@@ -129,7 +224,7 @@ class Navigation extends React.Component {
   }
 
   filterSubreddits(subreddits) {
-    if (Common.isEmpty(subreddits)) {
+    if (isEmpty(subreddits)) {
       return {};
     }
 
@@ -159,9 +254,18 @@ class Navigation extends React.Component {
       if (Object.prototype.hasOwnProperty.call(subreddits, key)) {
         const item = subreddits[key];
         const subLastUpdated = lastUpdated[item.name] ? lastUpdated[item.name] : 0;
-        navigationItems.push(<NavigationItem item={item} key={item.name} lastUpdated={subLastUpdated} />);
+        const trigger = this.state.subredditTargetIdx === index && (this.filterActive || !isEmpty(this.state.subredditsFilter));
+        if (trigger) {
+          let sort = this.props.sort ? this.props.sort : '';
+          if (sort === 'top') {
+            sort = `${sort}?t=${this.props.sortTop}`;
+          }
+          this.subredditTarget = `${item.url}${sort}`;
+        }
+        navigationItems.push(<NavigationItem item={item} key={item.name} lastUpdated={subLastUpdated} trigger={trigger} />);
       }
     });
+
     return navigationItems;
   }
 
@@ -171,13 +275,16 @@ class Navigation extends React.Component {
   }
 
   randomSubPush() {
-    const subreddits = this.props.subreddits;
+    const subreddits = this.props.subreddits.subreddits;
+    if (isEmpty(subreddits)) {
+      return false;
+    }
     const keys = Object.keys(subreddits);
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     const randomSubreddit = subreddits[randomKey];
     const url = randomSubreddit.url + (this.props.sort ? this.props.sort : 'hot');
     // @todo add the top sorting.
-    this.props.push(url);
+    return this.props.push(url);
   }
 
   render() {
@@ -203,17 +310,10 @@ class Navigation extends React.Component {
 
     const filterText = this.state.subredditsFilter;
     const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
+    const navItems = this.generateNavItems(filteredSubreddits);
     const sort = this.props.sort ? this.props.sort : 'hot';
-
-    let navItems;
-    let subredditsActive = 0;
-
-    if (!Common.isEmpty(filteredSubreddits)) {
-      navItems = this.generateNavItems(filteredSubreddits);
-      subredditsActive = 1;
-    }
-
-    const notFound = Common.isEmpty(navItems) ? 1 : 0;
+    const noItems = isEmpty(navItems);
+    const hideExtras = this.filterActive || (!this.filterActive && !isEmpty(filterText));
 
     return (
       <div id="subreddits">
@@ -223,6 +323,8 @@ class Navigation extends React.Component {
               type="search"
               className="form-control"
               onChange={this.filterData}
+              onFocus={this.disableHotkeys}
+              onBlur={this.enableHotkeys}
               placeholder="Filter Subreddits"
               id="subreddit-filter"
               value={filterText}
@@ -233,19 +335,18 @@ class Navigation extends React.Component {
             </button>
             )}
           </div>
-          <div className="subreddit-options">
-            <div className="checkbox">
-              <input type="checkbox" id="subreddit-filter-only-new" />
-              <label htmlFor="subreddit-filter-only-new">Show only new</label>
+
+          {noItems && (
+            <div>
+              <div className="nav-divider" />
+              <div className="alert alert-info" id="subreddits-end" role="alert">
+                <span className="glyphicon glyphicon-info-sign" /> No subreddits found
+              </div>
             </div>
-          </div>
+          )}
 
           <nav className="navigation subreddits-nav hidden-print" id="side-nav">
-            <div className="alert alert-info" id="subreddits-end" role="alert" style={notFound !== 1 ? { display: 'none' } : null}>
-              <span className="glyphicon glyphicon-info-sign" /> No subreddits found
-            </div>
-
-            {!filterText &&
+            {!hideExtras &&
             (<ul className="nav">
               {!this.accessToken && (<li><div id="login"><a href="/api/reddit-login">Login</a> to view your subreddits.</div></li>)}
               <li><div><NavLink to={`/r/mine/${sort}`} title="Show all subreddits" activeClassName="activeSubreddit">Front</NavLink></div></li>
@@ -259,15 +360,14 @@ class Navigation extends React.Component {
 
             </ul>)
             }
-            <div className="nav-divider" />
-
+            {!hideExtras && (<div className="nav-divider" />)}
             <ul className="nav">
               {navItems}
             </ul>
 
           </nav>
           <div>
-            <a href="" style={subredditsActive === 0 ? { display: 'none' } : null} onClick={this.reloadSubredditsClick}>Reload Subreddits</a>
+            <a href="" onClick={this.reloadSubredditsClick}>Reload Subreddits</a>
           </div>
         </div>
       </div>
@@ -277,29 +377,36 @@ class Navigation extends React.Component {
 
 Navigation.propTypes = {
   sort: PropTypes.string.isRequired,
+  sortTop: PropTypes.string,
   fetchSubreddits: PropTypes.func.isRequired,
   fetchDefaultSubreddits: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   subreddits: PropTypes.object.isRequired,
   lastUpdated: PropTypes.object.isRequired,
   debug: PropTypes.bool.isRequired,
+  disableHotkeys: PropTypes.bool.isRequired,
   setDebug: PropTypes.func.isRequired,
+  setDisableHotkeys: PropTypes.func.isRequired,
 };
 
 Navigation.defaultProps = {
+  sortTop: '',
 };
 
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
+  sortTop: state.listingsFilter.sortTop,
   subreddits: state.subreddits,
   lastUpdated: state.lastUpdated,
   debug: state.debugMode,
+  disableHotkeys: state.disableHotKeys,
 });
 
 const mapDispatchToProps = dispatch => ({
   fetchSubreddits: (auth, reload) => dispatch(subredditsFetchData(auth, reload)),
   fetchDefaultSubreddits: () => dispatch(subredditsFetchDefaultData()),
   setDebug: debug => dispatch(debugMode(debug)),
+  setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
   push: url => dispatch(push(url)),
 });
 
