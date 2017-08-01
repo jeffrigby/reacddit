@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 
 import IFrame16x9 from './contentTypes/IFrame16x9';
 import Image from './contentTypes/Image';
@@ -54,18 +54,19 @@ Content.propTypes = {
   load: PropTypes.bool.isRequired,
 };
 
-Content.defaultProps = {
-  debug: false,
-};
+export default Content;
 
-const mapStateToProps = (state, ownProps) => ({
-});
-
-const mapDispatchToProps = dispatch => ({
-
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(Content);
+// Content.defaultProps = {
+// };
+//
+// const mapStateToProps = (state, ownProps) => ({
+// });
+//
+// const mapDispatchToProps = dispatch => ({
+//
+// });
+//
+// export default connect(
+//   mapStateToProps,
+//   mapDispatchToProps,
+// )(Content);

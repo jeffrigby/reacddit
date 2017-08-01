@@ -55,10 +55,6 @@ const mapDispatchToProps = dispatch => ({
   // onSortChange: sort => dispatch(storeSort(sort))
 });
 
-// <SubredditActions params={this.props.params} query={this.props.location.query}
-// accessToken={this.props.accessToken} />
-
-
 export default connect(
     mapStateToProps,
     mapDispatchToProps,

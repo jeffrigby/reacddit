@@ -31,12 +31,12 @@
     "react": "^15.6.1",
     "react-cookie": "^2.0.8",
     "react-dom": "^15.6.1",
-    "react-html5video": "^2.2.0",
+    "react-html5video": "^2.3.0",
     "react-redux": "^5.0.5",
     "react-router": "^4.1.2",
     "react-router-dom": "^4.1.2",
     "react-router-redux": "^5.0.0-alpha.4",
-    "react-visibility-sensor": "^3.10.0",
+    "react-visibility-sensor": "^3.10.1",
     "redux": "^3.7.2",
     "redux-axios-middleware": "^4.0.0",
     "redux-logger": "^3.0.6",
@@ -63,7 +63,7 @@
     "eslint-plugin-react": "^7.0.1",
     "extract-text-webpack-plugin": "^2.1.2",
     "fsevents": "^1.1.2",
-    "html-webpack-plugin": "^2.29.0",
+    "html-webpack-plugin": "^2.30.1",
     "koa-webpack-middleware": "^1.0.5",
     "koa2-webpack-middleware": "^1.1.0",
     "node-sass": "^4.5.3",
@@ -75,6 +75,6 @@
     "sass-loader": "^6.0.6",
     "style-loader": "^0.18.2",
     "webpack": "^2.7.0",
-    "webpack-dev-server": "^2.5.1"
+    "webpack-dev-server": "^2.6.1"
   }
 }
