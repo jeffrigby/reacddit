@@ -9,6 +9,7 @@ module.exports = {
   devtool: 'source-map',
   target: 'web',
   entry: [
+    'babel-polyfill',
     path.join(__dirname, 'src/index.js'),
   ],
   output: {
