@@ -54,7 +54,7 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader?presets=es2015&retainLines=true',
+        loader: 'babel-loader?presets=es2015&retainLines=true&cacheDirectory',
       },
       {
         test: /\.json?$/,
