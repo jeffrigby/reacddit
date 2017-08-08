@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const Image = ({ content, load }) => {
   const contentRender = content;
-    // limit the height of images
+  // limit the height of images
   const maxHeight = 650;
   if (contentRender.height > maxHeight) {
     contentRender.width = (contentRender.width * maxHeight) / contentRender.height;

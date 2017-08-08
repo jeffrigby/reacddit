@@ -157,7 +157,6 @@ class Entries extends React.Component {
     if (!isEqual(this.state.visible, nextState.visible)) {
       return true;
     }
-
     return false;
   }
 

@@ -37,7 +37,7 @@ class ImgurAlbum extends React.Component {
       content.cover_width = (content.cover_width * maxHeight) / content.cover_height;
       content.cover_height = maxHeight;
     }
-        // limit the height of images
+    // limit the height of images
     const width = content.cover_height > 800 ? ((content.cover_width * 800) / content.cover_height) : content.cover_width;
     const contStyle = { width: `${width}px` };
     const ratio = (content.cover_height / content.cover_width) * 100;

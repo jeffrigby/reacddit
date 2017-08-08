@@ -33,7 +33,7 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
           const newLastUpdated = lastUpdated;
           // we only get here if ALL promises fulfill
           results.forEach((item) => {
-                // process item
+            // process item
             if (typeof item.data.children[0] === 'object') {
               const created = item.data.children[0].data.created_utc;
               const subredditId = item.data.children[0].data.subreddit_id;
@@ -44,8 +44,8 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
         })
         .then(lastUpdatedRes => dispatch(subredditsLastUpdated(lastUpdatedRes)))
         .catch(() => {
-            // console.log('Failed:', err);
-            // Add some error shit here.
+          // console.log('Failed:', err);
+          // Add some error shit here.
         });
     };
 
@@ -82,43 +82,43 @@ export function subredditsFetchDefaultData() {
   return (dispatch) => {
     dispatch(subredditsStatus('loading'));
     fetch(url)
-            .then((response) => {
-              if (!response.ok) {
-                throw Error(response.statusText);
-              }
-              dispatch(subredditsStatus('loaded'));
-              return response;
-            })
-            .then(response => response.json())
-            .then((json) => {
-              const subreditObj = json.data.children;
-              const subreddits = [];
+      .then((response) => {
+        if (!response.ok) {
+          throw Error(response.statusText);
+        }
+        dispatch(subredditsStatus('loaded'));
+        return response;
+      })
+      .then(response => response.json())
+      .then((json) => {
+        const subreditObj = json.data.children;
+        const subreddits = [];
 
-              Object.keys(subreditObj).forEach((key, index) => {
-                if (Object.prototype.hasOwnProperty.call(subreditObj, key)) {
-                  subreddits.push(subreditObj[key].data);
-                }
-              });
+        Object.keys(subreditObj).forEach((key, index) => {
+          if (Object.prototype.hasOwnProperty.call(subreditObj, key)) {
+            subreddits.push(subreditObj[key].data);
+          }
+        });
 
-              subreddits.sort((a, b) => {
-                if (a.display_name.toLowerCase() < b.display_name.toLowerCase()) return -1;
-                if (a.display_name.toLowerCase() > b.display_name.toLowerCase()) return 1;
-                return 0;
-              });
+        subreddits.sort((a, b) => {
+          if (a.display_name.toLowerCase() < b.display_name.toLowerCase()) return -1;
+          if (a.display_name.toLowerCase() > b.display_name.toLowerCase()) return 1;
+          return 0;
+        });
 
-                // convert it back to an object
-              const subredditsKey = {};
-              subreddits.forEach((item) => {
-                subredditsKey[item.display_name] = item;
-              });
+        // convert it back to an object
+        const subredditsKey = {};
+        subreddits.forEach((item) => {
+          subredditsKey[item.display_name] = item;
+        });
 
-              dispatch(subredditsFetchDataSuccess(subredditsKey));
-              return subreddits;
-            })
-            .then(subreddits => dispatch(subredditsFetchLastUpdated(subreddits)))
-            .catch((e) => {
-              dispatch(subredditsStatus('error', e.toString()));
-            });
+        dispatch(subredditsFetchDataSuccess(subredditsKey));
+        return subreddits;
+      })
+      .then(subreddits => dispatch(subredditsFetchLastUpdated(subreddits)))
+      .catch((e) => {
+        dispatch(subredditsStatus('error', e.toString()));
+      });
   };
 }
 

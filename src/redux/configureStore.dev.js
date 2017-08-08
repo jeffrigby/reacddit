@@ -18,10 +18,7 @@ const configureStore = (initialState, history) => {
   middleware.push(thunk);
   middleware.push(axiosMiddleware(axClient));
   middleware.push(routerMiddleware(history));
-
-  if (process.env.NODE_ENV !== 'production') {
-    // middleware.push(createLogger());
-  }
+  // middleware.push(createLogger());
 
   const store = createStore(
     rootReducer,

@@ -1,3 +1,4 @@
+require('babel-polyfill');
 const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -5,7 +6,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
+  target: 'web',
   entry: [
     path.join(__dirname, 'src/index.js'),
   ],

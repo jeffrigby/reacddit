@@ -330,9 +330,9 @@ class Navigation extends React.Component {
               value={filterText}
             />
             {filterText && (
-            <button id="searchclear" onClick={this.clearSearch} >
-              <span className="glyphicon glyphicon-remove-circle" />
-            </button>
+              <button id="searchclear" onClick={this.clearSearch} >
+                <span className="glyphicon glyphicon-remove-circle" />
+              </button>
             )}
           </div>
 

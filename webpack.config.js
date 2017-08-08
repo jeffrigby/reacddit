@@ -8,18 +8,9 @@ module.exports = {
   devtool: 'inline-source-map',
   entry: [
     'react-hot-loader/patch',
-    // activate HMR for React
-
     'webpack-dev-server/client?http://localhost:3000',
-    // bundle the client for webpack-dev-server
-    // and connect to the provided endpoint
-
     'webpack/hot/only-dev-server',
-    // bundle the client for hot reloading
-    // only- means to only hot reload for successful updates
-
     path.join(__dirname, 'src/index.js'),
-    // the entry point of our app
   ],
   output: {
     path: path.join(__dirname, '/dist/'),
@@ -39,7 +30,6 @@ module.exports = {
       inject: 'body',
       filename: 'index.html',
     }),
-    new webpack.optimize.OccurrenceOrderPlugin(),
     new CopyWebpackPlugin([
       { from: 'images', to: 'images' },
     ]),

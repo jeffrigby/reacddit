@@ -5,9 +5,6 @@ import { connect } from 'react-redux';
 import TimeAgo from '@jshimko/react-time-ago';
 import Content from './Content';
 
-
-// import Content from './Content';
-
 class Entry extends React.Component {
   constructor(props) {
     super(props);
@@ -69,9 +66,8 @@ class Entry extends React.Component {
           <div className="meta-container clearfix">
             <small className="meta">
               <span className="date-author meta-sub">
-                  Submitted <TimeAgo date={timeago} /> by <span className="author">
-                    <Link to={`/user/${entry.author}/submitted/new`}>{entry.author}</Link> {authorFlair}</span> to
-                    <span className="subreddit meta-sub"><Link to={subUrl}>/r/{entry.subreddit}</Link></span>
+                  Submitted <TimeAgo date={timeago} /> by <span className="author"> <Link to={`/user/${entry.author}/submitted/new`}>{entry.author}</Link> {authorFlair}</span> to
+                <span className="subreddit meta-sub"><Link to={subUrl}>/r/{entry.subreddit}</Link></span>
               </span>
               <span className="source meta-sub">{entry.domain}</span>
               <span className="comments meta-sub">
@@ -83,7 +79,7 @@ class Entry extends React.Component {
                 <span>
                   <a href="#showDebug" onClick={this.showDebug}>Show Debug</a>
                 </span>
-                )}
+              )}
             </small>
           </div>
           {this.state.showDebug && (
