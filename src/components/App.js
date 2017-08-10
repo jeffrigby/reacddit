@@ -1,5 +1,5 @@
-import { Route } from 'react-router-dom';
 import React from 'react';
+import { Route, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Navigation from './Navigation';
@@ -62,7 +62,7 @@ const mapDispatchToProps = dispatch => ({
   getAuthInfo: () => dispatch(reddit.redditAuthInfoFetch()),
 });
 
-export default connect(
+export default withRouter(connect(
   mapStateToProps,
   mapDispatchToProps,
-)(App);
+)(App));
