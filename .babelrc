@@ -7,4 +7,5 @@
     "useBuiltIns": true,
     "debug": false,
   }]],
+  "plugins": ["transform-async-to-generator"]
 }

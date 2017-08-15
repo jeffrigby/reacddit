@@ -214,7 +214,7 @@ class Entries extends React.Component {
             focused = 1;
           }
         }
-        const visible = Entries.isInViewport(entry, 500);
+        const visible = Entries.isInViewport(entry, 1000);
 
         if (visible) {
           visibleItr = 'visible';
