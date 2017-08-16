@@ -38,3 +38,4 @@ ngrok
 
 .DS_Store
 /.idea
+/dist
