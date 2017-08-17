@@ -1,7 +1,5 @@
-import Promise from 'es6-promise';
-
-require('es6-promise').polyfill();
-require('isomorphic-fetch');
+import axios from 'axios';
+import { chunk } from 'lodash';
 
 export function subredditsStatus(status, message) {
   return {
@@ -27,131 +25,92 @@ export function subredditsLastUpdated(lastUpdated) {
 
 export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
   return (dispatch) => {
-    const runUpdate = (urls) => {
-      Promise.all(urls)
-        .then((results) => {
-          const newLastUpdated = lastUpdated;
-          // we only get here if ALL promises fulfill
-          results.forEach((item) => {
-            // process item
-            if (typeof item.data.children[0] === 'object') {
-              const created = item.data.children[0].data.created_utc;
-              const subredditId = item.data.children[0].data.subreddit_id;
-              newLastUpdated[subredditId] = created;
-            }
-          });
-          return newLastUpdated;
-        })
-        .then(lastUpdatedRes => dispatch(subredditsLastUpdated(lastUpdatedRes)))
-        .catch(() => {
-          // console.log('Failed:', err);
-          // Add some error shit here.
-        });
-    };
-
-    const urls = [];
-    let i = 0;
-
+    const createdToGet = [];
     Object.keys(subreddits).forEach((key, index) => {
       if (Object.prototype.hasOwnProperty.call(subreddits, key)) {
         const value = subreddits[key];
         if (value.url !== '/r/mine' && value.quarantine === false) {
           const url = `https://www.reddit.com${value.url}new.json?limit=1&sort=new`;
-          urls.push(
-            new Promise((resolve, reject) => {
-              fetch(url).then(response => resolve(response.json())).catch(e => reject(e));
-            }));
-          i += 1;
-          if (i >= 50) {
-            runUpdate(urls);
-            i = 0;
-            urls.length = 0;
-          }
+          // createdToGet.push(url);
+          createdToGet.push(axios.get(url).catch(() => null));
         }
       }
     });
 
-    if (urls.length > 0) {
-      runUpdate(urls);
-    }
+    const chunks = chunk(createdToGet, 50);
+    chunks.forEach(async (value) => {
+      const results = await axios.all(value).then(axios.spread((...args) => args));
+      const newLastUpdated = lastUpdated;
+      results.forEach((item) => {
+        const entry = item.data;
+        // process item
+        if (typeof entry.data.children[0] === 'object') {
+          const created = entry.data.children[0].data.created_utc;
+          const subredditId = entry.data.children[0].data.subreddit_id;
+          newLastUpdated[subredditId] = created;
+        }
+      });
+      dispatch(subredditsLastUpdated(newLastUpdated));
+    });
   };
 }
 
 export function subredditsFetchDefaultData() {
   const url = 'https://www.reddit.com/subreddits/default.json?limit=100';
-  return (dispatch) => {
+  return async (dispatch) => {
     dispatch(subredditsStatus('loading'));
-    fetch(url)
-      .then((response) => {
-        if (!response.ok) {
-          throw Error(response.statusText);
+    try {
+      const subredditsGet = await axios.get(url);
+      const subreditObj = subredditsGet.data.data.children;
+
+      // @todo better way to do this?
+      const subreddits = [];
+      Object.keys(subreditObj).forEach((key, index) => {
+        if (Object.prototype.hasOwnProperty.call(subreditObj, key)) {
+          subreddits.push(subreditObj[key].data);
         }
-        dispatch(subredditsStatus('loaded'));
-        return response;
-      })
-      .then(response => response.json())
-      .then((json) => {
-        const subreditObj = json.data.children;
-        const subreddits = [];
-
-        Object.keys(subreditObj).forEach((key, index) => {
-          if (Object.prototype.hasOwnProperty.call(subreditObj, key)) {
-            subreddits.push(subreditObj[key].data);
-          }
-        });
-
-        subreddits.sort((a, b) => {
-          if (a.display_name.toLowerCase() < b.display_name.toLowerCase()) return -1;
-          if (a.display_name.toLowerCase() > b.display_name.toLowerCase()) return 1;
-          return 0;
-        });
-
-        // convert it back to an object
-        const subredditsKey = {};
-        subreddits.forEach((item) => {
-          subredditsKey[item.display_name] = item;
-        });
-
-        dispatch(subredditsFetchDataSuccess(subredditsKey));
-        return subreddits;
-      })
-      .then(subreddits => dispatch(subredditsFetchLastUpdated(subreddits)))
-      .catch((e) => {
-        dispatch(subredditsStatus('error', e.toString()));
       });
+
+      subreddits.sort((a, b) => {
+        if (a.display_name.toLowerCase() < b.display_name.toLowerCase()) return -1;
+        if (a.display_name.toLowerCase() > b.display_name.toLowerCase()) return 1;
+        return 0;
+      });
+
+      // convert it back to an object
+      const subredditsKey = {};
+      subreddits.forEach((item) => {
+        subredditsKey[item.display_name] = item;
+      });
+
+      await dispatch(subredditsFetchDataSuccess(subredditsKey));
+      dispatch(subredditsFetchLastUpdated(subreddits));
+    } catch (e) {
+      dispatch(subredditsStatus('error', e.toString()));
+    }
   };
 }
 
 export function subredditsFetchData(reset) {
-  return (dispatch) => {
+  return async (dispatch) => {
     let url = '/json/subreddits/lean';
     if (reset === true) {
       url += '/true';
     }
     dispatch(subredditsStatus('loading'));
-
-    fetch(url, { credentials: 'same-origin' })
-      .then((response) => {
-        if (!response.ok) {
-          throw Error(response.statusText);
-        }
-        return response;
-      })
-      .then(response => response.json())
-      .then((json) => {
-        const subreddits = json.subreddits;
-        const subredditsKey = {};
-        subreddits.forEach((item) => {
-          subredditsKey[item.display_name] = item;
-        });
-
-        dispatch(subredditsFetchDataSuccess(subredditsKey));
-        return subredditsKey;
-      })
-      .then(subreddits => dispatch(subredditsFetchLastUpdated(subreddits)))
-      .catch((e) => {
-        dispatch(subredditsStatus('error', e.toString()));
+    try {
+      const subredditsGet = await axios.get(url);
+      const subreddits = subredditsGet.data.subreddits;
+      const subredditsKey = {};
+      subreddits.forEach((item) => {
+        subredditsKey[item.display_name] = item;
       });
+
+      await dispatch(subredditsFetchDataSuccess(subredditsKey));
+      dispatch(subredditsFetchLastUpdated(subreddits));
+    } catch (e) {
+      dispatch(subredditsStatus('error', e.toString()));
+    }
   };
 }
 
