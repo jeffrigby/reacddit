@@ -84,12 +84,6 @@ module.exports = {
     publicPath: '/',
   },
   context: path.join(__dirname, 'src'),
-  devServer: {
-    // This is required for older versions of webpack-dev-server
-    // if you use absolute 'to' paths. The path should be an
-    // absolute path to your build destination.
-    outputPath: path.join(__dirname, 'dist'),
-  },
   plugins,
   module: modules,
 };
