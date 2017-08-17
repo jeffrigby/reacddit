@@ -14,7 +14,6 @@ const plugins = [
   new CopyWebpackPlugin([
     { from: 'images', to: 'images' },
   ]),
-  new webpack.HotModuleReplacementPlugin(),
   new ExtractTextPlugin('styles.css'),
   new webpack.DefinePlugin({
     'process.env': {
@@ -26,6 +25,8 @@ const plugins = [
     threads: 4,
     loaders: ['babel-loader'],
   }),
+  new webpack.HotModuleReplacementPlugin(),
+  new webpack.NamedModulesPlugin(),
 ];
 
 const modules = {
