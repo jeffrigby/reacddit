@@ -1,7 +1,5 @@
+import axios from 'axios';
 import update from 'immutability-helper';
-
-require('es6-promise').polyfill();
-require('isomorphic-fetch');
 
 export function listingsFilter(listFilter) {
   return {
@@ -25,79 +23,49 @@ export function listingsStatus(listingStatus) {
 }
 
 export function listingsFetchEntries(url) {
-  return (dispatch) => {
+  return async (dispatch) => {
     dispatch(listingsStatus('loading'));
-    fetch(url, { credentials: 'same-origin' })
-      .then((response) => {
-        if (!response.ok) {
-          throw Error(response.statusText);
-        }
-        return response;
-      })
-      .then(response => response.json())
-      .then((json) => {
-        // if (json.entries.length) {
-        const entryKeys = Object.keys(json.entries);
-        const newJson = update(json, {
-          preload: { $set: {
-            focus: entryKeys[0],
-            visible: entryKeys.slice(0, 5),
-          } },
-        });
-        return newJson;
-      })
-      .then((json) => {
-        // Replace an empty array
-        const data = update(json, {
-          requestUrl: { $set: url },
-          type: { $set: 'init' },
-        });
-        dispatch(listingsEntries(data));
-        return json;
-      })
-      .then((json) => {
-        const loaded = json.after ? 'loaded' : 'loadedAll';
-        dispatch(listingsStatus(loaded));
-      })
-      .catch((e) => {
-        // console.log(e);
-        dispatch(listingsStatus('error'));
+    try {
+      const results = await axios.get(url);
+      const json = results.data;
+      const entryKeys = Object.keys(json.entries);
+      const data = update(json, {
+        requestUrl: { $set: url },
+        type: { $set: 'init' },
+        preload: { $set: {
+          focus: entryKeys[0],
+          visible: entryKeys.slice(0, 5),
+        } },
       });
+      await dispatch(listingsEntries(data));
+      const loaded = data.after ? 'loaded' : 'loadedAll';
+      dispatch(listingsStatus(loaded));
+    } catch (e) {
+      dispatch(listingsStatus('error'));
+    }
   };
 }
 
 export function listingsFetchNext() {
-  return (dispatch, getState) => {
+  return async (dispatch, getState) => {
     const currentState = getState();
     const url = currentState.listingsEntries.requestUrl.split('?');
     const nextUrl = `${url[0]}?after=${currentState.listingsEntries.after}&limit=50`;
     dispatch(listingsStatus('loadingNext'));
-    fetch(nextUrl, { credentials: 'same-origin' })
-      .then((response) => {
-        if (!response.ok) {
-          throw Error(response.statusText);
-        }
-        return response;
-      })
-      .then(response => response.json())
-      .then((json) => {
-        const newListings = update(currentState.listingsEntries, {
-          after: { $set: json.after },
-          entries: { $merge: json.entries },
-          type: { $set: 'more' },
-        });
-        dispatch(listingsEntries(newListings));
-        return json;
-      })
-      .then((json) => {
-        const loaded = json.after ? 'loaded' : 'loadedAll';
-        dispatch(listingsStatus(loaded));
-        return json;
-      })
-      .catch((e) => {
-        // console.log(e);
-        dispatch(listingsStatus('error'));
+    try {
+      const results = await axios.get(nextUrl);
+      const json = results.data;
+      const newListings = update(currentState.listingsEntries, {
+        after: { $set: json.after },
+        entries: { $merge: json.entries },
+        type: { $set: 'more' },
       });
+      await dispatch(listingsEntries(newListings));
+      const loaded = newListings.after ? 'loaded' : 'loadedAll';
+      dispatch(listingsStatus(loaded));
+    } catch (e) {
+      dispatch(listingsStatus('error'));
+    }
   };
 }
 
