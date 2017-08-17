@@ -6,7 +6,8 @@
   "scripts": {
     "test": "",
     "start": "node server",
-    "build": "rimraf dist && node_modules/webpack/bin/webpack.js --config ./webpack.config.prod.js --progress --profile --colors"
+    "build": "rimraf dist && node_modules/webpack/bin/webpack.js --config ./webpack.config.prod.js --progress --profile --colors",
+    "build-prod": "rimraf dist && node_modules/webpack/bin/webpack.js --config ./webpack.config.prod.js"
   },
   "keywords": [
     "es6",
