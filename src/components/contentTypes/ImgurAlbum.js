@@ -30,7 +30,7 @@ class ImgurAlbum extends React.Component {
   }
 
   render() {
-    const content = this.props.content;
+    const { content } = this.props;
     // limit the height of images
     const maxHeight = 650;
     if (content.cover_height > maxHeight) {
@@ -56,22 +56,23 @@ class ImgurAlbum extends React.Component {
       render = <Image content={currentImage} key={currentImage.id} load={this.props.load} />;
     }
 
-    return (<div className="ratio-bg albumEntry">
-      <div className="btn-group btn-group-xs albumNav">
-        <button type="button" className="btn btn-default" aria-label="Previous Slide" onClick={this.prevSlide}>
-          <span className="glyphicon glyphicon glyphicon-backward" aria-hidden="true" />
-        </button>
-        <div className="btn btn-default">{currentSlide} / {totalSlides}</div>
-        <button type="button" className="btn btn-default" aria-label="Next Slide" onClick={this.nextSlide}>
-          <span className="glyphicon glyphicon glyphicon-forward" aria-hidden="true" />
-        </button>
-      </div>
-      <div style={contStyle} className="ratio-container">
-        <div style={ratioStyle} className="ratio embed-responsive">
-          {render}
+    return (
+      <div className="ratio-bg albumEntry">
+        <div className="btn-group btn-group-xs albumNav">
+          <button type="button" className="btn btn-default" aria-label="Previous Slide" onClick={this.prevSlide}>
+            <span className="glyphicon glyphicon glyphicon-backward" aria-hidden="true" />
+          </button>
+          <div className="btn btn-default">{currentSlide} / {totalSlides}</div>
+          <button type="button" className="btn btn-default" aria-label="Next Slide" onClick={this.nextSlide}>
+            <span className="glyphicon glyphicon glyphicon-forward" aria-hidden="true" />
+          </button>
         </div>
-      </div>
-    </div>);
+        <div style={contStyle} className="ratio-container">
+          <div style={ratioStyle} className="ratio embed-responsive">
+            {render}
+          </div>
+        </div>
+      </div>);
   }
 }
 

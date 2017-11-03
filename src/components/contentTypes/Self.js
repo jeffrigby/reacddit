@@ -18,10 +18,11 @@ const Self = ({ content, load, name }) => {
       }, this);
   }
 
-  return (<div className="self">
-    {html}
-    {inlineRendered}
-  </div>);
+  return (
+    <div className="self">
+      {html}
+      {inlineRendered}
+    </div>);
 };
 
 Self.propTypes = {

@@ -32,10 +32,12 @@ export function listingsFetchEntries(url) {
       const data = update(json, {
         requestUrl: { $set: url },
         type: { $set: 'init' },
-        preload: { $set: {
-          focus: entryKeys[0],
-          visible: entryKeys.slice(0, 5),
-        } },
+        preload: {
+          $set: {
+            focus: entryKeys[0],
+            visible: entryKeys.slice(0, 5),
+          },
+        },
       });
       await dispatch(listingsEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';
@@ -72,7 +74,7 @@ export function listingsFetchNext() {
 export function listingsFetch() {
   return (dispatch, getState) => {
     const currentState = getState();
-    const url = currentState.listingsFilter.url;
+    const { url } = currentState.listingsFilter;
     if (!url) {
       return false;
     } else if (url === currentState.listingsEntries.requestUrl) {

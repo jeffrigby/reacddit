@@ -13,7 +13,7 @@ class App extends React.Component {
   }
 
   render() {
-    const authInfo = this.props.authInfo;
+    const { authInfo } = this.props;
     if (authInfo.status !== 'loaded') {
       return (<div />);
     }

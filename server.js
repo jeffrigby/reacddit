@@ -7,8 +7,8 @@ new WebpackDevServer(webpack(config), {
   hotOnly: true,
   historyApiFallback: true,
   quiet: false,
-  noInfo: false,
-  stats: 'normal',
+  noInfo: true,
+  stats: 'minimal',
 }).listen(3000, 'reddit.dev', (err) => {
   if (err) {
     console.log(err);
