@@ -179,7 +179,7 @@ class Navigation extends React.Component {
       if (!this.redditUser) {
         switch (pressedKey) {
           case 'L': // shift-L
-            location.href = '/api/reddit-login';
+            window.location.href = '/api/reddit-login';
             break;
           default:
             break;
@@ -248,7 +248,7 @@ class Navigation extends React.Component {
   }
 
   generateNavItems(subreddits) {
-    const lastUpdated = this.props.lastUpdated;
+    const { lastUpdated } = this.props;
     const navigationItems = [];
     Object.keys(subreddits).forEach((key, index) => {
       if (Object.prototype.hasOwnProperty.call(subreddits, key)) {
@@ -275,7 +275,7 @@ class Navigation extends React.Component {
   }
 
   randomSubPush() {
-    const subreddits = this.props.subreddits.subreddits;
+    const { subreddits } = this.props.subreddits;
     if (isEmpty(subreddits)) {
       return false;
     }
@@ -288,7 +288,7 @@ class Navigation extends React.Component {
   }
 
   render() {
-    const subreddits = this.props.subreddits;
+    const { subreddits } = this.props;
 
     if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
       return (
@@ -303,7 +303,7 @@ class Navigation extends React.Component {
       return (
         <div className="alert alert-danger small" id="subreddits-load-error" role="alert">
           <span className="glyphicon glyphicon glyphicon-alert" /> Error loading subreddits<br />
-          <a href="" onClick={this.reloadSubredditsClick}>try again.</a>
+          <button className="astext" onClick={this.reloadSubredditsClick}>try again.</button>
         </div>
       );
     }
@@ -347,18 +347,18 @@ class Navigation extends React.Component {
 
           <nav className="navigation subreddits-nav hidden-print" id="side-nav">
             {!hideExtras &&
-            (<ul className="nav">
-              {!this.accessToken && (<li><div id="login"><a href="/api/reddit-login">Login</a> to view your subreddits.</div></li>)}
-              <li><div><NavLink to={`/r/mine/${sort}`} title="Show all subreddits" activeClassName="activeSubreddit">Front</NavLink></div></li>
-              <li><div><NavLink to={`/r/popular/${sort}`} title="Show popular posts">Popular</NavLink></div></li>
-              <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
-              {this.accessToken && (<li><div><NavLink to={`/r/friends/${sort}`} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</NavLink></div></li>)}
-              {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/submitted/${sort}`} title="Submitted" activeClassName="activeSubreddit">Submitted</NavLink></div></li>)}
-              {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/upvoted/${sort}`} title="Upvoted" activeClassName="activeSubreddit">Upvoted</NavLink></div></li>)}
-              {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/downvoted/${sort}`} title="Downvoted" activeClassName="activeSubreddit">Downvoted</NavLink></div></li>)}
-              {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/saved`} title="Saved" activeClassName="activeSubreddit">Saved</NavLink></div></li>)}
-
-            </ul>)
+            (
+              <ul className="nav">
+                {!this.accessToken && (<li><div id="login"><a href="/api/reddit-login">Login</a> to view your subreddits.</div></li>)}
+                <li><div><NavLink to={`/r/mine/${sort}`} title="Show all subreddits" activeClassName="activeSubreddit">Front</NavLink></div></li>
+                <li><div><NavLink to={`/r/popular/${sort}`} title="Show popular posts">Popular</NavLink></div></li>
+                <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
+                {this.accessToken && (<li><div><NavLink to={`/r/friends/${sort}`} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</NavLink></div></li>)}
+                {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/submitted/${sort}`} title="Submitted" activeClassName="activeSubreddit">Submitted</NavLink></div></li>)}
+                {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/upvoted/${sort}`} title="Upvoted" activeClassName="activeSubreddit">Upvoted</NavLink></div></li>)}
+                {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/downvoted/${sort}`} title="Downvoted" activeClassName="activeSubreddit">Downvoted</NavLink></div></li>)}
+                {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/saved`} title="Saved" activeClassName="activeSubreddit">Saved</NavLink></div></li>)}
+              </ul>)
             }
             {!hideExtras && (<div className="nav-divider" />)}
             <ul className="nav">
@@ -367,7 +367,7 @@ class Navigation extends React.Component {
 
           </nav>
           <div>
-            <a href="" onClick={this.reloadSubredditsClick}>Reload Subreddits</a>
+            <button className="astext" onClick={this.reloadSubredditsClick}>Reload Subreddits</button>
           </div>
         </div>
       </div>

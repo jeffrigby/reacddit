@@ -21,13 +21,14 @@ const Image = ({ content, load }) => {
 
   const src = load === true ? contentRender.src : 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
-  return (<div className="ratio-bg">
-    <div style={contStyle} className="ratio-container">
-      <div style={ratioStyle} className="ratio embed-responsive">
-        <img src={src} alt={contentRender.title} className={imgClass} />
+  return (
+    <div className="ratio-bg">
+      <div style={contStyle} className="ratio-container">
+        <div style={ratioStyle} className="ratio embed-responsive">
+          <img src={src} alt={contentRender.title} className={imgClass} />
+        </div>
       </div>
-    </div>
-  </div>);
+    </div>);
 };
 
 Image.propTypes = {

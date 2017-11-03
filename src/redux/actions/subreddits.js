@@ -100,7 +100,7 @@ export function subredditsFetchData(reset) {
     dispatch(subredditsStatus('loading'));
     try {
       const subredditsGet = await axios.get(url);
-      const subreddits = subredditsGet.data.subreddits;
+      const { subreddits } = subredditsGet.data;
       const subredditsKey = {};
       subreddits.forEach((item) => {
         subredditsKey[item.display_name] = item;
