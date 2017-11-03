@@ -6,6 +6,14 @@ body {
   padding-top: 50px;
 }
 
+button.astext {
+  background:none;
+  border:none;
+  margin:0;
+  padding:0;
+  color: #337ab7;
+}
+
 #sidebar, #header-sidebar {
   width: inherit;
   min-width: 200px;

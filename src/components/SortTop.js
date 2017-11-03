@@ -24,9 +24,7 @@ const SortTop = ({ listingFilter }) => {
   };
 
   const sortValue = sortArgs[listingFilter.sortTop];
-  const sort = listingFilter.sort;
-  const target = listingFilter.target;
-  const listType = listingFilter.listType;
+  const { sort, target, listType } = listingFilter;
   const url = `/${listType}/${target}/${sort}?t=`;
 
   return (

@@ -18,6 +18,15 @@ const VideoComp = ({ content, load }) => {
   const ratioStyle = { paddingBottom: `${ratio}%` };
   const videoId = `video-${contentRender.id}`;
 
+  const playStop = (elm) => {
+    if (elm.target.paused) {
+      elm.target.play();
+    } else {
+      elm.target.pause();
+    }
+    // elm.target.paused ? elm.target.play() : elm.target.pause();
+  };
+
   // load = false;
   let video;
   if (load === true) {
@@ -30,6 +39,7 @@ const VideoComp = ({ content, load }) => {
         key={videoId}
         poster={contentRender.thumb}
         className="loaded embed-responsive-item preload"
+        onClick={playStop}
       >
         {contentRender.webm && (<source id="webmsource" src={contentRender.webm} type="video/webm" />)}
         {contentRender.mp4 && (<source id="mp4source" src={contentRender.mp4} type="video/mp4" />)}
@@ -42,13 +52,14 @@ const VideoComp = ({ content, load }) => {
     );
   }
 
-  return (<div className="ratio-bg">
-    <div style={contStyle} className="ratio-container">
-      <div style={ratioStyle} className="ratio embed-responsive">
-        {video}
+  return (
+    <div className="ratio-bg">
+      <div style={contStyle} className="ratio-container">
+        <div style={ratioStyle} className="ratio embed-responsive">
+          {video}
+        </div>
       </div>
-    </div>
-  </div>);
+    </div>);
 };
 
 VideoComp.propTypes = {

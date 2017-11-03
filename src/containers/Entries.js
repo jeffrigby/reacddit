@@ -68,7 +68,7 @@ class Entries extends React.Component {
   }
 
   static createEntriesUrl(filter) {
-    const qs = queryString.parse(location.search);
+    const qs = queryString.parse(window.location.search);
 
     if (!filter.target || !filter.sort) {
       return null;
@@ -189,7 +189,7 @@ class Entries extends React.Component {
 
     newListingsFilter.url = Entries.createEntriesUrl(newListingsFilter);
 
-    const listingsFilter = this.props.listingsFilter;
+    const { listingsFilter } = this.props;
 
     if (!isEqual(listingsFilter, newListingsFilter)) {
       this.props.setFilter(newListingsFilter);
@@ -221,6 +221,17 @@ class Entries extends React.Component {
           visibleContent.push(entry.id);
           if (!newVisible) {
             newVisible = true;
+          }
+
+          // Check to see if there's a video to autoplay (mostly for Safari in High Sierra.
+          const videos = jQuery(entry).find('video').not('.autoplay-triggered');
+          if (videos.length > 0) {
+            jQuery.each(videos, (videoidx, video) => {
+              document.getElementById(video.id).play();
+              jQuery(video).addClass('autoplay-triggered');
+            });
+
+          //   document.getElementById(video[0].id).play();
           }
         }
 
@@ -298,12 +309,10 @@ class Entries extends React.Component {
     let focused = '';
     let visible = {};
     if (this.props.listingsEntries.type === 'init' && this.props.listingsEntries.requestUrl !== this.initTriggered) {
-      focused = this.props.listingsEntries.preload.focus;
-      visible = this.props.listingsEntries.preload.visible;
+      ({ focus: focused, visible } = this.props.listingsEntries.preload);
       this.initTriggered = this.props.listingsEntries.requestUrl;
     } else {
-      focused = this.state.focused;
-      visible = this.state.visible;
+      ({ focused, visible } = this.state);
     }
     const entriesKeys = Object.keys(entriesObject);
     if (entriesKeys.length > 0) {

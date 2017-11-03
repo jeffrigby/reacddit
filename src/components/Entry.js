@@ -45,7 +45,7 @@ class Entry extends React.Component {
   }
 
   render() {
-    const entry = this.props.entry;
+    const { entry } = this.props;
     const timeago = entry.created_raw * 1000;
     const subUrl = `/r/${entry.subreddit}`;
     const contentObj = typeof entry.content === 'object' ? entry.content : {};
@@ -115,7 +115,7 @@ Entry.propTypes = {
 };
 
 Entry.defaultProps = {
-  authInfo: {},
+  // authInfo: {},
   // listingsFocus: null,
 };
 

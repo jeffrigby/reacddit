@@ -54,7 +54,8 @@ class NavigationItem extends React.Component {
             to={href}
             title={this.props.item.public_description}
             activeClassName="activeSubreddit"
-          >{trigger} {this.props.item.display_name}</NavLink> {subLabel}
+          >{trigger} {this.props.item.display_name}
+          </NavLink> {subLabel}
         </div>
       </li>
     );
