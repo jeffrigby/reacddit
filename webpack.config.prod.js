@@ -67,7 +67,7 @@ const modules = {
       use: ExtractTextPlugin.extract({
         fallback: 'style-loader',
         // resolve-url-loader may be chained before sass-loader if necessary
-        loader: ['css-loader', 'sass-loader'],
+        use: ['css-loader', 'sass-loader'],
       }),
     },
   ],
