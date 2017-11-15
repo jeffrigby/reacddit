@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HappyPack = require('happypack');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const plugins = [
   new HtmlWebpackPlugin({
@@ -26,13 +26,18 @@ const plugins = [
     threads: 4,
     loaders: ['babel-loader'],
   }),
-  new UglifyJSPlugin({
-    ie8: false,
-    output: {
-      comments: false,
-      beautify: false,
-    },
+  new UglifyJsPlugin({
+    parallel: true,
     sourceMap: true,
+    uglifyOptions: {
+      ie8: false,
+      ecma: 8,
+      output: {
+        comments: false,
+        beautify: false,
+      },
+      warnings: false,
+    },
   }),
   new webpack.HashedModuleIdsPlugin(),
   new webpack.optimize.CommonsChunkPlugin({
@@ -67,7 +72,7 @@ const modules = {
       use: ExtractTextPlugin.extract({
         fallback: 'style-loader',
         // resolve-url-loader may be chained before sass-loader if necessary
-        use: ['css-loader', 'sass-loader'],
+        use: ['css-loader?minimize', 'sass-loader'],
       }),
     },
   ],
