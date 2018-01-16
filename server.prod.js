@@ -21,9 +21,9 @@ new WebpackDevServer(webpack(config), {
     chunks: false,
     chunkModules: false,
   },
-}).listen(3000, 'reddit.dev', (err) => {
+}).listen(3000, 'reddit.test', (err) => {
   if (err) {
     console.log(err);
   }
-  console.log('Listening at reddit.dev:3000');
+  console.log('Listening at reddit.test:3000');
 });
