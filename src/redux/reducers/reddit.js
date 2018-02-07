@@ -12,7 +12,7 @@ export function redditAuthInfo(state = { }, action) {
 export function redditMultiReddits(state = { }, action) {
   switch (action.type) {
     case 'REDDIT_MUTLI_REDDITS':
-      return action.payload.data;
+      return action.multiReddits;
 
     default:
       return state;

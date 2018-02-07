@@ -54,11 +54,17 @@ class Sort extends React.Component {
   }
 
   genLink(sort) {
-    return `/r/${this.props.listingsFilter.target}/${sort}`;
+    let link;
+    if (this.props.listingsFilter.listType === 'r') {
+      link = `/r/${this.props.listingsFilter.target}/${sort}`;
+    } else if (this.props.listingsFilter.listType === 'm') {
+      link = `/user/${this.props.listingsFilter.target}/m/${this.props.listingsFilter.userType}/${sort}`;
+    }
+    return link;
   }
 
   render() {
-    if (this.props.listingsFilter.target === 'friends') {
+    if (this.props.listingsFilter.target === 'friends' || this.props.listingsFilter.listType === 'u' || this.props.subreddits.status !== 'loaded') {
       return false;
     }
     const currentSort = this.props.listingsFilter.sort ? this.props.listingsFilter.sort : 'hot';
@@ -89,6 +95,7 @@ class Sort extends React.Component {
 
 Sort.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
+  subreddits: PropTypes.object.isRequired,
   disableHotKeys: PropTypes.bool.isRequired,
   push: PropTypes.func.isRequired,
 };
@@ -99,6 +106,7 @@ Sort.defaultProps = {
 
 const mapStateToProps = (state, ownProps) => ({
   listingsFilter: state.listingsFilter,
+  subreddits: state.subreddits,
   disableHotKeys: state.disableHotKeys,
 });
 
