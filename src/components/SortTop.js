@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 const SortTop = ({ listingFilter }) => {
   if (
     (listingFilter.sort !== 'top' && listingFilter.sort !== 'controversial') ||
-    listingFilter.target === 'friends'
+    listingFilter.target === 'friends' || listingFilter.listType === 'u'
   ) {
     return null;
   }
@@ -24,8 +24,16 @@ const SortTop = ({ listingFilter }) => {
   };
 
   const sortValue = sortArgs[listingFilter.sortTop];
-  const { sort, target, listType } = listingFilter;
-  const url = `/${listType}/${target}/${sort}?t=`;
+  const {
+    sort, target, listType, userType,
+  } = listingFilter;
+  let url = `/${listType}/${target}/${sort}?t=`;
+
+  if (listType === 'r') {
+    url = `/r/${target}/${sort}?t=`;
+  } else if (listType === 'm') {
+    url = `/user/${target}/m/${userType}/${sort}?t=`;
+  }
 
   return (
     <div style={{ display: 'inline-block' }}>

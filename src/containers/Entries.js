@@ -87,6 +87,13 @@ class Entries extends React.Component {
       }
     }
 
+    if (filter.listType === 'm') {
+      url += `user/${filter.target}/m/${filter.userType}`;
+      if (filter.userType !== 'saved') {
+        url += `/${filter.sort}`;
+      }
+    }
+
     // Reset the default query strings
     qs.limit = filter.limit;
     qs.before = filter.before;
@@ -174,7 +181,9 @@ class Entries extends React.Component {
     const qs = queryString.parse(location.search);
 
     let listType = match.params.listType || 'r';
-    if (listType === 'user') listType = 'u';
+    if (listType === 'user' && !match.params.multi) listType = 'u';
+    if (listType === 'user' && match.params.multi) listType = 'm';
+
 
     const newListingsFilter = {
       sort: match.params.sort || 'hot',

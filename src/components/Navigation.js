@@ -8,6 +8,7 @@ import { isEmpty } from 'lodash';
 import { subredditsFetchData, subredditsFetchDefaultData } from '../redux/actions/subreddits';
 import { debugMode, disableHotKeys } from '../redux/actions/auth';
 import NavigationItem from './NavigationItem';
+import MultiReddits from './MultiReddits';
 
 class Navigation extends React.Component {
   static resizeNavigation() {
@@ -294,7 +295,7 @@ class Navigation extends React.Component {
       return (
         <div id="subreddits">
           <div className="alert alert-info" id="subreddits-loading" role="alert">
-            <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" /> Getting subreddits.
+            <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" /> Getting subreddits/multireddits.
           </div>
         </div>
       );
@@ -361,6 +362,10 @@ class Navigation extends React.Component {
               </ul>)
             }
             {!hideExtras && (<div className="nav-divider" />)}
+
+            {this.accessToken && !hideExtras && (<MultiReddits />)}
+
+
             <ul className="nav">
               {navItems}
             </ul>
