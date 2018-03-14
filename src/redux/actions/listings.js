@@ -39,7 +39,6 @@ export function listingsFetchEntries(url) {
         requestUrl: { $set: url },
         type: { $set: 'init' },
       });
-
       await dispatch(listingsEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';
       dispatch(listingsStatus(loaded));
@@ -53,7 +52,10 @@ export function listingsFetchNext() {
   return async (dispatch, getState) => {
     const currentState = getState();
     const url = currentState.listingsEntries.requestUrl.split('?');
-    const nextUrl = `${url[0]}?after=${currentState.listingsEntries.after}&limit=50`;
+    let nextUrl = `${url[0]}?after=${currentState.listingsEntries.after}&limit=50`;
+    if (currentState.listingsFilter.sort === 'top' || currentState.listingsFilter.sort === 'controversial') {
+      nextUrl += `&t=${currentState.listingsFilter.sortTop}`;
+    }
     dispatch(listingsStatus('loadingNext'));
     try {
       const results = await axios.get(nextUrl);
