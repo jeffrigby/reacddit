@@ -295,7 +295,7 @@ class Navigation extends React.Component {
       return (
         <div id="subreddits">
           <div className="alert alert-info" id="subreddits-loading" role="alert">
-            <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" /> Getting subreddits/multireddits.
+            <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" /> Loading Subreddits
           </div>
         </div>
       );

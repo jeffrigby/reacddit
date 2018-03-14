@@ -15,6 +15,13 @@ export function listingsEntries(listEntries) {
   };
 }
 
+export function listingsEntryUpdate(entry) {
+  return {
+    type: 'LISTINGS_ENTRY_UPDATE',
+    entry,
+  };
+}
+
 export function listingsStatus(listingStatus) {
   return {
     type: 'LISTINGS_STATUS',
@@ -28,16 +35,9 @@ export function listingsFetchEntries(url) {
     try {
       const results = await axios.get(url);
       const json = results.data;
-      const entryKeys = Object.keys(json.entries);
       const data = update(json, {
         requestUrl: { $set: url },
         type: { $set: 'init' },
-        preload: {
-          $set: {
-            focus: entryKeys[0],
-            visible: entryKeys.slice(0, 5),
-          },
-        },
       });
       await dispatch(listingsEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';
@@ -52,7 +52,10 @@ export function listingsFetchNext() {
   return async (dispatch, getState) => {
     const currentState = getState();
     const url = currentState.listingsEntries.requestUrl.split('?');
-    const nextUrl = `${url[0]}?after=${currentState.listingsEntries.after}&limit=50`;
+    let nextUrl = `${url[0]}?after=${currentState.listingsEntries.after}&limit=50`;
+    if (currentState.listingsFilter.sort === 'top' || currentState.listingsFilter.sort === 'controversial') {
+      nextUrl += `&t=${currentState.listingsFilter.sortTop}`;
+    }
     dispatch(listingsStatus('loadingNext'));
     try {
       const results = await axios.get(nextUrl);

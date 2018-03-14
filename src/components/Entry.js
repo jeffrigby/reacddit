@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import TimeAgo from '@jshimko/react-time-ago';
 import Content from './Content';
+import EntryVote from './EntryVote';
 
 class Entry extends React.Component {
   constructor(props) {
@@ -58,10 +59,7 @@ class Entry extends React.Component {
       <div className={classes} key={entry.url_id} id={entry.name}>
         <div className="entry-interior">
           <h4 className="title list-group-item-heading"><a href={entry.url} target="_blank" rel="noopener noreferrer" className="list-group-item-heading">{entry.title}</a> {linkFlair}</h4>
-          <div className="vote">
-            <button type="button" className="btn btn-link btn-sm"><span className="glyphicon glyphicon-thumbs-up" aria-hidden="true" /> {entry.ups}</button>
-            <button type="button" className="btn btn-link btn-sm"><span className="glyphicon glyphicon-thumbs-down" aria-hidden="true" /></button>
-          </div>
+          <EntryVote id={entry.id} likes={entry.likes} ups={entry.ups} />
           {content}
           <div className="meta-container clearfix">
             <small className="meta">
@@ -91,43 +89,23 @@ class Entry extends React.Component {
   }
 }
 
-// Entry.propTypes = {
-//   entry: PropTypes.object,
-//   debug: PropTypes.bool,
-//   sort: PropTypes.string,
-//   sortTop: PropTypes.string,
-//   loaded: PropTypes.bool,
-//   focused: PropTypes.bool
-// };
-//
-// module.exports = Entry;
-
 Entry.propTypes = {
   entry: PropTypes.object.isRequired,
   listingFilter: PropTypes.object.isRequired,
-  // listingsFocus: PropTypes.string.isRequired,
   debug: PropTypes.bool.isRequired,
   focused: PropTypes.bool.isRequired,
   visible: PropTypes.bool.isRequired,
-  // listingEntries: PropTypes.object.isRequired,
-  // push: PropTypes.func.isRequired,
-  // authInfo: PropTypes.object,
 };
 
 Entry.defaultProps = {
-  // authInfo: {},
-  // listingsFocus: null,
 };
 
 const mapStateToProps = state => ({
   listingFilter: state.listingsFilter,
-  // listingsFocus: state.listingsFocus,
   debug: state.debugMode,
-  // authInfo: state.authInfo,
 });
 
 const mapDispatchToProps = dispatch => ({
-  // push: url => dispatch(push(url)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Entry);
