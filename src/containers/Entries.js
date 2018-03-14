@@ -134,6 +134,15 @@ class Entries extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    if (nextProps.listingsEntries.type === 'init' && this.initTriggered !== nextProps.listingsEntries.requestUrl) {
+      this.initTriggered = nextProps.listingsEntries.requestUrl;
+      const entryKeys = Object.keys(nextProps.listingsEntries.entries);
+      this.setState({
+        focused: entryKeys[0],
+        visible: entryKeys.slice(0, 5),
+      });
+    }
+
     const matchCompare = isEqual(nextProps.match, this.props.match);
     const locationCompare = isEqual(nextProps.location, this.props.location);
     if (!matchCompare || !locationCompare) {
@@ -315,19 +324,17 @@ class Entries extends React.Component {
 
     let entries = '';
     const entriesObject = this.props.listingsEntries.entries;
+    // @todo can these three lines be combined?
     let focused = '';
     let visible = {};
-    if (this.props.listingsEntries.type === 'init' && this.props.listingsEntries.requestUrl !== this.initTriggered) {
-      ({ focus: focused, visible } = this.props.listingsEntries.preload);
-      this.initTriggered = this.props.listingsEntries.requestUrl;
-    } else {
-      ({ focused, visible } = this.state);
-    }
+    ({ focused, visible } = this.state);
     const entriesKeys = Object.keys(entriesObject);
     if (entriesKeys.length > 0) {
       entries = entriesKeys.map((key) => {
         const isFocused = focused === entriesObject[key].name;
         const isVisible = visible.includes(entriesObject[key].name);
+        // const isFocused = false;
+        // const isVisible = false;
         return (<Entry
           entry={entriesObject[key]}
           key={entriesObject[key].id}

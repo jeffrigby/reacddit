@@ -9,7 +9,7 @@ export function redditAuthInfo(state = { }, action) {
   }
 }
 
-export function redditMultiReddits(state = { }, action) {
+export function redditMultiReddits(state = { status: 'unloaded', subreddits: {} }, action) {
   switch (action.type) {
     case 'REDDIT_MUTLI_REDDITS':
       return action.multiReddits;
