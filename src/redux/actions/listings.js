@@ -15,6 +15,13 @@ export function listingsEntries(listEntries) {
   };
 }
 
+export function listingsEntryUpdate(entry) {
+  return {
+    type: 'LISTINGS_ENTRY_UPDATE',
+    entry,
+  };
+}
+
 export function listingsStatus(listingStatus) {
   return {
     type: 'LISTINGS_STATUS',
@@ -28,17 +35,11 @@ export function listingsFetchEntries(url) {
     try {
       const results = await axios.get(url);
       const json = results.data;
-      const entryKeys = Object.keys(json.entries);
       const data = update(json, {
         requestUrl: { $set: url },
         type: { $set: 'init' },
-        preload: {
-          $set: {
-            focus: entryKeys[0],
-            visible: entryKeys.slice(0, 5),
-          },
-        },
       });
+
       await dispatch(listingsEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';
       dispatch(listingsStatus(loaded));
