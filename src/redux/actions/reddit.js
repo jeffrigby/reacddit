@@ -1,5 +1,7 @@
 import axios from 'axios';
-// import update from 'immutability-helper';
+import { listingsEntryUpdate } from './listings';
+
+const Snoowrap = require('snoowrap');
 
 export function redditMultiReddits(multiReddits) {
   return {
@@ -22,7 +24,6 @@ export function redditAuthInfoFetch() {
 export function redditRefreshAuth() {
   return async (dispatch, getState) => {
     const currentState = getState();
-    // const expires = ldget(currentState, 'redditAuthInfo.accessToken.expires');
     const { expires } = currentState.redditAuthInfo.accessToken;
     const dateTime = Date.now();
     const timestamp = Math.floor(dateTime / 1000);
@@ -52,6 +53,78 @@ export function redditFetchMultis() {
         dispatch(redditMultiReddits(result));
       } catch (e) {
         dispatch(redditMultiReddits({ status: 'error', error: e.toString() }));
+      }
+    }
+  };
+}
+
+export function redditVote(id, dir) {
+  return async (dispatch, getState) => {
+    const currentState = getState();
+    const token = await dispatch(redditRefreshAuth());
+    if (token) {
+      const r = new Snoowrap({ accessToken: token });
+
+      try {
+        const sub = r.getSubmission(id);
+        let { likes, ups } = currentState.listingsEntries.entries[id];
+
+        switch (dir) {
+          case 1:
+            await sub.upvote();
+            switch (likes) {
+              case true:
+                break;
+              case false:
+                ups += 2;
+                break;
+              default:
+                ups += 1;
+                break;
+            }
+            likes = true;
+            break;
+          case -1:
+            await sub.downvote();
+            switch (likes) {
+              case true:
+                ups -= 2;
+                break;
+              case false:
+                break;
+              default:
+                ups -= 1;
+                break;
+            }
+            likes = false;
+            break;
+          case 0:
+            await sub.unvote();
+            switch (likes) {
+              case true:
+                ups -= 1;
+                break;
+              case false:
+                ups += 1;
+                break;
+              default:
+                break;
+            }
+            likes = null;
+            break;
+          default:
+            break;
+        }
+
+        const updatedEntry = {
+          name: id,
+          ups,
+          likes,
+        };
+
+        dispatch(listingsEntryUpdate(updatedEntry));
+      } catch (e) {
+        // console.log(e);
       }
     }
   };

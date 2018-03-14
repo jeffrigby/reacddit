@@ -26,7 +26,7 @@ class MultiReddits extends React.Component {
     if (multis) {
       multis.forEach((item) => {
         navigationItems.push(
-          <li>
+          <li key={item.data.path}>
             <div>
               <NavLink
                 to={item.data.path}
