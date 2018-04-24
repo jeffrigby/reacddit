@@ -133,23 +133,6 @@ class Entries extends React.Component {
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 500);
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.listingsEntries.type === 'init' && this.initTriggered !== nextProps.listingsEntries.requestUrl) {
-      this.initTriggered = nextProps.listingsEntries.requestUrl;
-      const entryKeys = Object.keys(nextProps.listingsEntries.entries);
-      this.setState({
-        focused: entryKeys[0],
-        visible: entryKeys.slice(0, 5),
-      });
-    }
-
-    const matchCompare = isEqual(nextProps.match, this.props.match);
-    const locationCompare = isEqual(nextProps.location, this.props.location);
-    if (!matchCompare || !locationCompare) {
-      this.setRedux(nextProps.match, nextProps.location);
-    }
-  }
-
   shouldComponentUpdate(nextProps, nextState) {
     if (!isEqual(nextProps.listingsFilter, this.props.listingsFilter)) {
       return true;
@@ -173,17 +156,43 @@ class Entries extends React.Component {
     if (!isEqual(this.state.visible, nextState.visible)) {
       return true;
     }
+
+    const matchCompare = isEqual(nextProps.match, this.props.match);
+    const locationCompare = isEqual(nextProps.location, this.props.location);
+    if (!matchCompare || !locationCompare) {
+      return true;
+    }
     return false;
   }
 
   componentDidUpdate(prevProps) {
+    const matchCompare = isEqual(prevProps.match, this.props.match);
+    const locationCompare = isEqual(prevProps.location, this.props.location);
+    if (!matchCompare || !locationCompare) {
+      this.setRedux(this.props.match, this.props.location);
+    }
+
     if (!isEqual(prevProps.listingsFilter, this.props.listingsFilter)) {
       this.props.getEntries(this.props.listingsFilter);
     }
+
+    this.setInitFocusedAndVisible();
   }
 
   componentWillUnmount() {
     this.scrollResizeStop = true;
+  }
+
+  setInitFocusedAndVisible() {
+    if (this.props.listingsEntries.type === 'init' && this.initTriggered !== this.props.listingsEntries.requestUrl) {
+      this.initTriggered = this.props.listingsEntries.requestUrl;
+      const entryKeys = Object.keys(this.props.listingsEntries.entries);
+      const newState = {
+        focused: entryKeys[0],
+        visible: entryKeys.slice(0, 5),
+      };
+      this.setState(newState);
+    }
   }
 
   setRedux(match, location) {
@@ -354,7 +363,8 @@ class Entries extends React.Component {
             Sort: {this.props.listingsFilter.sort}<br />
             SortTop: {this.props.listingsFilter.sortTop}<br />
             Type: {this.props.listingsFilter.listType}<br />
-            URL: {this.props.listingsFilter.url}
+            URL: {this.props.listingsFilter.url}<br />
+            Focus: {this.state.focused}
           </pre>
         </div>
         }
