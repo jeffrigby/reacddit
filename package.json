@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "",
-    "start": "node_modules/.bin/webpack-dev-server --public reddit.test --port 3000  --mode development --hot --progress --profile --open",
+    "start": "node_modules/.bin/webpack-dev-server --public reddit.test --port 3000  --mode development --hot --progress --profile",
+    "start-prod": "node_modules/.bin/webpack-dev-server --public reddit.test --port 3000  --mode production --hot --progress --profile",
     "build": "node_modules/.bin/webpack --mode production"
   },
   "keywords": [
