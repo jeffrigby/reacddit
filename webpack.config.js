@@ -1,87 +1,113 @@
-const webpack = require('webpack');
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const HappyPack = require('happypack');
-
-const plugins = [
-  new HtmlWebpackPlugin({
-    template: 'index.tpl.html',
-    inject: 'body',
-    filename: 'index.html',
-  }),
-  new CopyWebpackPlugin([
-    { from: 'images', to: 'images' },
-  ]),
-  new ExtractTextPlugin('styles.css'),
-  new webpack.DefinePlugin({
-    'process.env': {
-      NODE_ENV: JSON.stringify('development'),
-    },
-  }),
-  new HappyPack({
-    id: 'babel',
-    threads: 4,
-    loaders: ['babel-loader'],
-  }),
-  new webpack.HotModuleReplacementPlugin(),
-  new webpack.NamedModulesPlugin(),
-];
-
-const modules = {
-  rules: [
-    {
-      enforce: 'pre',
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'eslint-loader',
-      options: {
-        configFile: '.eslintrc.json',
-        failOnWarning: false,
-        failOnError: false,
-      },
-    },
-    {
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'happypack/loader?id=babel',
-    },
-    {
-      test: /\.json?$/,
-      loader: 'json-loader',
-    },
-    {
-      test: /\.scss$/,
-      use: ExtractTextPlugin.extract({
-        fallback: 'style-loader',
-        // resolve-url-loader may be chained before sass-loader if necessary
-        use: ['css-loader', 'sass-loader'],
-      }),
-    },
-  ],
-};
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const HtmlWebPackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
-  devtool: 'source-map',
-  entry: [
-    'react-hot-loader/patch',
-    'webpack-dev-server/client?http://localhost:3000',
-    'webpack/hot/only-dev-server',
-    path.join(__dirname, 'src/index.js'),
+  module: {
+    rules: [
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'eslint-loader',
+        options: {
+          configFile: '.eslintrc.json',
+          failOnWarning: false,
+          failOnError: false,
+        },
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+        },
+      },
+      {
+        test: /\.html$/,
+        use: [
+          {
+            loader: 'html-loader',
+            options: { minimize: true },
+          },
+        ],
+      },
+      {
+        test: /\.(css|sass|scss)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 2,
+              sourceMap: true,
+            },
+          },
+          // {
+          //   loader: 'postcss-loader',
+          //   options: {
+          //     plugins: () => [
+          //       require('autoprefixer'),
+          //     ],
+          //     sourceMap: true,
+          //   },
+          // },
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true,
+            },
+          },
+        ],
+      },
+    ],
+  },
+  optimization: {
+    runtimeChunk: false,
+    splitChunks: {
+      cacheGroups: {
+        default: false,
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendor',
+          chunks: 'all',
+          // minChunks: 2,
+        },
+      },
+    },
+    minimizer: [
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true, // set to true if you want JS source maps
+      }),
+      new OptimizeCSSAssetsPlugin({}),
+    ],
+  },
+  plugins: [
+    new CleanWebpackPlugin(['dist']),
+    new HtmlWebPackPlugin({
+      template: './src/index.tpl.html',
+      filename: './index.html',
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'style.css',
+      chunkFilename: '[name].css',
+    }),
+    // new BundleAnalyzerPlugin(),
   ],
+  devServer: {
+    contentBase: path.join(__dirname, 'dist'),
+    historyApiFallback: true,
+  },
   output: {
-    path: path.join(__dirname, '/dist/'),
-    filename: '[name].[hash].js',
+    // filename: '[name].bundle.js',
+    // chunkFilename: '[name].bundle.js',
+    // path: path.resolve(__dirname, 'dist'),
     publicPath: '/',
   },
-  context: path.join(__dirname, 'src'),
-  devServer: {
-    // This is required for older versions of webpack-dev-server
-    // if you use absolute 'to' paths. The path should be an
-    // absolute path to your build destination.
-    outputPath: path.join(__dirname, 'dist'),
-  },
-  plugins,
-  module: modules,
 };

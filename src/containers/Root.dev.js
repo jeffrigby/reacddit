@@ -1,18 +1,21 @@
 import React from 'react';
-import DevTools from './DevTools';
+import { hot } from 'react-hot-loader';
+// import DevTools from './DevTools';
 import App from '../components/App';
 
-const RouteTest = () => (
-  <div>
-    <App />
-    <DevTools />
-  </div>
-);
-//
-// const RouteTest = () => (
+
+// const Root = () => (
 //   <div>
 //     <App />
+//     <DevTools />
 //   </div>
 // );
 
-export default RouteTest;
+const Root = () => (
+  <div>
+    <App />
+  </div>
+);
+
+export default hot(module)(Root);
+// export default Root;
