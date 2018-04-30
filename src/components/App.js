@@ -8,7 +8,7 @@ import Entries from '../containers/Entries';
 import * as reddit from '../redux/actions/reddit';
 
 class App extends React.Component {
-  componentWillMount() {
+  componentDidMount() {
     this.props.getAuthInfo();
   }
 
@@ -20,28 +20,30 @@ class App extends React.Component {
 
     return (
       <div>
-        <Header />
-        <div className="row-offcanvas row-offcanvas-left">
-          <div id="sidebar" className="sidebar-offcanvas">
-            <div className="col-md-12">
-              <div id="subreddits-nav">
-                <Navigation />
+        <React.StrictMode>
+          <Header />
+          <div className="row-offcanvas row-offcanvas-left">
+            <div id="sidebar" className="sidebar-offcanvas">
+              <div className="col-md-12">
+                <div id="subreddits-nav">
+                  <Navigation />
+                </div>
+              </div>
+            </div>
+            <div id="main">
+              <div className="col-md-12">
+                <div className="list-group" id="entries">
+                  <Route exact path="/" component={Entries} />
+                  <Route path="/:listType(r)/:target/:sort(hot|new|top|controversial|rising)?" component={Entries} />
+                  <Route path="/:listType(user)/:target/:multi(m)/:userType/:sort(hot|new|top|controversial|rising)?" component={Entries} />
+                  <Route path="/:listType(user)/:target/:userType(upvoted|downvoted|submitted|saved)/:sort(hot|new|top|controversial|rising)?" component={Entries} />
+                  <Route path="/:sort(hot|new|top|controversial|rising)" component={Entries} />
+                </div>
               </div>
             </div>
           </div>
-          <div id="main">
-            <div className="col-md-12">
-              <div className="list-group" id="entries">
-                <Route exact path="/" component={Entries} />
-                <Route path="/:listType(r)/:target/:sort(hot|new|top|controversial|rising)?" component={Entries} />
-                <Route path="/:listType(user)/:target/:multi(m)/:userType/:sort(hot|new|top|controversial|rising)?" component={Entries} />
-                <Route path="/:listType(user)/:target/:userType(upvoted|downvoted|submitted|saved)/:sort(hot|new|top|controversial|rising)?" component={Entries} />
-                <Route path="/:sort(hot|new|top|controversial|rising)" component={Entries} />
-              </div>
-            </div>
-          </div>
-        </div>
-        <div id="push" />
+          <div id="push" />
+        </React.StrictMode>
       </div>);
   }
 }

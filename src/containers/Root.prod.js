@@ -1,10 +1,10 @@
 import React from 'react';
 import App from '../components/App';
 
-const RouteTest = () => (
+const Root = () => (
   <div>
     <App />
   </div>
 );
 
-export default RouteTest;
+export default Root;
