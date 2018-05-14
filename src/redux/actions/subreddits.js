@@ -1,6 +1,4 @@
 import axios from 'axios';
-// import { redditRefreshAuth } from './reddit';
-// import Reddit from '../../reddit/reddit';
 import RedditHelpers from '../../reddit/redditHelpers';
 
 
