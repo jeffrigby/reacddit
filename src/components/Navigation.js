@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash.isempty';
 import { subredditsFetchData, subredditsFetchDefaultData } from '../redux/actions/subreddits';
 import { debugMode, disableHotKeys } from '../redux/actions/auth';
 import NavigationItem from './NavigationItem';
