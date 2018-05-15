@@ -99,14 +99,9 @@ export function subredditsFetchDefaultData() {
 
 export function subredditsFetchData(reset) {
   return async (dispatch) => {
-    // let url = '/json/subreddits/lean';
-    // if (reset === true) {
-    //   url += '/true';
-    // }
-
     dispatch(subredditsStatus('loading'));
     try {
-      const subs = await RedditHelpers.subredditMineAll('subscriber');
+      const subs = await RedditHelpers.subredditMineAll('subscriber', {}, reset);
       await dispatch(subredditsFetchDataSuccess(subs.subreddits));
       dispatch(subredditsFetchLastUpdated(subs.subreddits));
     } catch (e) {

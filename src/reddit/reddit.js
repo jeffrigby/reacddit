@@ -40,6 +40,21 @@ class Reddit {
     );
   }
 
+  async multiMine(options) {
+    const defaults = {
+      expand_srs: false,
+    };
+
+    const params = Object.assign(defaults, options);
+    Object.keys(params).forEach(key => (params[key] == null) && delete params[key]);
+    const data = {
+      params,
+    };
+    const url = '/api/multi/mine';
+    const multiGet = await this.redditAPI.get(url, data);
+    return multiGet.data;
+  }
+
   async subredditMine(where, options) {
     const defaults = {
       limit: 100,

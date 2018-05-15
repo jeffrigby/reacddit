@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { listingsEntryUpdate } from './listings';
+import RedditHelpers from '../../reddit/redditHelpers';
 
 const Snoowrap = require('snoowrap');
 
@@ -39,21 +39,19 @@ export function redditRefreshAuth() {
   };
 }
 
-export function redditFetchMultis() {
+export function redditFetchMultis(reset) {
   return async (dispatch, getState) => {
-    const token = await dispatch(redditRefreshAuth());
-    if (token) {
-      const config = { headers: { Authorization: `bearer ${token}` } };
-      try {
-        const multis = await axios.get('https://oauth.reddit.com/api/multi/mine', config);
-        const result = {
-          multis: multis.data,
-          status: 'loaded',
-        };
-        dispatch(redditMultiReddits(result));
-      } catch (e) {
-        dispatch(redditMultiReddits({ status: 'error', error: e.toString() }));
-      }
+    try {
+      const multis = await RedditHelpers.multiMine({}, reset);
+      console.log(multis);
+      const result = {
+        multis: multis.data,
+        status: 'loaded',
+      };
+      console.log(result);
+      dispatch(redditMultiReddits(result));
+    } catch (e) {
+      dispatch(redditMultiReddits({ status: 'error', error: e.toString() }));
     }
   };
 }

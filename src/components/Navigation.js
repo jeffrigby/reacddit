@@ -45,7 +45,7 @@ class Navigation extends React.Component {
     jQuery(document).keydown(this.handleNavHotkeyKeyDown);
     jQuery(window).on('load resize', Navigation.resizeNavigation);
     if (this.accessToken) {
-      this.props.fetchSubreddits(true, false);
+      this.props.fetchSubreddits(false);
     } else {
       this.props.fetchDefaultSubreddits();
     }
@@ -408,7 +408,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  fetchSubreddits: (auth, reload) => dispatch(subredditsFetchData(auth, reload)),
+  fetchSubreddits: reset => dispatch(subredditsFetchData(reset)),
   fetchDefaultSubreddits: () => dispatch(subredditsFetchDefaultData()),
   setDebug: debug => dispatch(debugMode(debug)),
   setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
