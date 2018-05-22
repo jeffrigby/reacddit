@@ -178,7 +178,7 @@ class Navigation extends React.Component {
       }
 
       // Not logged in globals
-      if (!this.props.me) {
+      if (!this.props.me.name) {
         switch (pressedKey) {
           case 'L': // shift-L
             window.location.href = '/api/reddit-login';
