@@ -1,12 +1,18 @@
 import { listingsEntryUpdate } from './listings';
 import RedditHelpers from '../../reddit/redditHelpers';
-
-const Snoowrap = require('snoowrap');
+import RedditAPI from '../../reddit/redditAPI';
 
 export function redditMultiReddits(multiReddits) {
   return {
     type: 'REDDIT_MUTLI_REDDITS',
     multiReddits,
+  };
+}
+
+export function redditMe(me) {
+  return {
+    type: 'REDDIT_ME',
+    me,
   };
 }
 
@@ -21,21 +27,18 @@ export function redditAuthInfoFetch() {
   };
 }
 
-export function redditRefreshAuth() {
+export function redditFetchMe(reset) {
   return async (dispatch, getState) => {
-    const currentState = getState();
-    const { expires } = currentState.redditAuthInfo.accessToken;
-    const dateTime = Date.now();
-    const timestamp = Math.floor(dateTime / 1000);
-    if (expires && expires <= timestamp) {
-      await dispatch(redditAuthInfoFetch());
+    try {
+      const me = await RedditAPI.me(reset);
+      const result = {
+        me,
+        status: 'loaded',
+      };
+      dispatch(redditMe(result));
+    } catch (e) {
+      dispatch(redditMe({ status: 'error', error: e.toString() }));
     }
-    const newState = getState();
-    const { accessToken } = newState.redditAuthInfo.accessToken;
-    if (accessToken) {
-      return Promise.resolve(accessToken);
-    }
-    return Promise.resolve(null);
   };
 }
 
@@ -43,12 +46,10 @@ export function redditFetchMultis(reset) {
   return async (dispatch, getState) => {
     try {
       const multis = await RedditHelpers.multiMine({}, reset);
-      console.log(multis);
       const result = {
         multis: multis.data,
         status: 'loaded',
       };
-      console.log(result);
       dispatch(redditMultiReddits(result));
     } catch (e) {
       dispatch(redditMultiReddits({ status: 'error', error: e.toString() }));
@@ -59,17 +60,14 @@ export function redditFetchMultis(reset) {
 export function redditVote(id, dir) {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const token = await dispatch(redditRefreshAuth());
+    const token = await RedditAPI.getToken();
     if (token) {
-      const r = new Snoowrap({ accessToken: token });
-
       try {
-        const sub = r.getSubmission(id);
         let { likes, ups } = currentState.listingsEntries.entries[id];
+        await RedditAPI.vote(id, dir);
 
         switch (dir) {
           case 1:
-            await sub.upvote();
             switch (likes) {
               case true:
                 break;
@@ -83,7 +81,6 @@ export function redditVote(id, dir) {
             likes = true;
             break;
           case -1:
-            await sub.downvote();
             switch (likes) {
               case true:
                 ups -= 2;
@@ -97,7 +94,6 @@ export function redditVote(id, dir) {
             likes = false;
             break;
           case 0:
-            await sub.unvote();
             switch (likes) {
               case true:
                 ups -= 1;

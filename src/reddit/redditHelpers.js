@@ -1,4 +1,4 @@
-import Reddit from './reddit';
+import RedditAPI from './redditAPI';
 
 const hash = require('object-hash');
 
@@ -20,7 +20,7 @@ class RedditHelpers {
       return multiReturn;
     }
 
-    const multis = await Reddit.multiMine(options);
+    const multis = await RedditAPI.multiMine(options);
     sessionStorage.setItem(cacheKey, JSON.stringify(multis));
 
     const multiReturn = {
@@ -64,7 +64,7 @@ class RedditHelpers {
     while (init || qsAfter) {
       init = false;
       newOptions.after = qsAfter;
-      srs = await Reddit.subredditMine(where, newOptions);
+      srs = await RedditAPI.subredditMine(where, newOptions);
       const mapped = RedditHelpers.mapSubreddits(srs.data.children);
       subreddits = Object.assign(mapped, subreddits);
       qsAfter = srs.data.after || null;

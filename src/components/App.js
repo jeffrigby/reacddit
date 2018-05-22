@@ -6,17 +6,23 @@ import Navigation from './Navigation';
 import Header from '../containers/Header';
 import Entries from '../containers/Entries';
 import * as reddit from '../redux/actions/reddit';
+import RedditAPI from '../reddit/redditAPI';
+
 
 class App extends React.Component {
-  componentDidMount() {
-    this.props.getAuthInfo();
+  async componentDidMount() {
+    // Make sure the token is set before loading the app.
+    const token = await RedditAPI.getToken();
+    if (token !== null) {
+      this.props.getMe();
+    }
   }
 
   render() {
-    const { authInfo } = this.props;
-    if (authInfo.status !== 'loaded') {
-      return (<div />);
-    }
+    // const { authInfo } = this.props;
+    // if (authInfo.status !== 'loaded') {
+    //   return (<div />);
+    // }
 
     return (
       <div>
@@ -47,12 +53,13 @@ class App extends React.Component {
 }
 
 App.propTypes = {
-  getAuthInfo: PropTypes.func.isRequired,
-  authInfo: PropTypes.object,
+  // getAuthInfo: PropTypes.func.isRequired,
+  getMe: PropTypes.func.isRequired,
+  // authInfo: PropTypes.object,
 };
 
 App.defaultProps = {
-  authInfo: {},
+  // authInfo: {},
 };
 
 const mapStateToProps = state => ({
@@ -60,7 +67,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  getAuthInfo: () => dispatch(reddit.redditAuthInfoFetch()),
+  // getAuthInfo: () => dispatch(reddit.redditAuthInfoFetch()),
+  getMe: () => dispatch(reddit.redditFetchMe()),
 });
 
 export default withRouter(connect(

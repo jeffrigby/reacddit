@@ -4,7 +4,6 @@ const HtmlWebPackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-// const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   module: {
@@ -95,19 +94,19 @@ module.exports = {
       filename: './index.html',
     }),
     new MiniCssExtractPlugin({
-      filename: 'style.css',
-      chunkFilename: '[name].css',
+      filename: 'style.[hash].css',
+      chunkFilename: '[name].[hash].css',
     }),
-    // new BundleAnalyzerPlugin(),
   ],
+  devtool: 'inline-source-map',
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     historyApiFallback: true,
+    stats: 'normal',
   },
   output: {
-    // filename: '[name].bundle.js',
-    // chunkFilename: '[name].bundle.js',
-    // path: path.resolve(__dirname, 'dist'),
+    filename: '[name].[hash].js',
+    chunkFilename: '[name].[hash].js',
     publicPath: '/',
   },
 };
