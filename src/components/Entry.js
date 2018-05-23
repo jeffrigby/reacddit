@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import TimeAgo from '@jshimko/react-time-ago';
 import Content from './Content';
 import EntryVote from './EntryVote';
+import EntrySave from './EntrySave';
+
 
 class Entry extends React.Component {
   constructor(props) {
@@ -73,6 +75,7 @@ class Entry extends React.Component {
                 comments <span className="badge">{entry.num_comments}</span>
                 </a>
               </span>
+              <EntrySave name={entry.name} saved={entry.saved} />
               {debug && (
                 <span>
                   <a href="#showDebug" onClick={this.showDebug}>Show Debug</a>

@@ -57,6 +57,34 @@ export function redditFetchMultis(reset) {
   };
 }
 
+export function redditSave(id) {
+  return async (dispatch, getState) => {
+    const token = await RedditAPI.getToken();
+    if (token) {
+      await RedditAPI.save(id);
+      const updatedEntry = {
+        name: id,
+        saved: true,
+      };
+      dispatch(listingsEntryUpdate(updatedEntry));
+    }
+  };
+}
+
+export function redditUnsave(id) {
+  return async (dispatch, getState) => {
+    const token = await RedditAPI.getToken();
+    if (token) {
+      await RedditAPI.unsave(id);
+      const updatedEntry = {
+        name: id,
+        saved: false,
+      };
+      dispatch(listingsEntryUpdate(updatedEntry));
+    }
+  };
+}
+
 export function redditVote(id, dir) {
   return async (dispatch, getState) => {
     const currentState = getState();

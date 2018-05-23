@@ -148,6 +148,16 @@ class RedditAPI {
     return vote.data;
   }
 
+  async save(id) {
+    const save = await this.redditAPI.post('/api/save', queryString.stringify({ id }));
+    return save.data;
+  }
+
+  async unsave(id) {
+    const save = await this.redditAPI.post('/api/unsave', queryString.stringify({ id }));
+    return save.data;
+  }
+
   /**
    * Return reddit user.
    * @param reset
