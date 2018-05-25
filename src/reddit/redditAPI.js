@@ -66,30 +66,45 @@ class RedditAPI {
     return token;
   }
 
-  async getToken(reset) {
+  static getTokenStorage() {
     let token = null;
-    // Query strings should take precedence.
-    this.setTokenWithQS();
 
     const localStorageToken = localStorage.getItem('token');
-    const localStorageTokenJson = localStorage.getItem('token') !== null ? JSON.parse(localStorageToken) : {};
+    const localStorageTokenJson = localStorage.getItem('token') !== null ? JSON.parse(localStorageToken) : null;
 
-    if (localStorageTokenJson.accessToken !== null && reset !== true) {
+    if (localStorageTokenJson !== null) {
       const { expires } = localStorageTokenJson;
       const dateTime = Date.now();
       const timestamp = Math.floor(dateTime / 1000);
       if (expires >= timestamp) {
         token = localStorageTokenJson.accessToken;
+      } else {
+        token = 'expired';
       }
     }
+    return token;
+  }
 
-    if (token === null) {
+  async getToken(reset) {
+    // Query strings should take precedence.
+    this.setTokenWithQS();
+
+    let token = RedditAPI.getTokenStorage();
+
+    if (token === 'expired' || reset === true) { // token expired or forced refresh. Get a new one.
       const getToken = await axios.get('/json/bearer');
       token = getToken.data.accessToken;
       if (token) {
         this.setTokenStorage(token, getToken.data.expires);
       }
     }
+
+    if (token === null) {
+      // Clean up stale values in  storage.
+      localStorage.clear();
+      sessionStorage.clear();
+    }
+
     this.token = token;
     return token;
   }

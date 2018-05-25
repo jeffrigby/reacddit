@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { redditVote } from '../redux/actions/reddit';
+import { getToken } from '../reddit/redditAPI';
 
 
 class EntryVote extends React.Component {
