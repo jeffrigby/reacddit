@@ -16,14 +16,32 @@ export function redditMe(me) {
   };
 }
 
-export function redditAuthInfoFetch() {
+export function redditBearer(bearer) {
   return {
-    types: ['LOAD', 'REDDIT_AUTH_INFO'],
-    payload: {
-      request: {
-        url: '/json/accessToken',
-      },
-    },
+    type: 'REDDIT_BEARER',
+    bearer,
+  };
+}
+
+export function redditGetBearer() {
+  return async (dispatch, getState) => {
+    try {
+      const currentState = getState();
+      const bearer = await RedditAPI.getToken();
+      const status = bearer === null ? 'anon' : 'auth';
+      const result = {
+        bearer,
+        status,
+      };
+      const currentRedditBearer = currentState.redditBearer;
+      if (currentRedditBearer.bearer !== bearer) {
+        dispatch(redditBearer(result));
+      }
+      return bearer;
+    } catch (e) {
+      dispatch(redditBearer({ status: 'error', error: e.toString() }));
+    }
+    return null;
   };
 }
 

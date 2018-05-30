@@ -36,7 +36,7 @@
     "react-router-redux": "^5.0.0-alpha.9",
     "redux": "^4.0.0",
     "redux-axios-middleware": "^4.0.0",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.3.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -60,14 +60,14 @@
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "^0.4.0",
     "node-sass": "^4.9.0",
-    "optimize-css-assets-webpack-plugin": "^4.0.1",
+    "optimize-css-assets-webpack-plugin": "^4.0.2",
     "react-hot-loader": "^4.2.0",
     "redux-devtools-extension": "^2.13.2",
     "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
-    "uglify-js": "^3.3.27",
+    "uglify-js": "^3.3.28",
     "uglifyjs-webpack-plugin": "^1.2.5",
-    "webpack": "^4.8.3",
+    "webpack": "^4.10.1",
     "webpack-bundle-analyzer": "^2.13.1",
     "webpack-cli": "^2.1.4",
     "webpack-dev-server": "^3.1.4"

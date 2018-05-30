@@ -1,18 +1,17 @@
-export function redditAuthInfo(state = { }, action) {
+export function redditMultiReddits(state = { status: 'unloaded' }, action) {
   switch (action.type) {
-    case 'REDDIT_AUTH_INFO': {
-      const loaded = Object.assign({}, action.payload.data, { status: 'loaded' });
-      return loaded;
-    }
+    case 'REDDIT_MUTLI_REDDITS':
+      return action.multiReddits;
+
     default:
       return state;
   }
 }
 
-export function redditMultiReddits(state = { status: 'unloaded' }, action) {
+export function redditBearer(state = { status: 'unloaded', bearer: null }, action) {
   switch (action.type) {
-    case 'REDDIT_MUTLI_REDDITS':
-      return action.multiReddits;
+    case 'REDDIT_BEARER':
+      return action.bearer;
 
     default:
       return state;

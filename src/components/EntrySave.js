@@ -11,6 +11,9 @@ class EntrySave extends React.Component {
 
   render() {
     const saveStr = this.props.saved === true ? 'Unsave' : 'Save';
+    if (this.props.bearer.status !== 'auth') {
+      return null;
+    }
     return (
       <button className="btn btn-xs btn-link" onClick={() => this.saveUnsave()}>{saveStr}</button>
     );
@@ -23,6 +26,7 @@ EntrySave.propTypes = {
   saved: PropTypes.bool.isRequired,
   save: PropTypes.func.isRequired,
   unsave: PropTypes.func.isRequired,
+  bearer: PropTypes.object.isRequired,
 };
 
 // EntrySave.defaultProps = {
@@ -30,7 +34,7 @@ EntrySave.propTypes = {
 // };
 
 const mapStateToProps = state => ({
-  // redditAuthInfo: state.redditAuthInfo,
+  bearer: state.redditBearer,
 });
 
 const mapDispatchToProps = dispatch => ({

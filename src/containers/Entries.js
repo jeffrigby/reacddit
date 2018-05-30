@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import isEqual from 'lodash.isequal';
 import * as listings from '../redux/actions/listings';
 import Entry from '../components/Entry';
+// import * as reddit from '../redux/actions/reddit';
 
 const queryString = require('query-string');
 
@@ -387,6 +388,7 @@ Entries.propTypes = {
   listingsEntries: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsFilter: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsStatus: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
+  // getBearer: PropTypes.func.isRequired,
   entries: PropTypes.object,
   debug: PropTypes.bool,
 };
@@ -409,6 +411,7 @@ const mapDispatchToProps = dispatch => ({
   setStatus: status => dispatch(listings.listingsStatus(status)),
   getEntries: (filter, query) => dispatch(listings.listingsFetch(filter, query)),
   getMoreEntries: () => dispatch(listings.listingsFetchNext()),
+  // getBearer: () => dispatch(reddit.redditGetBearer()),
 });
 
 export default connect(

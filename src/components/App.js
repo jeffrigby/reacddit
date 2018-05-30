@@ -6,24 +6,29 @@ import Navigation from './Navigation';
 import Header from '../containers/Header';
 import Entries from '../containers/Entries';
 import * as reddit from '../redux/actions/reddit';
-import RedditAPI from '../reddit/redditAPI';
+// import RedditAPI from '../reddit/redditAPI';
 
 
 class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.tokenQuery = null;
+  }
+
   async componentDidMount() {
     // Make sure the token is set before loading the app.
-    const token = await RedditAPI.getToken();
+    const token = await this.props.getBearer();
     if (token !== null) {
+      this.tokenQuery = setInterval(this.props.getBearer, 10000);
       this.props.getMe();
     }
   }
 
-  render() {
-    // const { authInfo } = this.props;
-    // if (authInfo.status !== 'loaded') {
-    //   return (<div />);
-    // }
+  componentWillUnmount() {
+    clearInterval(this.tokenQuery);
+  }
 
+  render() {
     return (
       <div>
         <Header />
@@ -55,6 +60,7 @@ class App extends React.Component {
 App.propTypes = {
   // getAuthInfo: PropTypes.func.isRequired,
   getMe: PropTypes.func.isRequired,
+  getBearer: PropTypes.func.isRequired,
   // authInfo: PropTypes.object,
 };
 
@@ -63,11 +69,12 @@ App.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-  authInfo: state.redditAuthInfo,
+  // authInfo: state.redditAuthInfo,
+  // bearer: state.redditBearer,
 });
 
 const mapDispatchToProps = dispatch => ({
-  // getAuthInfo: () => dispatch(reddit.redditAuthInfoFetch()),
+  getBearer: () => dispatch(reddit.redditGetBearer()),
   getMe: () => dispatch(reddit.redditFetchMe()),
 });
 

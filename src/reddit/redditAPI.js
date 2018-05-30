@@ -66,6 +66,10 @@ class RedditAPI {
     return token;
   }
 
+  /**
+   * Get the token out of storage if it's not expired
+   * @returns {*}
+   */
   static getTokenStorage() {
     let token = null;
 
@@ -85,6 +89,12 @@ class RedditAPI {
     return token;
   }
 
+  /**
+   * Get the token from localstorage if possible, if not get it from
+   * the server.
+   * @param reset - Always get it from the server.
+   * @returns {Promise<*>}
+   */
   async getToken(reset) {
     // Query strings should take precedence.
     this.setTokenWithQS();
@@ -109,6 +119,11 @@ class RedditAPI {
     return token;
   }
 
+  /**
+   * Get the logged in users mutlireddits
+   * @param options
+   * @returns {Promise<*>}
+   */
   async multiMine(options) {
     const defaults = {
       expand_srs: false,
@@ -124,6 +139,12 @@ class RedditAPI {
     return multiGet.data;
   }
 
+  /**
+   * Get the users subreddits
+   * @param where - the type of subreddits
+   * @param options
+   * @returns {Promise<*>}
+   */
   async subredditMine(where, options) {
     const defaults = {
       limit: 100,
@@ -163,11 +184,21 @@ class RedditAPI {
     return vote.data;
   }
 
+  /**
+   * Save an entry
+   * @param id - the entry to save
+   * @returns {Promise<*>}
+   */
   async save(id) {
     const save = await this.redditAPI.post('/api/save', queryString.stringify({ id }));
     return save.data;
   }
 
+  /**
+   * Unsave an entry
+   * @param id - the entry to unsave
+   * @returns {Promise<*>}
+   */
   async unsave(id) {
     const save = await this.redditAPI.post('/api/unsave', queryString.stringify({ id }));
     return save.data;
