@@ -1,6 +1,6 @@
 import RedditAPI from './redditAPI';
 
-const hash = require('object-hash');
+// const hash = require('object-hash');
 
 class RedditHelpers {
   static mapSubreddits(children) {
@@ -9,7 +9,8 @@ class RedditHelpers {
   }
 
   static async multiMine(options, reset) {
-    const cacheKey = 'multis_'.concat(hash({ options }));
+    const expandSrs = options.expand_srs ? 't' : 'f';
+    const cacheKey = `multis_${expandSrs}`;
     const cachedValue = sessionStorage.getItem(cacheKey);
     if (cachedValue !== null && reset !== true) {
       const cachedObject = JSON.parse(cachedValue);
@@ -37,13 +38,11 @@ class RedditHelpers {
     let srs = null;
     let subreddits = {};
 
-    const hashKey = {
-      where,
-      options,
-    };
+    const show = options.show ? 't' : 'f';
+    const srd = options.sr_detail ? 't' : 'f';
 
     // Look for session cached version
-    const cacheKey = 'subreddits_'.concat(hash(hashKey));
+    const cacheKey = `subreddits_${where}_${show}${srd}`;
     const cachedValue = sessionStorage.getItem(cacheKey);
     // console.log(reset, cacheKey);
     if (cachedValue !== null && reset !== true) {
