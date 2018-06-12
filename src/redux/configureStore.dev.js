@@ -1,13 +1,10 @@
-// import { createStore, applyMiddleware, compose } from 'redux';
 import { createStore, applyMiddleware } from 'redux';
 import { routerMiddleware } from 'react-router-redux';
-// import { createLogger } from 'redux-logger';
 import axios from 'axios';
 import axiosMiddleware from 'redux-axios-middleware';
 import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import rootReducer from './reducers';
-// import DevTools from '../containers/DevTools';
 
 
 const axClient = axios.create({ // all axios can be used, shown in axios documentation

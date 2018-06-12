@@ -32,6 +32,7 @@ export function listingsStatus(listingStatus) {
 export function listingsFetchEntries(url) {
   return async (dispatch) => {
     dispatch(listingsStatus('loading'));
+    await dispatch(listingsEntries({}));
     try {
       const results = await axios.get(url);
       const json = results.data;

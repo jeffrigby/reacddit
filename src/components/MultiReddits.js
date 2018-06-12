@@ -1,19 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Cookies from 'universal-cookie';
 import { push } from 'react-router-redux';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { redditFetchMultis } from '../redux/actions/reddit';
+import RedditAPI from '../reddit/redditAPI';
 
 class MultiReddits extends React.Component {
   constructor(props) {
     super(props);
-    const cookies = new Cookies();
-    this.accessToken = cookies.get('accessToken');
+    this.accessToken = null;
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    this.accessToken = await RedditAPI.getToken();
+
     if (this.accessToken) {
       this.props.fetchMultis();
     }

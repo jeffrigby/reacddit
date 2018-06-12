@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { redditVote } from '../redux/actions/reddit';
 
-
 class EntryVote extends React.Component {
   // constructor(props) {
   //   super(props);
@@ -14,8 +13,7 @@ class EntryVote extends React.Component {
   }
 
   render() {
-    const { redditAuthInfo } = this.props;
-    const disabled = (redditAuthInfo.status === 'loaded' && redditAuthInfo.accessToken === null);
+    const disabled = (this.props.bearer.status !== 'auth');
     const upClass = this.props.likes === true ? 'voted-up' : '';
     const upDir = this.props.likes === true ? 0 : 1;
     const downClass = this.props.likes === false ? 'voted-down' : '';
@@ -40,7 +38,7 @@ EntryVote.propTypes = {
   ups: PropTypes.number.isRequired,
   likes: PropTypes.bool,
   vote: PropTypes.func.isRequired,
-  redditAuthInfo: PropTypes.object.isRequired,
+  bearer: PropTypes.object.isRequired,
 };
 
 EntryVote.defaultProps = {
@@ -48,7 +46,7 @@ EntryVote.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-  redditAuthInfo: state.redditAuthInfo,
+  bearer: state.redditBearer,
 });
 
 const mapDispatchToProps = dispatch => ({

@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { chunk } from 'lodash';
+import RedditHelpers from '../../reddit/redditHelpers';
+
 
 export function subredditsStatus(status, message) {
   return {
@@ -37,7 +38,12 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
       }
     });
 
-    const chunks = chunk(createdToGet, 50);
+    // @todo move this to common
+    const chunks = [];
+    while (createdToGet.length) {
+      chunks.push(createdToGet.splice(0, 50));
+    }
+
     chunks.forEach(async (value) => {
       const results = await axios.all(value).then(axios.spread((...args) => args));
       const newLastUpdated = lastUpdated;
@@ -93,21 +99,11 @@ export function subredditsFetchDefaultData() {
 
 export function subredditsFetchData(reset) {
   return async (dispatch) => {
-    let url = '/json/subreddits/lean';
-    if (reset === true) {
-      url += '/true';
-    }
     dispatch(subredditsStatus('loading'));
     try {
-      const subredditsGet = await axios.get(url);
-      const { subreddits } = subredditsGet.data;
-      const subredditsKey = {};
-      subreddits.forEach((item) => {
-        subredditsKey[item.display_name] = item;
-      });
-
-      await dispatch(subredditsFetchDataSuccess(subredditsKey));
-      dispatch(subredditsFetchLastUpdated(subreddits));
+      const subs = await RedditHelpers.subredditMineAll('subscriber', {}, reset);
+      await dispatch(subredditsFetchDataSuccess(subs.subreddits));
+      dispatch(subredditsFetchLastUpdated(subs.subreddits));
     } catch (e) {
       dispatch(subredditsStatus('error', e.toString()));
     }

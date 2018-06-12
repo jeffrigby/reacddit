@@ -1,15 +1,6 @@
 import React from 'react';
-import { hot } from 'react-hot-loader';
-// import DevTools from './DevTools';
+// import { hot } from 'react-hot-loader';
 import App from '../components/App';
-
-
-// const Root = () => (
-//   <div>
-//     <App />
-//     <DevTools />
-//   </div>
-// );
 
 const Root = () => (
   <div>
@@ -17,5 +8,5 @@ const Root = () => (
   </div>
 );
 
-export default hot(module)(Root);
-// export default Root;
+// export default hot(module)(Root);
+export default Root;

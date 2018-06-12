@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
-import Cookies from 'universal-cookie';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
-import { isEmpty } from 'lodash';
+import isEmpty from 'lodash.isempty';
 import { subredditsFetchData, subredditsFetchDefaultData } from '../redux/actions/subreddits';
 import { debugMode, disableHotKeys } from '../redux/actions/auth';
 import NavigationItem from './NavigationItem';
 import MultiReddits from './MultiReddits';
+import RedditAPI from '../reddit/redditAPI';
 
 class Navigation extends React.Component {
   static resizeNavigation() {
@@ -20,7 +20,6 @@ class Navigation extends React.Component {
 
   constructor(props) {
     super(props);
-    const cookies = new Cookies();
     this.randomSub = this.randomSub.bind(this);
     this.filterData = this.filterData.bind(this);
     this.handleNavHotkey = this.handleNavHotkey.bind(this);
@@ -29,8 +28,8 @@ class Navigation extends React.Component {
     this.clearSearch = this.clearSearch.bind(this);
     this.enableHotkeys = this.enableHotkeys.bind(this);
     this.disableHotkeys = this.disableHotkeys.bind(this);
-    this.accessToken = cookies.get('accessToken');
-    this.redditUser = cookies.get('redditUser');
+    this.accessToken = null;
+    this.redditUser = null;
     this.lastKeyPressed = null;
     this.filterActive = false;
     this.subredditTarget = null;
@@ -40,12 +39,13 @@ class Navigation extends React.Component {
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     jQuery(document).keypress(this.handleNavHotkey);
     jQuery(document).keydown(this.handleNavHotkeyKeyDown);
     jQuery(window).on('load resize', Navigation.resizeNavigation);
+    this.accessToken = await RedditAPI.getToken();
     if (this.accessToken) {
-      this.props.fetchSubreddits(true, false);
+      this.props.fetchSubreddits(false);
     } else {
       this.props.fetchDefaultSubreddits();
     }
@@ -120,22 +120,23 @@ class Navigation extends React.Component {
       // Navigation key commands
       if (this.lastKeyPressed === 'g') {
         // Logged in only
-        if (this.redditUser) {
+        if (this.props.me) {
+          const { name } = this.props.me;
           switch (pressedKey) {
             case 'f':
               this.props.push('/r/friends');
               break;
             case 'u':
-              this.props.push(`/user/${this.redditUser}/upvoted/${sort}`);
+              this.props.push(`/user/${name}/upvoted/${sort}`);
               break;
             case 'd':
-              this.props.push(`/user/${this.redditUser}/downvoted/${sort}`);
+              this.props.push(`/user/${name}/downvoted/${sort}`);
               break;
             case 'b':
-              this.props.push(`/user/${this.redditUser}/submitted/${sort}`);
+              this.props.push(`/user/${name}/submitted/${sort}`);
               break;
             case 's':
-              this.props.push(`/user/${this.redditUser}/saved`);
+              this.props.push(`/user/${name}/saved`);
               break;
             default:
               break;
@@ -177,7 +178,7 @@ class Navigation extends React.Component {
       }
 
       // Not logged in globals
-      if (!this.redditUser) {
+      if (!this.props.me.name) {
         switch (pressedKey) {
           case 'L': // shift-L
             window.location.href = '/api/reddit-login';
@@ -290,6 +291,7 @@ class Navigation extends React.Component {
 
   render() {
     const { subreddits } = this.props;
+    const { name } = this.props.me;
 
     if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
       return (
@@ -355,10 +357,10 @@ class Navigation extends React.Component {
                 <li><div><NavLink to={`/r/popular/${sort}`} title="Show popular posts">Popular</NavLink></div></li>
                 <li><div><a href="/r/myrandom" onClick={this.randomSub}>Random</a></div></li>
                 {this.accessToken && (<li><div><NavLink to={`/r/friends/${sort}`} title="Show Friends Posts" activeClassName="activeSubreddit">Friends</NavLink></div></li>)}
-                {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/submitted/${sort}`} title="Submitted" activeClassName="activeSubreddit">Submitted</NavLink></div></li>)}
-                {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/upvoted/${sort}`} title="Upvoted" activeClassName="activeSubreddit">Upvoted</NavLink></div></li>)}
-                {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/downvoted/${sort}`} title="Downvoted" activeClassName="activeSubreddit">Downvoted</NavLink></div></li>)}
-                {this.redditUser && (<li><div><NavLink to={`/user/${this.redditUser}/saved`} title="Saved" activeClassName="activeSubreddit">Saved</NavLink></div></li>)}
+                {name && (<li><div><NavLink to={`/user/${name}/submitted/${sort}`} title="Submitted" activeClassName="activeSubreddit">Submitted</NavLink></div></li>)}
+                {name && (<li><div><NavLink to={`/user/${name}/upvoted/${sort}`} title="Upvoted" activeClassName="activeSubreddit">Upvoted</NavLink></div></li>)}
+                {name && (<li><div><NavLink to={`/user/${name}/downvoted/${sort}`} title="Downvoted" activeClassName="activeSubreddit">Downvoted</NavLink></div></li>)}
+                {name && (<li><div><NavLink to={`/user/${name}/saved`} title="Saved" activeClassName="activeSubreddit">Saved</NavLink></div></li>)}
               </ul>)
             }
             {!hideExtras && (<div className="nav-divider" />)}
@@ -387,6 +389,7 @@ Navigation.propTypes = {
   fetchDefaultSubreddits: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   subreddits: PropTypes.object.isRequired,
+  me: PropTypes.object.isRequired,
   lastUpdated: PropTypes.object.isRequired,
   debug: PropTypes.bool.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
@@ -402,13 +405,14 @@ const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
   sortTop: state.listingsFilter.sortTop,
   subreddits: state.subreddits,
+  me: state.redditMe.me,
   lastUpdated: state.lastUpdated,
   debug: state.debugMode,
   disableHotkeys: state.disableHotKeys,
 });
 
 const mapDispatchToProps = dispatch => ({
-  fetchSubreddits: (auth, reload) => dispatch(subredditsFetchData(auth, reload)),
+  fetchSubreddits: reset => dispatch(subredditsFetchData(reset)),
   fetchDefaultSubreddits: () => dispatch(subredditsFetchDefaultData()),
   setDebug: debug => dispatch(debugMode(debug)),
   setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
