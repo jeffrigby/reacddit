@@ -12,14 +12,14 @@ import Root from './containers/Root';
 const history = createHistory();
 const store = configureStore({}, history);
 
-const render = (Component) => {
+const render = Component => {
   ReactDOM.render(
     <Provider store={store}>
       <ConnectedRouter history={history}>
         <Component />
       </ConnectedRouter>
     </Provider>,
-    document.getElementById('root'),
+    document.getElementById('root')
   );
 };
 

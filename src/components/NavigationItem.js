@@ -6,17 +6,18 @@ import Common from '../common';
 
 class NavigationItem extends React.Component {
   static lastUpdatedDiff(lastUpdated) {
-    const now = Math.floor((new Date()).getTime() / 1000);
+    const now = Math.floor(new Date().getTime() / 1000);
     return now - lastUpdated;
   }
 
   getDiffClassName() {
+    const { lastUpdated, trigger } = this.props;
     let classNameStr = '';
-    if (this.props.lastUpdated > 0) {
-      const seconds = NavigationItem.lastUpdatedDiff(this.props.lastUpdated);
-      const deadSecs = ((365 / 2) * 24 * 3600); // 6 months
-      const staleSecs = ((365 / 12) * 24 * 3600); // 3 months
-      const todaySecs = (24 * 3600); // 1 day
+    if (lastUpdated > 0) {
+      const seconds = NavigationItem.lastUpdatedDiff(lastUpdated);
+      const deadSecs = (365 / 2) * 24 * 3600; // 6 months
+      const staleSecs = (365 / 12) * 24 * 3600; // 3 months
+      const todaySecs = 24 * 3600; // 1 day
       const newSecs = 3600 / 2; // 30 minutes
 
       if (seconds >= deadSecs) {
@@ -30,7 +31,7 @@ class NavigationItem extends React.Component {
       }
     }
 
-    if (this.props.trigger) {
+    if (trigger) {
       classNameStr += ' mark highlighted';
     }
 
@@ -38,24 +39,30 @@ class NavigationItem extends React.Component {
   }
 
   render() {
-    let sort = this.props.sort ? this.props.sort : '';
-    if (sort === 'top' || sort === 'controversial') {
-      sort = `${sort}?t=${this.props.sortTop}`;
+    const { sort, sortTop, item, trigger } = this.props;
+    let currentSort = sort || '';
+    if (currentSort === 'top' || currentSort === 'controversial') {
+      currentSort = `${currentSort}?t=${sortTop}`;
     }
-    const href = `${Common.stripTrailingSlash(this.props.item.url)}/${sort}`;
+    const href = `${Common.stripTrailingSlash(item.url)}/${currentSort}`;
     const classNameStr = this.getDiffClassName();
-    const subLabel = (classNameStr.indexOf('sub-new') !== -1 ? <span className="label label-success">New</span> : null);
-    const trigger = this.props.trigger ? '>' : '';
+    const subLabel =
+      classNameStr.indexOf('sub-new') !== -1 ? (
+        <span className="label label-success">New</span>
+      ) : null;
+    const currentTrigger = trigger ? '>' : '';
 
     return (
       <li>
-        <div id={this.props.item.id} className={classNameStr}>
+        <div id={item.id} className={classNameStr}>
           <NavLink
             to={href}
-            title={this.props.item.public_description}
+            title={item.public_description}
             activeClassName="activeSubreddit"
-          >{trigger} {this.props.item.display_name}
-          </NavLink> {subLabel}
+          >
+            {currentTrigger} {item.display_name}
+          </NavLink>{' '}
+          {subLabel}
         </div>
       </li>
     );
@@ -75,13 +82,14 @@ NavigationItem.defaultProps = {
   sortTop: '',
 };
 
-
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
   sortTop: state.listingsFilter.sortTop,
 });
 
-const mapDispatchToProps = dispatch => ({
-});
+const mapDispatchToProps = dispatch => ({});
 
-export default connect(mapStateToProps, mapDispatchToProps)(NavigationItem);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(NavigationItem);

@@ -8,17 +8,21 @@ const VideoComp = ({ content, load }) => {
   // limit the height of video
   const maxHeight = 650;
   if (contentRender.height > maxHeight) {
-    contentRender.width = (contentRender.width * maxHeight) / contentRender.height;
+    contentRender.width =
+      (contentRender.width * maxHeight) / contentRender.height;
     contentRender.height = maxHeight;
   }
 
-  const width = contentRender.height > 800 ? ((contentRender.width * 800) / contentRender.height) : contentRender.width;
+  const width =
+    contentRender.height > 800
+      ? (contentRender.width * 800) / contentRender.height
+      : contentRender.width;
   const contStyle = { width: `${width}px` };
   const ratio = (contentRender.height / contentRender.width) * 100;
   const ratioStyle = { paddingBottom: `${ratio}%` };
   const videoId = `video-${contentRender.id}`;
 
-  const playStop = (elm) => {
+  const playStop = elm => {
     if (elm.target.paused) {
       elm.target.play();
     } else {
@@ -41,14 +45,22 @@ const VideoComp = ({ content, load }) => {
         className="loaded embed-responsive-item preload"
         onClick={playStop}
       >
-        {contentRender.webm && (<source id="webmsource" src={contentRender.webm} type="video/webm" />)}
-        {contentRender.mp4 && (<source id="mp4source" src={contentRender.mp4} type="video/mp4" />)}
+        {contentRender.webm && (
+          <source id="webmsource" src={contentRender.webm} type="video/webm" />
+        )}
+        {contentRender.mp4 && (
+          <source id="mp4source" src={contentRender.mp4} type="video/mp4" />
+        )}
       </video>
     );
   } else {
     // replace with thumb if loading is too slow.
     video = (
-      <img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" className="embed-responsive-item" alt={contentRender.id} />
+      <img
+        src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+        className="embed-responsive-item"
+        alt={contentRender.id}
+      />
     );
   }
 
@@ -59,7 +71,8 @@ const VideoComp = ({ content, load }) => {
           {video}
         </div>
       </div>
-    </div>);
+    </div>
+  );
 };
 
 VideoComp.propTypes = {

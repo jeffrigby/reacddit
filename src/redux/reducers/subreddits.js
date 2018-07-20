@@ -1,4 +1,7 @@
-export function subreddits(state = { status: 'unloaded', subreddits: {} }, action) {
+export function subreddits(
+  state = { status: 'unloaded', subreddits: {} },
+  action
+) {
   switch (action.type) {
     case 'SUBREDDITS_STATUS':
       return {

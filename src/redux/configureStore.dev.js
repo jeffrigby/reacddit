@@ -6,8 +6,8 @@ import thunk from 'redux-thunk';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import rootReducer from './reducers';
 
-
-const axClient = axios.create({ // all axios can be used, shown in axios documentation
+const axClient = axios.create({
+  // all axios can be used, shown in axios documentation
   responseType: 'json',
 });
 
@@ -24,9 +24,9 @@ const configureStore = (initialState, history) => {
     rootReducer,
     initialState,
     composeWithDevTools(
-      applyMiddleware(...middleware),
+      applyMiddleware(...middleware)
       // DevTools.instrument(),
-    ),
+    )
   );
 
   return store;

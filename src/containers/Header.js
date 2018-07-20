@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import SubredditActions from '../containers/SubredditActions';
+import SubredditActions from './SubredditActions';
 
 class Header extends React.Component {
   static showSubs() {
@@ -9,7 +9,8 @@ class Header extends React.Component {
   }
 
   render() {
-    const target = this.props.listingsTarget === 'mine' ? 'RedditJS' : this.props.listingsTarget;
+    const { listingsTarget } = this.props;
+    const target = listingsTarget === 'mine' ? 'RedditJS' : listingsTarget;
     return (
       <div className="navbar navbar-inverse navbar-fixed-top" id="header">
         <div id="header-sidebar">
@@ -21,7 +22,11 @@ class Header extends React.Component {
           <div className="col-md-12 col-lg-9">
             <div className="navbar-header">
               <SubredditActions />
-              <button type="button" className="navbar-toggle" onClick={this.showSubs}>
+              <button
+                type="button"
+                className="navbar-toggle"
+                onClick={this.showSubs}
+              >
                 <span className="icon-bar" />
                 <span className="icon-bar" />
                 <span className="icon-bar" />
@@ -57,5 +62,5 @@ const mapDispatchToProps = dispatch => ({
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps,
+  mapDispatchToProps
 )(Header);

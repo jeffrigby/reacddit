@@ -13,19 +13,20 @@ class MultiReddits extends React.Component {
   }
 
   async componentDidMount() {
+    const { fetchMultis } = this.props;
     this.accessToken = await RedditAPI.getToken();
 
     if (this.accessToken) {
-      this.props.fetchMultis();
+      fetchMultis();
     }
   }
 
   generateMultiItems() {
-    const { multis } = this.props.multireddits;
+    const { multireddits } = this.props;
     const navigationItems = [];
 
-    if (multis) {
-      multis.forEach((item) => {
+    if (multireddits.multis) {
+      multireddits.multis.forEach(item => {
         navigationItems.push(
           <li key={item.data.path}>
             <div>
@@ -33,10 +34,12 @@ class MultiReddits extends React.Component {
                 to={item.data.path}
                 title={item.data.description_md}
                 activeClassName="activeSubreddit"
-              >{item.data.name}
+              >
+                {item.data.name}
               </NavLink>
             </div>
-          </li>);
+          </li>
+        );
       });
     }
 
@@ -44,23 +47,25 @@ class MultiReddits extends React.Component {
   }
 
   render() {
-    if (this.props.multireddits) {
+    const { multireddits } = this.props;
+    if (multireddits) {
       const multis = this.generateMultiItems();
       if (multis.length) {
         return (
           <div>
-            <div><strong>Multis</strong></div>
+            <div>
+              <strong>Multis</strong>
+            </div>
             <ul className="nav">{multis}</ul>
             <div className="nav-divider" />
           </div>
         );
       }
-      return (<div />);
+      return <div />;
     }
-    return (<div />);
+    return <div />;
   }
 }
-
 
 MultiReddits.propTypes = {
   fetchMultis: PropTypes.func.isRequired,
@@ -70,8 +75,7 @@ MultiReddits.propTypes = {
   // disableHotkeys: PropTypes.bool.isRequired,
 };
 
-MultiReddits.defaultProps = {
-};
+MultiReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
   multireddits: state.redditMultiReddits,
@@ -85,4 +89,7 @@ const mapDispatchToProps = dispatch => ({
   push: url => dispatch(push(url)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(MultiReddits);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(MultiReddits);

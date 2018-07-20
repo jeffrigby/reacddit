@@ -45,7 +45,10 @@ class Entries extends React.Component {
     element.height = jQuery(elm).height();
     element.bottom = element.top + element.height;
 
-    if ((viewport.top - element.bottom <= y) && (element.top - viewport.bottom <= y)) {
+    if (
+      viewport.top - element.bottom <= y &&
+      element.top - viewport.bottom <= y
+    ) {
       return true;
     }
 
@@ -102,7 +105,7 @@ class Entries extends React.Component {
     if (filter.sort === 'top') {
       qs.t = filter.sortTop;
     }
-    Object.keys(qs).forEach(key => (!qs[key]) && delete qs[key]);
+    Object.keys(qs).forEach(key => !qs[key] && delete qs[key]);
 
     const qsStr = `?${queryString.stringify(qs)}`;
 
@@ -128,38 +131,44 @@ class Entries extends React.Component {
 
   componentDidMount() {
     this.scrollResizeStop = false;
+    const { match, location } = this.props;
     jQuery(document).keypress(Entries.handleEntriesHotkey);
-    this.setRedux(this.props.match, this.props.location);
-    jQuery(window).on('load resize scroll', () => { this.scrollResize = true; });
+    this.setRedux(match, location);
+    jQuery(window).on('load resize scroll', () => {
+      this.scrollResize = true;
+    });
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 500);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (!isEqual(nextProps.listingsFilter, this.props.listingsFilter)) {
+    const { ...props } = this.props;
+    const { focused, visible } = this.state;
+
+    if (!isEqual(nextProps.listingsFilter, props.listingsFilter)) {
       return true;
     }
-    if (this.props.listingsStatus !== nextProps.listingsStatus) {
+    if (props.listingsStatus !== nextProps.listingsStatus) {
       return true;
     }
 
-    if (this.props.entries !== nextProps.entries) {
+    if (props.entries !== nextProps.entries) {
       return true;
     }
 
-    if (this.props.debug !== nextProps.debug) {
+    if (props.debug !== nextProps.debug) {
       return true;
     }
 
-    if (this.state.focused !== nextState.focused) {
+    if (focused !== nextState.focused) {
       return true;
     }
 
-    if (!isEqual(this.state.visible, nextState.visible)) {
+    if (!isEqual(visible, nextState.visible)) {
       return true;
     }
 
-    const matchCompare = isEqual(nextProps.match, this.props.match);
-    const locationCompare = isEqual(nextProps.location, this.props.location);
+    const matchCompare = isEqual(nextProps.match, props.match);
+    const locationCompare = isEqual(nextProps.location, props.location);
     if (!matchCompare || !locationCompare) {
       return true;
     }
@@ -167,14 +176,15 @@ class Entries extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const matchCompare = isEqual(prevProps.match, this.props.match);
-    const locationCompare = isEqual(prevProps.location, this.props.location);
+    const { match, location, listingsFilter, getEntries } = this.props;
+    const matchCompare = isEqual(prevProps.match, match);
+    const locationCompare = isEqual(prevProps.location, location);
     if (!matchCompare || !locationCompare) {
-      this.setRedux(this.props.match, this.props.location);
+      this.setRedux(match, location);
     }
 
-    if (!isEqual(prevProps.listingsFilter, this.props.listingsFilter)) {
-      this.props.getEntries(this.props.listingsFilter);
+    if (!isEqual(prevProps.listingsFilter, listingsFilter)) {
+      getEntries(listingsFilter);
     }
 
     this.setInitFocusedAndVisible();
@@ -185,9 +195,13 @@ class Entries extends React.Component {
   }
 
   setInitFocusedAndVisible() {
-    if (this.props.listingsEntries.type === 'init' && this.initTriggered !== this.props.listingsEntries.requestUrl) {
-      this.initTriggered = this.props.listingsEntries.requestUrl;
-      const entryKeys = Object.keys(this.props.listingsEntries.entries);
+    const { listingsEntries } = this.props;
+    if (
+      listingsEntries.type === 'init' &&
+      this.initTriggered !== listingsEntries.requestUrl
+    ) {
+      this.initTriggered = listingsEntries.requestUrl;
+      const entryKeys = Object.keys(listingsEntries.entries);
       const newState = {
         focused: entryKeys[0],
         visible: entryKeys.slice(0, 5),
@@ -198,11 +212,11 @@ class Entries extends React.Component {
 
   setRedux(match, location) {
     const qs = queryString.parse(location.search);
+    const { listingsFilter, setFilter } = this.props;
 
     let listType = match.params.listType || 'r';
     if (listType === 'user' && !match.params.multi) listType = 'u';
     if (listType === 'user' && match.params.multi) listType = 'm';
-
 
     const newListingsFilter = {
       sort: match.params.sort || 'hot',
@@ -217,10 +231,8 @@ class Entries extends React.Component {
 
     newListingsFilter.url = Entries.createEntriesUrl(newListingsFilter);
 
-    const { listingsFilter } = this.props;
-
     if (!isEqual(listingsFilter, newListingsFilter)) {
-      this.props.setFilter(newListingsFilter);
+      setFilter(newListingsFilter);
     }
   }
 
@@ -252,14 +264,16 @@ class Entries extends React.Component {
           }
 
           // Check to see if there's a video to autoplay (mostly for Safari in High Sierra.
-          const videos = jQuery(entry).find('video').not('.autoplay-triggered');
+          const videos = jQuery(entry)
+            .find('video')
+            .not('.autoplay-triggered');
           if (videos.length > 0) {
             jQuery.each(videos, (videoidx, video) => {
               document.getElementById(video.id).play();
               jQuery(video).addClass('autoplay-triggered');
             });
 
-          //   document.getElementById(video[0].id).play();
+            //   document.getElementById(video[0].id).play();
           }
         }
 
@@ -286,30 +300,48 @@ class Entries extends React.Component {
   }
 
   checkLoadMore() {
-    const loadedStatus = this.props.listingsStatus;
-    if (loadedStatus === 'loaded' && jQuery(window).scrollTop() + jQuery(window).height() > jQuery(document).height() - 2500) {
-      this.props.getMoreEntries();
+    const { listingsStatus, getMoreEntries } = this.props;
+    const loadedStatus = listingsStatus;
+    if (
+      loadedStatus === 'loaded' &&
+      jQuery(window).scrollTop() + jQuery(window).height() >
+        jQuery(document).height() - 2500
+    ) {
+      getMoreEntries();
     }
   }
 
   render() {
-    if (this.props.listingsStatus === 'unloaded' || this.props.listingsStatus === 'loading') {
+    const {
+      listingsStatus,
+      listingsEntries,
+      debug,
+      listingsFilter,
+    } = this.props;
+
+    if (listingsStatus === 'unloaded' || listingsStatus === 'loading') {
       return (
         <div className="alert alert-info" id="content-loading" role="alert">
-          <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" /> Getting entries from Reddit.
+          <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" />
+          {' Getting entries from Reddit.'}
         </div>
       );
     }
 
-    if (this.props.listingsStatus === 'error') {
+    if (listingsStatus === 'error') {
       return (
-        <div className="alert alert-danger" id="subreddits-load-error" role="alert">
-          <span className="glyphicon glyphicon glyphicon-alert" /> Error loading this subreddit.
+        <div
+          className="alert alert-danger"
+          id="subreddits-load-error"
+          role="alert"
+        >
+          <span className="glyphicon glyphicon glyphicon-alert" />
+          Error loading this subreddit.
         </div>
       );
     }
 
-    if (this.props.listingsStatus === 'loaded' && !this.props.listingsEntries.entries) {
+    if (listingsStatus === 'loaded' && !listingsEntries.entries) {
       return (
         <div className="alert alert-warning" id="content-empty" role="alert">
           <span className="glyphicon glyphicon glyphicon-alert" /> Nothing here.
@@ -318,61 +350,73 @@ class Entries extends React.Component {
     }
 
     let footerStatus = '';
-    if (this.props.listingsStatus === 'loadingNext') {
+    if (listingsStatus === 'loadingNext') {
       footerStatus = (
-        <div className="alert alert-info" id="content-more-loading" role="alert">
-          <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" /> Getting more entries.
+        <div
+          className="alert alert-info"
+          id="content-more-loading"
+          role="alert"
+        >
+          <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" />
+          {' Getting more entries.'}
         </div>
       );
-    } else if (this.props.listingsStatus === 'loadedAll') {
+    } else if (listingsStatus === 'loadedAll') {
       footerStatus = (
         <div className="alert alert-warning" id="content-end" role="alert">
-          <span className="glyphicon glyphicon glyphicon-alert" /> {"That's it!"}
+          <span className="glyphicon glyphicon glyphicon-alert" />
+          {" That's it!"}
         </div>
       );
     }
 
     let entries = '';
-    const entriesObject = this.props.listingsEntries.entries;
+    const entriesObject = listingsEntries.entries;
     // @todo can these three lines be combined?
-    let focused = '';
-    let visible = {};
-    ({ focused, visible } = this.state);
+    // let focused = '';
+    // let visible = {};
+    // ({ focused, visible } = this.state);
+    const { focused, visible } = this.state;
     const entriesKeys = Object.keys(entriesObject);
     if (entriesKeys.length > 0) {
-      entries = entriesKeys.map((key) => {
+      entries = entriesKeys.map(key => {
         const isFocused = focused === entriesObject[key].name;
         const isVisible = visible.includes(entriesObject[key].name);
         // const isFocused = false;
         // const isVisible = false;
-        return (<Entry
-          entry={entriesObject[key]}
-          key={entriesObject[key].id}
-          loaded={entriesObject[key].loaded}
-          focused={isFocused}
-          visible={isVisible}
-        />);
+        return (
+          <Entry
+            entry={entriesObject[key]}
+            key={entriesObject[key].id}
+            loaded={entriesObject[key].loaded}
+            focused={isFocused}
+            visible={isVisible}
+          />
+        );
       });
     }
 
     return (
       <div>
-        {this.props.debug &&
-        <div className="debugInfo">
-          <pre>
-            Target: {this.props.listingsFilter.target}<br />
-            Sort: {this.props.listingsFilter.sort}<br />
-            SortTop: {this.props.listingsFilter.sortTop}<br />
-            Type: {this.props.listingsFilter.listType}<br />
-            URL: {this.props.listingsFilter.url}<br />
-            Focus: {this.state.focused}
-          </pre>
-        </div>
-        }
+        {debug && (
+          <div className="debugInfo">
+            <pre>
+              Target: {listingsFilter.target}
+              <br />
+              Sort: {listingsFilter.sort}
+              <br />
+              SortTop: {listingsFilter.sortTop}
+              <br />
+              Type: {listingsFilter.listType}
+              <br />
+              URL: {listingsFilter.url}
+              <br />
+              Focus: {focused}
+            </pre>
+          </div>
+        )}
         {entries}
-        <div className="footer-status">
-          {footerStatus}
-        </div>
+        <div className="footer-status">{footerStatus}</div>
       </div>
     );
   }
@@ -409,12 +453,13 @@ const mapStateToProps = (state, ownProps) => ({
 const mapDispatchToProps = dispatch => ({
   setFilter: filter => dispatch(listings.listingsFilter(filter)),
   setStatus: status => dispatch(listings.listingsStatus(status)),
-  getEntries: (filter, query) => dispatch(listings.listingsFetch(filter, query)),
+  getEntries: (filter, query) =>
+    dispatch(listings.listingsFetch(filter, query)),
   getMoreEntries: () => dispatch(listings.listingsFetchNext()),
   // getBearer: () => dispatch(reddit.redditGetBearer()),
 });
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps,
+  mapDispatchToProps
 )(Entries);

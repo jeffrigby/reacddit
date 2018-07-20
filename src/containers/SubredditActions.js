@@ -8,6 +8,7 @@ const SubredditActions = () => (
       <Sort />
       <SortTop />
     </div>
-  </div>);
+  </div>
+);
 
 export default SubredditActions;

@@ -1,7 +1,6 @@
 import axios from 'axios';
 import RedditHelpers from '../../reddit/redditHelpers';
 
-
 export function subredditsStatus(status, message) {
   return {
     type: 'SUBREDDITS_STATUS',
@@ -25,13 +24,15 @@ export function subredditsLastUpdated(lastUpdated) {
 }
 
 export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
-  return (dispatch) => {
+  return dispatch => {
     const createdToGet = [];
     Object.keys(subreddits).forEach((key, index) => {
       if (Object.prototype.hasOwnProperty.call(subreddits, key)) {
         const value = subreddits[key];
         if (value.url !== '/r/mine' && value.quarantine === false) {
-          const url = `https://www.reddit.com${value.url}new.json?limit=1&sort=new`;
+          const url = `https://www.reddit.com${
+            value.url
+          }new.json?limit=1&sort=new`;
           // createdToGet.push(url);
           createdToGet.push(axios.get(url).catch(() => null));
         }
@@ -44,10 +45,12 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
       chunks.push(createdToGet.splice(0, 50));
     }
 
-    chunks.forEach(async (value) => {
-      const results = await axios.all(value).then(axios.spread((...args) => args));
+    chunks.forEach(async value => {
+      const results = await axios
+        .all(value)
+        .then(axios.spread((...args) => args));
       const newLastUpdated = lastUpdated;
-      results.forEach((item) => {
+      results.forEach(item => {
         const entry = item.data;
         // process item
         if (typeof entry.data.children[0] === 'object') {
@@ -63,7 +66,7 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
 
 export function subredditsFetchDefaultData() {
   const url = 'https://www.reddit.com/subreddits/default.json?limit=100';
-  return async (dispatch) => {
+  return async dispatch => {
     dispatch(subredditsStatus('loading'));
     try {
       const subredditsGet = await axios.get(url);
@@ -78,14 +81,16 @@ export function subredditsFetchDefaultData() {
       });
 
       subreddits.sort((a, b) => {
-        if (a.display_name.toLowerCase() < b.display_name.toLowerCase()) return -1;
-        if (a.display_name.toLowerCase() > b.display_name.toLowerCase()) return 1;
+        if (a.display_name.toLowerCase() < b.display_name.toLowerCase())
+          return -1;
+        if (a.display_name.toLowerCase() > b.display_name.toLowerCase())
+          return 1;
         return 0;
       });
 
       // convert it back to an object
       const subredditsKey = {};
-      subreddits.forEach((item) => {
+      subreddits.forEach(item => {
         subredditsKey[item.display_name] = item;
       });
 
@@ -98,10 +103,14 @@ export function subredditsFetchDefaultData() {
 }
 
 export function subredditsFetchData(reset) {
-  return async (dispatch) => {
+  return async dispatch => {
     dispatch(subredditsStatus('loading'));
     try {
-      const subs = await RedditHelpers.subredditMineAll('subscriber', {}, reset);
+      const subs = await RedditHelpers.subredditMineAll(
+        'subscriber',
+        {},
+        reset
+      );
       await dispatch(subredditsFetchDataSuccess(subs.subreddits));
       dispatch(subredditsFetchLastUpdated(subs.subreddits));
     } catch (e) {
@@ -109,4 +118,3 @@ export function subredditsFetchData(reset) {
     }
   };
 }
-

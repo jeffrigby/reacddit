@@ -8,7 +8,10 @@ export function redditMultiReddits(state = { status: 'unloaded' }, action) {
   }
 }
 
-export function redditBearer(state = { status: 'unloaded', bearer: null }, action) {
+export function redditBearer(
+  state = { status: 'unloaded', bearer: null },
+  action
+) {
   switch (action.type) {
     case 'REDDIT_BEARER':
       return action.bearer;

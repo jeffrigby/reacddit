@@ -30,7 +30,7 @@ export function listingsStatus(listingStatus) {
 }
 
 export function listingsFetchEntries(url) {
-  return async (dispatch) => {
+  return async dispatch => {
     dispatch(listingsStatus('loading'));
     await dispatch(listingsEntries({}));
     try {
@@ -53,8 +53,13 @@ export function listingsFetchNext() {
   return async (dispatch, getState) => {
     const currentState = getState();
     const url = currentState.listingsEntries.requestUrl.split('?');
-    let nextUrl = `${url[0]}?after=${currentState.listingsEntries.after}&limit=50`;
-    if (currentState.listingsFilter.sort === 'top' || currentState.listingsFilter.sort === 'controversial') {
+    let nextUrl = `${url[0]}?after=${
+      currentState.listingsEntries.after
+    }&limit=50`;
+    if (
+      currentState.listingsFilter.sort === 'top' ||
+      currentState.listingsFilter.sort === 'controversial'
+    ) {
       nextUrl += `&t=${currentState.listingsFilter.sortTop}`;
     }
     dispatch(listingsStatus('loadingNext'));
@@ -81,9 +86,11 @@ export function listingsFetch() {
     const { url } = currentState.listingsFilter;
     if (!url) {
       return false;
-    } else if (url === currentState.listingsEntries.requestUrl) {
+    }
+    if (url === currentState.listingsEntries.requestUrl) {
       return false;
-    } else if (currentState.listingsStatus === 'loading') {
+    }
+    if (currentState.listingsStatus === 'loading') {
       return false;
     }
     dispatch(listingsFetchEntries(url));

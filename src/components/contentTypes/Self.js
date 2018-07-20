@@ -10,19 +10,23 @@ const Self = ({ content, load, name }) => {
   let inlineRendered;
   if (content.inline.length > 0) {
     let i = 0;
-    inlineRendered = content.inline
-      .map((item) => {
-        i += 1;
-        const guid = `inline${name}${i}`;
-        return <div className="inline-render" key={guid}><Content content={item} load={load} name={name} /></div>;
-      }, this);
+    inlineRendered = content.inline.map(item => {
+      i += 1;
+      const guid = `inline${name}${i}`;
+      return (
+        <div className="inline-render" key={guid}>
+          <Content content={item} load={load} name={name} />
+        </div>
+      );
+    }, this);
   }
 
   return (
     <div className="self">
       {html}
       {inlineRendered}
-    </div>);
+    </div>
+  );
 };
 
 Self.propTypes = {

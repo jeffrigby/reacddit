@@ -44,9 +44,8 @@ const Content = ({ content, name, load }) => {
     contentRendered = '';
   }
 
-  return (<div className="content">{contentRendered}</div>);
+  return <div className="content">{contentRendered}</div>;
 };
-
 
 Content.propTypes = {
   content: PropTypes.object.isRequired,
