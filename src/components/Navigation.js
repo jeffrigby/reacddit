@@ -301,15 +301,18 @@ class Navigation extends React.Component {
   }
 
   randomSubPush() {
-    const { subreddits, sort, ...props } = this.props;
+    const { subreddits, sort, sortTop, ...props } = this.props;
     if (isEmpty(subreddits.subreddits)) {
       return false;
     }
     const keys = Object.keys(subreddits.subreddits);
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
     const randomSubreddit = subreddits.subreddits[randomKey];
-    const url = randomSubreddit.url + (sort || 'hot');
-    // @todo add the top sorting.
+
+    const sortTopQS =
+      sort === 'top' || sort === 'controversial' ? `?t=${sortTop}` : '';
+
+    const url = randomSubreddit.url + (sort || 'hot') + sortTopQS;
     return props.push(url);
   }
 
