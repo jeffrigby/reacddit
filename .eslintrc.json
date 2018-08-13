@@ -1,6 +1,8 @@
 {
     "extends": [
       "airbnb",
+//      "eslint:recommended",
+      "plugin:react/recommended",
       "plugin:flowtype/recommended",
       "plugin:react/recommended",
       "prettier",
@@ -10,12 +12,15 @@
     ],
     "env": {
       "browser": true,
+      "amd": true,
 //      "node": true,
       "es6": true
 //      "mocha": true
     },
     "globals": {
-      "jQuery": true
+      "jQuery": true,
+      "module": false,
+      "process": false
     },
     "plugins": [
       "flowtype",
