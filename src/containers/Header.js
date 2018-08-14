@@ -9,19 +9,20 @@ class Header extends React.Component {
   }
 
   render() {
-    const { listingsTarget } = this.props;
-    const target = listingsTarget === 'mine' ? 'RedditJS' : listingsTarget;
+    const { listType, target } = this.props.listingsFilter;
+    const title = target === 'mine' ? '' : `${listType}/${target}`;
     return (
       <div className="navbar navbar-inverse navbar-fixed-top" id="header">
         <div id="header-sidebar">
           <div className="col-md-12">
-            <h5 className="header-target">{target}</h5>
+            <h5 className="header-target">RedditJS</h5>
           </div>
         </div>
         <div id="header-main">
           <div className="col-md-12 col-lg-9">
+            <SubredditActions />
             <div className="navbar-header">
-              <SubredditActions />
+              <h5 className="header-target">{title}</h5>
               <button
                 type="button"
                 className="navbar-toggle"
@@ -44,15 +45,13 @@ Header.propTypes = {
   // query: PropTypes.object,
   // accessToken: PropTypes.object,
   // location: PropTypes.object,
-  listingsTarget: PropTypes.string,
+  listingsFilter: PropTypes.object.isRequired,
 };
 
-Header.defaultProps = {
-  listingsTarget: 'mine',
-};
+Header.defaultProps = {};
 
 const mapStateToProps = state => ({
-  listingsTarget: state.listingsTarget,
+  listingsFilter: state.listingsFilter,
 });
 
 const mapDispatchToProps = dispatch => ({
