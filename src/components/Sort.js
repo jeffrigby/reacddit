@@ -93,7 +93,8 @@ class Sort extends React.Component {
         <ul className="dropdown-menu" aria-labelledby="sortDropdownMenu">
           <li>
             <Link to={this.genLink('hot')}>
-              hot <span className="pull-right">(&#x21E7;S)</span>
+              hot
+              <span className="pull-right">(&#x21E7;H)</span>
             </Link>
           </li>
           <li>

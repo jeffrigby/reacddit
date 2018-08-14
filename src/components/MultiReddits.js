@@ -1,15 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { push } from 'react-router-redux';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 import { redditFetchMultis } from '../redux/actions/reddit';
 import RedditAPI from '../reddit/redditAPI';
+import MultiRedditsItem from './MultiRedditsItem';
 
 class MultiReddits extends React.Component {
   constructor(props) {
     super(props);
     this.accessToken = null;
+    this.state = {
+      showSubs: false,
+    };
+    this.hideShowSubs = this.hideShowSubs.bind(this);
   }
 
   async componentDidMount() {
@@ -21,25 +24,19 @@ class MultiReddits extends React.Component {
     }
   }
 
+  hideShowSubs() {
+    const { showSubs } = this.state;
+    this.setState({ showSubs: !showSubs });
+  }
+
   generateMultiItems() {
     const { multireddits } = this.props;
     const navigationItems = [];
 
     if (multireddits.multis) {
       multireddits.multis.forEach(item => {
-        navigationItems.push(
-          <li key={item.data.path}>
-            <div>
-              <NavLink
-                to={item.data.path}
-                title={item.data.description_md}
-                activeClassName="activeSubreddit"
-              >
-                {item.data.name}
-              </NavLink>
-            </div>
-          </li>
-        );
+        const key = `${item.data.display_name}-${item.data.created}`;
+        navigationItems.push(<MultiRedditsItem item={item} key={key} />);
       });
     }
 
@@ -69,24 +66,17 @@ class MultiReddits extends React.Component {
 
 MultiReddits.propTypes = {
   fetchMultis: PropTypes.func.isRequired,
-  // push: PropTypes.func.isRequired,
   multireddits: PropTypes.object.isRequired,
-  // debug: PropTypes.bool.isRequired,
-  // disableHotkeys: PropTypes.bool.isRequired,
 };
 
 MultiReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
   multireddits: state.redditMultiReddits,
-  debug: state.debugMode,
-  disableHotkeys: state.disableHotKeys,
 });
 
 const mapDispatchToProps = dispatch => ({
   fetchMultis: () => dispatch(redditFetchMultis()),
-  // setDebug: debug => dispatch(debugMode(debug)),
-  push: url => dispatch(push(url)),
 });
 
 export default connect(
