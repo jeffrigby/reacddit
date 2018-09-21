@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookie from 'js-cookie';
 
 const queryString = require('query-string');
 
@@ -50,7 +51,7 @@ class RedditAPI {
   }
 
   /**
-   * Save the bearer token to localstorage
+   * Save the bearer token to cookie
    * @param accessToken
    *   The token to save
    * @param expires
@@ -63,7 +64,12 @@ class RedditAPI {
       expires,
     };
 
-    localStorage.setItem('token', JSON.stringify(token));
+    const tokenJson = JSON.stringify(token);
+
+    // Probably don't need both.
+    localStorage.setItem('token', tokenJson);
+    Cookie.set('token', tokenJson);
+
     this.token = token;
     return token;
   }
@@ -75,18 +81,15 @@ class RedditAPI {
   static getTokenStorage() {
     let token = null;
 
-    const localStorageToken = localStorage.getItem('token');
-    const localStorageTokenJson =
-      localStorage.getItem('token') !== null
-        ? JSON.parse(localStorageToken)
-        : null;
+    const cookieToken = Cookie.get('token');
+    const cookieTokenJson = cookieToken ? JSON.parse(cookieToken) : null;
 
-    if (localStorageTokenJson !== null) {
-      const { expires } = localStorageTokenJson;
+    if (cookieTokenJson !== null) {
+      const { expires } = cookieTokenJson;
       const dateTime = Date.now();
       const timestamp = Math.floor(dateTime / 1000);
       if (expires >= timestamp) {
-        token = localStorageTokenJson.accessToken;
+        token = cookieTokenJson.accessToken;
       } else {
         token = 'expired';
       }
@@ -95,7 +98,7 @@ class RedditAPI {
   }
 
   /**
-   * Get the token from localstorage if possible, if not get it from
+   * Get the token from cookie if possible, if not get it from
    * the server.
    * @param reset - Always get it from the server.
    * @returns {Promise<*>}
@@ -117,6 +120,7 @@ class RedditAPI {
 
     if (token === null) {
       // Clean up stale values in  storage.
+      Cookie.remove('token');
       localStorage.clear();
       sessionStorage.clear();
     }
@@ -186,6 +190,7 @@ class RedditAPI {
       id,
       rank: 1,
     };
+
     const vote = await this.redditAPI.post(
       '/api/vote',
       queryString.stringify(params)

@@ -272,7 +272,11 @@ div.entry {
 
 }
 
-#sr-header {
+.subreddit-entry-filter {
+  .dropdown-menu li {
+    position: relative;
+  }
+
   #sr-title {
     text-transform: uppercase;
     margin-bottom: 0;
@@ -280,7 +284,15 @@ div.entry {
   #current-sort {
     text-transform: uppercase;
   }
+
+  .menu-shortcut {
+    position: absolute;
+    right: 20px;
+    top: 3px;
+  }
 }
+
+
 
 
 

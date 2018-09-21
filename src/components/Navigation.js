@@ -48,6 +48,7 @@ class Navigation extends React.Component {
     jQuery(document).keydown(this.handleNavHotkeyKeyDown);
     jQuery(window).on('load resize', Navigation.resizeNavigation);
     this.accessToken = await RedditAPI.getToken();
+
     if (this.accessToken) {
       fetchSubreddits(false);
     } else {

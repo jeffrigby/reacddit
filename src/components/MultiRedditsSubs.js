@@ -70,8 +70,7 @@ MultiRedditsSubs.propTypes = {
   lastUpdated: PropTypes.object.isRequired,
 };
 
-MultiRedditsSubs.defaultProps = {
-};
+MultiRedditsSubs.defaultProps = {};
 
 const mapStateToProps = state => ({
   lastUpdated: state.lastUpdated,

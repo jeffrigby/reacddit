@@ -92,30 +92,24 @@ class Sort extends React.Component {
         </button>
         <ul className="dropdown-menu" aria-labelledby="sortDropdownMenu">
           <li>
-            <Link to={this.genLink('hot')}>
-              hot
-              <span className="pull-right">(&#x21E7;H)</span>
-            </Link>
+            <Link to={this.genLink('hot')}>hot</Link>
+            <span className="menu-shortcut">&#x21E7;H</span>
           </li>
           <li>
-            <Link to={this.genLink('new')}>
-              new <span className="pull-right">(&#x21E7;N)</span>
-            </Link>
+            <Link to={this.genLink('new')}>new</Link>
+            <span className="menu-shortcut">&#x21E7;N</span>
           </li>
           <li>
-            <Link to={this.genLink('top')}>
-              top <span className="pull-right">(&#x21E7;T)</span>
-            </Link>
+            <Link to={this.genLink('top')}>top</Link>
+            <span className="menu-shortcut">&#x21E7;T</span>
           </li>
           <li>
-            <Link to={this.genLink('rising')}>
-              rising <span className="pull-right">(&#x21E7;R)</span>
-            </Link>
+            <Link to={this.genLink('rising')}>rising</Link>
+            <span className="menu-shortcut">&#x21E7;R</span>
           </li>
           <li>
-            <Link to={this.genLink('controversial')}>
-              controversial <span className="pull-right">(&#x21E7;C)</span>
-            </Link>
+            <Link to={this.genLink('controversial')}>controversial</Link>
+            <span className="menu-shortcut">&#x21E7;C</span>
           </li>
         </ul>
       </div>

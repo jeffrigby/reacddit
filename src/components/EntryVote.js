@@ -17,11 +17,11 @@ class EntryVote extends React.Component {
           type="button"
           className="btn btn-link btn-sm"
           disabled={disabled}
+          onClick={() => vote(`t3_${id}`, upDir)}
         >
           <span
             className={`glyphicon glyphicon-thumbs-up ${upClass}`}
             aria-hidden="true"
-            onClick={() => vote(`t3_${id}`, upDir)}
           />
         </button>
         <span className="small">{ups.toLocaleString()}</span>
@@ -29,11 +29,11 @@ class EntryVote extends React.Component {
           type="button"
           className="btn btn-link btn-sm"
           disabled={disabled}
+          onClick={() => vote(`t3_${id}`, downDir)}
         >
           <span
             className={`glyphicon glyphicon-thumbs-down ${downClass}`}
             aria-hidden="true"
-            onClick={() => vote(`t3_${id}`, downDir)}
           />
         </button>
       </div>
