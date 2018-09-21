@@ -9,7 +9,8 @@ import { connect } from 'react-redux';
 const SortTop = ({ listingFilter }) => {
   if (
     (listingFilter.sort !== 'top' && listingFilter.sort !== 'controversial') ||
-    listingFilter.target === 'friends' || listingFilter.listType === 'u'
+    listingFilter.target === 'friends' ||
+    listingFilter.listType === 'u'
   ) {
     return null;
   }
@@ -24,9 +25,7 @@ const SortTop = ({ listingFilter }) => {
   };
 
   const sortValue = sortArgs[listingFilter.sortTop];
-  const {
-    sort, target, listType, userType,
-  } = listingFilter;
+  const { sort, target, listType, userType } = listingFilter;
   let url = `/${listType}/${target}/${sort}?t=`;
 
   if (listType === 'r') {
@@ -45,33 +44,46 @@ const SortTop = ({ listingFilter }) => {
         aria-haspopup
         aria-expanded
       >
-        <span className="glyphicon glyphicon-time" /> {sortValue} <span className="caret" />
+        <span className="glyphicon glyphicon-time" /> {sortValue}{' '}
+        <span className="caret" />
       </button>
       <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
-        <li><Link to={`${url}hour`}>past hour</Link></li>
-        <li><Link to={`${url}day`}>past 24 hours</Link></li>
-        <li><Link to={`${url}week`}>past week</Link></li>
-        <li><Link to={`${url}month`}>past month</Link></li>
-        <li><Link to={`${url}year`}>past year</Link></li>
-        <li><Link to={`${url}all`}>all time</Link></li>
+        <li>
+          <Link to={`${url}hour`}>past hour</Link>
+        </li>
+        <li>
+          <Link to={`${url}day`}>past 24 hours</Link>
+        </li>
+        <li>
+          <Link to={`${url}week`}>past week</Link>
+        </li>
+        <li>
+          <Link to={`${url}month`}>past month</Link>
+        </li>
+        <li>
+          <Link to={`${url}year`}>past year</Link>
+        </li>
+        <li>
+          <Link to={`${url}all`}>all time</Link>
+        </li>
       </ul>
     </div>
   );
 };
 
-
 SortTop.propTypes = {
   listingFilter: PropTypes.object.isRequired,
 };
 
-SortTop.defaultProps = {
-};
+SortTop.defaultProps = {};
 
 const mapStateToProps = state => ({
   listingFilter: state.listingsFilter,
 });
 
-const mapDispatchToProps = dispatch => ({
-});
+const mapDispatchToProps = dispatch => ({});
 
-export default connect(mapStateToProps, mapDispatchToProps)(SortTop);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(SortTop);

@@ -63,7 +63,7 @@ export function redditFetchMe(reset) {
 export function redditFetchMultis(reset) {
   return async (dispatch, getState) => {
     try {
-      const multis = await RedditHelpers.multiMine({}, reset);
+      const multis = await RedditHelpers.multiMine({ expand_srs: true }, reset);
       const result = {
         multis: multis.data,
         status: 'loaded',

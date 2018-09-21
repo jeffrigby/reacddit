@@ -3,23 +3,29 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { redditSave, redditUnsave } from '../redux/actions/reddit';
 
-
 class EntrySave extends React.Component {
   saveUnsave() {
-    return this.props.saved === true ? this.props.unsave(this.props.name) : this.props.save(this.props.name);
+    const { saved, unsave, name, save } = this.props;
+    return saved === true ? unsave(name) : save(name);
   }
 
   render() {
-    const saveStr = this.props.saved === true ? 'Unsave' : 'Save';
-    if (this.props.bearer.status !== 'auth') {
+    const { saved, bearer } = this.props;
+    const saveStr = saved === true ? 'Unsave' : 'Save';
+    if (bearer.status !== 'auth') {
       return null;
     }
     return (
-      <button className="btn btn-xs btn-link" onClick={() => this.saveUnsave()}>{saveStr}</button>
+      <button
+        className="btn btn-xs btn-link"
+        onClick={() => this.saveUnsave()}
+        type="button"
+      >
+        {saveStr}
+      </button>
     );
   }
 }
-
 
 EntrySave.propTypes = {
   name: PropTypes.string.isRequired,
@@ -42,4 +48,7 @@ const mapDispatchToProps = dispatch => ({
   unsave: id => dispatch(redditUnsave(id)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(EntrySave);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(EntrySave);

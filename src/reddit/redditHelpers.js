@@ -4,7 +4,8 @@ import RedditAPI from './redditAPI';
 
 class RedditHelpers {
   static mapSubreddits(children) {
-    return Object.keys(children).map(objectKey => children[objectKey].data)
+    return Object.keys(children)
+      .map(objectKey => children[objectKey].data)
       .reduce((ac, s) => ({ ...ac, [s.display_name.toLowerCase()]: s }), {});
   }
 
@@ -71,9 +72,11 @@ class RedditHelpers {
 
     // Sort by alpha
     const subredditsOrdered = {};
-    Object.keys(subreddits).sort().forEach((key) => {
-      subredditsOrdered[key] = subreddits[key];
-    });
+    Object.keys(subreddits)
+      .sort()
+      .forEach(key => {
+        subredditsOrdered[key] = subreddits[key];
+      });
 
     sessionStorage.setItem(cacheKey, JSON.stringify(subredditsOrdered));
 

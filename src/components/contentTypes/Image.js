@@ -6,11 +6,15 @@ const Image = ({ content, load }) => {
   // limit the height of images
   const maxHeight = 650;
   if (contentRender.height > maxHeight) {
-    contentRender.width = (contentRender.width * maxHeight) / contentRender.height;
+    contentRender.width =
+      (contentRender.width * maxHeight) / contentRender.height;
     contentRender.height = maxHeight;
   }
 
-  const width = contentRender.height > 800 ? ((contentRender.width * 800) / contentRender.height) : contentRender.width;
+  const width =
+    contentRender.height > 800
+      ? (contentRender.width * 800) / contentRender.height
+      : contentRender.width;
   const contStyle = { width: `${width}px` };
   const ratio = (contentRender.height / contentRender.width) * 100;
   const ratioStyle = { paddingBottom: `${ratio}%` };
@@ -19,7 +23,10 @@ const Image = ({ content, load }) => {
     imgClass += ` ${contentRender.class}`;
   }
 
-  const src = load === true ? contentRender.src : 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+  const src =
+    load === true
+      ? contentRender.src
+      : 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
   return (
     <div className="ratio-bg">
@@ -28,7 +35,8 @@ const Image = ({ content, load }) => {
           <img src={src} alt={contentRender.title} className={imgClass} />
         </div>
       </div>
-    </div>);
+    </div>
+  );
 };
 
 Image.propTypes = {

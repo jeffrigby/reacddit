@@ -1,32 +1,60 @@
 {
-    "extends": "airbnb",
+    "extends": [
+      "airbnb",
+      "plugin:react/recommended",
+      "plugin:flowtype/recommended",
+      "prettier",
+      "prettier/flowtype",
+      "prettier/react",
+      "prettier/standard"
+    ],
     "env": {
       "browser": true,
-      "node": true,
-      "es6": true,
-      "mocha": true
+      "amd": true,
+//      "node": true,
+      "es6": true
+//      "mocha": true
     },
     "globals": {
-      "jQuery": true
+      "jQuery": true,
+      "module": false,
+      "process": false
     },
     "plugins": [
-        "react",
-        "jsx-a11y",
-        "import"
+      "flowtype",
+      "react",
+      "prettier"
+//      "jsx-a11y",
+//      "import"
     ],
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
     "rules": {
+      "prettier/prettier": "error",
+//      "comma-dangle": [2, {
+//        "arrays": "always-multiline",
+//        "objects": "always-multiline",
+//        "imports": "always-multiline",
+//        "exports": "always-multiline",
+//        "functions": "ignore"
+//      }]
+
       "global-require": 0,
-      "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+//      "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
       "no-unused-vars": ["error", { "args": "none" }],
       "react/jsx-filename-extension": 0,
       "react/forbid-prop-types": 0,
-      "jsx-a11y/media-has-caption": 0,
-      "function-paren-newline": 0,
-      "max-len": ["error", 200],
-      "jsx-a11y/anchor-is-valid": [ "error", {
-        "components": [ "Link" ],
-        "specialLink": [ "to" ],
-        "aspects": [ "noHref", "invalidHref", "preferButton" ]
-      }]
+//      "jsx-a11y/media-has-caption": 0,
+//      "function-paren-newline": 0,
+      "max-len": ["error", 200]
+//      "jsx-a11y/anchor-is-valid": [ "error", {
+//        "components": [ "Link" ],
+//        "specialLink": [ "to" ],
+//        "aspects": [ "noHref", "invalidHref", "preferButton" ]
+//      }]
     }
 }

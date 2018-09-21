@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import SubredditActions from '../containers/SubredditActions';
+import SubredditActions from './SubredditActions';
 
 class Header extends React.Component {
   static showSubs() {
@@ -9,19 +9,26 @@ class Header extends React.Component {
   }
 
   render() {
-    const target = this.props.listingsTarget === 'mine' ? 'RedditJS' : this.props.listingsTarget;
+    const { listingsFilter } = this.props;
+    const { listType, target } = listingsFilter;
+    const title = target === 'mine' ? 'Home' : `${listType}/${target}`;
     return (
       <div className="navbar navbar-inverse navbar-fixed-top" id="header">
         <div id="header-sidebar">
           <div className="col-md-12">
-            <h5 className="header-target">{target}</h5>
+            <h5 className="header-target">RedditJS</h5>
           </div>
         </div>
         <div id="header-main">
           <div className="col-md-12 col-lg-9">
+            <SubredditActions />
             <div className="navbar-header">
-              <SubredditActions />
-              <button type="button" className="navbar-toggle" onClick={this.showSubs}>
+              <h5 className="header-target">{title}</h5>
+              <button
+                type="button"
+                className="navbar-toggle"
+                onClick={this.showSubs}
+              >
                 <span className="icon-bar" />
                 <span className="icon-bar" />
                 <span className="icon-bar" />
@@ -39,15 +46,13 @@ Header.propTypes = {
   // query: PropTypes.object,
   // accessToken: PropTypes.object,
   // location: PropTypes.object,
-  listingsTarget: PropTypes.string,
+  listingsFilter: PropTypes.object.isRequired,
 };
 
-Header.defaultProps = {
-  listingsTarget: 'mine',
-};
+Header.defaultProps = {};
 
 const mapStateToProps = state => ({
-  listingsTarget: state.listingsTarget,
+  listingsFilter: state.listingsFilter,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -57,5 +62,5 @@ const mapDispatchToProps = dispatch => ({
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps,
+  mapDispatchToProps
 )(Header);

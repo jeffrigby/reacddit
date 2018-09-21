@@ -21,27 +21,28 @@ class Sort extends React.Component {
   }
 
   handleSortHotkey(event) {
-    if (!this.props.disableHotKeys && this.props.listingsFilter.target !== 'friends') {
+    const { disableHotKeys, listingsFilter, ...props } = this.props;
+    if (!disableHotKeys && listingsFilter.target !== 'friends') {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
-          this.props.push(this.genLink('hot'));
+          props.push(this.genLink('hot'));
           break;
         }
         case 'N': {
-          this.props.push(this.genLink('new'));
+          props.push(this.genLink('new'));
           break;
         }
         case 'C': {
-          this.props.push(this.genLink('controversial'));
+          props.push(this.genLink('controversial'));
           break;
         }
         case 'R': {
-          this.props.push(this.genLink('rising'));
+          props.push(this.genLink('rising'));
           break;
         }
         case 'T': {
-          this.props.push(this.genLink('top'));
+          props.push(this.genLink('top'));
           break;
         }
         default:
@@ -54,20 +55,28 @@ class Sort extends React.Component {
   }
 
   genLink(sort) {
+    const { listingsFilter } = this.props;
     let link;
-    if (this.props.listingsFilter.listType === 'r') {
-      link = `/r/${this.props.listingsFilter.target}/${sort}`;
-    } else if (this.props.listingsFilter.listType === 'm') {
-      link = `/user/${this.props.listingsFilter.target}/m/${this.props.listingsFilter.userType}/${sort}`;
+    if (listingsFilter.listType === 'r') {
+      link = `/r/${listingsFilter.target}/${sort}`;
+    } else if (listingsFilter.listType === 'm') {
+      link = `/user/${listingsFilter.target}/m/${
+        listingsFilter.userType
+      }/${sort}`;
     }
     return link;
   }
 
   render() {
-    if (this.props.listingsFilter.target === 'friends' || this.props.listingsFilter.listType === 'u' || this.props.subreddits.status !== 'loaded') {
+    const { listingsFilter, subreddits } = this.props;
+    if (
+      listingsFilter.target === 'friends' ||
+      listingsFilter.listType === 'u' ||
+      subreddits.status !== 'loaded'
+    ) {
       return false;
     }
-    const currentSort = this.props.listingsFilter.sort ? this.props.listingsFilter.sort : 'hot';
+    const currentSort = listingsFilter.sort ? listingsFilter.sort : 'hot';
     return (
       <div style={{ display: 'inline-block' }}>
         <button
@@ -82,11 +91,26 @@ class Sort extends React.Component {
           <span className="caret" />
         </button>
         <ul className="dropdown-menu" aria-labelledby="sortDropdownMenu">
-          <li><Link to={this.genLink('hot')}>hot <span className="pull-right">(&#x21E7;S)</span></Link></li>
-          <li><Link to={this.genLink('new')}>new <span className="pull-right">(&#x21E7;N)</span></Link></li>
-          <li><Link to={this.genLink('top')}>top <span className="pull-right">(&#x21E7;T)</span></Link></li>
-          <li><Link to={this.genLink('rising')}>rising <span className="pull-right">(&#x21E7;R)</span></Link></li>
-          <li><Link to={this.genLink('controversial')}>controversial <span className="pull-right">(&#x21E7;C)</span></Link></li>
+          <li>
+            <Link to={this.genLink('hot')}>hot</Link>
+            <span className="menu-shortcut">&#x21E7;H</span>
+          </li>
+          <li>
+            <Link to={this.genLink('new')}>new</Link>
+            <span className="menu-shortcut">&#x21E7;N</span>
+          </li>
+          <li>
+            <Link to={this.genLink('top')}>top</Link>
+            <span className="menu-shortcut">&#x21E7;T</span>
+          </li>
+          <li>
+            <Link to={this.genLink('rising')}>rising</Link>
+            <span className="menu-shortcut">&#x21E7;R</span>
+          </li>
+          <li>
+            <Link to={this.genLink('controversial')}>controversial</Link>
+            <span className="menu-shortcut">&#x21E7;C</span>
+          </li>
         </ul>
       </div>
     );
@@ -100,9 +124,7 @@ Sort.propTypes = {
   push: PropTypes.func.isRequired,
 };
 
-Sort.defaultProps = {
-};
-
+Sort.defaultProps = {};
 
 const mapStateToProps = (state, ownProps) => ({
   listingsFilter: state.listingsFilter,
@@ -114,4 +136,7 @@ const mapDispatchToProps = dispatch => ({
   push: url => dispatch(push(url)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Sort);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Sort);

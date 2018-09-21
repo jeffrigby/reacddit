@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookie from 'js-cookie';
 
 const queryString = require('query-string');
 
@@ -13,24 +14,26 @@ class RedditAPI {
 
     this.token = {};
 
-    this.redditAPI.interceptors.request.use(async (config) => {
-      const newConfig = config;
-      const token = await this.getToken();
+    this.redditAPI.interceptors.request.use(
+      async config => {
+        const newConfig = config;
+        const token = await this.getToken();
 
-      if (token != null) {
-        newConfig.headers.Authorization = `Bearer ${token}`;
-      }
+        if (token != null) {
+          newConfig.headers.Authorization = `Bearer ${token}`;
+        }
 
-      return newConfig;
-    }, error =>
-      // Do something with request error
-      Promise.reject(error),
+        return newConfig;
+      },
+      error => Promise.reject(error)
     );
   }
 
   static setParams(defaults, options) {
     const params = Object.assign(defaults, options);
-    Object.keys(params).forEach(key => (params[key] == null) && delete params[key]);
+    Object.keys(params).forEach(
+      key => params[key] == null && delete params[key]
+    );
     return params;
   }
 
@@ -48,7 +51,7 @@ class RedditAPI {
   }
 
   /**
-   * Save the bearer token to localstorage
+   * Save the bearer token to cookie
    * @param accessToken
    *   The token to save
    * @param expires
@@ -61,7 +64,12 @@ class RedditAPI {
       expires,
     };
 
-    localStorage.setItem('token', JSON.stringify(token));
+    const tokenJson = JSON.stringify(token);
+
+    // Probably don't need both.
+    localStorage.setItem('token', tokenJson);
+    Cookie.set('token', tokenJson);
+
     this.token = token;
     return token;
   }
@@ -73,15 +81,15 @@ class RedditAPI {
   static getTokenStorage() {
     let token = null;
 
-    const localStorageToken = localStorage.getItem('token');
-    const localStorageTokenJson = localStorage.getItem('token') !== null ? JSON.parse(localStorageToken) : null;
+    const cookieToken = Cookie.get('token');
+    const cookieTokenJson = cookieToken ? JSON.parse(cookieToken) : null;
 
-    if (localStorageTokenJson !== null) {
-      const { expires } = localStorageTokenJson;
+    if (cookieTokenJson !== null) {
+      const { expires } = cookieTokenJson;
       const dateTime = Date.now();
       const timestamp = Math.floor(dateTime / 1000);
       if (expires >= timestamp) {
-        token = localStorageTokenJson.accessToken;
+        token = cookieTokenJson.accessToken;
       } else {
         token = 'expired';
       }
@@ -90,7 +98,7 @@ class RedditAPI {
   }
 
   /**
-   * Get the token from localstorage if possible, if not get it from
+   * Get the token from cookie if possible, if not get it from
    * the server.
    * @param reset - Always get it from the server.
    * @returns {Promise<*>}
@@ -101,7 +109,8 @@ class RedditAPI {
 
     let token = RedditAPI.getTokenStorage();
 
-    if (token === 'expired' || reset === true) { // token expired or forced refresh. Get a new one.
+    if (token === 'expired' || reset === true) {
+      // token expired or forced refresh. Get a new one.
       const getToken = await axios.get('/json/bearer');
       token = getToken.data.accessToken;
       if (token) {
@@ -111,6 +120,7 @@ class RedditAPI {
 
     if (token === null) {
       // Clean up stale values in  storage.
+      Cookie.remove('token');
       localStorage.clear();
       sessionStorage.clear();
     }
@@ -180,7 +190,11 @@ class RedditAPI {
       id,
       rank: 1,
     };
-    const vote = await this.redditAPI.post('/api/vote', queryString.stringify(params));
+
+    const vote = await this.redditAPI.post(
+      '/api/vote',
+      queryString.stringify(params)
+    );
     return vote.data;
   }
 
@@ -190,7 +204,10 @@ class RedditAPI {
    * @returns {Promise<*>}
    */
   async save(id) {
-    const save = await this.redditAPI.post('/api/save', queryString.stringify({ id }));
+    const save = await this.redditAPI.post(
+      '/api/save',
+      queryString.stringify({ id })
+    );
     return save.data;
   }
 
@@ -200,7 +217,10 @@ class RedditAPI {
    * @returns {Promise<*>}
    */
   async unsave(id) {
-    const save = await this.redditAPI.post('/api/unsave', queryString.stringify({ id }));
+    const save = await this.redditAPI.post(
+      '/api/unsave',
+      queryString.stringify({ id })
+    );
     return save.data;
   }
 

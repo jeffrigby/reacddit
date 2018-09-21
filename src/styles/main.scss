@@ -212,6 +212,17 @@ div.entry {
     cursor: default;
   }
 
+  .subnav {
+    margin-left: 10px;
+  }
+
+  .icon-right {
+    position: absolute;
+    right: 10px;
+    top: 0;
+    padding: 0;
+  }
+
   #subreddit-filter-group {
     .form-group-sm {
       position: relative;
@@ -261,7 +272,11 @@ div.entry {
 
 }
 
-#sr-header {
+.subreddit-entry-filter {
+  .dropdown-menu li {
+    position: relative;
+  }
+
   #sr-title {
     text-transform: uppercase;
     margin-bottom: 0;
@@ -269,7 +284,15 @@ div.entry {
   #current-sort {
     text-transform: uppercase;
   }
+
+  .menu-shortcut {
+    position: absolute;
+    right: 20px;
+    top: 3px;
+  }
 }
+
+
 
 
 

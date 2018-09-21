@@ -6,8 +6,6 @@ import Navigation from './Navigation';
 import Header from '../containers/Header';
 import Entries from '../containers/Entries';
 import * as reddit from '../redux/actions/reddit';
-// import RedditAPI from '../reddit/redditAPI';
-
 
 class App extends React.Component {
   constructor(props) {
@@ -16,11 +14,12 @@ class App extends React.Component {
   }
 
   async componentDidMount() {
+    const { getBearer, getMe } = this.props;
     // Make sure the token is set before loading the app.
-    const token = await this.props.getBearer();
+    const token = await getBearer();
     if (token !== null) {
-      this.tokenQuery = setInterval(this.props.getBearer, 10000);
-      this.props.getMe();
+      this.tokenQuery = setInterval(getBearer, 10000);
+      getMe();
     }
   }
 
@@ -44,16 +43,29 @@ class App extends React.Component {
             <div className="col-md-12">
               <div className="list-group" id="entries">
                 <Route exact path="/" component={Entries} />
-                <Route path="/:listType(r)/:target/:sort(hot|new|top|controversial|rising)?" component={Entries} />
-                <Route path="/:listType(user)/:target/:multi(m)/:userType/:sort(hot|new|top|controversial|rising)?" component={Entries} />
-                <Route path="/:listType(user)/:target/:userType(upvoted|downvoted|submitted|saved)/:sort(hot|new|top|controversial|rising)?" component={Entries} />
-                <Route path="/:sort(hot|new|top|controversial|rising)" component={Entries} />
+                <Route
+                  path="/:listType(r)/:target/:sort(hot|new|top|controversial|rising)?"
+                  component={Entries}
+                />
+                <Route
+                  path="/:listType(user)/:target/:multi(m)/:userType/:sort(hot|new|top|controversial|rising)?"
+                  component={Entries}
+                />
+                <Route
+                  path="/:listType(user)/:target/:userType(upvoted|downvoted|submitted|saved)/:sort(hot|new|top|controversial|rising)?"
+                  component={Entries}
+                />
+                <Route
+                  path="/:sort(hot|new|top|controversial|rising)"
+                  component={Entries}
+                />
               </div>
             </div>
           </div>
         </div>
         <div id="push" />
-      </div>);
+      </div>
+    );
   }
 }
 
@@ -78,7 +90,9 @@ const mapDispatchToProps = dispatch => ({
   getMe: () => dispatch(reddit.redditFetchMe()),
 });
 
-export default withRouter(connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(App));
+export default withRouter(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(App)
+);
