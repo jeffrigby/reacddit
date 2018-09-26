@@ -29,6 +29,10 @@ class Sort extends React.Component {
           props.push(this.genLink('hot'));
           break;
         }
+        case 'B': {
+          props.push(this.genLink('best'));
+          break;
+        }
         case 'N': {
           props.push(this.genLink('new'));
           break;
@@ -94,6 +98,10 @@ class Sort extends React.Component {
           <li>
             <Link to={this.genLink('hot')}>hot</Link>
             <span className="menu-shortcut">&#x21E7;H</span>
+          </li>
+          <li>
+            <Link to={this.genLink('best')}>best</Link>
+            <span className="menu-shortcut">&#x21E7;B</span>
           </li>
           <li>
             <Link to={this.genLink('new')}>new</Link>

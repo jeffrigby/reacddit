@@ -44,19 +44,19 @@ class App extends React.Component {
               <div className="list-group" id="entries">
                 <Route exact path="/" component={Entries} />
                 <Route
-                  path="/:listType(r)/:target/:sort(hot|new|top|controversial|rising)?"
+                  path="/:listType(r)/:target/:sort(hot|new|top|controversial|rising|best)?"
                   component={Entries}
                 />
                 <Route
-                  path="/:listType(user)/:target/:multi(m)/:userType/:sort(hot|new|top|controversial|rising)?"
+                  path="/:listType(user)/:target/:multi(m)/:userType/:sort(hot|new|top|controversial|rising|best)?"
                   component={Entries}
                 />
                 <Route
-                  path="/:listType(user)/:target/:userType(upvoted|downvoted|submitted|saved)/:sort(hot|new|top|controversial|rising)?"
+                  path="/:listType(user)/:target/:userType(upvoted|downvoted|submitted|saved)/:sort(hot|new|top|controversial|rising|best)?"
                   component={Entries}
                 />
                 <Route
-                  path="/:sort(hot|new|top|controversial|rising)"
+                  path="/:sort(hot|new|top|controversial|rising|best)"
                   component={Entries}
                 />
               </div>
