@@ -39,3 +39,4 @@ ngrok
 .DS_Store
 /.idea
 /dist
+/stats.json

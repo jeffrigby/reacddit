@@ -6,7 +6,8 @@ import axiosMiddleware from 'redux-axios-middleware';
 import thunk from 'redux-thunk';
 import rootReducer from './reducers';
 
-const axClient = axios.create({ // all axios can be used, shown in axios documentation
+const axClient = axios.create({
+  // all axios can be used, shown in axios documentation
   responseType: 'json',
 });
 
@@ -22,9 +23,7 @@ const configureStore = (initialState, history) => {
   const store = createStore(
     rootReducer,
     initialState,
-    compose(
-      applyMiddleware(...middleware),
-    ),
+    compose(applyMiddleware(...middleware))
   );
 
   return store;
