@@ -1,5 +1,6 @@
 import axios from 'axios';
 import update from 'immutability-helper';
+import RedditAPI from '../../reddit/redditAPI';
 
 export function listingsFilter(listFilter) {
   return {
@@ -26,6 +27,17 @@ export function listingsStatus(listingStatus) {
   return {
     type: 'LISTINGS_STATUS',
     listingStatus,
+  };
+}
+
+export function listingsFetchEntriesReddit(subreddit, sort, options) {
+  return async dispatch => {
+    const results = await RedditAPI.getSubredditListing(
+      subreddit,
+      sort,
+      options
+    );
+    console.log(results);
   };
 }
 

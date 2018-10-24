@@ -129,6 +129,28 @@ class RedditAPI {
     return token;
   }
 
+  async getSubredditListing(subreddit, sort, options) {
+    const defaults = {
+      after: null,
+      before: null,
+      count: 0,
+      include_categories: false,
+      limit: 25,
+      show: 'all',
+      sr_detail: false,
+    };
+
+    const params = RedditAPI.setParams(defaults, options);
+
+    const data = {
+      params,
+    };
+
+    const url = `/r/${subreddit}/${sort}`;
+    const result = await this.redditAPI.get(url, data);
+    return result.data;
+  }
+
   /**
    * Get the logged in users mutlireddits
    * @param options

@@ -176,7 +176,13 @@ class Entries extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { match, location, listingsFilter, getEntries } = this.props;
+    const {
+      match,
+      location,
+      listingsFilter,
+      getEntries,
+      getEntriesReddit,
+    } = this.props;
     const matchCompare = isEqual(prevProps.match, match);
     const locationCompare = isEqual(prevProps.location, location);
     if (!matchCompare || !locationCompare) {
@@ -185,6 +191,8 @@ class Entries extends React.Component {
 
     if (!isEqual(prevProps.listingsFilter, listingsFilter)) {
       getEntries(listingsFilter);
+      // getEntriesReddit(listingsFilter.target, listingsFilter.sort);
+      // console.log(listingsFilter);
     }
 
     this.setInitFocusedAndVisible();
@@ -428,6 +436,7 @@ Entries.propTypes = {
   setFilter: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   setStatus: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   getEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
+  getEntriesReddit: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   getMoreEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsEntries: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsFilter: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
@@ -455,6 +464,8 @@ const mapDispatchToProps = dispatch => ({
   setStatus: status => dispatch(listings.listingsStatus(status)),
   getEntries: (filter, query) =>
     dispatch(listings.listingsFetch(filter, query)),
+  getEntriesReddit: (subreddit, sort, options) =>
+    dispatch(listings.listingsFetchEntriesReddit(subreddit, sort, options)),
   getMoreEntries: () => dispatch(listings.listingsFetchNext()),
   // getBearer: () => dispatch(reddit.redditGetBearer()),
 });
