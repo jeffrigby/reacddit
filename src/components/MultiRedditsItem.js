@@ -19,13 +19,13 @@ class MultiRedditsItem extends React.Component {
   }
 
   render() {
-    const { item, sort, sortTop } = this.props;
+    const { item, sort, t } = this.props;
     const { showSubs } = this.state;
 
     // Generate Link
     let currentSort = sort || '';
     if (currentSort === 'top' || currentSort === 'controversial') {
-      currentSort = `${currentSort}?t=${sortTop}`;
+      currentSort = `${currentSort}?t=${t}`;
     }
     const navTo = `${item.data.path}${currentSort}`;
 
@@ -64,17 +64,17 @@ class MultiRedditsItem extends React.Component {
 MultiRedditsItem.propTypes = {
   item: PropTypes.object.isRequired,
   sort: PropTypes.string.isRequired,
-  sortTop: PropTypes.string,
+  t: PropTypes.string,
   // location: PropTypes.object.isRequired,
 };
 
 MultiRedditsItem.defaultProps = {
-  sortTop: '',
+  t: '',
 };
 
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
-  sortTop: state.listingsFilter.sortTop,
+  t: state.listingsFilter.t,
   // location: state.router.location,
 });
 

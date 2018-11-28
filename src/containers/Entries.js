@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import isEqual from 'lodash.isequal';
 import * as listings from '../redux/actions/listings';
 import Entry from '../components/Entry';
-// import * as reddit from '../redux/actions/reddit';
+import RedditAPI from '../reddit/redditAPI';
 
 const queryString = require('query-string');
 
@@ -71,49 +71,49 @@ class Entries extends React.Component {
     }
   }
 
-  static createEntriesUrl(filter) {
-    const qs = queryString.parse(window.location.search);
-
-    if (!filter.target || !filter.sort) {
-      return null;
-    }
-
-    let url = '/json/';
-
-    if (filter.listType === 'r') {
-      url += `r/${filter.target}/${filter.sort}`;
-    }
-
-    if (filter.listType === 'u') {
-      url += `user/${filter.target}/${filter.userType}`;
-      if (filter.userType !== 'saved') {
-        url += `/${filter.sort}`;
-      }
-    }
-
-    if (filter.listType === 'm') {
-      url += `user/${filter.target}/m/${filter.userType}`;
-      if (filter.userType !== 'saved') {
-        url += `/${filter.sort}`;
-      }
-    }
-
-    // Reset the default query strings
-    qs.limit = filter.limit;
-    qs.before = filter.before;
-    qs.after = filter.after;
-    if (filter.sort === 'top') {
-      qs.t = filter.sortTop;
-    }
-    Object.keys(qs).forEach(key => !qs[key] && delete qs[key]);
-
-    const qsStr = `?${queryString.stringify(qs)}`;
-
-    if (qsStr) {
-      url += qsStr;
-    }
-    return url;
-  }
+  // static createEntriesUrl(filter) {
+  //   const qs = queryString.parse(window.location.search);
+  //
+  //   if (!filter.target || !filter.sort) {
+  //     return null;
+  //   }
+  //
+  //   let url = '/json/';
+  //
+  //   if (filter.listType === 'r') {
+  //     url += `r/${filter.target}/${filter.sort}`;
+  //   }
+  //
+  //   if (filter.listType === 'u') {
+  //     url += `user/${filter.target}/${filter.userType}`;
+  //     if (filter.userType !== 'saved') {
+  //       url += `/${filter.sort}`;
+  //     }
+  //   }
+  //
+  //   if (filter.listType === 'm') {
+  //     url += `user/${filter.target}/m/${filter.userType}`;
+  //     if (filter.userType !== 'saved') {
+  //       url += `/${filter.sort}`;
+  //     }
+  //   }
+  //
+  //   // Reset the default query strings
+  //   qs.limit = filter.limit;
+  //   qs.before = filter.before;
+  //   qs.after = filter.after;
+  //   if (filter.sort === 'top') {
+  //     qs.t = filter.t;
+  //   }
+  //   Object.keys(qs).forEach(key => !qs[key] && delete qs[key]);
+  //
+  //   const qsStr = `?${queryString.stringify(qs)}`;
+  //
+  //   if (qsStr) {
+  //     url += qsStr;
+  //   }
+  //   return url;
+  // }
 
   constructor(props) {
     super(props);
@@ -125,11 +125,18 @@ class Entries extends React.Component {
     this.state = {
       focused: null,
       visible: [],
+      hasError: false,
     };
     // this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
   }
 
-  componentDidMount() {
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true };
+  }
+
+  async componentDidMount() {
+    this.accessToken = await RedditAPI.getToken(false);
     this.scrollResizeStop = false;
     const { match, location } = this.props;
     jQuery(document).keypress(Entries.handleEntriesHotkey);
@@ -176,13 +183,7 @@ class Entries extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      match,
-      location,
-      listingsFilter,
-      getEntries,
-      getEntriesReddit,
-    } = this.props;
+    const { match, location, listingsFilter, getEntriesReddit } = this.props;
     const matchCompare = isEqual(prevProps.match, match);
     const locationCompare = isEqual(prevProps.location, location);
     if (!matchCompare || !locationCompare) {
@@ -190,9 +191,7 @@ class Entries extends React.Component {
     }
 
     if (!isEqual(prevProps.listingsFilter, listingsFilter)) {
-      getEntries(listingsFilter);
-      // getEntriesReddit(listingsFilter.target, listingsFilter.sort);
-      // console.log(listingsFilter);
+      getEntriesReddit(listingsFilter);
     }
 
     this.setInitFocusedAndVisible();
@@ -209,7 +208,7 @@ class Entries extends React.Component {
       this.initTriggered !== listingsEntries.requestUrl
     ) {
       this.initTriggered = listingsEntries.requestUrl;
-      const entryKeys = Object.keys(listingsEntries.entries);
+      const entryKeys = Object.keys(listingsEntries.children);
       const newState = {
         focused: entryKeys[0],
         visible: entryKeys.slice(0, 5),
@@ -228,7 +227,7 @@ class Entries extends React.Component {
 
     const newListingsFilter = {
       sort: match.params.sort || 'hot',
-      sortTop: qs.t || 'day',
+      t: qs.t || 'day',
       target: match.params.target || 'mine',
       before: qs.before || '',
       after: qs.after || '',
@@ -237,11 +236,15 @@ class Entries extends React.Component {
       listType,
     };
 
-    newListingsFilter.url = Entries.createEntriesUrl(newListingsFilter);
-
     if (!isEqual(listingsFilter, newListingsFilter)) {
       setFilter(newListingsFilter);
     }
+  }
+
+  componentDidCatch(error, info) {
+    // You can also log the error to an error reporting service
+    // eslint-disable-next-line no-console
+    console.log(error, info);
   }
 
   monitorEntries() {
@@ -308,14 +311,15 @@ class Entries extends React.Component {
   }
 
   checkLoadMore() {
-    const { listingsStatus, getMoreEntries } = this.props;
+    const { listingsStatus, getMoreRedditEntries } = this.props;
     const loadedStatus = listingsStatus;
     if (
       loadedStatus === 'loaded' &&
       jQuery(window).scrollTop() + jQuery(window).height() >
         jQuery(document).height() - 2500
     ) {
-      getMoreEntries();
+      // getMoreEntries();
+      getMoreRedditEntries();
     }
   }
 
@@ -327,6 +331,8 @@ class Entries extends React.Component {
       listingsFilter,
     } = this.props;
 
+    const { hasError } = this.state;
+
     if (listingsStatus === 'unloaded' || listingsStatus === 'loading') {
       return (
         <div className="alert alert-info" id="content-loading" role="alert">
@@ -336,7 +342,7 @@ class Entries extends React.Component {
       );
     }
 
-    if (listingsStatus === 'error') {
+    if (listingsStatus === 'error' || hasError) {
       return (
         <div
           className="alert alert-danger"
@@ -349,7 +355,7 @@ class Entries extends React.Component {
       );
     }
 
-    if (listingsStatus === 'loaded' && !listingsEntries.entries) {
+    if (listingsStatus === 'loaded' && !listingsEntries.children) {
       return (
         <div className="alert alert-warning" id="content-empty" role="alert">
           <span className="glyphicon glyphicon glyphicon-alert" /> Nothing here.
@@ -379,24 +385,20 @@ class Entries extends React.Component {
     }
 
     let entries = '';
-    const entriesObject = listingsEntries.entries;
-    // @todo can these three lines be combined?
-    // let focused = '';
-    // let visible = {};
-    // ({ focused, visible } = this.state);
+    const entriesObject = listingsEntries.children;
     const { focused, visible } = this.state;
     const entriesKeys = Object.keys(entriesObject);
     if (entriesKeys.length > 0) {
       entries = entriesKeys.map(key => {
-        const isFocused = focused === entriesObject[key].name;
-        const isVisible = visible.includes(entriesObject[key].name);
+        const isFocused = focused === entriesObject[key].data.name;
+        const isVisible = visible.includes(entriesObject[key].data.name);
         // const isFocused = false;
         // const isVisible = false;
         return (
           <Entry
             entry={entriesObject[key]}
-            key={entriesObject[key].id}
-            loaded={entriesObject[key].loaded}
+            key={entriesObject[key].data.id}
+            loaded={entriesObject[key].data.loaded}
             focused={isFocused}
             visible={isVisible}
           />
@@ -413,11 +415,11 @@ class Entries extends React.Component {
               <br />
               Sort: {listingsFilter.sort}
               <br />
-              SortTop: {listingsFilter.sortTop}
+              t: {listingsFilter.t}
               <br />
               Type: {listingsFilter.listType}
               <br />
-              URL: {listingsFilter.url}
+              URL: {listingsEntries.requestUrl}
               <br />
               Focus: {focused}
             </pre>
@@ -434,14 +436,11 @@ Entries.propTypes = {
   match: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   location: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   setFilter: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  setStatus: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  getEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   getEntriesReddit: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  getMoreEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
+  getMoreRedditEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsEntries: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsFilter: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsStatus: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
-  // getBearer: PropTypes.func.isRequired,
   entries: PropTypes.object,
   debug: PropTypes.bool,
 };
@@ -453,21 +452,17 @@ Entries.defaultProps = {
 
 const mapStateToProps = (state, ownProps) => ({
   listingsFilter: state.listingsFilter,
-  listingsEntries: state.listingsEntries,
-  listingsStatus: state.listingsStatus,
-  entries: state.listingsEntries.entries,
+  listingsEntries: state.listingsRedditEntries,
+  listingsStatus: state.listingsRedditStatus,
+  entries: state.listingsRedditEntries.children,
   debug: state.debugMode,
 });
 
 const mapDispatchToProps = dispatch => ({
   setFilter: filter => dispatch(listings.listingsFilter(filter)),
-  setStatus: status => dispatch(listings.listingsStatus(status)),
-  getEntries: (filter, query) =>
-    dispatch(listings.listingsFetch(filter, query)),
   getEntriesReddit: (subreddit, sort, options) =>
     dispatch(listings.listingsFetchEntriesReddit(subreddit, sort, options)),
-  getMoreEntries: () => dispatch(listings.listingsFetchNext()),
-  // getBearer: () => dispatch(reddit.redditGetBearer()),
+  getMoreRedditEntries: () => dispatch(listings.listingsFetchRedditNext()),
 });
 
 export default connect(

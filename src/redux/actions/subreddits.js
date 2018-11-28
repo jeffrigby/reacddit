@@ -23,21 +23,47 @@ export function subredditsLastUpdated(lastUpdated) {
   };
 }
 
+export function subredditsLastUpdatedTime(lastUpdatedTime) {
+  return {
+    type: 'SUBREDDITS_LAST_UPDATED_TIME',
+    lastUpdatedTime,
+  };
+}
+
 export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
-  return dispatch => {
+  return (dispatch, getState) => {
+    const now = Date.now();
+    const currentState = getState();
+    const { lastUpdatedTime } = currentState;
+    const modifyLastUpdated = { ...lastUpdated };
+
+    // Check if these resuls are expired, default to 15
+    // @todo make this configurable in dotenv
+    const timeSinceCached = now - lastUpdatedTime;
+    const cacheExpired = timeSinceCached >= 15 * 60 * 1000;
+
     const createdToGet = [];
     Object.keys(subreddits).forEach((key, index) => {
       if (Object.prototype.hasOwnProperty.call(subreddits, key)) {
         const value = subreddits[key];
+        if (!cacheExpired && currentState.lastUpdated[value.name]) {
+          // Get the cached version.
+          modifyLastUpdated[value.name] = currentState.lastUpdated[value.name];
+          return;
+        }
         if (value.url !== '/r/mine' && value.quarantine === false) {
           const url = `https://www.reddit.com${
             value.url
           }new.json?limit=1&sort=new`;
-          // createdToGet.push(url);
           createdToGet.push(axios.get(url).catch(() => null));
         }
       }
     });
+
+    // Don't do anything if there's no new data
+    if (createdToGet.length === 0) {
+      return;
+    }
 
     // @todo move this to common
     const chunks = [];
@@ -49,18 +75,20 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
       const results = await axios
         .all(value)
         .then(axios.spread((...args) => args));
-      const newLastUpdated = lastUpdated;
+      // const newLastUpdated = lastUpdated;
       results.forEach(item => {
         const entry = item.data;
         // process item
         if (typeof entry.data.children[0] === 'object') {
           const created = entry.data.children[0].data.created_utc;
           const subredditId = entry.data.children[0].data.subreddit_id;
-          newLastUpdated[subredditId] = created;
+          modifyLastUpdated[subredditId] = created;
         }
       });
-      dispatch(subredditsLastUpdated(newLastUpdated));
+      dispatch(subredditsLastUpdated(modifyLastUpdated));
     });
+    const updateTime = Date.now();
+    dispatch(subredditsLastUpdatedTime(updateTime));
   };
 }
 

@@ -17,9 +17,9 @@ class MultiReddits extends React.Component {
 
   async componentDidMount() {
     const { fetchMultis } = this.props;
-    this.accessToken = await RedditAPI.getToken();
+    this.accessToken = await RedditAPI.getToken(false);
 
-    if (this.accessToken) {
+    if (this.accessToken && this.accessToken.substr(0, 1) !== '-') {
       fetchMultis();
     }
   }

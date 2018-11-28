@@ -88,6 +88,12 @@ div.entry {
     }
   }
 
+  &.hideSticky {
+    .content, .meta-container {
+      display: none;
+    }
+  }
+
   .meta span.meta-sub {
     padding-right: 1em;
     display: inline-block;

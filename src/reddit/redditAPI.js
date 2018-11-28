@@ -17,7 +17,7 @@ class RedditAPI {
     this.redditAPI.interceptors.request.use(
       async config => {
         const newConfig = config;
-        const token = await this.getToken();
+        const token = await this.getToken(false);
 
         if (token != null) {
           newConfig.headers.Authorization = `Bearer ${token}`;
@@ -32,8 +32,9 @@ class RedditAPI {
   static setParams(defaults, options) {
     const params = Object.assign(defaults, options);
     Object.keys(params).forEach(
-      key => params[key] == null && delete params[key]
+      key => (params[key] == null || params[key] === '') && delete params[key]
     );
+
     return params;
   }
 
@@ -58,10 +59,11 @@ class RedditAPI {
    *   When it expires
    * @returns {{accessToken: *, expires: *}}
    */
-  setTokenStorage(accessToken, expires) {
+  setTokenStorage(accessToken, expires, type) {
     const token = {
       accessToken,
       expires,
+      type,
     };
 
     const tokenJson = JSON.stringify(token);
@@ -109,12 +111,12 @@ class RedditAPI {
 
     let token = RedditAPI.getTokenStorage();
 
-    if (token === 'expired' || reset === true) {
+    if (token === 'expired' || reset === true || token === null) {
       // token expired or forced refresh. Get a new one.
       const getToken = await axios.get('/json/bearer');
       token = getToken.data.accessToken;
       if (token) {
-        this.setTokenStorage(token, getToken.data.expires);
+        this.setTokenStorage(token, getToken.data.expires, getToken.data.type);
       }
     }
 
@@ -138,6 +140,7 @@ class RedditAPI {
       limit: 25,
       show: 'all',
       sr_detail: false,
+      raw_json: 1,
     };
 
     const params = RedditAPI.setParams(defaults, options);
@@ -146,8 +149,71 @@ class RedditAPI {
       params,
     };
 
-    const url = `/r/${subreddit}/${sort}`;
+    let url = '';
+    if (subreddit) {
+      url = `/r/${subreddit}/${sort}`;
+    } else {
+      url = sort;
+    }
+
     const result = await this.redditAPI.get(url, data);
+    const query = queryString.stringify(params);
+    result.data.requestUrl = `${url}?${query}`;
+    return result.data;
+  }
+
+  async getMultiListing(user, name, sort, options) {
+    const defaults = {
+      after: null,
+      before: null,
+      count: 0,
+      include_categories: false,
+      limit: 25,
+      show: 'all',
+      sr_detail: false,
+      raw_json: 1,
+    };
+
+    const params = RedditAPI.setParams(defaults, options);
+
+    const data = {
+      params,
+    };
+
+    const me = await this.me(false);
+
+    let url = `user/${user}/m/${name}/${sort}`;
+    if (me.name === user) {
+      url = `me/m/${name}/${sort}`;
+    }
+    const result = await this.redditAPI.get(url, data);
+    const query = queryString.stringify(params);
+    result.data.requestUrl = `${url}?${query}`;
+    return result.data;
+  }
+
+  async getUserListing(user, type, sort, options) {
+    const defaults = {
+      after: null,
+      before: null,
+      count: 0,
+      include_categories: false,
+      limit: 25,
+      show: 'all',
+      sr_detail: false,
+      raw_json: 1,
+    };
+
+    const params = RedditAPI.setParams(defaults, options);
+
+    const data = {
+      params,
+    };
+
+    const url = `user/${user}/${type}/${sort}`;
+    const result = await this.redditAPI.get(url, data);
+    const query = queryString.stringify(params);
+    result.data.requestUrl = `${url}?${query}`;
     return result.data;
   }
 
@@ -254,6 +320,7 @@ class RedditAPI {
    */
   async me(reset) {
     const token = await this.getToken();
+    // @todo Remove this caching. Already cached in redux.
     const cacheKey = `me_${token}`;
     if (reset !== true) {
       const meCached = sessionStorage.getItem(cacheKey);

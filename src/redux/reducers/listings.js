@@ -1,9 +1,6 @@
 import update from 'immutability-helper';
 
-export function listingsFilter(
-  state = { sort: 'hot', sortTop: 'day' },
-  action
-) {
+export function listingsFilter(state = { sort: 'hot', t: 'day' }, action) {
   switch (action.type) {
     case 'LISTINGS_FILTER':
       return action.listFilter;
@@ -13,15 +10,14 @@ export function listingsFilter(
   }
 }
 
-export function listingsEntries(state = {}, action) {
+export function listingsRedditEntries(state = {}, action) {
   switch (action.type) {
-    case 'LISTINGS_ENTRIES':
-      return action.listEntries;
-    case 'LISTINGS_ENTRY_UPDATE': {
+    case 'LISTINGS_REDDIT_ENTRIES':
+      return action.listSubredditEntries;
+    case 'LISTINGS_REDDIT_ENTRY_UPDATE': {
       const updateListing = update(state, {
-        entries: { [action.entry.name]: { $merge: action.entry } },
+        children: { [action.entry.name]: { data: { $merge: action.entry } } },
       });
-
       return updateListing;
     }
     default:
@@ -29,10 +25,10 @@ export function listingsEntries(state = {}, action) {
   }
 }
 
-export function listingsStatus(state = 'unloaded', action) {
+export function listingsRedditStatus(state = 'unloaded', action) {
   switch (action.type) {
-    case 'LISTINGS_STATUS':
-      return action.listingStatus;
+    case 'LISTINGS_REDDIT_STATUS':
+      return action.status;
 
     default:
       return state;

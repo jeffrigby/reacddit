@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 // import { connect } from 'react-redux';
-
 import IFrame16x9 from './contentTypes/IFrame16x9';
 import Image from './contentTypes/Image';
 import VideoComp from './contentTypes/VideoComp';
@@ -38,12 +37,9 @@ const Content = ({ content, name, load }) => {
       default:
         break;
     }
-  } else if (content !== '') {
-    contentRendered = <div>No preview available.</div>;
   } else {
-    contentRendered = '';
+    contentRendered = <div>No preview available!</div>;
   }
-
   return <div className="content">{contentRendered}</div>;
 };
 
