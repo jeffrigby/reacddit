@@ -71,50 +71,6 @@ class Entries extends React.Component {
     }
   }
 
-  // static createEntriesUrl(filter) {
-  //   const qs = queryString.parse(window.location.search);
-  //
-  //   if (!filter.target || !filter.sort) {
-  //     return null;
-  //   }
-  //
-  //   let url = '/json/';
-  //
-  //   if (filter.listType === 'r') {
-  //     url += `r/${filter.target}/${filter.sort}`;
-  //   }
-  //
-  //   if (filter.listType === 'u') {
-  //     url += `user/${filter.target}/${filter.userType}`;
-  //     if (filter.userType !== 'saved') {
-  //       url += `/${filter.sort}`;
-  //     }
-  //   }
-  //
-  //   if (filter.listType === 'm') {
-  //     url += `user/${filter.target}/m/${filter.userType}`;
-  //     if (filter.userType !== 'saved') {
-  //       url += `/${filter.sort}`;
-  //     }
-  //   }
-  //
-  //   // Reset the default query strings
-  //   qs.limit = filter.limit;
-  //   qs.before = filter.before;
-  //   qs.after = filter.after;
-  //   if (filter.sort === 'top') {
-  //     qs.t = filter.t;
-  //   }
-  //   Object.keys(qs).forEach(key => !qs[key] && delete qs[key]);
-  //
-  //   const qsStr = `?${queryString.stringify(qs)}`;
-  //
-  //   if (qsStr) {
-  //     url += qsStr;
-  //   }
-  //   return url;
-  // }
-
   constructor(props) {
     super(props);
     this.monitorEntriesInterval = null;
@@ -185,12 +141,15 @@ class Entries extends React.Component {
   componentDidUpdate(prevProps) {
     const { match, location, listingsFilter, getEntriesReddit } = this.props;
     const matchCompare = isEqual(prevProps.match, match);
-    const locationCompare = isEqual(prevProps.location, location);
+    const locationCompare = isEqual(prevProps.location.search, location.search);
     if (!matchCompare || !locationCompare) {
       this.setRedux(match, location);
     }
 
-    if (!isEqual(prevProps.listingsFilter, listingsFilter)) {
+    if (
+      !isEqual(prevProps.listingsFilter, listingsFilter) ||
+      !locationCompare
+    ) {
       getEntriesReddit(listingsFilter);
     }
 
@@ -220,20 +179,21 @@ class Entries extends React.Component {
   setRedux(match, location) {
     const qs = queryString.parse(location.search);
     const { listingsFilter, setFilter } = this.props;
+    const { listType, target, sort, user, userType, multi } = match.params;
 
-    let listType = match.params.listType || 'r';
-    if (listType === 'user' && !match.params.multi) listType = 'u';
-    if (listType === 'user' && match.params.multi) listType = 'm';
+    let listingType = match.params.listType || 'r';
+    if (listType === 'user') listingType = 'u';
+    if (listType === 'multi') listingType = 'm';
+    if (listType === 'search') listingType = 's';
 
+    // @todo, just pass all the query strings
     const newListingsFilter = {
-      sort: match.params.sort || 'hot',
-      t: qs.t || 'day',
-      target: match.params.target || 'mine',
-      before: qs.before || '',
-      after: qs.after || '',
-      limit: qs.limit || '20',
-      userType: match.params.userType || '',
-      listType,
+      sort: sort || qs.sort || 'hot',
+      target: target || 'mine',
+      multi: multi === 'm' || false,
+      userType: userType || '',
+      user: user || '',
+      listType: listingType,
     };
 
     if (!isEqual(listingsFilter, newListingsFilter)) {
@@ -350,7 +310,7 @@ class Entries extends React.Component {
           role="alert"
         >
           <span className="glyphicon glyphicon glyphicon-alert" />
-          Error loading this subreddit.
+          {' Error loading this subreddit.'}
         </div>
       );
     }

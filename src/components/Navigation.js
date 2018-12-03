@@ -358,7 +358,7 @@ class Navigation extends React.Component {
     const filterText = subredditsFilter;
     const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
     const navItems = this.generateNavItems(filteredSubreddits);
-    const currentSort = sort || 'hot';
+    const currentSort = sort && sort !== 'relavance' ? sort : '';
     const noItems = isEmpty(navItems);
     const loggedIn = this.accessToken && this.accessToken.substr(0, 1) !== '-';
 
@@ -414,7 +414,7 @@ class Navigation extends React.Component {
                 <li>
                   <div>
                     <NavLink
-                      to={`/r/mine/${currentSort}`}
+                      to={`/${currentSort}`}
                       title="Show all subreddits"
                       activeClassName="activeSubreddit"
                     >

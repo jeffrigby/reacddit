@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import MultiRedditsSubs from './MultiRedditsSubs';
 
+const queryString = require('query-string');
+
 class MultiRedditsItem extends React.Component {
   constructor(props) {
     super(props);
@@ -19,15 +21,20 @@ class MultiRedditsItem extends React.Component {
   }
 
   render() {
-    const { item, sort, t } = this.props;
+    const { item, sort, location } = this.props;
     const { showSubs } = this.state;
+
+    const search = queryString.parse(location.search);
 
     // Generate Link
     let currentSort = sort || '';
-    if (currentSort === 'top' || currentSort === 'controversial') {
-      currentSort = `${currentSort}?t=${t}`;
+    if (currentSort.match(/(top|controversial)/) && search.t) {
+      currentSort = `${currentSort}?t=${search.t}`;
+    } else if (currentSort === 'relavance') {
+      currentSort = '';
     }
-    const navTo = `${item.data.path}${currentSort}`;
+
+    const navTo = `/me/m/${item.data.name}/${currentSort}`;
 
     // Am I active?
     // const { location } = this.props;
@@ -64,18 +71,14 @@ class MultiRedditsItem extends React.Component {
 MultiRedditsItem.propTypes = {
   item: PropTypes.object.isRequired,
   sort: PropTypes.string.isRequired,
-  t: PropTypes.string,
-  // location: PropTypes.object.isRequired,
+  location: PropTypes.object.isRequired,
 };
 
-MultiRedditsItem.defaultProps = {
-  t: '',
-};
+MultiRedditsItem.defaultProps = {};
 
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
-  t: state.listingsFilter.t,
-  // location: state.router.location,
+  location: state.router.location,
 });
 
 const mapDispatchToProps = dispatch => ({});

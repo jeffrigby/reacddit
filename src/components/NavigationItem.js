@@ -43,6 +43,8 @@ class NavigationItem extends React.Component {
     let currentSort = sort || '';
     if (currentSort === 'top' || currentSort === 'controversial') {
       currentSort = `${currentSort}?t=${t}`;
+    } else if (currentSort === 'relavance') {
+      currentSort = '';
     }
     const href = `${Common.stripTrailingSlash(item.url)}/${currentSort}`;
     const classNameStr = this.getDiffClassName();

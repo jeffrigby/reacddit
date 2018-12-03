@@ -11,6 +11,8 @@ import RenderContent from '../embeds';
 const ReactJson = React.lazy(() => import('react-json-view'));
 
 class Entry extends React.Component {
+  mounted = false;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -22,19 +24,22 @@ class Entry extends React.Component {
   }
 
   componentDidMount() {
+    this.mounted = true;
     const { entry } = this.props;
     const getContent = RenderContent(entry.data);
 
     Promise.resolve(getContent).then(content => {
-      let contentObj = { ...content };
-      contentObj.js = true;
-      if (!contentObj.type) {
-        contentObj = typeof entry.content === 'object' ? entry.content : {};
-        contentObj.js = false;
+      if (this.mounted) {
+        let contentObj = { ...content };
+        contentObj.js = true;
+        if (!contentObj.type) {
+          contentObj = typeof entry.content === 'object' ? entry.content : {};
+          contentObj.js = false;
+        }
+        this.setState({
+          renderedContent: contentObj,
+        });
       }
-      this.setState({
-        renderedContent: contentObj,
-      });
     });
   }
 
@@ -70,6 +75,10 @@ class Entry extends React.Component {
       return true;
     }
     return false;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   showDebug(event) {

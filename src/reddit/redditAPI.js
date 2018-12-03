@@ -131,7 +131,97 @@ class RedditAPI {
     return token;
   }
 
-  async getSubredditListing(subreddit, sort, options) {
+  /**
+   *
+   * @param subreddit
+   * @param sort
+   * @param options
+   * @returns {Promise<*>}
+   */
+
+  async getListingSearch(target, options) {
+    const defaults = {
+      after: null,
+      before: null,
+      category: null,
+      count: 0,
+      include_facets: false,
+      limit: 25,
+      q: '',
+      restrict_sr: true,
+      show: 'all',
+      sr_detail: false,
+      t: null,
+      type: null,
+      raw_json: 1,
+      sort: 'relevance',
+    };
+
+    const params = RedditAPI.setParams(defaults, options);
+
+    const data = {
+      params,
+    };
+
+    let url = '';
+    if (target) {
+      url = `r/${target}/search`;
+    } else {
+      url = 'search';
+    }
+
+    const result = await this.redditAPI.get(url, data);
+    const query = queryString.stringify(params);
+    result.data.requestUrl = `${url}?${query}`;
+    return result.data;
+  }
+
+  async getListingSearchMulti(user, target, options) {
+    const defaults = {
+      after: null,
+      before: null,
+      category: null,
+      count: 0,
+      include_facets: false,
+      limit: 25,
+      q: '',
+      restrict_sr: true,
+      show: 'all',
+      sr_detail: false,
+      t: null,
+      type: null,
+      raw_json: 1,
+      sort: 'relevance',
+      is_multi: 1,
+    };
+
+    const params = RedditAPI.setParams(defaults, options);
+
+    const data = {
+      params,
+    };
+
+    let url = '';
+    if (user === 'me') {
+      url = `me/m/${target}/search`;
+    } else {
+      url = `/user/${user}/m/${target}/search`;
+    }
+
+    const result = await this.redditAPI.get(url, data);
+    const query = queryString.stringify(params);
+    result.data.requestUrl = `${url}?${query}`;
+    return result.data;
+  }
+
+  /**
+   * Get a listing for a subreddit
+   * @param subreddit
+   * @param sort
+   * @param options
+   * @returns {Promise<*>}
+   */
+  async getListingSubreddit(subreddit, sort, options) {
     const defaults = {
       after: null,
       before: null,
@@ -162,7 +252,15 @@ class RedditAPI {
     return result.data;
   }
 
-  async getMultiListing(user, name, sort, options) {
+  /**
+   * Get a listing for a multi
+   * @param user
+   * @param name
+   * @param sort
+   * @param options
+   * @returns {Promise<*>}
+   */
+  async getListingMulti(user, name, sort, options) {
     const defaults = {
       after: null,
       before: null,
@@ -180,10 +278,8 @@ class RedditAPI {
       params,
     };
 
-    const me = await this.me(false);
-
     let url = `user/${user}/m/${name}/${sort}`;
-    if (me.name === user) {
+    if (user === 'me') {
       url = `me/m/${name}/${sort}`;
     }
     const result = await this.redditAPI.get(url, data);
@@ -192,7 +288,15 @@ class RedditAPI {
     return result.data;
   }
 
-  async getUserListing(user, type, sort, options) {
+  /**
+   * Get a listing for a user
+   * @param user
+   * @param type
+   * @param sort
+   * @param options
+   * @returns {Promise<*>}
+   */
+  async getListingUser(user, type, sort, options) {
     const defaults = {
       after: null,
       before: null,

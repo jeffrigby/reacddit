@@ -2,6 +2,8 @@ import update from 'immutability-helper';
 import RedditAPI from '../../reddit/redditAPI';
 import RedditHelper from '../../reddit/redditHelpers';
 
+const queryString = require('query-string');
+
 export function listingsFilter(listFilter) {
   return {
     type: 'LISTINGS_FILTER',
@@ -32,23 +34,25 @@ export function listingsRedditStatus(status) {
 
 const getContent = async (filters, params) => {
   const target = filters.target !== 'mine' ? filters.target : null;
+  const { user, sort, multi, listType } = filters;
   let entries;
-  if (filters.listType === 'r') {
-    entries = await RedditAPI.getSubredditListing(target, filters.sort, params);
-  } else if (filters.listType === 'm') {
-    entries = await RedditAPI.getMultiListing(
-      target,
-      filters.userType,
-      filters.sort,
-      params
-    );
-  } else if (filters.listType === 'u') {
-    entries = await RedditAPI.getUserListing(
-      target,
-      filters.userType,
-      filters.sort,
-      params
-    );
+  switch (listType) {
+    case 'r':
+      entries = await RedditAPI.getListingSubreddit(target, sort, params);
+      break;
+    case 'm':
+      entries = await RedditAPI.getListingMulti(user, target, sort, params);
+      break;
+    case 'u':
+      entries = await RedditAPI.getListingUser(user, target, sort, params);
+      break;
+    case 's':
+      entries = multi
+        ? await RedditAPI.getListingSearchMulti(user, target, params)
+        : await RedditAPI.getListingSearch(target, params);
+      break;
+    default:
+      break;
   }
 
   if (entries) {
@@ -63,11 +67,11 @@ export function listingsFetchEntriesReddit(filters) {
     dispatch(listingsRedditStatus('loading'));
     await dispatch(listingsRedditEntries({}));
     try {
+      const currentState = getState();
+      const { search } = currentState.router.location;
+      const qs = queryString.parse(search);
       const params = {
-        limit: filters.limit,
-        after: filters.after,
-        before: filters.before,
-        t: filters.t,
+        ...qs,
       };
 
       const entries = await getContent(filters, params);
