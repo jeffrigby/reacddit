@@ -28,7 +28,7 @@ class MultiRedditsItem extends React.Component {
 
     // Generate Link
     let currentSort = sort || '';
-    if (currentSort.match(/(top|controversial)/) && search.t) {
+    if (currentSort.match(/^(top|controversial)$/) && search.t) {
       currentSort = `${currentSort}?t=${search.t}`;
     } else if (currentSort === 'relavance') {
       currentSort = '';

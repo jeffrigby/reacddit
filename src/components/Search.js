@@ -36,13 +36,12 @@ class Search extends React.Component {
       return;
     }
 
-    console.log(e);
     if (e.keyCode === 13) {
       const currentSearch = queryString.parse(location.search);
       const qs = { q };
 
       if (currentSearch.sort !== undefined) {
-        qs.sort = currentSearch.sort.match(/(relevance|new|top)/)
+        qs.sort = currentSearch.sort.match(/^(relevance|new|top)$/)
           ? currentSearch.sort
           : 'relevance';
 
@@ -114,7 +113,6 @@ class Search extends React.Component {
 Search.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired,
-  disableHotKeys: PropTypes.bool.isRequired,
   pushUrl: PropTypes.func.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
 };
@@ -124,7 +122,6 @@ Search.defaultProps = {};
 const mapStateToProps = (state, ownProps) => ({
   location: state.router.location,
   listingsFilter: state.listingsFilter,
-  disableHotKeys: state.disableHotKeys,
 });
 
 const mapDispatchToProps = dispatch => ({

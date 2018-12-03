@@ -13,7 +13,7 @@ const SortTop = ({ listingFilter, location }) => {
   const { search, pathname } = location;
 
   if (
-    !sort.match(/(top|controversial|relavance)/) ||
+    !sort.match(/^(top|controversial|relavance)$/) ||
     target === 'friends' ||
     listType === 'u'
   ) {
@@ -29,8 +29,8 @@ const SortTop = ({ listingFilter, location }) => {
     all: 'all time',
   };
 
-  const sortValue = sortArgs[search.t] || 'month';
   const searchParsed = queryString.parse(search);
+  const sortValue = sortArgs[searchParsed.t] || 'month';
 
   const links = [];
   Object.keys(sortArgs).forEach((key, i) => {

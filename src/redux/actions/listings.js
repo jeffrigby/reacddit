@@ -95,13 +95,14 @@ export function listingsFetchRedditNext() {
   return async (dispatch, getState) => {
     const currentState = getState();
     const { after } = currentState.listingsRedditEntries;
-    const { t } = currentState.listingsFilter;
     dispatch(listingsRedditStatus('loadingNext'));
     try {
+      const { search } = currentState.router.location;
+      const qs = queryString.parse(search);
       const params = {
+        ...qs,
         limit: 50,
         after,
-        t,
       };
 
       const entries = await getContent(currentState.listingsFilter, params);
