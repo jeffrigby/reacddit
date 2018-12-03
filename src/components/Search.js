@@ -36,7 +36,8 @@ class Search extends React.Component {
       return;
     }
 
-    if (e.keyCode === 13 || e.keyCode === 16) {
+    console.log(e);
+    if (e.keyCode === 13) {
       const currentSearch = queryString.parse(location.search);
       const qs = { q };
 
@@ -50,24 +51,15 @@ class Search extends React.Component {
         qs.sort = 'relavance';
       }
 
-      let url;
-      switch (e.keyCode) {
-        case 13:
-          if (listType === 'r' && target !== 'mine') {
-            url = `/r/${target}`;
-          } else if (listType === 'm' && user !== 'me') {
-            url = `/user/${target}/m/${target}`;
-          } else if (listType === 'm' && user === 'me') {
-            url = `/me/m/${target}`;
-          } else {
-            url = '';
-          }
-          break;
-        case 16:
-          url = '';
-          break;
-        default:
-          break;
+      let url = '';
+      if (!e.shiftKey) {
+        if (listType === 'r' && target !== 'mine') {
+          url = `/r/${target}`;
+        } else if (listType === 'm' && user !== 'me') {
+          url = `/user/${target}/m/${target}`;
+        } else if (listType === 'm' && user === 'me') {
+          url = `/me/m/${target}`;
+        }
       }
 
       const qsString = queryString.stringify(qs);
