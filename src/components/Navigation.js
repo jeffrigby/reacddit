@@ -189,7 +189,7 @@ class Navigation extends React.Component {
       if (!me.name) {
         switch (pressedKey) {
           case 'L': // shift-L
-            window.location.href = '/api/reddit-login';
+            window.location.href = '/api/login';
             break;
           default:
             break;
@@ -406,7 +406,7 @@ class Navigation extends React.Component {
                 {!loggedIn && (
                   <li>
                     <div id="login">
-                      <a href="/api/reddit-login">Login</a> to view your
+                      <a href="/api/login">Login</a> to view your
                       subreddits.
                     </div>
                   </li>

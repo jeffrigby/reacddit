@@ -41,3 +41,4 @@ ngrok
 /dist
 /stats.json
 /src/embeds/domains_custom/*.js
+/server/.env

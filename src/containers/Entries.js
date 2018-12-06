@@ -77,6 +77,7 @@ class Entries extends React.Component {
     this.scrollResize = true;
     this.scrollResizeStop = true;
     this.initTriggered = null;
+    this.renderedLinks = [];
     this.monitorEntries = this.monitorEntries.bind(this);
     this.state = {
       focused: null,
@@ -167,6 +168,7 @@ class Entries extends React.Component {
       this.initTriggered !== listingsEntries.requestUrl
     ) {
       this.initTriggered = listingsEntries.requestUrl;
+      this.renderedLinks = [];
       const entryKeys = Object.keys(listingsEntries.children);
       const newState = {
         focused: entryKeys[0],
@@ -354,6 +356,13 @@ class Entries extends React.Component {
         const isVisible = visible.includes(entriesObject[key].data.name);
         // const isFocused = false;
         // const isVisible = false;
+
+        // if (this.renderedLinks.includes(entriesObject[key].data.url)) {
+        //   console.log('skipped');
+        //   return null;
+        // }
+        //
+        // this.renderedLinks.push(entriesObject[key].data.url);
         return (
           <Entry
             entry={entriesObject[key]}

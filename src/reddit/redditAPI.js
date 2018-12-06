@@ -113,7 +113,7 @@ class RedditAPI {
 
     if (token === 'expired' || reset === true || token === null) {
       // token expired or forced refresh. Get a new one.
-      const getToken = await axios.get('/json/bearer');
+      const getToken = await axios.get('/api/bearer');
       token = getToken.data.accessToken;
       if (token) {
         this.setTokenStorage(token, getToken.data.expires, getToken.data.type);
