@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { routerReducer } from 'react-router-redux';
+import { connectRouter } from 'connected-react-router';
 import { subreddits, lastUpdated, lastUpdatedTime } from './subreddits';
 import * as listings from './listings';
 import * as reddit from './reddit';
@@ -9,11 +9,13 @@ const hardCoded = {
   subreddits,
   lastUpdated,
   lastUpdatedTime,
-  router: routerReducer,
 };
 
-const combined = Object.assign({}, hardCoded, listings, reddit, auth);
-
-const rootReducer = combineReducers(combined);
-
-export default rootReducer;
+export default history =>
+  combineReducers({
+    router: connectRouter(history),
+    ...hardCoded,
+    ...listings,
+    ...reddit,
+    ...auth,
+  });

@@ -1,5 +1,5 @@
 import { createStore, applyMiddleware } from 'redux';
-import { routerMiddleware } from 'react-router-redux';
+import { routerMiddleware } from 'connected-react-router';
 import axios from 'axios';
 import axiosMiddleware from 'redux-axios-middleware';
 import thunk from 'redux-thunk';
@@ -21,7 +21,7 @@ const configureStore = (initialState, history) => {
   // middleware.push(createLogger());
 
   const store = createStore(
-    rootReducer,
+    rootReducer(history),
     initialState,
     composeWithDevTools(
       applyMiddleware(...middleware)

@@ -2,18 +2,18 @@ import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { ConnectedRouter } from 'react-router-redux';
-import createHistory from 'history/createBrowserHistory';
+import { ConnectedRouter } from 'connected-react-router';
+import { createBrowserHistory } from 'history';
 import throttle from 'lodash/throttle';
 import configureStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
-import Root from './containers/Root';
+import App from './components/App';
 
 const persistedState = loadState();
 
 // Create a history of your choosing (we're using a browser history in this case)
-const history = createHistory();
+const history = createBrowserHistory();
 const store = configureStore(persistedState, history);
 
 store.subscribe(
@@ -39,4 +39,4 @@ const render = Component => {
   );
 };
 
-render(Root);
+render(App);

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 import isEmpty from 'lodash.isempty';
 import {
   subredditsFetchData,
@@ -406,8 +406,7 @@ class Navigation extends React.Component {
                 {!loggedIn && (
                   <li>
                     <div id="login">
-                      <a href="/api/login">Login</a> to view your
-                      subreddits.
+                      <a href="/api/login">Login</a> to view your subreddits.
                     </div>
                   </li>
                 )}
