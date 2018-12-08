@@ -12,10 +12,12 @@ const {
   REDDIT_CLIENT_ID,
   REDDIT_CLIENT_SECRET,
   REDDIT_CALLBACK_URI,
+  REDDIT_SCOPE,
+  APP_KEY,
 } = process.env;
 
 const CONFIG = {
-  key: 'koa:sess' /** (string) cookie key (default is koa:sess) */,
+  key: 'redditmedia:sess' /** (string) cookie key (default is koa:sess) */,
   /** (number || 'session') maxAge in ms (default is 1 days) */
   /** 'session' will result in a cookie that expires when session/browser is closed */
   /** Warning: If a session cookie is stolen, this cookie will never expire */
@@ -109,32 +111,28 @@ const getBearer = (accessToken, params = {}) => ({
   ...params,
 });
 
+const getLoginUrl = ctx => {
+  const state = ctx.session.state || uuidv4();
+  ctx.session.state = state;
+  const authorizationUri = oauth2.authorizationCode.authorizeURL({
+    redirect_uri: REDDIT_CALLBACK_URI,
+    scope: REDDIT_SCOPE.split(','),
+    state,
+    duration: 'permanent',
+    responseType: 'code',
+  });
+  return authorizationUri;
+};
+
 const app = new Koa();
 
-app.keys = ['FEEAAAA8BB5B21FE1836666655F8C'];
+app.keys = [APP_KEY];
 app.use(session(CONFIG, app));
 
 const router = new Router();
 
 router.get('/api/login', (ctx, next) => {
-  const state = ctx.session.state || uuidv4();
-  ctx.session.state = state;
-  const authorizationUri = oauth2.authorizationCode.authorizeURL({
-    redirect_uri: REDDIT_CALLBACK_URI,
-    scope: [
-      'identity',
-      'mysubreddits',
-      'vote',
-      'subscribe',
-      'read',
-      'history',
-      'save',
-    ],
-    state,
-    duration: 'permanent',
-    responseType: 'code',
-  });
-
+  const authorizationUri = getLoginUrl(ctx);
   ctx.redirect(authorizationUri);
 });
 
@@ -180,11 +178,13 @@ router.get('/api/callback', async (ctx, next) => {
 
 router.get('/api/bearer', async (ctx, next) => {
   const { token } = ctx.session;
+  const loginUrl = getLoginUrl(ctx);
+
   if (!token) {
     const anonToken = await getAnonToken();
     console.log('ANON GRANTED');
     ctx.session.token = anonToken;
-    ctx.body = getBearer(anonToken, { type: 'new' });
+    ctx.body = getBearer(anonToken, { type: 'new', loginUrl });
     return;
   }
 
@@ -194,7 +194,11 @@ router.get('/api/bearer', async (ctx, next) => {
   // Token is not expired. Return as is.
   if (!tokenExpired) {
     // return the token as is.
-    ctx.body = getBearer(token, { type: 'cached' });
+    if (token.auth) {
+      ctx.body = getBearer(token, { type: 'cached' });
+    } else {
+      ctx.body = getBearer(token, { type: 'cached', loginUrl });
+    }
   }
 
   // Get a new anonymous token.
@@ -202,7 +206,7 @@ router.get('/api/bearer', async (ctx, next) => {
     const anonToken = await getAnonToken();
     console.log('REFRESH ANON TOKEN GRANTED');
     ctx.session.token = anonToken;
-    ctx.body = getBearer(anonToken, { type: 'newanon' });
+    ctx.body = getBearer(anonToken, { type: 'newanon', loginUrl });
   }
 
   // Refresh Authenticated Token.
