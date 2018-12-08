@@ -1,4 +1,3 @@
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const commonPaths = require('./paths');
 
 module.exports = {
@@ -6,11 +5,13 @@ module.exports = {
   output: {
     filename: '[name].js',
     path: commonPaths.outputPath,
+    publicPath: '/',
     chunkFilename: '[name].js',
   },
   devServer: {
     contentBase: commonPaths.outputPath,
     historyApiFallback: true,
+    compress: true,
     stats: 'normal',
   },
   module: {},

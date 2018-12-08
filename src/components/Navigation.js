@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 import isEmpty from 'lodash.isempty';
 import {
   subredditsFetchData,
@@ -47,9 +47,9 @@ class Navigation extends React.Component {
     jQuery(document).keypress(this.handleNavHotkey);
     jQuery(document).keydown(this.handleNavHotkeyKeyDown);
     jQuery(window).on('load resize', Navigation.resizeNavigation);
-    this.accessToken = await RedditAPI.getToken();
+    this.accessToken = await RedditAPI.getToken(false);
 
-    if (this.accessToken) {
+    if (this.accessToken && this.accessToken.substr(0, 1) !== '-') {
       fetchSubreddits(false);
     } else {
       fetchDefaultSubreddits();
@@ -189,7 +189,7 @@ class Navigation extends React.Component {
       if (!me.name) {
         switch (pressedKey) {
           case 'L': // shift-L
-            window.location.href = '/api/reddit-login';
+            window.location.href = '/api/login';
             break;
           default:
             break;
@@ -263,7 +263,7 @@ class Navigation extends React.Component {
   }
 
   generateNavItems(subreddits) {
-    const { lastUpdated, sort, sortTop } = this.props;
+    const { lastUpdated, sort, t } = this.props;
     const { subredditsFilter, subredditTargetIdx } = this.state;
     const navigationItems = [];
     Object.keys(subreddits).forEach((key, index) => {
@@ -278,7 +278,7 @@ class Navigation extends React.Component {
         if (trigger) {
           let currentSort = sort || '';
           if (currentSort === 'top') {
-            currentSort = `${currentSort}?t=${sortTop}`;
+            currentSort = `${currentSort}?t=${t}`;
           }
           this.subredditTarget = `${item.url}${currentSort}`;
         }
@@ -302,7 +302,7 @@ class Navigation extends React.Component {
   }
 
   randomSubPush() {
-    const { subreddits, sort, sortTop, ...props } = this.props;
+    const { subreddits, sort, t, ...props } = this.props;
     if (isEmpty(subreddits.subreddits)) {
       return false;
     }
@@ -311,7 +311,7 @@ class Navigation extends React.Component {
     const randomSubreddit = subreddits.subreddits[randomKey];
 
     const sortTopQS =
-      sort === 'top' || sort === 'controversial' ? `?t=${sortTop}` : '';
+      sort === 'top' || sort === 'controversial' ? `?t=${t}` : '';
 
     const url = randomSubreddit.url + (sort || 'hot') + sortTopQS;
     return props.push(url);
@@ -358,8 +358,10 @@ class Navigation extends React.Component {
     const filterText = subredditsFilter;
     const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
     const navItems = this.generateNavItems(filteredSubreddits);
-    const currentSort = sort || 'hot';
+    const currentSort = sort && sort !== 'relavance' ? sort : '';
     const noItems = isEmpty(navItems);
+    const loggedIn = this.accessToken && this.accessToken.substr(0, 1) !== '-';
+
     const hideExtras =
       this.filterActive || (!this.filterActive && !isEmpty(filterText));
 
@@ -401,18 +403,17 @@ class Navigation extends React.Component {
           <nav className="navigation subreddits-nav hidden-print" id="side-nav">
             {!hideExtras && (
               <ul className="nav">
-                {!this.accessToken && (
+                {!loggedIn && (
                   <li>
                     <div id="login">
-                      <a href="/api/reddit-login">Login</a> to view your
-                      subreddits.
+                      <a href="/api/login">Login</a> to view your subreddits.
                     </div>
                   </li>
                 )}
                 <li>
                   <div>
                     <NavLink
-                      to={`/r/mine/${currentSort}`}
+                      to={`/${currentSort}`}
                       title="Show all subreddits"
                       activeClassName="activeSubreddit"
                     >
@@ -437,7 +438,7 @@ class Navigation extends React.Component {
                     </a>
                   </div>
                 </li>
-                {this.accessToken && (
+                {loggedIn && (
                   <li>
                     <div>
                       <NavLink
@@ -506,7 +507,7 @@ class Navigation extends React.Component {
             )}
             {!hideExtras && <div className="nav-divider" />}
 
-            {this.accessToken && !hideExtras && <MultiReddits />}
+            {loggedIn && !hideExtras && <MultiReddits />}
 
             <ul className="nav">{navItems}</ul>
           </nav>
@@ -527,7 +528,7 @@ class Navigation extends React.Component {
 
 Navigation.propTypes = {
   sort: PropTypes.string.isRequired,
-  sortTop: PropTypes.string,
+  t: PropTypes.string,
   fetchSubreddits: PropTypes.func.isRequired,
   fetchDefaultSubreddits: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
@@ -541,12 +542,12 @@ Navigation.propTypes = {
 };
 
 Navigation.defaultProps = {
-  sortTop: '',
+  t: '',
 };
 
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
-  sortTop: state.listingsFilter.sortTop,
+  t: state.listingsFilter.t,
   subreddits: state.subreddits,
   me: state.redditMe.me,
   lastUpdated: state.lastUpdated,

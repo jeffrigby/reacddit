@@ -11,7 +11,8 @@ class Header extends React.Component {
   render() {
     const { listingsFilter } = this.props;
     const { listType, target } = listingsFilter;
-    const title = target === 'mine' ? 'Home' : `${listType}/${target}`;
+    const title =
+      target === 'mine' || !target ? 'Home' : `${listType}/${target}`;
     return (
       <div className="navbar navbar-inverse navbar-fixed-top" id="header">
         <div id="header-sidebar">

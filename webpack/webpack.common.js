@@ -29,7 +29,7 @@ module.exports = {
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              minimize: true,
+              // minimize: true,
               // modules: true,
               // camelCase: true,
               // localIdentName: '[local]___[hash:base64:5]',

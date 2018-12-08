@@ -1,0 +1,22 @@
+{
+  "name": "oauth2test",
+  "version": "1.0.0",
+  "description": "Test for reddit oauth2 flow",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^6.1.0",
+    "koa": "^2.6.2",
+    "koa-router": "^7.4.0",
+    "koa-session": "^5.10.0",
+    "querystring": "^0.2.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "simple-oauth2": "^2.2.1",
+    "uuid": "^3.3.2"
+  }
+}

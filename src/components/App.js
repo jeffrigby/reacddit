@@ -1,5 +1,6 @@
 import React from 'react';
-import { Route, withRouter } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
+import { withRouter } from 'react-router';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Navigation from './Navigation';
@@ -28,6 +29,44 @@ class App extends React.Component {
   }
 
   render() {
+    const redditSorts = 'hot|new|top|controversial|rising|best';
+    const redditPaths = [
+      '/',
+      `/:listType(r)/:target/:sort(${redditSorts})?`,
+      `/:sort(${redditSorts})`,
+    ];
+
+    // const searchSorts = 'relevance|top|new';
+    const searchPaths = [
+      '/:listType(search)',
+      '/r/:target/:listType(search)',
+      '/user/:target/:multi(m)/:userType/:listType(search)',
+      '/:user(me)/:multi(m)/:target/:listType(search)',
+    ];
+
+    const multiPaths = [
+      `/user/:user/:listType(m)/:target/:sort(${redditSorts})?`,
+      `/:user(me)/:listType(m)/:target/:sort(${redditSorts})?`,
+    ];
+
+    const userSorts = 'hot|new|top|controversial';
+    const userPaths = [
+      `/:listType(user)/:user/:target(upvoted|downvoted|submitted|saved|hidden|gilded)/:sort(${userSorts})?`,
+    ];
+
+    const combinedPaths = [
+      ...redditPaths,
+      ...searchPaths,
+      ...multiPaths,
+      ...userPaths,
+    ];
+
+    const routes = [];
+    combinedPaths.forEach((value, i) => {
+      const key = `route${i}}`;
+      routes.push(<Route exact path={value} component={Entries} key={key} />);
+    });
+
     return (
       <div>
         <Header />
@@ -42,23 +81,7 @@ class App extends React.Component {
           <div id="main">
             <div className="col-md-12">
               <div className="list-group" id="entries">
-                <Route exact path="/" component={Entries} />
-                <Route
-                  path="/:listType(r)/:target/:sort(hot|new|top|controversial|rising)?"
-                  component={Entries}
-                />
-                <Route
-                  path="/:listType(user)/:target/:multi(m)/:userType/:sort(hot|new|top|controversial|rising)?"
-                  component={Entries}
-                />
-                <Route
-                  path="/:listType(user)/:target/:userType(upvoted|downvoted|submitted|saved)/:sort(hot|new|top|controversial|rising)?"
-                  component={Entries}
-                />
-                <Route
-                  path="/:sort(hot|new|top|controversial|rising)"
-                  component={Entries}
-                />
+                <Switch>{routes}</Switch>
               </div>
             </div>
           </div>

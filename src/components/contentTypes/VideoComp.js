@@ -51,6 +51,13 @@ const VideoComp = ({ content, load }) => {
         {contentRender.mp4 && (
           <source id="mp4source" src={contentRender.mp4} type="video/mp4" />
         )}
+        {contentRender.m3u8 && (
+          <source
+            id="m3u8usource"
+            src={contentRender.m3u8}
+            type="application/vnd.apple.mpegURL"
+          />
+        )}
       </video>
     );
   } else {

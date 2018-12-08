@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -6,19 +6,46 @@ import TimeAgo from '@jshimko/react-time-ago';
 import Content from './Content';
 import EntryVote from './EntryVote';
 import EntrySave from './EntrySave';
+import RenderContent from '../embeds';
+
+const ReactJson = React.lazy(() => import('react-json-view'));
 
 class Entry extends React.Component {
+  mounted = false;
+
   constructor(props) {
     super(props);
     this.state = {
       showDebug: false,
+      renderedContent: {},
+      expandSticky: false,
     };
     this.showDebug = this.showDebug.bind(this);
   }
 
+  componentDidMount() {
+    this.mounted = true;
+    const { entry } = this.props;
+    const getContent = RenderContent(entry.data);
+
+    Promise.resolve(getContent).then(content => {
+      if (this.mounted) {
+        let contentObj = { ...content };
+        contentObj.js = true;
+        if (!contentObj.type) {
+          contentObj = typeof entry.content === 'object' ? entry.content : {};
+          contentObj.js = false;
+        }
+        this.setState({
+          renderedContent: contentObj,
+        });
+      }
+    });
+  }
+
   shouldComponentUpdate(nextProps, nextState) {
     const { ...props } = this.props;
-    const { showDebug } = this.state;
+    const { showDebug, renderedContent, expandSticky } = this.state;
 
     if (props.listingFilter.sort !== nextProps.listingFilter.sort) {
       return true;
@@ -26,7 +53,7 @@ class Entry extends React.Component {
     if (props.debug !== nextProps.debug) {
       return true;
     }
-    if (props.listingFilter.sortTop !== nextProps.listingFilter.sortTop) {
+    if (props.listingFilter.t !== nextProps.listingFilter.t) {
       return true;
     }
     if (props.entry !== nextProps.entry) {
@@ -38,10 +65,20 @@ class Entry extends React.Component {
     if (props.visible !== nextProps.visible) {
       return true;
     }
-    if (showDebug !== nextState.showDebug) {
+    if (
+      showDebug !== nextState.showDebug ||
+      expandSticky !== nextState.expandSticky
+    ) {
+      return true;
+    }
+    if (renderedContent !== nextState.renderedContent) {
       return true;
     }
     return false;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   showDebug(event) {
@@ -51,38 +88,55 @@ class Entry extends React.Component {
 
   render() {
     const { entry, focused, visible, debug } = this.props;
-    const { showDebug } = this.state;
-    const timeago = entry.created_raw * 1000;
-    const subUrl = `/r/${entry.subreddit}`;
-    const contentObj = typeof entry.content === 'object' ? entry.content : {};
-    const classes = focused
-      ? 'entry list-group-item focused'
-      : 'entry list-group-item';
+    const { showDebug, renderedContent, expandSticky } = this.state;
+    const timeago = entry.data.created_utc * 1000;
+    const subUrl = `/r/${entry.data.subreddit}`;
+    let classes = 'entry list-group-item';
+    if (focused) {
+      classes += ' focused';
+    }
+
+    if (entry.data.stickied && expandSticky) {
+      classes += ' showSticky';
+    } else if (entry.data.stickied && !expandSticky) {
+      classes += ' hideSticky';
+    }
+
     const content = (
-      <Content content={contentObj} name={entry.name} load={visible} />
+      <Content
+        content={renderedContent}
+        name={entry.data.name}
+        load={visible}
+        key={entry.data.id}
+      />
     );
-    const authorFlair = entry.author_flair_text ? (
-      <span className="badge">{entry.author_flair_text}</span>
+    const jsRender = renderedContent.js ? 'JS' : 'PHP';
+    const authorFlair = entry.data.author_flair_text ? (
+      <span className="badge">{entry.data.author_flair_text}</span>
     ) : null;
-    const linkFlair = entry.link_flair_text ? (
-      <span className="label label-default">{entry.link_flair_text}</span>
+    const linkFlair = entry.data.link_flair_text ? (
+      <span className="label label-default">{entry.data.link_flair_text}</span>
     ) : null;
     const currentDebug = process.env.NODE_ENV === 'development' && debug;
     return (
-      <div className={classes} key={entry.url_id} id={entry.name}>
+      <div className={classes} key={entry.data.name} id={entry.data.name}>
         <div className="entry-interior">
           <h4 className="title list-group-item-heading">
             <a
-              href={entry.url}
+              href={entry.data.url}
               target="_blank"
               rel="noopener noreferrer"
               className="list-group-item-heading"
             >
-              {entry.title}
+              {entry.data.title}
             </a>{' '}
             {linkFlair}
           </h4>
-          <EntryVote id={entry.id} likes={entry.likes} ups={entry.ups} />
+          <EntryVote
+            id={entry.data.id}
+            likes={entry.data.likes}
+            ups={entry.data.ups}
+          />
           {content}
           <div className="meta-container clearfix">
             <small className="meta">
@@ -90,39 +144,58 @@ class Entry extends React.Component {
                 Submitted <TimeAgo date={timeago} /> by{' '}
                 <span className="author">
                   {' '}
-                  <Link to={`/user/${entry.author}/submitted/new`}>
-                    {entry.author}
+                  <Link to={`/user/${entry.data.author}/submitted/new`}>
+                    {entry.data.author}
                   </Link>{' '}
                   {authorFlair}
                 </span>{' '}
                 to
                 <span className="subreddit meta-sub">
-                  <Link to={subUrl}>/r/{entry.subreddit}</Link>
+                  <Link to={subUrl}>/r/{entry.data.subreddit}</Link>
                 </span>
               </span>
-              <span className="source meta-sub">{entry.domain}</span>
+              <span className="source meta-sub">{entry.data.domain}</span>
               <span className="comments meta-sub">
                 <a
-                  href={`https://www.reddit.com/${entry.permalink}`}
+                  href={`https://www.reddit.com${entry.data.permalink}`}
                   rel="noopener noreferrer"
                   target="_blank"
                 >
-                  comments <span className="badge">{entry.num_comments}</span>
+                  comments{' '}
+                  <span className="badge">{entry.data.num_comments}</span>
                 </a>
               </span>
-              <EntrySave name={entry.name} saved={entry.saved} />
+              <span className="save meta-sub">
+                <EntrySave name={entry.data.name} saved={entry.data.saved} />
+              </span>
               {currentDebug && (
-                <span>
+                <span className="debug meta-sub">
                   <a href="#showDebug" onClick={this.showDebug}>
                     Show Debug
-                  </a>
+                  </a>{' '}
+                  {jsRender}
                 </span>
               )}
             </small>
           </div>
           {showDebug && (
             <div className="debug">
-              <pre>{JSON.stringify(entry, null, '\t')}</pre>
+              <Suspense fallback={<div>Loading JSON...</div>}>
+                <ReactJson
+                  src={renderedContent}
+                  name="content"
+                  theme="harmonic"
+                  sortKeys
+                  collapsed
+                />
+                <ReactJson
+                  src={entry}
+                  name="entry"
+                  theme="harmonic"
+                  sortKeys
+                  collapsed
+                />
+              </Suspense>
             </div>
           )}
         </div>

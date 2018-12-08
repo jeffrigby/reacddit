@@ -1,5 +1,8 @@
-import axios from 'axios';
 import update from 'immutability-helper';
+import RedditAPI from '../../reddit/redditAPI';
+import RedditHelper from '../../reddit/redditHelpers';
+
+const queryString = require('query-string');
 
 export function listingsFilter(listFilter) {
   return {
@@ -8,10 +11,10 @@ export function listingsFilter(listFilter) {
   };
 }
 
-export function listingsEntries(listEntries) {
+export function listingsRedditEntries(listSubredditEntries) {
   return {
-    type: 'LISTINGS_ENTRIES',
-    listEntries,
+    type: 'LISTINGS_REDDIT_ENTRIES',
+    listSubredditEntries,
   };
 }
 
@@ -22,78 +25,100 @@ export function listingsEntryUpdate(entry) {
   };
 }
 
-export function listingsStatus(listingStatus) {
+export function listingsRedditStatus(status) {
   return {
-    type: 'LISTINGS_STATUS',
-    listingStatus,
+    type: 'LISTINGS_REDDIT_STATUS',
+    status,
   };
 }
 
-export function listingsFetchEntries(url) {
-  return async dispatch => {
-    dispatch(listingsStatus('loading'));
-    await dispatch(listingsEntries({}));
+const getContent = async (filters, params) => {
+  const target = filters.target !== 'mine' ? filters.target : null;
+  const { user, sort, multi, listType } = filters;
+  let entries;
+  switch (listType) {
+    case 'r':
+      entries = await RedditAPI.getListingSubreddit(target, sort, params);
+      break;
+    case 'm':
+      entries = await RedditAPI.getListingMulti(user, target, sort, params);
+      break;
+    case 'u':
+      entries = await RedditAPI.getListingUser(user, target, sort, params);
+      break;
+    case 's':
+      entries = multi
+        ? await RedditAPI.getListingSearchMulti(user, target, params)
+        : await RedditAPI.getListingSearch(target, params);
+      break;
+    default:
+      break;
+  }
+
+  if (entries) {
+    entries = RedditHelper.keyEntryChildren(entries);
+  }
+
+  return entries;
+};
+
+export function listingsFetchEntriesReddit(filters) {
+  return async (dispatch, getState) => {
+    dispatch(listingsRedditStatus('loading'));
+    await dispatch(listingsRedditEntries({}));
     try {
-      const results = await axios.get(url);
-      const json = results.data;
-      const data = update(json, {
-        requestUrl: { $set: url },
-        type: { $set: 'init' },
-      });
-      await dispatch(listingsEntries(data));
+      const currentState = getState();
+      const { search } = currentState.router.location;
+      const qs = queryString.parse(search);
+      const params = {
+        ...qs,
+      };
+
+      const entries = await getContent(filters, params);
+
+      const data = {
+        ...entries.data,
+        requestUrl: entries.requestUrl,
+        type: 'init',
+      };
+
+      await dispatch(listingsRedditEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';
-      dispatch(listingsStatus(loaded));
+      dispatch(listingsRedditStatus(loaded));
     } catch (e) {
-      dispatch(listingsStatus('error'));
+      dispatch(listingsRedditStatus('error'));
     }
   };
 }
 
-export function listingsFetchNext() {
+export function listingsFetchRedditNext() {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const url = currentState.listingsEntries.requestUrl.split('?');
-    let nextUrl = `${url[0]}?after=${
-      currentState.listingsEntries.after
-    }&limit=50`;
-    if (
-      currentState.listingsFilter.sort === 'top' ||
-      currentState.listingsFilter.sort === 'controversial'
-    ) {
-      nextUrl += `&t=${currentState.listingsFilter.sortTop}`;
-    }
-    dispatch(listingsStatus('loadingNext'));
+    const { after } = currentState.listingsRedditEntries;
+    dispatch(listingsRedditStatus('loadingNext'));
     try {
-      const results = await axios.get(nextUrl);
-      const json = results.data;
-      const newListings = update(currentState.listingsEntries, {
-        after: { $set: json.after },
-        entries: { $merge: json.entries },
+      const { search } = currentState.router.location;
+      const qs = queryString.parse(search);
+      const params = {
+        ...qs,
+        limit: 50,
+        after,
+      };
+
+      const entries = await getContent(currentState.listingsFilter, params);
+
+      const newListings = update(currentState.listingsRedditEntries, {
+        after: { $set: entries.data.after },
+        children: { $merge: entries.data.children },
         type: { $set: 'more' },
       });
-      await dispatch(listingsEntries(newListings));
-      const loaded = newListings.after ? 'loaded' : 'loadedAll';
-      dispatch(listingsStatus(loaded));
-    } catch (e) {
-      dispatch(listingsStatus('error'));
-    }
-  };
-}
 
-export function listingsFetch() {
-  return (dispatch, getState) => {
-    const currentState = getState();
-    const { url } = currentState.listingsFilter;
-    if (!url) {
-      return false;
+      await dispatch(listingsRedditEntries(newListings));
+
+      const loaded = newListings.after ? 'loaded' : 'loadedAll';
+      dispatch(listingsRedditStatus(loaded));
+    } catch (e) {
+      dispatch(listingsRedditStatus('error'));
     }
-    if (url === currentState.listingsEntries.requestUrl) {
-      return false;
-    }
-    if (currentState.listingsStatus === 'loading') {
-      return false;
-    }
-    dispatch(listingsFetchEntries(url));
-    return true;
   };
 }

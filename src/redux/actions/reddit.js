@@ -27,8 +27,9 @@ export function redditGetBearer() {
   return async (dispatch, getState) => {
     try {
       const currentState = getState();
-      const bearer = await RedditAPI.getToken();
-      const status = bearer === null ? 'anon' : 'auth';
+      const bearer = await RedditAPI.getToken(false);
+      const status =
+        bearer === null || bearer.substr(0, 1) === '-' ? 'anon' : 'auth';
       const result = {
         bearer,
         status,
@@ -48,6 +49,7 @@ export function redditGetBearer() {
 export function redditFetchMe(reset) {
   return async (dispatch, getState) => {
     try {
+      // @todo deete caching from the below function. It's already cached in the redux storage.
       const me = await RedditAPI.me(reset);
       const result = {
         me,
@@ -106,10 +108,10 @@ export function redditUnsave(id) {
 export function redditVote(id, dir) {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const token = await RedditAPI.getToken();
+    const token = await RedditAPI.getToken(false);
     if (token) {
       try {
-        let { likes, ups } = currentState.listingsEntries.entries[id];
+        let { likes, ups } = currentState.listingsEntries.children[id].data;
         await RedditAPI.vote(id, dir);
 
         switch (dir) {

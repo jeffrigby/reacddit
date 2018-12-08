@@ -3,14 +3,19 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
+const queryString = require('query-string');
+
 /**
  * Import all actions as an object.
  */
-const SortTop = ({ listingFilter }) => {
+const SortTop = ({ listingFilter, location }) => {
+  const { sort, target, listType } = listingFilter;
+  const { search, pathname } = location;
+
   if (
-    (listingFilter.sort !== 'top' && listingFilter.sort !== 'controversial') ||
-    listingFilter.target === 'friends' ||
-    listingFilter.listType === 'u'
+    !sort.match(/^(top|controversial|relavance)$/) ||
+    target === 'friends' ||
+    listType === 'u'
   ) {
     return null;
   }
@@ -24,20 +29,29 @@ const SortTop = ({ listingFilter }) => {
     all: 'all time',
   };
 
-  const sortValue = sortArgs[listingFilter.sortTop];
-  const { sort, target, listType, userType } = listingFilter;
-  let url = `/${listType}/${target}/${sort}?t=`;
+  const searchParsed = queryString.parse(search);
+  const sortValue = sortArgs[searchParsed.t] || 'month';
 
-  if (listType === 'r') {
-    url = `/r/${target}/${sort}?t=`;
-  } else if (listType === 'm') {
-    url = `/user/${target}/m/${userType}/${sort}?t=`;
-  }
+  const links = [];
+  Object.keys(sortArgs).forEach((key, i) => {
+    const newSearch = queryString.stringify({ ...searchParsed, t: key });
+    const url =
+      target === 'mine' && listType === 'r'
+        ? `/${sort}?${newSearch}`
+        : `${pathname}?${newSearch}`;
+    const linkString = sortArgs[key];
+    const liKey = `sortTop${key}`;
+    links.push(
+      <li key={liKey}>
+        <Link to={url}>{linkString}</Link>
+      </li>
+    );
+  });
 
   return (
     <div style={{ display: 'inline-block' }}>
       <button
-        className="btn btn-default btn-xs dropdown-toggle"
+        className="btn btn-default btn-sm dropdown-toggle"
         type="button"
         id="dropdownMenu1"
         data-toggle="dropdown"
@@ -48,36 +62,21 @@ const SortTop = ({ listingFilter }) => {
         <span className="caret" />
       </button>
       <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
-        <li>
-          <Link to={`${url}hour`}>past hour</Link>
-        </li>
-        <li>
-          <Link to={`${url}day`}>past 24 hours</Link>
-        </li>
-        <li>
-          <Link to={`${url}week`}>past week</Link>
-        </li>
-        <li>
-          <Link to={`${url}month`}>past month</Link>
-        </li>
-        <li>
-          <Link to={`${url}year`}>past year</Link>
-        </li>
-        <li>
-          <Link to={`${url}all`}>all time</Link>
-        </li>
+        {links}
       </ul>
     </div>
   );
 };
 
 SortTop.propTypes = {
+  location: PropTypes.object.isRequired,
   listingFilter: PropTypes.object.isRequired,
 };
 
 SortTop.defaultProps = {};
 
 const mapStateToProps = state => ({
+  location: state.router.location,
   listingFilter: state.listingsFilter,
 });
 

@@ -39,10 +39,12 @@ class NavigationItem extends React.Component {
   }
 
   render() {
-    const { sort, sortTop, item, trigger } = this.props;
+    const { sort, t, item, trigger } = this.props;
     let currentSort = sort || '';
     if (currentSort === 'top' || currentSort === 'controversial') {
-      currentSort = `${currentSort}?t=${sortTop}`;
+      currentSort = `${currentSort}?t=${t}`;
+    } else if (currentSort === 'relavance') {
+      currentSort = '';
     }
     const href = `${Common.stripTrailingSlash(item.url)}/${currentSort}`;
     const classNameStr = this.getDiffClassName();
@@ -72,19 +74,19 @@ class NavigationItem extends React.Component {
 NavigationItem.propTypes = {
   item: PropTypes.object.isRequired,
   sort: PropTypes.string.isRequired,
-  sortTop: PropTypes.string,
+  t: PropTypes.string,
   trigger: PropTypes.bool.isRequired,
   lastUpdated: PropTypes.number,
 };
 
 NavigationItem.defaultProps = {
   lastUpdated: 0,
-  sortTop: '',
+  t: '',
 };
 
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
-  sortTop: state.listingsFilter.sortTop,
+  t: state.listingsFilter.t,
 });
 
 const mapDispatchToProps = dispatch => ({});

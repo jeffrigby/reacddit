@@ -28,3 +28,12 @@ export function lastUpdated(state = {}, action) {
       return state;
   }
 }
+
+export function lastUpdatedTime(state = 0, action) {
+  switch (action.type) {
+    case 'SUBREDDITS_LAST_UPDATED_TIME':
+      return action.lastUpdatedTime;
+    default:
+      return state;
+  }
+}
