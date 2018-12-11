@@ -8,7 +8,7 @@ import {
   subredditsFetchData,
   subredditsFetchDefaultData,
 } from '../redux/actions/subreddits';
-import { debugMode, disableHotKeys } from '../redux/actions/auth';
+import { debugMode, disableHotKeys } from '../redux/actions/misc';
 import NavigationItem from './NavigationItem';
 import MultiReddits from './MultiReddits';
 import RedditAPI from '../reddit/redditAPI';
@@ -67,7 +67,6 @@ class Navigation extends React.Component {
     this.enableHotkeys = this.enableHotkeys.bind(this);
     this.disableHotkeys = this.disableHotkeys.bind(this);
     this.accessToken = null;
-    this.redditUser = null;
     this.lastKeyPressed = null;
     this.filterActive = false;
     this.subredditTarget = null;
@@ -454,12 +453,16 @@ class Navigation extends React.Component {
     const topLinks = [];
     if (!loggedIn) {
       topLinks.push(
-        Navigation.generateListItems([
-          'Reddit Login',
-          `/api/login`,
-          `Login to see your subreddits`,
-          'login',
-        ])
+        <li key="login">
+          <div>
+            <a
+              href="/api/login"
+              title="Login to reddit to see your subreddits. ⇧L"
+            >
+              Reddit Login
+            </a>
+          </div>
+        </li>
       );
     }
 

@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import TimeAgo from '@jshimko/react-time-ago';
+import * as moment from 'moment';
 import Content from './Content';
 import EntryVote from './EntryVote';
 import EntrySave from './EntrySave';
@@ -89,7 +89,7 @@ class Entry extends React.Component {
   render() {
     const { entry, focused, visible, debug } = this.props;
     const { showDebug, renderedContent, expandSticky } = this.state;
-    const timeago = entry.data.created_utc * 1000;
+    const timeago = moment(entry.data.created_utc * 1000).from();
     const subUrl = `/r/${entry.data.subreddit}`;
     let classes = 'entry list-group-item';
     if (focused) {
@@ -141,7 +141,7 @@ class Entry extends React.Component {
           <div className="meta-container clearfix">
             <small className="meta">
               <span className="date-author meta-sub">
-                Submitted <TimeAgo date={timeago} /> by{' '}
+                Submitted {timeago} by{' '}
                 <span className="author">
                   {' '}
                   <Link to={`/user/${entry.data.author}/submitted/new`}>

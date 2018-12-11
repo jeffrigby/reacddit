@@ -3,7 +3,7 @@ import { connectRouter } from 'connected-react-router';
 import { subreddits, lastUpdated, lastUpdatedTime } from './subreddits';
 import * as listings from './listings';
 import * as reddit from './reddit';
-import * as auth from './auth';
+import * as misc from './misc';
 
 const hardCoded = {
   subreddits,
@@ -17,5 +17,5 @@ export default history =>
     ...hardCoded,
     ...listings,
     ...reddit,
-    ...auth,
+    ...misc,
   });
