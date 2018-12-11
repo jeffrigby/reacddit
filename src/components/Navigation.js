@@ -14,11 +14,46 @@ import MultiReddits from './MultiReddits';
 import RedditAPI from '../reddit/redditAPI';
 
 class Navigation extends React.Component {
+  /**
+   * Resize the the right navbar when the window is resized
+   */
   static resizeNavigation() {
     let vph;
     vph = jQuery(window).height();
     vph -= 150;
     jQuery('#subreddits nav').css('max-height', `${vph}px`);
+  }
+
+  /**
+   * Helper function to generate the list items for the nav.
+   * @param links
+   *   Links in the following format
+   *  [text, link, title, key]
+   *  ['Front', `/${sort}`, `Show All Subreddits`]
+   * @returns {Array}
+   *  The rendered links
+   */
+  static generateListItems(links) {
+    const linksListItem = [];
+    if (links) {
+      links.forEach((elm, index) => {
+        const text = elm[0];
+        const to = elm[1];
+        const title = elm[2] || elm[0];
+        const key = elm[3] || elm[0];
+        const itemKey = `loggedin-${key}`;
+        linksListItem.push(
+          <li key={itemKey}>
+            <div>
+              <NavLink to={to} title={title} activeClassName="activeSubreddit">
+                {text}
+              </NavLink>
+            </div>
+          </li>
+        );
+      });
+    }
+    return linksListItem;
   }
 
   constructor(props) {
@@ -60,6 +95,11 @@ class Navigation extends React.Component {
     Navigation.resizeNavigation();
   }
 
+  /**
+   * Set the subreddit filter data.
+   * @param item
+   * @returns {void|*}
+   */
   filterData(item) {
     const queryText = item.target.value;
     if (!queryText) {
@@ -68,6 +108,11 @@ class Navigation extends React.Component {
     return this.setState({ subredditsFilter: queryText });
   }
 
+  /**
+   * Handle the hot key events for navigating the subreddits
+   * when a filter is applied
+   * @param event
+   */
   handleNavHotkeyKeyDown(event) {
     const { subredditTargetIdx } = this.state;
     const { ...props } = this.props;
@@ -111,6 +156,10 @@ class Navigation extends React.Component {
     }
   }
 
+  /**
+   * Configure the navigation hotkeys.
+   * @param event
+   */
   handleNavHotkey(event) {
     const { disableHotkeys, sort, me, setDebug, debug, ...props } = this.props;
     const pressedKey = event.key;
@@ -200,10 +249,16 @@ class Navigation extends React.Component {
     }
   }
 
+  /**
+   * Helper to clear the filter textbox
+   */
   clearSearch() {
     this.setState({ subredditsFilter: '' });
   }
 
+  /**
+   * Disable the hotkeys when using the filter.
+   */
   disableHotkeys() {
     const { setDisableHotkeys } = this.props;
     setDisableHotkeys(true);
@@ -214,6 +269,9 @@ class Navigation extends React.Component {
     });
   }
 
+  /**
+   * Enable the hotkeys when not in a textbox.
+   */
   enableHotkeys() {
     const { setDisableHotkeys } = this.props;
     setDisableHotkeys(false);
@@ -221,6 +279,9 @@ class Navigation extends React.Component {
     this.subredditTarget = null;
   }
 
+  /**
+   * Force reload all of the subreddits.
+   */
   reloadSubreddits() {
     const { fetchSubreddits, fetchDefaultSubreddits } = this.props;
     if (this.accessToken) {
@@ -230,11 +291,21 @@ class Navigation extends React.Component {
     }
   }
 
+  /**
+   * Handle the click on the reload subreddits
+   * @TODO why is this separate?
+   * @param e
+   */
   reloadSubredditsClick(e) {
     e.preventDefault();
     this.reloadSubreddits();
   }
 
+  /**
+   * Generate a filtered list of subreddits.
+   * @param subreddits
+   * @returns {*}
+   */
   filterSubreddits(subreddits) {
     const { subredditsFilter } = this.state;
     if (isEmpty(subreddits)) {
@@ -262,6 +333,11 @@ class Navigation extends React.Component {
     return filteredSubreddits;
   }
 
+  /**
+   * Generate the subreddit nav items.
+   * @param subreddits
+   * @returns {Array}
+   */
   generateNavItems(subreddits) {
     const { lastUpdated, sort, t } = this.props;
     const { subredditsFilter, subredditTargetIdx } = this.state;
@@ -296,11 +372,20 @@ class Navigation extends React.Component {
     return navigationItems;
   }
 
+  /**
+   * Handle the random sub click.
+   * @TODO why is this separate?
+   * @param e
+   */
   randomSub(e) {
     e.preventDefault();
     this.randomSubPush();
   }
 
+  /**
+   * Load a random subreddit from the current users subscribed reddits.
+   * @returns {*}
+   */
   randomSubPush() {
     const { subreddits, sort, t, ...props } = this.props;
     if (isEmpty(subreddits.subreddits)) {
@@ -317,6 +402,10 @@ class Navigation extends React.Component {
     return props.push(url);
   }
 
+  /**
+   * Render the navigation.
+   * @returns {*}
+   */
   render() {
     const { subreddits, me, sort } = this.props;
     const { subredditsFilter } = this.state;
@@ -362,6 +451,48 @@ class Navigation extends React.Component {
     const noItems = isEmpty(navItems);
     const loggedIn = this.accessToken && this.accessToken.substr(0, 1) !== '-';
 
+    const topLinks = [];
+    if (!loggedIn) {
+      topLinks.push(
+        Navigation.generateListItems([
+          'Reddit Login',
+          `/api/login`,
+          `Login to see your subreddits`,
+          'login',
+        ])
+      );
+    }
+
+    topLinks.push(
+      Navigation.generateListItems([
+        ['Front', `/${sort}`, `Show All Subreddits`],
+        ['Popular', `/r/popular/${currentSort}`],
+      ])
+    );
+
+    topLinks.push(
+      <li key="random">
+        <div>
+          <a href="/r/myrandom" onClick={this.randomSub}>
+            Random
+          </a>
+        </div>
+      </li>
+    );
+
+    if (me.name && loggedIn) {
+      topLinks.push(
+        Navigation.generateListItems([
+          ['Friends', `/r/friends/${currentSort}`, `Show Friend's Posts`],
+          ['Submitted', `/user/${me.name}/submitted/${currentSort}`],
+          ['Upvoted', `/user/${me.name}/upvoted/${currentSort}`],
+          ['Downvoted', `/user/${me.name}/downvoted/${currentSort}`],
+          ['Saved', `/user/${me.name}/saved`],
+          ['Logout', `/api/logout`],
+        ])
+      );
+    }
+
     const hideExtras =
       this.filterActive || (!this.filterActive && !isEmpty(filterText));
 
@@ -401,114 +532,9 @@ class Navigation extends React.Component {
           )}
 
           <nav className="navigation subreddits-nav hidden-print" id="side-nav">
-            {!hideExtras && (
-              <ul className="nav">
-                {!loggedIn && (
-                  <li>
-                    <div id="login">
-                      <a href="/api/login">Login</a> to view your subreddits.
-                    </div>
-                  </li>
-                )}
-                <li>
-                  <div>
-                    <NavLink
-                      to={`/${currentSort}`}
-                      title="Show all subreddits"
-                      activeClassName="activeSubreddit"
-                    >
-                      Front
-                    </NavLink>
-                  </div>
-                </li>
-                <li>
-                  <div>
-                    <NavLink
-                      to={`/r/popular/${currentSort}`}
-                      title="Show popular posts"
-                    >
-                      Popular
-                    </NavLink>
-                  </div>
-                </li>
-                <li>
-                  <div>
-                    <a href="/r/myrandom" onClick={this.randomSub}>
-                      Random
-                    </a>
-                  </div>
-                </li>
-                {loggedIn && (
-                  <li>
-                    <div>
-                      <NavLink
-                        to={`/r/friends/${currentSort}`}
-                        title="Show Friends Posts"
-                        activeClassName="activeSubreddit"
-                      >
-                        Friends
-                      </NavLink>
-                    </div>
-                  </li>
-                )}
-                {me.name && (
-                  <li>
-                    <div>
-                      <NavLink
-                        to={`/user/${me.name}/submitted/${currentSort}`}
-                        title="Submitted"
-                        activeClassName="activeSubreddit"
-                      >
-                        Submitted
-                      </NavLink>
-                    </div>
-                  </li>
-                )}
-                {me.name && (
-                  <li>
-                    <div>
-                      <NavLink
-                        to={`/user/${me.name}/upvoted/${currentSort}`}
-                        title="Upvoted"
-                        activeClassName="activeSubreddit"
-                      >
-                        Upvoted
-                      </NavLink>
-                    </div>
-                  </li>
-                )}
-                {me.name && (
-                  <li>
-                    <div>
-                      <NavLink
-                        to={`/user/${me.name}/downvoted/${currentSort}`}
-                        title="Downvoted"
-                        activeClassName="activeSubreddit"
-                      >
-                        Downvoted
-                      </NavLink>
-                    </div>
-                  </li>
-                )}
-                {me.name && (
-                  <li>
-                    <div>
-                      <NavLink
-                        to={`/user/${me.name}/saved`}
-                        title="Saved"
-                        activeClassName="activeSubreddit"
-                      >
-                        Saved
-                      </NavLink>
-                    </div>
-                  </li>
-                )}
-              </ul>
-            )}
+            {!hideExtras && <ul className="nav">{topLinks}</ul>}
             {!hideExtras && <div className="nav-divider" />}
-
             {loggedIn && !hideExtras && <MultiReddits />}
-
             <ul className="nav">{navItems}</ul>
           </nav>
           <div>

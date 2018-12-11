@@ -1,5 +1,5 @@
 const http = require('http');
-const https = require('https');
+// const https = require('https');
 const Koa = require('koa');
 const Router = require('koa-router');
 const session = require('koa-session');
@@ -14,6 +14,8 @@ const {
   REDDIT_CALLBACK_URI,
   REDDIT_SCOPE,
   APP_KEY,
+  SESSION_LENGTH_SECS,
+  PORT,
 } = process.env;
 
 const CONFIG = {
@@ -21,7 +23,7 @@ const CONFIG = {
   /** (number || 'session') maxAge in ms (default is 1 days) */
   /** 'session' will result in a cookie that expires when session/browser is closed */
   /** Warning: If a session cookie is stolen, this cookie will never expire */
-  maxAge: 86400000,
+  maxAge: SESSION_LENGTH_SECS * 1000,
   autoCommit: true /** (boolean) automatically commit headers (default true) */,
   overwrite: true /** (boolean) can overwrite or not (default true) */,
   httpOnly: true /** (boolean) httpOnly or not (default true) */,
@@ -40,6 +42,7 @@ const oauth2 = require('simple-oauth2').create({
     authorizePath: '/api/v1/authorize',
     tokenHost: 'https://www.reddit.com',
     tokenPath: '/api/v1/access_token',
+    revokePath: '/api/v1/revoke_token',
   },
 });
 
@@ -219,7 +222,27 @@ router.get('/api/bearer', async (ctx, next) => {
   }
 });
 
+router.get('/api/logout', async (ctx, next) => {
+  const { token } = ctx.session;
+  if (token) {
+    const accessToken = oauth2.accessToken.create(token);
+    // Revoke both access and refresh tokens
+    try {
+      // Revokes both tokens, refresh token is only revoked if the access_token is properly revoked
+      await accessToken.revokeAll();
+    } catch (error) {
+      console.log('Error revoking token: ', error.message);
+    }
+    console.log('token detroyed');
+  } else {
+    console.log('token not found');
+  }
+  ctx.session.token = null;
+  ctx.cookies.set('token', '');
+  return ctx.redirect('/?logout');
+});
+
 app.use(router.routes()).use(router.allowedMethods());
 
-http.createServer(app.callback()).listen(3001);
-https.createServer(app.callback()).listen(3002);
+http.createServer(app.callback()).listen(PORT);
+// https.createServer(app.callback()).listen(PORTSSL);

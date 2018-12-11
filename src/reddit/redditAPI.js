@@ -1,5 +1,4 @@
 import axios from 'axios';
-import Cookie from 'js-cookie';
 
 const queryString = require('query-string');
 
@@ -70,7 +69,7 @@ class RedditAPI {
 
     // Probably don't need both.
     localStorage.setItem('token', tokenJson);
-    Cookie.set('token', tokenJson);
+    // Cookie.set('token', tokenJson);
 
     this.token = token;
     return token;
@@ -83,15 +82,17 @@ class RedditAPI {
   static getTokenStorage() {
     let token = null;
 
-    const cookieToken = Cookie.get('token');
-    const cookieTokenJson = cookieToken ? JSON.parse(cookieToken) : null;
+    const localStorageToken = localStorage.getItem('token');
+    const localStorageTokenJson = localStorageToken
+      ? JSON.parse(localStorageToken)
+      : null;
 
-    if (cookieTokenJson !== null) {
-      const { expires } = cookieTokenJson;
+    if (localStorageTokenJson !== null) {
+      const { expires } = localStorageTokenJson;
       const dateTime = Date.now();
       const timestamp = Math.floor(dateTime / 1000);
       if (expires >= timestamp) {
-        token = cookieTokenJson.accessToken;
+        token = localStorageTokenJson.accessToken;
       } else {
         token = 'expired';
       }
@@ -122,7 +123,6 @@ class RedditAPI {
 
     if (token === null) {
       // Clean up stale values in  storage.
-      Cookie.remove('token');
       localStorage.clear();
       sessionStorage.clear();
     }
