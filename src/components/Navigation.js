@@ -417,8 +417,7 @@ class Navigation extends React.Component {
             id="subreddits-loading"
             role="alert"
           >
-            <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" />{' '}
-            Loading Subreddits
+            <i className="fas fa-spinner fa-spin" /> Loading Subreddits
           </div>
         </div>
       );
@@ -430,8 +429,7 @@ class Navigation extends React.Component {
           id="subreddits-load-error"
           role="alert"
         >
-          <span className="glyphicon glyphicon glyphicon-alert" /> Error loading
-          subreddits<br />
+          <i className="fas fa-exclamation-triangle" /> Error loading subreddits<br />
           <button
             className="astext"
             onClick={this.reloadSubredditsClick}
@@ -515,7 +513,7 @@ class Navigation extends React.Component {
             />
             {filterText && (
               <button id="searchclear" onClick={this.clearSearch} type="button">
-                <span className="glyphicon glyphicon-remove-circle" />
+                <i className="fas fa-times-circle"></i>
               </button>
             )}
           </div>
@@ -528,7 +526,7 @@ class Navigation extends React.Component {
                 id="subreddits-end"
                 role="alert"
               >
-                <span className="glyphicon glyphicon-info-sign" />
+                <i className="fas fa-info-circle" />
                 {' No subreddits found'}
               </div>
             </div>

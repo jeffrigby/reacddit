@@ -11,7 +11,12 @@ class EntrySave extends React.Component {
 
   render() {
     const { saved, bearer } = this.props;
-    const saveStr = saved === true ? 'Unsave' : 'Save';
+    const saveStr =
+      saved === true ? (
+        <i className="fas fa-bookmark" />
+      ) : (
+        <i className="far fa-bookmark" />
+      );
     if (bearer.status !== 'auth') {
       return null;
     }

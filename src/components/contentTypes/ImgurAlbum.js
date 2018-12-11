@@ -78,10 +78,7 @@ class ImgurAlbum extends React.Component {
             aria-label="Previous Slide"
             onClick={this.prevSlide}
           >
-            <span
-              className="glyphicon glyphicon glyphicon-backward"
-              aria-hidden="true"
-            />
+            <i className="fas fa-backward" />
           </button>
           <div className="btn btn-default">
             {currentSlide} / {totalSlides}
@@ -92,10 +89,7 @@ class ImgurAlbum extends React.Component {
             aria-label="Next Slide"
             onClick={this.nextSlide}
           >
-            <span
-              className="glyphicon glyphicon glyphicon-forward"
-              aria-hidden="true"
-            />
+            <i className="fas fa-forward" />
           </button>
         </div>
         <div style={contStyle} className="ratio-container">

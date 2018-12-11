@@ -50,7 +50,7 @@ class MultiRedditsItem extends React.Component {
             className="btn btn-link icon-right"
             onClick={this.hideShowSubs}
           >
-            <span className={`glyphicon glyphicon-menu-${arrowClass}`} />
+            <i className={`fas fa-caret-${arrowClass}`} />
           </button>
           <NavLink
             to={navTo}

@@ -166,9 +166,9 @@ class Sort extends React.Component {
           aria-haspopup="true"
           aria-expanded="false"
         >
-          <span className="glyphicon glyphicon-time" />
+          <i className="fas fa-sort" />
           <span className="dropdownActive"> {currentSort} </span>
-          <span className="caret" />
+          <i className="fas fa-caret-down" />
         </button>
         <ul className="dropdown-menu" aria-labelledby="sortDropdownMenu">
           {links}

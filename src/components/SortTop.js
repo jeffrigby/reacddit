@@ -58,8 +58,8 @@ const SortTop = ({ listingFilter, location }) => {
         aria-haspopup
         aria-expanded
       >
-        <span className="glyphicon glyphicon-time" /> {sortValue}{' '}
-        <span className="caret" />
+        <i className="fas fa-clock" /> {sortValue}{' '}
+        <i className="fas fa-caret-down" />
       </button>
       <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
         {links}

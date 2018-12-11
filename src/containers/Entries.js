@@ -298,7 +298,7 @@ class Entries extends React.Component {
     if (listingsStatus === 'unloaded' || listingsStatus === 'loading') {
       return (
         <div className="alert alert-info" id="content-loading" role="alert">
-          <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" />
+          <i className="fas fa-spinner fa-spin" />
           {' Getting entries from Reddit.'}
         </div>
       );
@@ -311,7 +311,7 @@ class Entries extends React.Component {
           id="subreddits-load-error"
           role="alert"
         >
-          <span className="glyphicon glyphicon glyphicon-alert" />
+          <i className="fas fa-exclamation-triangle" />
           {' Error loading this subreddit.'}
         </div>
       );
@@ -320,7 +320,7 @@ class Entries extends React.Component {
     if (listingsStatus === 'loaded' && !listingsEntries.children) {
       return (
         <div className="alert alert-warning" id="content-empty" role="alert">
-          <span className="glyphicon glyphicon glyphicon-alert" /> Nothing here.
+          <i className="fas fa-exclamation-triangle" /> Nothing here.
         </div>
       );
     }
@@ -333,14 +333,14 @@ class Entries extends React.Component {
           id="content-more-loading"
           role="alert"
         >
-          <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" />
+          <i className="fas fa-spinner fa-spin" />
           {' Getting more entries.'}
         </div>
       );
     } else if (listingsStatus === 'loadedAll') {
       footerStatus = (
         <div className="alert alert-warning" id="content-end" role="alert">
-          <span className="glyphicon glyphicon glyphicon-alert" />
+          <i className="fas fa-exclamation-triangle" />
           {" That's it!"}
         </div>
       );

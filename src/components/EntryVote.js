@@ -18,10 +18,7 @@ const EntryVote = props => {
         disabled={disabled}
         onClick={() => vote(`t3_${id}`, upDir)}
       >
-        <span
-          className={`glyphicon glyphicon-thumbs-up ${upClass}`}
-          aria-hidden="true"
-        />
+        <i className={`fas fa-thumbs-up ${upClass}`} />
       </button>
       <span className="small">{ups.toLocaleString()}</span>
       <button
@@ -30,10 +27,7 @@ const EntryVote = props => {
         disabled={disabled}
         onClick={() => vote(`t3_${id}`, downDir)}
       >
-        <span
-          className={`glyphicon glyphicon-thumbs-down ${downClass}`}
-          aria-hidden="true"
-        />
+        <i className={`fas fa-thumbs-down ${downClass}`} />
       </button>
     </div>
   );
