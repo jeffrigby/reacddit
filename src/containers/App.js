@@ -70,21 +70,19 @@ class App extends React.Component {
     return (
       <div>
         <Header />
-        <div className="row-offcanvas row-offcanvas-left">
-          <div id="sidebar" className="sidebar-offcanvas">
-            <div className="col-md-12">
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col-md-2 d-none d-md-block bg-light sidebar">
               <div id="subreddits-nav">
                 <Navigation />
               </div>
             </div>
           </div>
-          <div id="main">
-            <div className="col-md-12">
-              <div className="list-group" id="entries">
-                <Switch>{routes}</Switch>
-              </div>
+          <main id="main" className="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <div className="list-group" id="entries">
+              <Switch>{routes}</Switch>
             </div>
-          </div>
+          </main>
         </div>
         <div id="push" />
       </div>
@@ -93,10 +91,8 @@ class App extends React.Component {
 }
 
 App.propTypes = {
-  // getAuthInfo: PropTypes.func.isRequired,
   getMe: PropTypes.func.isRequired,
   getBearer: PropTypes.func.isRequired,
-  // authInfo: PropTypes.object,
 };
 
 App.defaultProps = {

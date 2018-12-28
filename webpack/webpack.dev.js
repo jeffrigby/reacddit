@@ -1,4 +1,7 @@
 const commonPaths = require('./paths');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+const CleanTerminalPlugin = require('clean-terminal-webpack-plugin');
+const ErrorOverlayPlugin = require('error-overlay-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -13,7 +16,17 @@ module.exports = {
     historyApiFallback: true,
     compress: true,
     stats: 'normal',
+    clientLogLevel: 'none',
+    watchContentBase: true,
+    // hot: true,
+    quiet: true,
+    overlay: false,
   },
+  devtool: 'cheap-module-source-map',
   module: {},
-  plugins: [],
+  plugins: [
+    new CleanTerminalPlugin(),
+    new FriendlyErrorsWebpackPlugin(),
+    new ErrorOverlayPlugin(),
+  ],
 };

@@ -7,6 +7,7 @@ import isEmpty from 'lodash.isempty';
 import {
   subredditsFetchData,
   subredditsFetchDefaultData,
+  subredditsFilter,
 } from '../redux/actions/subreddits';
 import { debugMode, disableHotKeys } from '../redux/actions/misc';
 import NavigationItem from './NavigationItem';
@@ -21,7 +22,7 @@ class Navigation extends React.Component {
     let vph;
     vph = jQuery(window).height();
     vph -= 150;
-    jQuery('#subreddits nav').css('max-height', `${vph}px`);
+    // jQuery('#subreddits nav').css('max-height', `${vph}px`);
   }
 
   /**
@@ -43,12 +44,15 @@ class Navigation extends React.Component {
         const key = elm[3] || elm[0];
         const itemKey = `loggedin-${key}`;
         linksListItem.push(
-          <li key={itemKey}>
-            <div>
-              <NavLink to={to} title={title} activeClassName="activeSubreddit">
-                {text}
-              </NavLink>
-            </div>
+          <li key={itemKey} className="nav-item">
+            <NavLink
+              to={to}
+              title={title}
+              className="nav-link"
+              activeClassName="activeSubreddit"
+            >
+              {text}
+            </NavLink>
           </li>
         );
       });
@@ -451,11 +455,12 @@ class Navigation extends React.Component {
     const topLinks = [];
     if (!loggedIn) {
       topLinks.push(
-        <li key="login">
+        <li key="login" className="nav-item">
           <div>
             <a
               href="/api/login"
               title="Login to reddit to see your subreddits. ⇧L"
+              className="nav-link"
             >
               Reddit Login
             </a>
@@ -472,12 +477,10 @@ class Navigation extends React.Component {
     );
 
     topLinks.push(
-      <li key="random">
-        <div>
-          <a href="/r/myrandom" onClick={this.randomSub}>
-            Random
-          </a>
-        </div>
+      <li key="random" className="nav-item">
+        <a href="/r/myrandom" onClick={this.randomSub} className="nav-link">
+          Random
+        </a>
       </li>
     );
 
@@ -500,43 +503,53 @@ class Navigation extends React.Component {
     return (
       <div id="subreddits">
         <div id="subreddit-filter-group">
-          <div className="form-group-sm">
-            <input
-              type="search"
-              className="form-control"
-              onChange={this.filterData}
-              onFocus={this.disableHotkeys}
-              onBlur={this.enableHotkeys}
-              placeholder="Filter Subreddits"
-              id="subreddit-filter"
-              value={filterText}
-            />
-            {filterText && (
-              <button id="searchclear" onClick={this.clearSearch} type="button">
-                <i className="fas fa-times-circle"></i>
-              </button>
-            )}
-          </div>
-
-          {noItems && (
-            <div>
-              <div className="nav-divider" />
-              <div
-                className="alert alert-info"
-                id="subreddits-end"
-                role="alert"
-              >
-                <i className="fas fa-info-circle" />
-                {' No subreddits found'}
-              </div>
+          <nav
+            className="col-md-2 d-none d-md-block bg-light sidebar"
+            id="side-nav"
+          >
+            <div className="form-group-sm">
+              <input
+                type="search"
+                className="form-control"
+                onChange={this.filterData}
+                onFocus={this.disableHotkeys}
+                onBlur={this.enableHotkeys}
+                placeholder="Filter Subreddits"
+                id="subreddit-filter"
+                value={filterText}
+              />
+              {filterText && (
+                <button
+                  id="searchclear"
+                  onClick={this.clearSearch}
+                  type="button"
+                >
+                  <i className="fas fa-times-circle" />
+                </button>
+              )}
             </div>
-          )}
 
-          <nav className="navigation subreddits-nav hidden-print" id="side-nav">
-            {!hideExtras && <ul className="nav">{topLinks}</ul>}
+            {noItems && (
+              <div>
+                <div className="nav-divider" />
+                <div
+                  className="alert alert-info"
+                  id="subreddits-end"
+                  role="alert"
+                >
+                  <i className="fas fa-info-circle" />
+                  {' No subreddits found'}
+                </div>
+              </div>
+            )}
+
+            {!hideExtras && <ul className="nav flex-column">{topLinks}</ul>}
             {!hideExtras && <div className="nav-divider" />}
             {loggedIn && !hideExtras && <MultiReddits />}
-            <ul className="nav">{navItems}</ul>
+            <h6 className="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Subreddits</span>
+            </h6>
+            <ul className="nav flex-column">{navItems}</ul>
           </nav>
           <div>
             <button
@@ -566,6 +579,7 @@ Navigation.propTypes = {
   disableHotkeys: PropTypes.bool.isRequired,
   setDebug: PropTypes.func.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
+  setFilter: PropTypes.func.isRequired,
 };
 
 Navigation.defaultProps = {
@@ -588,6 +602,7 @@ const mapDispatchToProps = dispatch => ({
   setDebug: debug => dispatch(debugMode(debug)),
   setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
   push: url => dispatch(push(url)),
+  setFilter: filter => dispatch(subredditsFilter(filter)),
 });
 
 export default connect(

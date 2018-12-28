@@ -50,10 +50,10 @@ class MultiReddits extends React.Component {
       if (multis.length) {
         return (
           <div>
-            <div>
-              <strong>Multis</strong>
-            </div>
-            <ul className="nav">{multis}</ul>
+            <h6 className="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Multis</span>
+            </h6>
+            <ul className="nav flex-column">{multis}</ul>
             <div className="nav-divider" />
           </div>
         );

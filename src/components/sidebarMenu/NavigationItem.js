@@ -35,6 +35,8 @@ class NavigationItem extends React.Component {
       classNameStr += ' mark highlighted';
     }
 
+    classNameStr += ' nav-link';
+
     return classNameStr;
   }
 
@@ -50,22 +52,21 @@ class NavigationItem extends React.Component {
     const classNameStr = this.getDiffClassName();
     const subLabel =
       classNameStr.indexOf('sub-new') !== -1 ? (
-        <span className="label label-success">New</span>
+        <span className="badge badge-primary badge-pill">New</span>
       ) : null;
     const currentTrigger = trigger ? '>' : '';
 
     return (
-      <li>
-        <div id={item.id} className={classNameStr}>
-          <NavLink
-            to={href}
-            title={item.public_description}
-            activeClassName="activeSubreddit"
-          >
-            {currentTrigger} {item.display_name}
-          </NavLink>{' '}
-          {subLabel}
-        </div>
+      <li className="nav-item">
+        <NavLink
+          id={item.id}
+          to={href}
+          title={item.public_description}
+          className={classNameStr}
+          activeClassName="activeSubreddit"
+        >
+          {currentTrigger} {item.display_name} {subLabel}
+        </NavLink>{' '}
       </li>
     );
   }

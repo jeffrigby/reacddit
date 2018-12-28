@@ -43,7 +43,7 @@ class MultiRedditsItem extends React.Component {
     const arrowClass = showSubs ? 'up' : 'down';
 
     return (
-      <li key={item.data.path}>
+      <li key={item.data.path} className="nav-item">
         <div>
           <button
             type="button"
@@ -56,6 +56,7 @@ class MultiRedditsItem extends React.Component {
             to={navTo}
             title={item.data.description_md}
             activeClassName="activeSubreddit"
+            className="nav-link"
           >
             {item.data.name}
           </NavLink>
