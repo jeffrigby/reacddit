@@ -25,7 +25,7 @@ module.exports = {
   devtool: 'cheap-module-source-map',
   module: {},
   plugins: [
-    new CleanTerminalPlugin(),
+    // new CleanTerminalPlugin(),
     new FriendlyErrorsWebpackPlugin(),
     new ErrorOverlayPlugin(),
   ],

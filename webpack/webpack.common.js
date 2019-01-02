@@ -14,6 +14,7 @@ module.exports = {
         exclude: /(node_modules)/,
         options: {
           emitWarning: process.env.NODE_ENV !== 'production',
+          formatter: require('eslint-formatter-pretty'),
         },
       },
       {
