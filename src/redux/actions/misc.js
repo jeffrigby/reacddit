@@ -11,3 +11,10 @@ export function disableHotKeys(bool) {
     disableHotKeys: bool,
   };
 }
+
+export function showMenu(bool) {
+  return {
+    type: 'SHOW_MENU',
+    showMenu: bool,
+  };
+}

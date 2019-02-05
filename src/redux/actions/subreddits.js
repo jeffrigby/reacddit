@@ -9,6 +9,20 @@ export function subredditsStatus(status, message) {
   };
 }
 
+export function subredditsFilter(filter) {
+  return {
+    type: 'SUBREDDITS_FILTER',
+    filter,
+  };
+}
+
+export function subredditsFilterActive(active) {
+  return {
+    type: 'SUBREDDITS_FILTER_ACTIVE',
+    active,
+  };
+}
+
 export function subredditsFetchDataSuccess(subreddits) {
   return {
     type: 'SUBREDDITS_FETCH_DATA_SUCCESS',
@@ -109,10 +123,12 @@ export function subredditsFetchDefaultData() {
       });
 
       subreddits.sort((a, b) => {
-        if (a.display_name.toLowerCase() < b.display_name.toLowerCase())
+        if (a.display_name.toLowerCase() < b.display_name.toLowerCase()) {
           return -1;
-        if (a.display_name.toLowerCase() > b.display_name.toLowerCase())
+        }
+        if (a.display_name.toLowerCase() > b.display_name.toLowerCase()) {
           return 1;
+        }
         return 0;
       });
 

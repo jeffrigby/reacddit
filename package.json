@@ -4,7 +4,7 @@
   "description": "A react front-end for Reddit",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=development webpack-dev-server --public reddit.test --port 3000  --mode development --progress",
+    "start": "cross-env NODE_ENV=development webpack-dev-server --public reddit.test --port 3000  --mode development --progress --hot",
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "profile": "cross-env NODE_ENV=production webpack --mode production --profile --json > stats.json > stats.json && webpack-bundle-analyzer stats.json dist"
   },
@@ -63,15 +63,16 @@
     "@babel/preset-react": "^7.0.0",
     "@babel/runtime": "^7.2.0",
     "babel-eslint": "^10.0.0",
-    "babel-loader": "^8.0.4",
+    "babel-loader": "^8.0.5",
+    "babel-preset-react-app": "^7.0.0",
     "browserslist": "^4.3.7",
-    "clean-terminal-webpack-plugin": "^1.1.0",
+    "clean-terminal-webpack-plugin": "^2.0.1",
     "clean-webpack-plugin": "^1.0.0",
     "connect-history-api-fallback": "^1.5.0",
     "cross-env": "^5.2.0",
     "css-loader": "^2.1.0",
     "error-overlay-webpack-plugin": "^0.1.5",
-    "eslint": "^5.11.1",
+    "eslint": "^5.12.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-formatter-pretty": "^2.0.0",
@@ -80,7 +81,7 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-prettier": "^3.0.1",
-    "eslint-plugin-react": "^7.12.1",
+    "eslint-plugin-react": "^7.12.3",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
@@ -94,8 +95,8 @@
     "uglifyjs-webpack-plugin": "^2.1.1",
     "webpack": "^4.28.3",
     "webpack-bundle-analyzer": "^3.0.3",
-    "webpack-cli": "^3.1.2",
+    "webpack-cli": "^3.2.0",
     "webpack-dev-server": "^3.1.14",
-    "webpack-merge": "^4.1.5"
+    "webpack-merge": "^4.2.1"
   }
 }

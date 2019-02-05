@@ -86,7 +86,6 @@ class Sort extends React.Component {
   genLink(sort) {
     const { listingsFilter, location } = this.props;
     const { listType, target, userType, me } = listingsFilter;
-    // console.log(listingsFilter);
     let link;
     if (listType === 'r') {
       link = `/r/${target}/${sort}`;
@@ -128,10 +127,14 @@ class Sort extends React.Component {
       if (Object.prototype.hasOwnProperty.call(links2render, key)) {
         const sortName = links2render[key];
         links.push(
-          <li key={sortName}>
-            <Link to={this.genLink(sortName)}>{sortName}</Link>
+          <Link
+            to={this.genLink(sortName)}
+            className="dropdown-item d-flex"
+            key={sortName}
+          >
+            <div className="mr-auto pr-2">{sortName}</div>{' '}
             <span className="menu-shortcut">&#x21E7;{key}</span>
-          </li>
+          </Link>
         );
       }
     });
@@ -157,22 +160,19 @@ class Sort extends React.Component {
     }
 
     const links = this.renderLinks();
+
     return (
-      <div style={{ display: 'inline-block' }}>
+      <div className="btn-group">
         <button
           type="button"
-          className="btn btn-default btn-sm dropdown-toggle"
+          className="btn btn-sm dropdown-toggle form-control-sm"
           data-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
         >
-          <i className="fas fa-sort" />
-          <span className="dropdownActive"> {currentSort} </span>
-          <i className="fas fa-caret-down" />
+          <i className="fas fa-sort" /> {currentSort}
         </button>
-        <ul className="dropdown-menu" aria-labelledby="sortDropdownMenu">
-          {links}
-        </ul>
+        <div className="dropdown-menu dropdown-menu-right">{links}</div>
       </div>
     );
   }

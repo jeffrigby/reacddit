@@ -4,14 +4,19 @@ import { withRouter } from 'react-router';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Navigation from './Navigation';
-import Header from '../containers/Header';
-import Entries from '../containers/Entries';
+import Header from './Header';
+import Entries from './Entries';
 import * as reddit from '../redux/actions/reddit';
+import '../styles/layout.scss';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.tokenQuery = null;
+    this.state = {
+      error: false,
+      message: null,
+    };
   }
 
   async componentDidMount() {
@@ -21,6 +26,11 @@ class App extends React.Component {
     if (token !== null) {
       this.tokenQuery = setInterval(getBearer, 10000);
       getMe();
+    } else {
+      this.setState({
+        error: true,
+        message: 'Fatal error getting Reddit token. This is bad. Please try again in a few.',
+      });
     }
   }
 
@@ -29,6 +39,15 @@ class App extends React.Component {
   }
 
   render() {
+    const { error, message } = this.state;
+    if (error) {
+      return (
+        <div className="alert alert-danger m-2" role="alert">
+          {message}
+        </div>
+      );
+    }
+
     const redditSorts = 'hot|new|top|controversial|rising|best';
     const redditPaths = [
       '/',
@@ -68,24 +87,24 @@ class App extends React.Component {
     });
 
     return (
-      <div>
-        <Header />
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-md-2 d-none d-md-block bg-light sidebar">
-              <div id="subreddits-nav">
-                <Navigation />
-              </div>
-            </div>
+      <>
+        <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
+          <Header />
+        </header>
+        <aside className="sidebar bg-light" id="navigation">
+          <div id="aside-content" className="h-100 d-flex px-3">
+            <Navigation />
           </div>
-          <main id="main" className="col-md-9 ml-sm-auto col-lg-10 px-4">
-            <div className="list-group" id="entries">
-              <Switch>{routes}</Switch>
-            </div>
-          </main>
-        </div>
+        </aside>
+
+        <main id="main">
+          <div className="list-group" id="entries">
+            <Switch>{routes}</Switch>
+          </div>
+        </main>
+
         <div id="push" />
-      </div>
+      </>
     );
   }
 }

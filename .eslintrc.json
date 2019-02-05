@@ -1,40 +1,42 @@
 {
-    "extends": [
-      "airbnb",
-      "plugin:react/recommended",
-      "plugin:flowtype/recommended",
-      "prettier",
-      "prettier/flowtype",
-      "prettier/react",
-      "prettier/standard"
-    ],
-    "env": {
-      "browser": true,
-      "amd": true,
-      "es6": true
-    },
-    "globals": {
-      "jQuery": true,
-      "module": false,
-      "process": false
-    },
-    "plugins": [
-      "flowtype",
-      "react",
-      "prettier"
-    ],
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaFeatures": {
-        "jsx": true
-      }
-    },
-    "rules": {
-      "prettier/prettier": "error",
-      "global-require": 0,
-      "no-unused-vars": ["error", { "args": "none" }],
-      "react/jsx-filename-extension": 0,
-      "react/forbid-prop-types": 0,
-      "max-len": ["error", 200]
+  "extends": [
+    "airbnb",
+    "plugin:react/recommended",
+    "plugin:flowtype/recommended",
+    "prettier",
+    "prettier/flowtype",
+    "prettier/react",
+    "prettier/standard"
+  ],
+  "env": {
+    "browser": true,
+    "es6": true,
+    "commonjs": true,
+    "node": true
+  },
+  "globals": {
+    "jQuery": true,
+    "module": false,
+    "process": false
+  },
+  "plugins": ["flowtype", "react", "jsx-a11y", "prettier"],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
     }
+  },
+  "rules": {
+    "prettier/prettier": "error",
+    //    "max-len": ["error", 200],
+    "no-console": "off",
+    "strict": ["error", "global"],
+    "curly": "warn",
+    // airbnb override
+    "global-require": 0,
+    "no-unused-vars": ["error", { "args": "none" }],
+    "react/jsx-filename-extension": 0,
+    "react/forbid-prop-types": 0
+  }
 }

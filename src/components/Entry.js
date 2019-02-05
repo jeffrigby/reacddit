@@ -19,13 +19,20 @@ class Entry extends React.Component {
       showDebug: false,
       renderedContent: {},
       expandSticky: false,
+      expand: true,
     };
     this.showDebug = this.showDebug.bind(this);
+    this.expand = this.expand.bind(this);
   }
 
   componentDidMount() {
     this.mounted = true;
     const { entry } = this.props;
+
+    if (entry.data.stickied) {
+      this.setState({ expand: false });
+    }
+
     const getContent = RenderContent(entry.data);
 
     Promise.resolve(getContent).then(content => {
@@ -45,7 +52,7 @@ class Entry extends React.Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     const { ...props } = this.props;
-    const { showDebug, renderedContent, expandSticky } = this.state;
+    const { showDebug, renderedContent, expandSticky, expand } = this.state;
 
     if (props.listingFilter.sort !== nextProps.listingFilter.sort) {
       return true;
@@ -67,7 +74,8 @@ class Entry extends React.Component {
     }
     if (
       showDebug !== nextState.showDebug ||
-      expandSticky !== nextState.expandSticky
+      expandSticky !== nextState.expandSticky ||
+      expand !== nextState.expand
     ) {
       return true;
     }
@@ -86,98 +94,108 @@ class Entry extends React.Component {
     event.preventDefault();
   }
 
+  expand(event) {
+    this.setState({ expand: true });
+    event.preventDefault();
+  }
+
   render() {
     const { entry, focused, visible, debug } = this.props;
-    const { showDebug, renderedContent, expandSticky } = this.state;
-    const timeago = moment(entry.data.created_utc * 1000).from();
-    const subUrl = `/r/${entry.data.subreddit}`;
+    const { data } = entry;
+    const { showDebug, renderedContent, expand } = this.state;
+    const timeago = moment(data.created_utc * 1000).from();
+    const subUrl = `/r/${data.subreddit}`;
+
     let classes = 'entry list-group-item';
     if (focused) {
       classes += ' focused';
     }
 
-    if (entry.data.stickied && expandSticky) {
-      classes += ' showSticky';
-    } else if (entry.data.stickied && !expandSticky) {
-      classes += ' hideSticky';
-    }
+    const sticky = data.stickied || false;
+    const commentCount = parseFloat(data.num_comments).toLocaleString('en');
 
     const content = (
       <Content
         content={renderedContent}
-        name={entry.data.name}
+        name={data.name}
         load={visible}
-        key={entry.data.id}
+        key={data.id}
       />
     );
-    const jsRender = renderedContent.js ? 'JS' : 'PHP';
-    const authorFlair = entry.data.author_flair_text ? (
-      <span className="badge">{entry.data.author_flair_text}</span>
+    const authorFlair = data.author_flair_text ? (
+      <span className="badge badge-dark">{data.author_flair_text}</span>
     ) : null;
-    const linkFlair = entry.data.link_flair_text ? (
-      <span className="label label-default">{entry.data.link_flair_text}</span>
+    const linkFlair = data.link_flair_text ? (
+      <span className="badge badge-dark">{data.link_flair_text}</span>
     ) : null;
     const currentDebug = process.env.NODE_ENV === 'development' && debug;
+
+    if (!expand) {
+      classes += ' collapsed';
+      return (
+        <div className={classes} key={data.name} id={data.name}>
+          {sticky && <span className="label label-default">Sticky</span>}{' '}
+          <a
+            href={data.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={this.expand}
+          >
+            {data.title}
+          </a>
+          <Link to={subUrl}>/r/{data.subreddit}</Link>
+          {data.author}
+          <i className="fas fa-comments" /> {data.num_comments}
+          {timeago}
+        </div>
+      );
+    }
+
     return (
-      <div className={classes} key={entry.data.name} id={entry.data.name}>
+      <div className={classes} key={data.name} id={data.name}>
         <div className="entry-interior">
-          <h4 className="title list-group-item-heading">
+          <h6 className="title list-group-item-heading">
             <a
-              href={entry.data.url}
+              href={data.url}
               target="_blank"
               rel="noopener noreferrer"
               className="list-group-item-heading"
             >
-              {entry.data.title}
+              {data.title}
             </a>{' '}
             {linkFlair}
-          </h4>
-          <EntryVote
-            id={entry.data.id}
-            likes={entry.data.likes}
-            ups={entry.data.ups}
-          />
+          </h6>
           {content}
-          <div className="meta-container clearfix">
-            <small className="meta">
-              <span className="date-author meta-sub">
-                Submitted {timeago} by{' '}
-                <span className="author">
-                  {' '}
-                  <Link to={`/user/${entry.data.author}/submitted/new`}>
-                    {entry.data.author}
-                  </Link>{' '}
-                  {authorFlair}
-                </span>{' '}
-                to
-                <span className="subreddit meta-sub">
-                  <Link to={subUrl}>/r/{entry.data.subreddit}</Link>
-                </span>
-              </span>
-              <span className="source meta-sub">{entry.data.domain}</span>
-              <span className="comments meta-sub">
-                <a
-                  href={`https://www.reddit.com${entry.data.permalink}`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  comments{' '}
-                  <span className="badge">{entry.data.num_comments}</span>
-                </a>
-              </span>
-              <span className="save meta-sub">
-                <EntrySave name={entry.data.name} saved={entry.data.saved} />
-              </span>
+          <footer className="d-flex clearfix align-middle">
+            <div className="mr-auto">
+              Submitted {timeago} by{' '}
+              <Link to={`/user/${data.author}/submitted/new`}>
+                {data.author}
+              </Link>{' '}
+              {authorFlair} to <Link to={subUrl}>/r/{data.subreddit}</Link>{' '}
+              {data.domain}{' '}
+              <a
+                href={`https://www.reddit.com${data.permalink}`}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                comments{' '}
+                <span className="badge badge-primary">{commentCount}</span>
+              </a>{' '}
               {currentDebug && (
-                <span className="debug meta-sub">
-                  <a href="#showDebug" onClick={this.showDebug}>
-                    Show Debug
-                  </a>{' '}
-                  {jsRender}
-                </span>
+                <button
+                  className="btn btn-link m-0 p-0"
+                  onClick={this.showDebug}
+                  title="Show debug"
+                  type="button"
+                >
+                  <i className="fas fa-code" />
+                </button>
               )}
-            </small>
-          </div>
+            </div>
+            <EntryVote id={data.id} likes={data.likes} ups={data.ups} />
+            <EntrySave name={data.name} saved={data.saved} />
+          </footer>
           {showDebug && (
             <div className="debug">
               <Suspense fallback={<div>Loading JSON...</div>}>

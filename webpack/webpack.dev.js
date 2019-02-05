@@ -18,7 +18,6 @@ module.exports = {
     stats: 'normal',
     clientLogLevel: 'none',
     watchContentBase: true,
-    // hot: true,
     quiet: true,
     overlay: false,
   },

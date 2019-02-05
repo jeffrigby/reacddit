@@ -37,3 +37,23 @@ export function lastUpdatedTime(state = 0, action) {
       return state;
   }
 }
+
+export function subredditsFilter(state = '', action) {
+  switch (action.type) {
+    case 'SUBREDDITS_FILTER':
+      return action.filter;
+
+    default:
+      return state;
+  }
+}
+
+export function subredditsFilterActive(state = false, action) {
+  switch (action.type) {
+    case 'SUBREDDITS_FILTER_ACTIVE':
+      return action.active;
+
+    default:
+      return state;
+  }
+}

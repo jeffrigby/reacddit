@@ -59,7 +59,7 @@ class MultiRedditsSubs extends React.Component {
     const { multiRedditSubs } = this.props;
     const navItems = this.generateNavItems(multiRedditSubs);
     if (multiRedditSubs) {
-      return <ul className="nav subnav">{navItems}</ul>;
+      return <ul className="nav subnav pl-2">{navItems}</ul>;
     }
     return <div />;
   }

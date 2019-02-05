@@ -20,7 +20,7 @@ export function listingsRedditEntries(listSubredditEntries) {
 
 export function listingsEntryUpdate(entry) {
   return {
-    type: 'LISTINGS_ENTRY_UPDATE',
+    type: 'LISTINGS_REDDIT_ENTRY_UPDATE',
     entry,
   };
 }

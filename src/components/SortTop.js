@@ -40,30 +40,26 @@ const SortTop = ({ listingFilter, location }) => {
         ? `/${sort}?${newSearch}`
         : `${pathname}?${newSearch}`;
     const linkString = sortArgs[key];
-    const liKey = `sortTop${key}`;
+    const linkKey = `sortTop${key}`;
     links.push(
-      <li key={liKey}>
-        <Link to={url}>{linkString}</Link>
-      </li>
+      <Link to={url} key={linkKey} className="dropdown-item">
+        {linkString}
+      </Link>
     );
   });
 
   return (
-    <div style={{ display: 'inline-block' }}>
+    <div className="btn-group">
       <button
-        className="btn btn-default btn-sm dropdown-toggle"
         type="button"
-        id="dropdownMenu1"
+        className="btn btn-sm dropdown-toggle"
         data-toggle="dropdown"
-        aria-haspopup
-        aria-expanded
+        aria-haspopup="true"
+        aria-expanded="false"
       >
-        <i className="fas fa-clock" /> {sortValue}{' '}
-        <i className="fas fa-caret-down" />
+        <i className="fas fa-clock" /> {sortValue}
       </button>
-      <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
-        {links}
-      </ul>
+      <div className="dropdown-menu dropdown-menu-right">{links}</div>
     </div>
   );
 };

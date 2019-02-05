@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { redditFetchMultis } from '../redux/actions/reddit';
-import RedditAPI from '../reddit/redditAPI';
+import { redditFetchMultis } from '../../redux/actions/reddit';
+import RedditAPI from '../../reddit/redditAPI';
 import MultiRedditsItem from './MultiRedditsItem';
 
 class MultiReddits extends React.Component {
@@ -50,9 +50,16 @@ class MultiReddits extends React.Component {
       if (multis.length) {
         return (
           <div>
-            <h6 className="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-              <span>Multis</span>
-            </h6>
+            <div className="sidebar-heading d-flex text-muted">
+              <span className="mr-auto">Multis</span>
+              <span>
+                <i
+                  className="fas fa-sync-alt"
+                  onClick={this.reloadSubredditsClick}
+                  role="button"
+                />
+              </span>
+            </div>
             <ul className="nav flex-column">{multis}</ul>
             <div className="nav-divider" />
           </div>

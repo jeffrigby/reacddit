@@ -86,18 +86,10 @@ class Search extends React.Component {
     const currentSearch = queryString.parse(location.search);
 
     return (
-      <div
-        style={{
-          display: 'inline-block',
-          width: '250px',
-          marginRight: '10px',
-          marginBottom: 0,
-        }}
-        className="form-group form-group-sm"
-      >
+      <>
         <input
           type="text"
-          className="form-control"
+          className="form-control form-control-dark form-control-sm w-100"
           onFocus={this.disableHotkeys}
           onBlur={this.enableHotkeys}
           onKeyUp={this.processSearch}
@@ -105,7 +97,7 @@ class Search extends React.Component {
           title={title}
           defaultValue={currentSearch.q}
         />
-      </div>
+      </>
     );
   }
 }

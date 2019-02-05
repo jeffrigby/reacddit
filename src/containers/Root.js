@@ -1,10 +1,11 @@
 import React from 'react';
-import App from '../components/App';
+import { hot } from 'react-hot-loader/root';
+import App from './App';
 
 const Root = () => (
-  <div>
+  <>
     <App />
-  </div>
+  </>
 );
 
-export default Root;
+export default hot(Root);

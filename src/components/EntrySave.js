@@ -21,13 +21,15 @@ class EntrySave extends React.Component {
       return null;
     }
     return (
-      <button
-        className="btn btn-xs btn-link"
-        onClick={() => this.saveUnsave()}
-        type="button"
-      >
-        {saveStr}
-      </button>
+      <div id="entry-save">
+        <button
+          className="btn btn-link btn-sm m-0 p-0"
+          onClick={() => this.saveUnsave()}
+          type="button"
+        >
+          {saveStr}
+        </button>
+      </div>
     );
   }
 }

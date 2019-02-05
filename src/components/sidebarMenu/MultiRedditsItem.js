@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 import MultiRedditsSubs from './MultiRedditsSubs';
+import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 const queryString = require('query-string');
 
@@ -40,26 +40,28 @@ class MultiRedditsItem extends React.Component {
     // const { location } = this.props;
     // const active = navTo.indexOf(location.pathname) === 0;
 
-    const arrowClass = showSubs ? 'up' : 'down';
+    const arrowClass = showSubs ? 'down' : 'left';
 
     return (
-      <li key={item.data.path} className="nav-item">
-        <div>
-          <button
-            type="button"
-            className="btn btn-link icon-right"
-            onClick={this.hideShowSubs}
-          >
-            <i className={`fas fa-caret-${arrowClass}`} />
-          </button>
-          <NavLink
-            to={navTo}
-            title={item.data.description_md}
-            activeClassName="activeSubreddit"
-            className="nav-link"
-          >
-            {item.data.name}
-          </NavLink>
+      <li key={item.data.path} className="nav-item has-child m-0 p-0">
+        <div className="d-flex align-middle">
+          <span className="mr-auto">
+            <NavigationGenericNavItem
+              to={navTo}
+              text={item.data.name}
+              title={item.data.description_md}
+              noLi
+            />
+          </span>
+          <span>
+            <button
+              className="btn btn-link btn-sm m-0 p-0"
+              onClick={this.hideShowSubs}
+              type="button"
+            >
+              <i className={`fas fa-caret-${arrowClass} menu-caret`} />
+            </button>
+          </span>
         </div>
         {showSubs && (
           <MultiRedditsSubs multiRedditSubs={item.data.subreddits} />

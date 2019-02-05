@@ -1,0 +1,31 @@
+body {
+  //min-width: 640px;
+}
+
+.navbar {
+  align-items: center;
+  height: 3rem;
+}
+
+.sidebar {
+  transition: 0.3s;
+  width: 15rem;
+  min-width: 15rem;
+  align-items: center;
+  padding: 0;
+}
+
+#navigation {
+  position: fixed;
+  top: 3.5rem;
+  left: 0;
+  z-index: 5;
+  height: calc(100vh - 3.5rem);
+  overflow: hidden !important;
+}
+
+#main {
+  padding-left: 15rem;
+  margin-top: 3rem;
+  position: relative;
+}

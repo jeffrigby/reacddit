@@ -6,9 +6,9 @@ import { redditVote } from '../redux/actions/reddit';
 const EntryVote = props => {
   const { bearer, likes, vote, id, ups } = props;
   const disabled = bearer.status !== 'auth';
-  const upClass = likes === true ? 'voted-up' : '';
+  const upClass = likes === true ? 'fas' : 'far';
   const upDir = likes === true ? 0 : 1;
-  const downClass = likes === false ? 'voted-down' : '';
+  const downClass = likes === false ? 'fas' : 'far';
   const downDir = likes === false ? 0 : -1;
   return (
     <div className="vote">
@@ -18,7 +18,7 @@ const EntryVote = props => {
         disabled={disabled}
         onClick={() => vote(`t3_${id}`, upDir)}
       >
-        <i className={`fas fa-thumbs-up ${upClass}`} />
+        <i className={`fa-arrow-alt-circle-up ${upClass}`} />
       </button>
       <span className="small">{ups.toLocaleString()}</span>
       <button
@@ -27,7 +27,7 @@ const EntryVote = props => {
         disabled={disabled}
         onClick={() => vote(`t3_${id}`, downDir)}
       >
-        <i className={`fas fa-thumbs-down ${downClass}`} />
+        <i className={`fa-arrow-alt-circle-down ${downClass}`} />
       </button>
     </div>
   );

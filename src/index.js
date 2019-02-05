@@ -8,7 +8,7 @@ import throttle from 'lodash/throttle';
 import configureStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
-import App from './components/App';
+import Root from './containers/Root';
 
 const queryString = require('query-string');
 
@@ -59,4 +59,4 @@ const render = Component => {
   );
 };
 
-render(App);
+render(Root);

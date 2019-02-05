@@ -5,6 +5,7 @@ import isEqual from 'lodash.isequal';
 import * as listings from '../redux/actions/listings';
 import Entry from '../components/Entry';
 import RedditAPI from '../reddit/redditAPI';
+import '../styles/entries.scss';
 
 const queryString = require('query-string');
 
@@ -87,10 +88,10 @@ class Entries extends React.Component {
     // this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
   }
 
-  static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI.
-    return { hasError: true };
-  }
+  // static getDerivedStateFromError(error) {
+  //   // Update state so the next render will show the fallback UI.
+  //   return { hasError: true };
+  // }
 
   async componentDidMount() {
     this.accessToken = await RedditAPI.getToken(false);
@@ -142,7 +143,7 @@ class Entries extends React.Component {
   componentDidUpdate(prevProps) {
     const { match, location, listingsFilter, getEntriesReddit } = this.props;
     const matchCompare = isEqual(prevProps.match, match);
-    const locationCompare = isEqual(prevProps.location.search, location.search);
+    const locationCompare = prevProps.location.search === location.search;
     if (!matchCompare || !locationCompare) {
       this.setRedux(match, location);
     }
@@ -153,6 +154,7 @@ class Entries extends React.Component {
     ) {
       getEntriesReddit(listingsFilter);
     }
+    jQuery('body').removeClass('show-menu');
 
     this.setInitFocusedAndVisible();
   }
@@ -203,11 +205,11 @@ class Entries extends React.Component {
     }
   }
 
-  componentDidCatch(error, info) {
-    // You can also log the error to an error reporting service
-    // eslint-disable-next-line no-console
-    console.log(error, info);
-  }
+  // componentDidCatch(error, info) {
+  //   // You can also log the error to an error reporting service
+  //   // eslint-disable-next-line no-console
+  //   console.log(error, info);
+  // }
 
   monitorEntries() {
     if (this.scrollResize && !this.scrollResizeStop) {
@@ -294,10 +296,15 @@ class Entries extends React.Component {
     } = this.props;
 
     const { hasError } = this.state;
+    let message = '';
 
     if (listingsStatus === 'unloaded' || listingsStatus === 'loading') {
-      return (
-        <div className="alert alert-info" id="content-loading" role="alert">
+      message = (
+        <div
+          className="alert alert-info"
+          id="content-loading"
+          role="alert"
+        >
           <i className="fas fa-spinner fa-spin" />
           {' Getting entries from Reddit.'}
         </div>
@@ -305,7 +312,7 @@ class Entries extends React.Component {
     }
 
     if (listingsStatus === 'error' || hasError) {
-      return (
+      message = (
         <div
           className="alert alert-danger"
           id="subreddits-load-error"
@@ -318,11 +325,19 @@ class Entries extends React.Component {
     }
 
     if (listingsStatus === 'loaded' && !listingsEntries.children) {
-      return (
-        <div className="alert alert-warning" id="content-empty" role="alert">
+      message = (
+        <div
+          className="alert alert-warning"
+          id="content-empty"
+          role="alert"
+        >
           <i className="fas fa-exclamation-triangle" /> Nothing here.
         </div>
       );
+    }
+
+    if (message) {
+      return <div className="px-4 py-2">{message}</div>;
     }
 
     let footerStatus = '';
@@ -367,7 +382,7 @@ class Entries extends React.Component {
     }
 
     return (
-      <div>
+      <>
         {debug && (
           <div className="debugInfo">
             <pre>
@@ -387,7 +402,7 @@ class Entries extends React.Component {
         )}
         {entries}
         <div className="footer-status">{footerStatus}</div>
-      </div>
+      </>
     );
   }
 }

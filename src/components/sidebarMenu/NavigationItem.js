@@ -1,8 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import Common from '../common';
+import Common from '../../common';
+import NavigationGenericNavItem from './NavigationGenericNavItem';
+
+const queryString = require('query-string');
 
 class NavigationItem extends React.Component {
   static lastUpdatedDiff(lastUpdated) {
@@ -12,7 +14,7 @@ class NavigationItem extends React.Component {
 
   getDiffClassName() {
     const { lastUpdated, trigger } = this.props;
-    let classNameStr = '';
+    const classes = [];
     if (lastUpdated > 0) {
       const seconds = NavigationItem.lastUpdatedDiff(lastUpdated);
       const deadSecs = (365 / 2) * 24 * 3600; // 6 months
@@ -21,27 +23,28 @@ class NavigationItem extends React.Component {
       const newSecs = 3600 / 2; // 30 minutes
 
       if (seconds >= deadSecs) {
-        classNameStr = 'sub-dead';
+        classes.push('sub-dead');
       } else if (seconds >= staleSecs) {
-        classNameStr = 'sub-stale';
+        classes.push('sub-stale');
       } else if (seconds <= newSecs) {
-        classNameStr = 'sub-new';
+        classes.push('sub-new');
       } else if (seconds <= todaySecs) {
-        classNameStr = 'sub-today';
+        classes.push('sub-today');
       }
     }
 
     if (trigger) {
-      classNameStr += ' mark highlighted';
+      classes.push('mark highlighted');
     }
 
-    classNameStr += ' nav-link';
-
+    const classNameStr = classes.join(' ');
     return classNameStr;
   }
 
   render() {
-    const { sort, t, item, trigger } = this.props;
+    const { sort, location, item, trigger } = this.props;
+    const query = queryString.parse(location.search);
+    const { t } = query;
     let currentSort = sort || '';
     if (currentSort === 'top' || currentSort === 'controversial') {
       currentSort = `${currentSort}?t=${t}`;
@@ -50,24 +53,19 @@ class NavigationItem extends React.Component {
     }
     const href = `${Common.stripTrailingSlash(item.url)}/${currentSort}`;
     const classNameStr = this.getDiffClassName();
-    const subLabel =
-      classNameStr.indexOf('sub-new') !== -1 ? (
-        <span className="badge badge-primary badge-pill">New</span>
-      ) : null;
+    const subLabel = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;
     const currentTrigger = trigger ? '>' : '';
+    const text = `${currentTrigger} ${item.display_name}`;
 
     return (
-      <li className="nav-item">
-        <NavLink
-          id={item.id}
-          to={href}
-          title={item.public_description}
-          className={classNameStr}
-          activeClassName="activeSubreddit"
-        >
-          {currentTrigger} {item.display_name} {subLabel}
-        </NavLink>{' '}
-      </li>
+      <NavigationGenericNavItem
+        to={href}
+        text={text}
+        id={item.id}
+        classes={classNameStr}
+        title={item.public_description}
+        badge={subLabel}
+      />
     );
   }
 }
@@ -75,19 +73,19 @@ class NavigationItem extends React.Component {
 NavigationItem.propTypes = {
   item: PropTypes.object.isRequired,
   sort: PropTypes.string.isRequired,
-  t: PropTypes.string,
+  location: PropTypes.object,
   trigger: PropTypes.bool.isRequired,
   lastUpdated: PropTypes.number,
 };
 
 NavigationItem.defaultProps = {
   lastUpdated: 0,
-  t: '',
+  location: {},
 };
 
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
-  t: state.listingsFilter.t,
+  location: state.router.location,
 });
 
 const mapDispatchToProps = dispatch => ({});

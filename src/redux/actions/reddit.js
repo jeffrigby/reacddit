@@ -111,7 +111,9 @@ export function redditVote(id, dir) {
     const token = await RedditAPI.getToken(false);
     if (token) {
       try {
-        let { likes, ups } = currentState.listingsEntries.children[id].data;
+        let { likes, ups } = currentState.listingsRedditEntries.children[
+          id
+        ].data;
         await RedditAPI.vote(id, dir);
 
         switch (dir) {
