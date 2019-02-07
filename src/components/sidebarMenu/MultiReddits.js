@@ -57,6 +57,8 @@ class MultiReddits extends React.Component {
                   className="fas fa-sync-alt"
                   onClick={this.reloadSubredditsClick}
                   role="button"
+                  tabIndex="0"
+                  onKeyDown={this.reloadSubredditsClick}
                 />
               </span>
             </div>

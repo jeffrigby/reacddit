@@ -29,7 +29,8 @@ class App extends React.Component {
     } else {
       this.setState({
         error: true,
-        message: 'Fatal error getting Reddit token. This is bad. Please try again in a few.',
+        message:
+          'Fatal error getting Reddit token. This is bad. Please try again in a few.',
       });
     }
   }

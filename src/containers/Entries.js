@@ -300,11 +300,7 @@ class Entries extends React.Component {
 
     if (listingsStatus === 'unloaded' || listingsStatus === 'loading') {
       message = (
-        <div
-          className="alert alert-info"
-          id="content-loading"
-          role="alert"
-        >
+        <div className="alert alert-info" id="content-loading" role="alert">
           <i className="fas fa-spinner fa-spin" />
           {' Getting entries from Reddit.'}
         </div>
@@ -326,11 +322,7 @@ class Entries extends React.Component {
 
     if (listingsStatus === 'loaded' && !listingsEntries.children) {
       message = (
-        <div
-          className="alert alert-warning"
-          id="content-empty"
-          role="alert"
-        >
+        <div className="alert alert-warning" id="content-empty" role="alert">
           <i className="fas fa-exclamation-triangle" /> Nothing here.
         </div>
       );
