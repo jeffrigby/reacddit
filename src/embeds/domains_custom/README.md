@@ -35,14 +35,15 @@ The function may also return a promise, for API lookups (see gfycat)
  - iframe4x4  
   
 **Video structure:**  
-```javascript 
+```javascript
 const videoPreview = {  width: media.width,  
   height: media.height,  
   mp4: media.fallback_url, (optional)  
   webm: apiInfo.webmUrl, (optional)  
   m3u8: media.hls_url, (optional) id: entry.name,  
   type: 'video',  sources, (optional)  
-  thumb: entry.thumbnail, (optional)};  
+  thumb: entry.thumbnail, (optional)};
+};
 ```  
 **Image Structure**  
 ```javascript
