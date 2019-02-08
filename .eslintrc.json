@@ -30,7 +30,7 @@
   "rules": {
     "prettier/prettier": "error",
     //    "max-len": ["error", 200],
-    "no-console": "off",
+//    "no-console": "off",
     "strict": ["error", "global"],
     "curly": "warn",
     // airbnb override

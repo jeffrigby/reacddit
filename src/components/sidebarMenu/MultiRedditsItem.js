@@ -55,7 +55,7 @@ class MultiRedditsItem extends React.Component {
           </span>
           <span>
             <button
-              className="btn btn-link btn-sm m-0 p-0"
+              className="btn btn-link btn-sm m-0 p-0 border-0"
               onClick={this.hideShowSubs}
               type="button"
             >

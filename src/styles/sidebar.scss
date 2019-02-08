@@ -38,6 +38,14 @@
     text-transform: uppercase;
     vertical-align: middle !important;
   }
+
+  .faded {
+    opacity: 0.2 !important;
+  }
+
+  .reload {
+    cursor: pointer;
+  }
 }
 
 .form-control-clear {

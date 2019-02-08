@@ -10,9 +10,9 @@ class MultiReddits extends React.Component {
     super(props);
     this.accessToken = null;
     this.state = {
-      showSubs: false,
+      loading: true,
     };
-    this.hideShowSubs = this.hideShowSubs.bind(this);
+    this.reloadMultis = this.reloadMultis.bind(this);
   }
 
   async componentDidMount() {
@@ -20,13 +20,16 @@ class MultiReddits extends React.Component {
     this.accessToken = await RedditAPI.getToken(false);
 
     if (this.accessToken && this.accessToken.substr(0, 1) !== '-') {
-      fetchMultis();
+      await fetchMultis();
+      this.setState({ loading: false });
     }
   }
 
-  hideShowSubs() {
-    const { showSubs } = this.state;
-    this.setState({ showSubs: !showSubs });
+  async reloadMultis() {
+    const { fetchMultis } = this.props;
+    this.setState({ loading: true });
+    await fetchMultis(true);
+    this.setState({ loading: false });
   }
 
   generateMultiItems() {
@@ -45,31 +48,39 @@ class MultiReddits extends React.Component {
 
   render() {
     const { multireddits } = this.props;
+    const { loading } = this.state;
     if (multireddits) {
       const multis = this.generateMultiItems();
       if (multis.length) {
+        let spinnerClass = 'fas fa-sync-alt reload';
+        let multisClass = 'nav flex-column';
+
+        if (loading) {
+          spinnerClass += ' fa-spin';
+          multisClass += ' faded';
+        }
+
         return (
-          <div>
+          <div id="sidebar-multis">
             <div className="sidebar-heading d-flex text-muted">
               <span className="mr-auto">Multis</span>
               <span>
                 <i
-                  className="fas fa-sync-alt"
-                  onClick={this.reloadSubredditsClick}
+                  className={spinnerClass}
+                  onClick={this.reloadMultis}
                   role="button"
                   tabIndex="0"
-                  onKeyDown={this.reloadSubredditsClick}
+                  onKeyDown={this.reloadMultis}
                 />
               </span>
             </div>
-            <ul className="nav flex-column">{multis}</ul>
-            <div className="nav-divider" />
+            <ul className={multisClass}>{multis}</ul>
           </div>
         );
       }
-      return <div />;
+      return null;
     }
-    return <div />;
+    return null;
   }
 }
 
@@ -85,7 +96,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  fetchMultis: () => dispatch(redditFetchMultis()),
+  fetchMultis: reset => dispatch(redditFetchMultis(reset)),
 });
 
 export default connect(
