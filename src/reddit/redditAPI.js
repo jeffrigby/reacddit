@@ -1,4 +1,5 @@
 import axios from 'axios';
+import cookies from 'js-cookie';
 
 const queryString = require('query-string');
 
@@ -10,8 +11,6 @@ class RedditAPI {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
-
-    this.token = {};
 
     this.redditAPI.interceptors.request.use(
       async config => {
@@ -38,61 +37,20 @@ class RedditAPI {
   }
 
   /**
-   * Set the token if query strings are available.
-   */
-  setTokenWithQS() {
-    const parsed = queryString.parse(window.location.search);
-    if (parsed.token !== null && parsed.expires) {
-      this.setTokenStorage(parsed.token, parsed.expires);
-      window.history.replaceState({}, document.title, '/');
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Save the bearer token to cookie
-   * @param accessToken
-   *   The token to save
-   * @param expires
-   *   When it expires
-   * @returns {{accessToken: *, expires: *}}
-   */
-  setTokenStorage(accessToken, expires, type) {
-    const token = {
-      accessToken,
-      expires,
-      type,
-    };
-
-    const tokenJson = JSON.stringify(token);
-
-    // Probably don't need both.
-    localStorage.setItem('token', tokenJson);
-    // Cookie.set('token', tokenJson);
-
-    this.token = token;
-    return token;
-  }
-
-  /**
    * Get the token out of storage if it's not expired
    * @returns {*}
    */
   static getTokenStorage() {
     let token = null;
 
-    const localStorageToken = localStorage.getItem('token');
-    const localStorageTokenJson = localStorageToken
-      ? JSON.parse(localStorageToken)
-      : null;
+    const cookieToken = cookies.getJSON('token');
 
-    if (localStorageTokenJson !== null) {
-      const { expires } = localStorageTokenJson;
+    if (cookieToken !== undefined) {
+      const { expires } = cookieToken;
       const dateTime = Date.now();
       const timestamp = Math.floor(dateTime / 1000);
       if (expires >= timestamp) {
-        token = localStorageTokenJson.accessToken;
+        token = cookieToken.accessToken;
       } else {
         token = 'expired';
       }
@@ -107,18 +65,12 @@ class RedditAPI {
    * @returns {Promise<*>}
    */
   async getToken(reset) {
-    // Query strings should take precedence.
-    this.setTokenWithQS();
-
     let token = RedditAPI.getTokenStorage();
 
     if (token === 'expired' || reset === true || token === null) {
       // token expired or forced refresh. Get a new one.
       const getToken = await axios.get('/api/bearer');
       token = getToken.data.accessToken;
-      if (token) {
-        this.setTokenStorage(token, getToken.data.expires, getToken.data.type);
-      }
     }
 
     if (token === null) {
@@ -127,7 +79,6 @@ class RedditAPI {
       sessionStorage.clear();
     }
 
-    this.token = token;
     return token;
   }
 
@@ -418,22 +369,11 @@ class RedditAPI {
 
   /**
    * Return reddit user.
-   * @param reset
    * Reset the cache
    * @returns {Promise<*>}
    */
-  async me(reset) {
-    const token = await this.getToken();
-    // @todo Remove this caching. Already cached in redux.
-    const cacheKey = `me_${token}`;
-    if (reset !== true) {
-      const meCached = sessionStorage.getItem(cacheKey);
-      if (meCached !== null) {
-        return JSON.parse(meCached);
-      }
-    }
+  async me() {
     const me = await this.redditAPI.get('/api/v1/me');
-    sessionStorage.setItem(cacheKey, JSON.stringify(me.data));
     return me.data;
   }
 }
