@@ -4,12 +4,8 @@ import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import isEmpty from 'lodash.isempty';
-import {
-  subredditsFetchData,
-  subredditsFetchDefaultData,
-  subredditsFilter,
-} from '../redux/actions/subreddits';
-import { debugMode, disableHotKeys } from '../redux/actions/misc';
+import * as subredditsActions from '../redux/actions/subreddits';
+import { disableHotKeys } from '../redux/actions/misc';
 import NavigationItem from '../components/sidebarMenu/NavigationItem';
 import MultiReddits from '../components/sidebarMenu/MultiReddits';
 import RedditAPI from '../reddit/redditAPI';
@@ -20,16 +16,6 @@ import '../styles/sidebar.scss';
 const queryString = require('query-string');
 
 class Navigation extends React.Component {
-  /**
-   * Resize the the right navbar when the window is resized
-   */
-  static resizeNavigation() {
-    // let vph;
-    // vph = jQuery(window).height();
-    // vph -= 150;
-    // jQuery('#subreddits nav').css('max-height', `${vph}px`);
-  }
-
   /**
    * Helper function to generate the list items for the nav.
    * @param links
@@ -71,18 +57,13 @@ class Navigation extends React.Component {
     this.handleNavHotkeyKeyDown = this.handleNavHotkeyKeyDown.bind(this);
     this.reloadSubredditsClick = this.reloadSubredditsClick.bind(this);
     this.accessToken = null;
-    this.filterActive = false;
     this.subredditTarget = null;
-    this.state = {
-      subredditTargetIdx: 0,
-    };
   }
 
   async componentDidMount() {
     const { fetchSubreddits, fetchDefaultSubreddits } = this.props;
     jQuery(document).keypress(this.handleNavHotkey);
     jQuery(document).keydown(this.handleNavHotkeyKeyDown);
-    jQuery(window).on('load resize', Navigation.resizeNavigation);
     this.accessToken = await RedditAPI.getToken(false);
 
     if (this.accessToken && this.accessToken.substr(0, 1) !== '-') {
@@ -92,40 +73,18 @@ class Navigation extends React.Component {
     }
   }
 
-  componentDidUpdate() {
-    Navigation.resizeNavigation();
-  }
-
   /**
    * Handle the hot key events for navigating the subreddits
    * when a filter is applied
    * @param event
    */
   handleNavHotkeyKeyDown(event) {
-    const { subredditTargetIdx } = this.state;
-    const { subredditsFilterActive, ...props } = this.props;
-    if (subredditsFilterActive) {
+    const { subredditsFilter, ...props } = this.props;
+
+    if (subredditsFilter.active) {
       // up down arrows move the navigation
       const filter = jQuery('#subreddit-filter');
       switch (event.key) {
-        case 'ArrowUp': {
-          const nextIdx = subredditTargetIdx - 1;
-          if (nextIdx >= 0) {
-            this.setState({
-              subredditTargetIdx: nextIdx,
-            });
-          }
-          event.preventDefault();
-          break;
-        }
-        case 'ArrowDown': {
-          const nextIdx = subredditTargetIdx + 1;
-          this.setState({
-            subredditTargetIdx: nextIdx,
-          });
-          event.preventDefault();
-          break;
-        }
         case 'Enter':
         case 'ArrowRight': {
           props.push(this.subredditTarget);
@@ -133,11 +92,6 @@ class Navigation extends React.Component {
           event.preventDefault();
           break;
         }
-        case 'Escape':
-          if (!filter.val()) {
-            filter.blur();
-          }
-          break;
         default:
           break;
       }
@@ -149,29 +103,11 @@ class Navigation extends React.Component {
    * @param event
    */
   handleNavHotkey(event) {
-    const {
-      disableHotkeys,
-      setDebug,
-      debug,
-      subredditsFilterActive,
-    } = this.props;
+    const { disableHotkeys } = this.props;
     const pressedKey = event.key;
-
-    // Clear filter IDX
-    if (subredditsFilterActive) {
-      this.setState({
-        subredditTargetIdx: 0,
-      });
-    }
 
     if (!disableHotkeys) {
       switch (pressedKey) {
-        case 'Î': // opt-shift-d
-          setDebug(!debug);
-          break;
-        case '?':
-          jQuery('#hotkeys').modal();
-          break;
         case 'R': // shift-R
           this.reloadSubreddits();
           break;
@@ -209,12 +145,12 @@ class Navigation extends React.Component {
    * @returns {*}
    */
   filterSubreddits(subreddits) {
-    const { subredditsFilterText } = this.props;
+    const { subredditsFilter } = this.props;
     if (isEmpty(subreddits)) {
       return {};
     }
 
-    const filterText = subredditsFilterText.toLowerCase();
+    const filterText = subredditsFilter.filterText.toLowerCase();
     // No filter defined
     if (!filterText) {
       return subreddits;
@@ -241,11 +177,10 @@ class Navigation extends React.Component {
    * @returns {Array}
    */
   generateNavItems(subreddits) {
-    const { lastUpdated, sort, subredditsFilterText, location } = this.props;
+    const { lastUpdated, sort, subredditsFilter, location } = this.props;
     const query = queryString.parse(location.search);
     const { t } = query;
 
-    const { subredditTargetIdx } = this.state;
     const navigationItems = [];
     Object.keys(subreddits).forEach((key, index) => {
       if (Object.prototype.hasOwnProperty.call(subreddits, key)) {
@@ -254,8 +189,8 @@ class Navigation extends React.Component {
           ? lastUpdated[item.name]
           : 0;
         const trigger =
-          subredditTargetIdx === index &&
-          (this.filterActive || !isEmpty(subredditsFilterText));
+          subredditsFilter.activeIndex === index &&
+          (subredditsFilter.active || !isEmpty(subredditsFilter.filterText));
         if (trigger) {
           let currentSort = sort || '';
           if (currentSort === 'top') {
@@ -282,7 +217,7 @@ class Navigation extends React.Component {
    * @returns {*}
    */
   render() {
-    const { subreddits, subredditsFilterText } = this.props;
+    const { subreddits, subredditsFilter } = this.props;
 
     if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
       return (
@@ -317,14 +252,13 @@ class Navigation extends React.Component {
       );
     }
 
-    const filterText = subredditsFilterText;
+    const { filterText } = subredditsFilter;
     const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
     const navItems = this.generateNavItems(filteredSubreddits);
     const noItems = isEmpty(navItems);
     const loggedIn = this.accessToken && this.accessToken.substr(0, 1) !== '-';
 
-    const hideExtras =
-      this.filterActive || (!this.filterActive && !isEmpty(filterText));
+    const hideExtras = !isEmpty(filterText);
 
     return (
       <div className="w-100">
@@ -361,24 +295,20 @@ class Navigation extends React.Component {
 Navigation.propTypes = {
   sort: PropTypes.string.isRequired,
   location: PropTypes.object,
-  subredditsFilterText: PropTypes.string,
+  subredditsFilter: PropTypes.object.isRequired,
   fetchSubreddits: PropTypes.func.isRequired,
   fetchDefaultSubreddits: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   subreddits: PropTypes.object.isRequired,
   me: PropTypes.object.isRequired,
   lastUpdated: PropTypes.object.isRequired,
-  debug: PropTypes.bool.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
-  subredditsFilterActive: PropTypes.bool.isRequired,
-  setDebug: PropTypes.func.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
   setFilter: PropTypes.func.isRequired,
 };
 
 Navigation.defaultProps = {
   location: {},
-  subredditsFilterText: '',
 };
 
 const mapStateToProps = state => ({
@@ -386,20 +316,19 @@ const mapStateToProps = state => ({
   subreddits: state.subreddits,
   me: state.redditMe.me,
   lastUpdated: state.lastUpdated,
-  debug: state.debugMode,
   disableHotkeys: state.disableHotKeys,
-  subredditsFilterText: state.subredditsFilter,
-  subredditsFilterActive: state.subredditsFilterActive,
+  subredditsFilter: state.subredditsFilter,
   location: state.router.location,
 });
 
 const mapDispatchToProps = dispatch => ({
-  fetchSubreddits: reset => dispatch(subredditsFetchData(reset)),
-  fetchDefaultSubreddits: () => dispatch(subredditsFetchDefaultData()),
-  setDebug: debug => dispatch(debugMode(debug)),
+  fetchSubreddits: reset =>
+    dispatch(subredditsActions.subredditsFetchData(reset)),
+  fetchDefaultSubreddits: () =>
+    dispatch(subredditsActions.subredditsFetchDefaultData()),
   setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
   push: url => dispatch(push(url)),
-  setFilter: filter => dispatch(subredditsFilter(filter)),
+  setFilter: filter => dispatch(subredditsActions.subredditsFilter(filter)),
 });
 
 export default connect(

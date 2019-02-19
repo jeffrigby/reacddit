@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEqual from 'lodash.isequal';
 import * as listings from '../redux/actions/listings';
+import * as misc from '../redux/actions/misc';
 import Entry from '../components/Entry';
 import RedditAPI from '../reddit/redditAPI';
 import '../styles/entries.scss';
@@ -56,22 +57,6 @@ class Entries extends React.Component {
     return false;
   }
 
-  static handleEntriesHotkey(event) {
-    switch (event.charCode) {
-      case 106: // j
-        Entries.nextEntry();
-        break;
-      case 107: // k
-        Entries.prevEntry();
-        break;
-      case 46: // .
-        Entries.scrollToBottom();
-        break;
-      default:
-        break;
-    }
-  }
-
   constructor(props) {
     super(props);
     this.monitorEntriesInterval = null;
@@ -85,7 +70,7 @@ class Entries extends React.Component {
       visible: [],
       hasError: false,
     };
-    // this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
+    this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
   }
 
   // static getDerivedStateFromError(error) {
@@ -97,7 +82,7 @@ class Entries extends React.Component {
     this.accessToken = await RedditAPI.getToken(false);
     this.scrollResizeStop = false;
     const { match, location } = this.props;
-    jQuery(document).keypress(Entries.handleEntriesHotkey);
+    jQuery(document).keypress(this.handleEntriesHotkey);
     this.setRedux(match, location);
     jQuery(window).on('load resize scroll', () => {
       this.scrollResize = true;
@@ -120,7 +105,11 @@ class Entries extends React.Component {
       return true;
     }
 
-    if (props.debug !== nextProps.debug) {
+    if (props.siteSettings.debug !== nextProps.siteSettings.debug) {
+      return true;
+    }
+
+    if (props.siteSettings.view !== nextProps.siteSettings.view) {
       return true;
     }
 
@@ -202,6 +191,33 @@ class Entries extends React.Component {
 
     if (!isEqual(listingsFilter, newListingsFilter)) {
       setFilter(newListingsFilter);
+    }
+  }
+
+  handleEntriesHotkey(event) {
+    const { disableHotkeys, setSiteSetting, siteSettings } = this.props;
+    const { focused } = this.state;
+    if (!disableHotkeys) {
+      const pressedKey = event.key;
+      switch (pressedKey) {
+        case 'j':
+          Entries.nextEntry();
+          break;
+        case 'k':
+          Entries.prevEntry();
+          break;
+        case '.':
+          Entries.scrollToBottom();
+          break;
+        case 'V':
+          setSiteSetting({
+            view: siteSettings.view === 'expanded' ? 'condensed' : 'expanded',
+          });
+          window.scrollTo(0, document.getElementById(focused).offsetTop);
+          break;
+        default:
+          break;
+      }
     }
   }
 
@@ -291,7 +307,7 @@ class Entries extends React.Component {
     const {
       listingsStatus,
       listingsEntries,
-      debug,
+      siteSettings,
       listingsFilter,
     } = this.props;
 
@@ -373,23 +389,37 @@ class Entries extends React.Component {
       });
     }
 
+    const visibleString = visible.join(' ');
+
     return (
       <>
-        {debug && (
-          <div className="debugInfo">
-            <pre>
-              Target: {listingsFilter.target}
-              <br />
-              Sort: {listingsFilter.sort}
-              <br />
-              t: {listingsFilter.t}
-              <br />
-              Type: {listingsFilter.listType}
-              <br />
-              URL: {listingsEntries.requestUrl}
-              <br />
-              Focus: {focused}
-            </pre>
+        {siteSettings.debug && (
+          <div id="debugInfo" className="p-2">
+            <div>
+              <strong>Target:</strong> {listingsFilter.target}
+            </div>
+            <div>
+              <strong>Sort:</strong> {listingsFilter.sort}
+            </div>
+            <div>
+              <strong>t:</strong> {listingsFilter.t}
+            </div>
+            <div>
+              {' '}
+              <strong>Type:</strong> {listingsFilter.listType}
+            </div>
+            <div>
+              {' '}
+              <strong>URL:</strong> {listingsEntries.requestUrl}
+            </div>
+            <div>
+              {' '}
+              <strong>Focus:</strong> {focused}
+            </div>
+            <div>
+              {' '}
+              <strong>Visible:</strong> {visibleString}
+            </div>
           </div>
         )}
         {entries}
@@ -405,16 +435,18 @@ Entries.propTypes = {
   setFilter: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   getEntriesReddit: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   getMoreRedditEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
+  setSiteSetting: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsEntries: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsFilter: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   listingsStatus: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
   entries: PropTypes.object,
-  debug: PropTypes.bool,
+  disableHotkeys: PropTypes.bool.isRequired,
+  siteSettings: PropTypes.object,
 };
 
 Entries.defaultProps = {
   entries: {},
-  debug: false,
+  siteSettings: { debug: false, view: 'expanded' },
 };
 
 const mapStateToProps = (state, ownProps) => ({
@@ -422,7 +454,8 @@ const mapStateToProps = (state, ownProps) => ({
   listingsEntries: state.listingsRedditEntries,
   listingsStatus: state.listingsRedditStatus,
   entries: state.listingsRedditEntries.children,
-  debug: state.debugMode,
+  disableHotkeys: state.disableHotKeys,
+  siteSettings: state.siteSettings,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -430,6 +463,7 @@ const mapDispatchToProps = dispatch => ({
   getEntriesReddit: (subreddit, sort, options) =>
     dispatch(listings.listingsFetchEntriesReddit(subreddit, sort, options)),
   getMoreRedditEntries: () => dispatch(listings.listingsFetchRedditNext()),
+  setSiteSetting: setting => dispatch(misc.siteSettings(setting)),
 });
 
 export default connect(

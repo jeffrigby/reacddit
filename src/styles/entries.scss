@@ -34,3 +34,13 @@ div#entries {
     }
   }
 }
+
+#debugInfo {
+  position: fixed;
+  right: 20px;
+  bottom: 50px;
+  z-index: 1000;
+  background-color: white;
+  width: 500px;
+  font-family: monospace;
+}

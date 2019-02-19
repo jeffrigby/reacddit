@@ -16,13 +16,6 @@ export function subredditsFilter(filter) {
   };
 }
 
-export function subredditsFilterActive(active) {
-  return {
-    type: 'SUBREDDITS_FILTER_ACTIVE',
-    active,
-  };
-}
-
 export function subredditsFetchDataSuccess(subreddits) {
   return {
     type: 'SUBREDDITS_FETCH_DATA_SUCCESS',

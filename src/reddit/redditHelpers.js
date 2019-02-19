@@ -9,7 +9,6 @@ class RedditHelpers {
   }
 
   static async multiMine(options, reset) {
-    console.log(reset);
     const expandSrs = options.expand_srs ? 't' : 'f';
     const cacheKey = `multis_${expandSrs}`;
     const cachedValue = sessionStorage.getItem(cacheKey);

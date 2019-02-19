@@ -15,22 +15,47 @@ class FilterReddits extends React.Component {
     this.enableHotkeys = this.enableHotkeys.bind(this);
     this.filterReddits = this.filterReddits.bind(this);
     this.handleFilterHotkey = this.handleFilterHotkey.bind(this);
+    this.filterInput = React.createRef();
   }
 
   componentDidMount() {
-    jQuery(document).keypress(this.handleFilterHotkey);
+    document.addEventListener('keydown', this.handleFilterHotkey);
   }
 
   handleFilterHotkey(event) {
-    const { disableHotkeys, setFilter } = this.props;
+    const { disableHotkeys, filter, setFilter } = this.props;
     const pressedKey = event.key;
 
     if (!disableHotkeys) {
       switch (pressedKey) {
         case 'F':
-          jQuery('#subreddit-filter').focus();
-          setFilter('');
+          this.filterInput.current.focus();
+          this.clearSearch();
           event.preventDefault();
+          break;
+        default:
+          break;
+      }
+    } else if (filter.active) {
+      // Filter is active
+      switch (pressedKey) {
+        case 'ArrowUp': {
+          const activeIndex = filter.activeIndex - 1;
+          if (activeIndex >= 0) {
+            setFilter({ activeIndex });
+          }
+          event.preventDefault();
+          break;
+        }
+        case 'ArrowDown': {
+          const activeIndex = filter.activeIndex + 1;
+          setFilter({ activeIndex });
+          event.preventDefault();
+          break;
+        }
+        case 'Escape':
+          this.filterInput.current.blur();
+          this.clearSearch();
           break;
         default:
           break;
@@ -45,11 +70,11 @@ class FilterReddits extends React.Component {
    */
   filterReddits(item) {
     const { setFilter } = this.props;
-    const queryText = item.target.value;
-    if (!queryText) {
+    const filterText = item.target.value;
+    if (!filterText) {
       return setFilter('');
     }
-    return setFilter(queryText);
+    return setFilter({ filterText });
   }
 
   /**
@@ -57,15 +82,18 @@ class FilterReddits extends React.Component {
    */
   clearSearch() {
     const { setFilter } = this.props;
-    setFilter('');
+    const filterText = '';
+    const activeIndex = 0;
+    setFilter({ filterText, activeIndex });
   }
 
   /**
    * Disable the hotkeys when using the filter.
    */
   disableHotkeys() {
-    const { setDisableHotkeys, setFilterActive } = this.props;
-    setFilterActive(true);
+    const { setDisableHotkeys, setFilter } = this.props;
+    const active = true;
+    setFilter({ active });
     setDisableHotkeys(true);
   }
 
@@ -73,13 +101,14 @@ class FilterReddits extends React.Component {
    * Enable the hotkeys when not in a textbox.
    */
   enableHotkeys() {
-    const { setDisableHotkeys, setFilterActive } = this.props;
-    setFilterActive(false);
+    const { setDisableHotkeys, setFilter } = this.props;
+    const active = false;
+    setFilter({ active });
     setDisableHotkeys(false);
   }
 
   render() {
-    const { filterText } = this.props;
+    const { filter } = this.props;
 
     return (
       <div className="filterText w-100 d-flex m-0 p-2">
@@ -91,9 +120,10 @@ class FilterReddits extends React.Component {
           onBlur={this.enableHotkeys}
           placeholder="Filter"
           id="subreddit-filter"
-          value={filterText}
+          value={filter.filterText}
+          ref={this.filterInput}
         />
-        {filterText && (
+        {filter.filterText && (
           <i
             className="far fa-times-circle form-control-clear"
             onClick={this.clearSearch}
@@ -111,14 +141,14 @@ FilterReddits.propTypes = {
   setFilter: PropTypes.func.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
   setFilterActive: PropTypes.func.isRequired,
-  filterText: PropTypes.string.isRequired,
+  filter: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
 };
 
 FilterReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
-  filterText: state.subredditsFilter,
+  filter: state.subredditsFilter,
   disableHotkeys: state.disableHotKeys,
 });
 

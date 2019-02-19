@@ -30,13 +30,14 @@
   "rules": {
     "prettier/prettier": "error",
     //    "max-len": ["error", 200],
-//    "no-console": "off",
+    //    "no-console": "off",
     "strict": ["error", "global"],
     "curly": "warn",
     // airbnb override
     "global-require": 0,
     "no-unused-vars": ["error", { "args": "none" }],
     "react/jsx-filename-extension": 0,
-    "react/forbid-prop-types": 0
+    "react/forbid-prop-types": 0,
+    "no-unused-expressions": ["error", { "allowShortCircuit": true, "allowTernary": false }]
   }
 }

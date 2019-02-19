@@ -8,6 +8,7 @@ import Header from './Header';
 import Entries from './Entries';
 import * as reddit from '../redux/actions/reddit';
 import '../styles/layout.scss';
+import * as misc from '../redux/actions/misc';
 
 class App extends React.Component {
   constructor(props) {
@@ -21,6 +22,8 @@ class App extends React.Component {
 
   async componentDidMount() {
     const { getBearer, getMe } = this.props;
+    document.addEventListener('keydown', this.handleNGlobalHotkey.bind(this));
+
     // Make sure the token is set before loading the app.
     const token = await getBearer();
     if (token !== null) {
@@ -37,6 +40,24 @@ class App extends React.Component {
 
   componentWillUnmount() {
     clearInterval(this.tokenQuery);
+  }
+
+  handleNGlobalHotkey(event) {
+    const { disableHotkeys, setSiteSetting, siteSettings } = this.props;
+    const pressedKey = event.key;
+
+    if (!disableHotkeys) {
+      switch (pressedKey) {
+        case 'Î': // opt-shift-d
+          setSiteSetting({ debug: !siteSettings.debug });
+          break;
+        case '?':
+          jQuery('#hotkeys').modal();
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   render() {
@@ -111,8 +132,11 @@ class App extends React.Component {
 }
 
 App.propTypes = {
-  getMe: PropTypes.func.isRequired,
+  disableHotkeys: PropTypes.bool.isRequired,
   getBearer: PropTypes.func.isRequired,
+  getMe: PropTypes.func.isRequired,
+  setSiteSetting: PropTypes.func.isRequired,
+  siteSettings: PropTypes.object.isRequired,
 };
 
 App.defaultProps = {
@@ -122,11 +146,14 @@ App.defaultProps = {
 const mapStateToProps = state => ({
   // authInfo: state.redditAuthInfo,
   // bearer: state.redditBearer,
+  disableHotkeys: state.disableHotKeys,
+  siteSettings: state.siteSettings,
 });
 
 const mapDispatchToProps = dispatch => ({
   getBearer: () => dispatch(reddit.redditGetBearer()),
   getMe: () => dispatch(reddit.redditFetchMe()),
+  setSiteSetting: setting => dispatch(misc.siteSettings(setting)),
 });
 
 export default withRouter(

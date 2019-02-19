@@ -44,6 +44,7 @@ store.subscribe(
       lastUpdated: store.getState().lastUpdated,
       lastUpdatedTime: store.getState().lastUpdatedTime,
       redditMe: store.getState().redditMe,
+      siteSettings: store.getState().siteSettings,
     });
   }, 1000)
 );

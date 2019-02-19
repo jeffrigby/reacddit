@@ -18,8 +18,8 @@ class Entry extends React.Component {
     this.state = {
       showDebug: false,
       renderedContent: {},
-      expandSticky: false,
-      expand: true,
+      condenseSticky: props.siteSettings.condenseSticky,
+      expand: props.siteSettings.view === 'expanded' || false,
     };
     this.showDebug = this.showDebug.bind(this);
     this.expand = this.expand.bind(this);
@@ -50,14 +50,26 @@ class Entry extends React.Component {
     });
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { entry, siteSettings } = this.props;
+    if (siteSettings.view !== nextProps.siteSettings.view) {
+      if (!entry.data.stickied) {
+        this.setState({
+          expand: nextProps.siteSettings.view === 'expanded' || false,
+        });
+      } else {
+        this.setState({
+          expand: !nextProps.siteSettings.condenseSticky,
+        });
+      }
+    }
+  }
+
   shouldComponentUpdate(nextProps, nextState) {
     const { ...props } = this.props;
-    const { showDebug, renderedContent, expandSticky, expand } = this.state;
+    const { showDebug, renderedContent, condenseSticky, expand } = this.state;
 
     if (props.listingFilter.sort !== nextProps.listingFilter.sort) {
-      return true;
-    }
-    if (props.debug !== nextProps.debug) {
       return true;
     }
     if (props.listingFilter.t !== nextProps.listingFilter.t) {
@@ -72,9 +84,15 @@ class Entry extends React.Component {
     if (props.visible !== nextProps.visible) {
       return true;
     }
+    if (props.siteSettings.view !== nextProps.siteSettings.view) {
+      return true;
+    }
+    if (props.siteSettings.debug !== nextProps.siteSettings.debug) {
+      return true;
+    }
     if (
       showDebug !== nextState.showDebug ||
-      expandSticky !== nextState.expandSticky ||
+      condenseSticky !== nextState.condenseSticky ||
       expand !== nextState.expand
     ) {
       return true;
@@ -100,7 +118,7 @@ class Entry extends React.Component {
   }
 
   render() {
-    const { entry, focused, visible, debug } = this.props;
+    const { entry, focused, visible, siteSettings } = this.props;
     const { data } = entry;
     const { showDebug, renderedContent, expand } = this.state;
     const timeago = moment(data.created_utc * 1000).from();
@@ -128,25 +146,39 @@ class Entry extends React.Component {
     const linkFlair = data.link_flair_text ? (
       <span className="badge badge-dark">{data.link_flair_text}</span>
     ) : null;
-    const currentDebug = process.env.NODE_ENV === 'development' && debug;
+    const currentDebug =
+      process.env.NODE_ENV === 'development' && siteSettings.debug;
 
     if (!expand) {
-      classes += ' collapsed';
+      classes += ' collapsed d-flex';
+      // gotta be a better way to do this, but, whatever, sticking with timeago for now.
+      const timeagoshort = timeago
+        .replace(' ago', '')
+        .replace(/^a|^an/, '1')
+        .replace(/seconds?/g, 'S')
+        .replace(/minutes?/g, 'M')
+        .replace(/hours?/g, 'H')
+        .replace(/days?/g, 'D')
+        .replace(/months?/g, 'M')
+        .replace(/years?/g, 'Y')
+        .replace(' ', '');
       return (
-        <div className={classes} key={data.name} id={data.name}>
-          {sticky && <span className="label label-default">Sticky</span>}{' '}
-          <a
-            href={data.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={this.expand}
-          >
-            {data.title}
-          </a>
-          <Link to={subUrl}>/r/{data.subreddit}</Link>
-          {data.author}
-          <i className="fas fa-comments" /> {data.num_comments}
-          {timeago}
+        <div
+          className={classes}
+          key={data.name}
+          id={data.name}
+          onClick={this.expand}
+        >
+          <div className="">
+            {sticky && <i className="fas fa-sticky-note" />}
+          </div>
+          <div className="px-2">
+            <div className="text-nowrap px-2 text-truncate font-weight-bold">
+              {data.title}
+            </div>
+            <div />
+          </div>
+          <div className="ml-auto text-nowrap">{timeagoshort}</div>
         </div>
       );
     }
@@ -183,14 +215,17 @@ class Entry extends React.Component {
                 <span className="badge badge-primary">{commentCount}</span>
               </a>{' '}
               {currentDebug && (
-                <button
-                  className="btn btn-link m-0 p-0"
-                  onClick={this.showDebug}
-                  title="Show debug"
-                  type="button"
-                >
-                  <i className="fas fa-code" />
-                </button>
+                <span className="pl-3">
+                  <button
+                    className="btn btn-link m-0 p-0"
+                    onClick={this.showDebug}
+                    title="Show debug"
+                    type="button"
+                  >
+                    <i className="fas fa-code" />
+                  </button>{' '}
+                  {data.name}
+                </span>
               )}
             </div>
             <EntryVote id={data.id} likes={data.likes} ups={data.ups} />
@@ -224,9 +259,9 @@ class Entry extends React.Component {
 
 Entry.propTypes = {
   entry: PropTypes.object.isRequired,
-  listingFilter: PropTypes.object.isRequired,
-  debug: PropTypes.bool.isRequired,
   focused: PropTypes.bool.isRequired,
+  listingFilter: PropTypes.object.isRequired,
+  siteSettings: PropTypes.object.isRequired,
   visible: PropTypes.bool.isRequired,
 };
 
@@ -234,7 +269,7 @@ Entry.defaultProps = {};
 
 const mapStateToProps = state => ({
   listingFilter: state.listingsFilter,
-  debug: state.debugMode,
+  siteSettings: state.siteSettings,
 });
 
 const mapDispatchToProps = dispatch => ({});

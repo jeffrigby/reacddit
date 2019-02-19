@@ -38,20 +38,16 @@ export function lastUpdatedTime(state = 0, action) {
   }
 }
 
-export function subredditsFilter(state = '', action) {
+export function subredditsFilter(
+  state = { filterText: '', active: false, activeIndex: 0 },
+  action
+) {
   switch (action.type) {
     case 'SUBREDDITS_FILTER':
-      return action.filter;
-
-    default:
-      return state;
-  }
-}
-
-export function subredditsFilterActive(state = false, action) {
-  switch (action.type) {
-    case 'SUBREDDITS_FILTER_ACTIVE':
-      return action.active;
+      return {
+        ...state,
+        ...action.filter,
+      };
 
     default:
       return state;

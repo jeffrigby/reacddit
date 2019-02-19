@@ -1,10 +1,3 @@
-export function debugMode(bool) {
-  return {
-    type: 'DEBUG_MODE',
-    debugMode: bool,
-  };
-}
-
 export function disableHotKeys(bool) {
   return {
     type: 'DISABLE_HOTKEYS',
@@ -12,9 +5,9 @@ export function disableHotKeys(bool) {
   };
 }
 
-export function showMenu(bool) {
+export function siteSettings(setting) {
   return {
-    type: 'SHOW_MENU',
-    showMenu: bool,
+    type: 'SITE_SETTINGS',
+    setting,
   };
 }

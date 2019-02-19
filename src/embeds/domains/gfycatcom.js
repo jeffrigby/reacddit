@@ -1,9 +1,25 @@
 import parse from 'url-parse';
 import axios from 'axios';
 
+// const setCache = gfyItem => {
+//   const key = `gfycat_${gfyItem.gfyId}`;
+//   sessionStorage.setItem(key, JSON.stringify(gfyItem));
+// }
+//
+// const getCache = gfyId => {
+//   const id = gfyId.toLowerCase();
+//   const cachedItem = sessionStorage.getItem(`gfycat_${id}`);
+//   return cachedItem ? JSON.parse(cachedItem) : null;
+// }
+
 const getInfo = async id => {
+  // const cache = getCache(id);
+  // if (cache) {
+  //   return cache;
+  // }
   const url = `https://api.gfycat.com/v1/gfycats/${id}`;
   const apiInfo = await axios.get(url);
+  // setCache(apiInfo.data.gfyItem);
   return apiInfo.data.gfyItem;
 };
 

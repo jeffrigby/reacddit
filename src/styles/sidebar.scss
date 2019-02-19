@@ -22,7 +22,7 @@
       &.sub-new, &.sub-today {
         font-weight: 600;
       }
-      &.activeSubreddit {
+      &.activeSubreddit, &.mark {
         &:before {
           content: "> ";
         }
@@ -30,6 +30,18 @@
     }
 
     &:hover {
+      background-color: #fcf8e3;
+    }
+
+
+  }
+
+  // Override hover for multis
+  #sidebar-multis {
+    .nav-item:hover {
+      background-color: unset;
+    }
+    .subnav .nav-item:hover {
       background-color: #fcf8e3;
     }
   }

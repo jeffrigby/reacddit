@@ -4,7 +4,10 @@ import Content from '../Content';
 
 const Self = ({ content, load, name }) => {
   let rawhtml = content.html;
-  rawhtml = rawhtml.replace(/<a\s+href=/gi, '<a target="_blank" href=');
+  rawhtml = rawhtml
+    .replace(/<a\s+href=/gi, '<a target="_blank" href=')
+    .replace(/<p>&#x200B;<\/p>/gi, '')
+    .replace(/<p>\s+<\/p>/gi, '');
   // eslint-disable-next-line react/no-danger
   const html = <div dangerouslySetInnerHTML={{ __html: rawhtml }} />;
   let inlineRendered;

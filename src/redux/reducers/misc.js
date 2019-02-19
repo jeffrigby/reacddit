@@ -1,13 +1,3 @@
-export function debugMode(state = false, action) {
-  switch (action.type) {
-    case 'DEBUG_MODE':
-      return action.debugMode;
-
-    default:
-      return state;
-  }
-}
-
 export function disableHotKeys(state = false, action) {
   switch (action.type) {
     case 'DISABLE_HOTKEYS':
@@ -18,10 +8,16 @@ export function disableHotKeys(state = false, action) {
   }
 }
 
-export function showMenu(state = false, action) {
+export function siteSettings(
+  state = { view: 'expanded', debug: false, condenseSticky: true },
+  action
+) {
   switch (action.type) {
-    case 'SHOW_MENU':
-      return action.showMenu;
+    case 'SITE_SETTINGS':
+      return {
+        ...state,
+        ...action.setting,
+      };
 
     default:
       return state;

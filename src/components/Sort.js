@@ -42,7 +42,7 @@ class Sort extends React.Component {
   }
 
   componentDidMount() {
-    jQuery(document).keypress(this.handleSortHotkey);
+    document.addEventListener('keydown', this.handleSortHotkey);
   }
 
   handleSortHotkey(event) {

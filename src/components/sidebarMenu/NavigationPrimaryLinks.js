@@ -14,7 +14,7 @@ class NavigationPrimaryLinks extends React.Component {
   }
 
   componentDidMount() {
-    jQuery(document).keypress(this.handleNavPrimaryHotkey);
+    document.addEventListener('keydown', this.handleNavPrimaryHotkey);
   }
 
   /**

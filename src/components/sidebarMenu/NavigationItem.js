@@ -51,16 +51,17 @@ class NavigationItem extends React.Component {
     } else if (currentSort === 'relavance') {
       currentSort = '';
     }
-    const href = `${Common.stripTrailingSlash(item.url)}/${currentSort}`;
+    const href =
+      item.subreddit_type === 'user'
+        ? `${Common.stripTrailingSlash(item.url)}/submitted/${currentSort}`
+        : `${Common.stripTrailingSlash(item.url)}/${currentSort}`;
     const classNameStr = this.getDiffClassName();
     const subLabel = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;
-    const currentTrigger = trigger ? '>' : '';
-    const text = `${currentTrigger} ${item.display_name}`;
 
     return (
       <NavigationGenericNavItem
         to={href}
-        text={text}
+        text={item.display_name}
         id={item.id}
         classes={classNameStr}
         title={item.public_description}

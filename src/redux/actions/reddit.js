@@ -49,8 +49,14 @@ export function redditGetBearer() {
 export function redditFetchMe(reset) {
   return async (dispatch, getState) => {
     try {
-      // @todo deete caching from the below function. It's already cached in the redux storage.
-      const me = await RedditAPI.me(reset);
+      const currentState = getState();
+      if (currentState.redditMe !== undefined) {
+        if (currentState.redditMe.status === 'loaded' && !reset) {
+          return;
+        }
+      }
+
+      const me = await RedditAPI.me();
       const result = {
         me,
         status: 'loaded',
@@ -79,7 +85,7 @@ export function redditFetchMultis(reset) {
 
 export function redditSave(id) {
   return async (dispatch, getState) => {
-    const token = await RedditAPI.getToken();
+    const token = await RedditAPI.getToken(false);
     if (token) {
       await RedditAPI.save(id);
       const updatedEntry = {
@@ -93,7 +99,7 @@ export function redditSave(id) {
 
 export function redditUnsave(id) {
   return async (dispatch, getState) => {
-    const token = await RedditAPI.getToken();
+    const token = await RedditAPI.getToken(false);
     if (token) {
       await RedditAPI.unsave(id);
       const updatedEntry = {
