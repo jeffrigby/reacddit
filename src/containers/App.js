@@ -62,12 +62,18 @@ class App extends React.Component {
 
   render() {
     const { error, message } = this.state;
+    const { redditBearer } = this.props;
+
     if (error) {
       return (
         <div className="alert alert-danger m-2" role="alert">
           {message}
         </div>
       );
+    }
+
+    if (redditBearer.status === 'unloaded') {
+      return <></>;
     }
 
     const redditSorts = 'hot|new|top|controversial|rising|best';
@@ -137,6 +143,7 @@ App.propTypes = {
   getMe: PropTypes.func.isRequired,
   setSiteSetting: PropTypes.func.isRequired,
   siteSettings: PropTypes.object.isRequired,
+  redditBearer: PropTypes.object.isRequired,
 };
 
 App.defaultProps = {
@@ -145,7 +152,7 @@ App.defaultProps = {
 
 const mapStateToProps = state => ({
   // authInfo: state.redditAuthInfo,
-  // bearer: state.redditBearer,
+  redditBearer: state.redditBearer,
   disableHotkeys: state.disableHotKeys,
   siteSettings: state.siteSettings,
 });

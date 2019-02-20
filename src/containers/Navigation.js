@@ -8,7 +8,7 @@ import * as subredditsActions from '../redux/actions/subreddits';
 import { disableHotKeys } from '../redux/actions/misc';
 import NavigationItem from '../components/sidebarMenu/NavigationItem';
 import MultiReddits from '../components/sidebarMenu/MultiReddits';
-import RedditAPI from '../reddit/redditAPI';
+// import RedditAPI from '../reddit/redditAPI';
 // import NavigationSubReddits from '../components/sidebarMenu/NavigationSubreddits';
 import NavigationPrimaryLinks from '../components/sidebarMenu/NavigationPrimaryLinks';
 import '../styles/sidebar.scss';
@@ -16,41 +16,6 @@ import '../styles/sidebar.scss';
 const queryString = require('query-string');
 
 class Navigation extends React.Component {
-  /**
-   * Helper function to generate the list items for the nav.
-   * @param links
-   *   Links in the following format
-   *  [text, link, title, key]
-   *  ['Front', `/${sort}`, `Show All Subreddits`]
-   * @returns {Array}
-   *  The rendered links
-   */
-  static generateListItems(links) {
-    const linksListItem = [];
-    if (links) {
-      links.forEach((elm, index) => {
-        const text = elm[0];
-        const to = elm[1];
-        const title = elm[2] || elm[0];
-        const key = elm[3] || elm[0];
-        const itemKey = `loggedin-${key}`;
-        linksListItem.push(
-          <li key={itemKey} className="nav-item">
-            <NavLink
-              to={to}
-              title={title}
-              className="nav-link"
-              activeClassName="activeSubreddit"
-            >
-              {text}
-            </NavLink>
-          </li>
-        );
-      });
-    }
-    return linksListItem;
-  }
-
   constructor(props) {
     super(props);
     this.handleNavHotkey = this.handleNavHotkey.bind(this);
@@ -61,16 +26,12 @@ class Navigation extends React.Component {
   }
 
   async componentDidMount() {
-    const { fetchSubreddits, fetchDefaultSubreddits } = this.props;
+    const { fetchSubreddits, redditBearer } = this.props;
     jQuery(document).keypress(this.handleNavHotkey);
     jQuery(document).keydown(this.handleNavHotkeyKeyDown);
-    this.accessToken = await RedditAPI.getToken(false);
 
-    if (this.accessToken && this.accessToken.substr(0, 1) !== '-') {
-      fetchSubreddits(false);
-    } else {
-      fetchDefaultSubreddits();
-    }
+    const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+    fetchSubreddits(false, where);
   }
 
   /**
@@ -121,12 +82,9 @@ class Navigation extends React.Component {
    * Force reload all of the subreddits.
    */
   reloadSubreddits() {
-    const { fetchSubreddits, fetchDefaultSubreddits } = this.props;
-    if (this.accessToken) {
-      fetchSubreddits(true);
-    } else {
-      fetchDefaultSubreddits();
-    }
+    const { fetchSubreddits, redditBearer } = this.props;
+    const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+    fetchSubreddits(true, where);
   }
 
   /**
@@ -297,7 +255,6 @@ Navigation.propTypes = {
   location: PropTypes.object,
   subredditsFilter: PropTypes.object.isRequired,
   fetchSubreddits: PropTypes.func.isRequired,
-  fetchDefaultSubreddits: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   subreddits: PropTypes.object.isRequired,
   me: PropTypes.object.isRequired,
@@ -305,6 +262,7 @@ Navigation.propTypes = {
   disableHotkeys: PropTypes.bool.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
   setFilter: PropTypes.func.isRequired,
+  redditBearer: PropTypes.object.isRequired,
 };
 
 Navigation.defaultProps = {
@@ -319,13 +277,12 @@ const mapStateToProps = state => ({
   disableHotkeys: state.disableHotKeys,
   subredditsFilter: state.subredditsFilter,
   location: state.router.location,
+  redditBearer: state.redditBearer,
 });
 
 const mapDispatchToProps = dispatch => ({
-  fetchSubreddits: reset =>
-    dispatch(subredditsActions.subredditsFetchData(reset)),
-  fetchDefaultSubreddits: () =>
-    dispatch(subredditsActions.subredditsFetchDefaultData()),
+  fetchSubreddits: (reset, where) =>
+    dispatch(subredditsActions.subredditsFetchData(reset, where)),
   setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
   push: url => dispatch(push(url)),
   setFilter: filter => dispatch(subredditsActions.subredditsFilter(filter)),

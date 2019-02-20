@@ -295,10 +295,12 @@ class RedditAPI {
   /**
    * Get the users subreddits
    * @param where - the type of subreddits
+   *   subscriber|contributer|moderator|streams default to /subreddits/mine
+   *   everything else (default, popular, gold, etc.) removes mine
    * @param options
    * @returns {Promise<*>}
    */
-  async subredditMine(where, options) {
+  async subreddits(where, options) {
     const defaults = {
       limit: 100,
       count: null,
@@ -310,10 +312,12 @@ class RedditAPI {
 
     const params = RedditAPI.setParams(defaults, options);
 
+    const mine = where.match(/subscriber|contributer|moderator|streams/);
     const data = {
       params,
     };
-    const url = `/subreddits/mine/${where}`;
+    const url =
+      mine === null ? `/subreddits/${where}` : `/subreddits/mine/${where}`;
     const subredditsGet = await this.redditAPI.get(url, data);
     return subredditsGet.data;
   }

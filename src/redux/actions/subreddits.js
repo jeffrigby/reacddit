@@ -99,55 +99,11 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
   };
 }
 
-export function subredditsFetchDefaultData() {
-  const url = 'https://www.reddit.com/subreddits/default.json?limit=100';
+export function subredditsFetchData(reset, where) {
   return async dispatch => {
     dispatch(subredditsStatus('loading'));
     try {
-      const subredditsGet = await axios.get(url);
-      const subreditObj = subredditsGet.data.data.children;
-
-      // @todo better way to do this?
-      const subreddits = [];
-      Object.keys(subreditObj).forEach((key, index) => {
-        if (Object.prototype.hasOwnProperty.call(subreditObj, key)) {
-          subreddits.push(subreditObj[key].data);
-        }
-      });
-
-      subreddits.sort((a, b) => {
-        if (a.display_name.toLowerCase() < b.display_name.toLowerCase()) {
-          return -1;
-        }
-        if (a.display_name.toLowerCase() > b.display_name.toLowerCase()) {
-          return 1;
-        }
-        return 0;
-      });
-
-      // convert it back to an object
-      const subredditsKey = {};
-      subreddits.forEach(item => {
-        subredditsKey[item.display_name] = item;
-      });
-
-      await dispatch(subredditsFetchDataSuccess(subredditsKey));
-      dispatch(subredditsFetchLastUpdated(subreddits));
-    } catch (e) {
-      dispatch(subredditsStatus('error', e.toString()));
-    }
-  };
-}
-
-export function subredditsFetchData(reset) {
-  return async dispatch => {
-    dispatch(subredditsStatus('loading'));
-    try {
-      const subs = await RedditHelpers.subredditMineAll(
-        'subscriber',
-        {},
-        reset
-      );
+      const subs = await RedditHelpers.subredditsAll(where, {}, reset);
       await dispatch(subredditsFetchDataSuccess(subs.subreddits));
       dispatch(subredditsFetchLastUpdated(subs.subreddits));
     } catch (e) {

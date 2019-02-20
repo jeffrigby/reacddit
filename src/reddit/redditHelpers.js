@@ -32,7 +32,7 @@ class RedditHelpers {
     return multiReturn;
   }
 
-  static async subredditMineAll(where, options, reset) {
+  static async subredditsAll(where, options, reset) {
     let init = true;
     let qsAfter = null;
     let srs = null;
@@ -63,7 +63,7 @@ class RedditHelpers {
     while (init || qsAfter) {
       init = false;
       newOptions.after = qsAfter;
-      srs = await RedditAPI.subredditMine(where, newOptions);
+      srs = await RedditAPI.subreddits(where, newOptions);
       const mapped = RedditHelpers.mapSubreddits(srs.data.children);
       subreddits = Object.assign(mapped, subreddits);
       qsAfter = srs.data.after || null;
