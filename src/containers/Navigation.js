@@ -22,11 +22,7 @@ class Navigation extends React.Component {
   }
 
   async componentDidMount() {
-    const { fetchSubreddits, redditBearer } = this.props;
     jQuery(document).keydown(this.handleNavHotkeyKeyDown);
-
-    const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-    fetchSubreddits(false, where);
   }
 
   /**
@@ -134,21 +130,16 @@ class Navigation extends React.Component {
   render() {
     const { subreddits, subredditsFilter, redditBearer } = this.props;
 
+    let content;
+
     if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
-      return (
-        <div id="subreddits">
-          <div
-            className="alert alert-info"
-            id="subreddits-loading"
-            role="alert"
-          >
-            <i className="fas fa-spinner fa-spin" /> Loading Subreddits
-          </div>
+      content = (
+        <div className="alert alert-info" id="subreddits-loading" role="alert">
+          <i className="fas fa-spinner fa-spin" /> Loading Subreddits
         </div>
       );
-    }
-    if (subreddits.status === 'error') {
-      return (
+    } else if (subreddits.status === 'error') {
+      content = (
         <div
           className="alert alert-danger small"
           id="subreddits-load-error"
@@ -165,15 +156,25 @@ class Navigation extends React.Component {
           </button>
         </div>
       );
+    } else if (subreddits.status === 'loaded') {
+      const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
+      const navItems = this.generateNavItems(filteredSubreddits);
+      const noItems = isEmpty(navItems);
+      if (noItems) {
+        content = (
+          <div className="alert alert-info" id="subreddits-end" role="alert">
+            <i className="fas fa-info-circle" />
+            {' No subreddits found'}
+          </div>
+        );
+      } else {
+        content = <ul className="nav flex-column">{navItems}</ul>;
+      }
     }
 
     const { filterText } = subredditsFilter;
-    const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
-    const navItems = this.generateNavItems(filteredSubreddits);
-    const noItems = isEmpty(navItems);
-    const loggedIn = redditBearer.status === 'auth' || false;
-
     const hideExtras = !isEmpty(filterText);
+    const loggedIn = redditBearer.status === 'auth' || false;
 
     return (
       <div className="w-100">
@@ -184,16 +185,7 @@ class Navigation extends React.Component {
         <div className="sidebar-heading d-flex text-muted">
           <span className="mr-auto">Subreddits (Old)</span>
         </div>
-        {noItems && (
-          <div>
-            <div className="nav-divider" />
-            <div className="alert alert-info" id="subreddits-end" role="alert">
-              <i className="fas fa-info-circle" />
-              {' No subreddits found'}
-            </div>
-          </div>
-        )}
-        <ul className="nav flex-column">{navItems}</ul>
+        {content}
       </div>
     );
   }

@@ -13,7 +13,10 @@ class NavigationSubReddits extends React.Component {
   }
 
   componentDidMount() {
+    const { fetchSubreddits, redditBearer } = this.props;
     document.addEventListener('keydown', this.handleSubredditHotkey);
+    const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+    fetchSubreddits(false, where);
   }
 
   /**
