@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import * as subredditsActions from '../../redux/actions/subreddits';
+import isEmpty from 'lodash.isempty';
 
 // const queryString = require('query-string');
 
@@ -74,7 +75,37 @@ class NavigationSubReddits extends React.Component {
   }
 
   render() {
-    const content = <div>Subreddits Here</div>;
+    const { subreddits } = this.props;
+
+    let content;
+    if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
+      content = (
+        <div className="alert alert-info" id="subreddits-loading" role="alert">
+          <i className="fas fa-spinner fa-spin" /> Loading Subreddits
+        </div>
+      );
+    } else if (subreddits.status === 'error') {
+      content = (
+        <div
+          className="alert alert-danger small"
+          id="subreddits-load-error"
+          role="alert"
+        >
+          <i className="fas fa-exclamation-triangle" /> Error loading subreddits
+          <br />
+          <button
+            className="astext"
+            onClick={this.reloadSubredditsClick}
+            type="button"
+          >
+            try again.
+          </button>
+        </div>
+      );
+    } else if (subreddits.status === 'loaded') {
+      content = <div>Subreddits Here</div>;
+    }
+
     return (
       <div id="sidebar-subreddits">
         <div className="sidebar-heading d-flex text-muted">
@@ -100,6 +131,7 @@ NavigationSubReddits.propTypes = {
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
+  subreddits: PropTypes.object.isRequired,
 };
 
 NavigationSubReddits.defaultProps = {};
@@ -108,6 +140,7 @@ const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
   subredditsFilter: state.subredditsFilter,
   disableHotkeys: state.disableHotKeys,
+  subreddits: state.subreddits,
 });
 
 const mapDispatchToProps = dispatch => ({

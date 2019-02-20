@@ -132,31 +132,7 @@ class Navigation extends React.Component {
 
     let content;
 
-    if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
-      content = (
-        <div className="alert alert-info" id="subreddits-loading" role="alert">
-          <i className="fas fa-spinner fa-spin" /> Loading Subreddits
-        </div>
-      );
-    } else if (subreddits.status === 'error') {
-      content = (
-        <div
-          className="alert alert-danger small"
-          id="subreddits-load-error"
-          role="alert"
-        >
-          <i className="fas fa-exclamation-triangle" /> Error loading subreddits
-          <br />
-          <button
-            className="astext"
-            onClick={this.reloadSubredditsClick}
-            type="button"
-          >
-            try again.
-          </button>
-        </div>
-      );
-    } else if (subreddits.status === 'loaded') {
+    if (subreddits.status === 'loaded') {
       const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
       const navItems = this.generateNavItems(filteredSubreddits);
       const noItems = isEmpty(navItems);
@@ -182,9 +158,6 @@ class Navigation extends React.Component {
         {!hideExtras && <div className="nav-divider" />}
         {loggedIn && !hideExtras && <MultiReddits />}
         <NavigationSubReddits />
-        <div className="sidebar-heading d-flex text-muted">
-          <span className="mr-auto">Subreddits (Old)</span>
-        </div>
         {content}
       </div>
     );
