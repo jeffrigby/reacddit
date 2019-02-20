@@ -9,9 +9,31 @@ class NavigationSubReddits extends React.Component {
   constructor(props) {
     super(props);
     this.reloadSubredditsClick = this.reloadSubredditsClick.bind(this);
+    this.handleSubredditHotkey = this.handleSubredditHotkey.bind(this);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    document.addEventListener('keydown', this.handleSubredditHotkey);
+  }
+
+  /**
+   * Configure the navigation hotkeys.
+   * @param event
+   */
+  handleSubredditHotkey(event) {
+    const { disableHotkeys } = this.props;
+    const pressedKey = event.key;
+
+    if (!disableHotkeys) {
+      switch (pressedKey) {
+        case '®': // alt-r (option)
+          this.reloadSubreddits();
+          break;
+        default:
+          break;
+      }
+    }
+  }
 
   /**
    * Force reload all of the subreddits.
@@ -74,6 +96,7 @@ NavigationSubReddits.propTypes = {
   fetchSubreddits: PropTypes.func.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
+  disableHotkeys: PropTypes.bool.isRequired,
 };
 
 NavigationSubReddits.defaultProps = {};
@@ -81,6 +104,7 @@ NavigationSubReddits.defaultProps = {};
 const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
   subredditsFilter: state.subredditsFilter,
+  disableHotkeys: state.disableHotKeys,
 });
 
 const mapDispatchToProps = dispatch => ({

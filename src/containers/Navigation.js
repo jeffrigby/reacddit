@@ -16,7 +16,6 @@ const queryString = require('query-string');
 class Navigation extends React.Component {
   constructor(props) {
     super(props);
-    this.handleNavHotkey = this.handleNavHotkey.bind(this);
     this.handleNavHotkeyKeyDown = this.handleNavHotkeyKeyDown.bind(this);
     this.accessToken = null;
     this.subredditTarget = null;
@@ -24,7 +23,6 @@ class Navigation extends React.Component {
 
   async componentDidMount() {
     const { fetchSubreddits, redditBearer } = this.props;
-    jQuery(document).keypress(this.handleNavHotkey);
     jQuery(document).keydown(this.handleNavHotkeyKeyDown);
 
     const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
@@ -50,25 +48,6 @@ class Navigation extends React.Component {
           event.preventDefault();
           break;
         }
-        default:
-          break;
-      }
-    }
-  }
-
-  /**
-   * Configure the navigation hotkeys.
-   * @param event
-   */
-  handleNavHotkey(event) {
-    const { disableHotkeys } = this.props;
-    const pressedKey = event.key;
-
-    if (!disableHotkeys) {
-      switch (pressedKey) {
-        case 'R': // shift-R
-          this.reloadSubreddits();
-          break;
         default:
           break;
       }
