@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import isEmpty from 'lodash.isempty';
@@ -8,10 +7,9 @@ import * as subredditsActions from '../redux/actions/subreddits';
 import { disableHotKeys } from '../redux/actions/misc';
 import NavigationItem from '../components/sidebarMenu/NavigationItem';
 import MultiReddits from '../components/sidebarMenu/MultiReddits';
-// import RedditAPI from '../reddit/redditAPI';
-// import NavigationSubReddits from '../components/sidebarMenu/NavigationSubreddits';
 import NavigationPrimaryLinks from '../components/sidebarMenu/NavigationPrimaryLinks';
 import '../styles/sidebar.scss';
+import NavigationSubReddits from '../components/sidebarMenu/NavigationSubreddits';
 
 const queryString = require('query-string');
 
@@ -20,7 +18,6 @@ class Navigation extends React.Component {
     super(props);
     this.handleNavHotkey = this.handleNavHotkey.bind(this);
     this.handleNavHotkeyKeyDown = this.handleNavHotkeyKeyDown.bind(this);
-    this.reloadSubredditsClick = this.reloadSubredditsClick.bind(this);
     this.accessToken = null;
     this.subredditTarget = null;
   }
@@ -76,25 +73,6 @@ class Navigation extends React.Component {
           break;
       }
     }
-  }
-
-  /**
-   * Force reload all of the subreddits.
-   */
-  reloadSubreddits() {
-    const { fetchSubreddits, redditBearer } = this.props;
-    const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-    fetchSubreddits(true, where);
-  }
-
-  /**
-   * Handle the click on the reload subreddits
-   * @TODO why is this separate?
-   * @param e
-   */
-  reloadSubredditsClick(e) {
-    e.preventDefault();
-    this.reloadSubreddits();
   }
 
   /**
@@ -175,7 +153,7 @@ class Navigation extends React.Component {
    * @returns {*}
    */
   render() {
-    const { subreddits, subredditsFilter } = this.props;
+    const { subreddits, subredditsFilter, redditBearer } = this.props;
 
     if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
       return (
@@ -214,12 +192,19 @@ class Navigation extends React.Component {
     const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
     const navItems = this.generateNavItems(filteredSubreddits);
     const noItems = isEmpty(navItems);
-    const loggedIn = this.accessToken && this.accessToken.substr(0, 1) !== '-';
+    const loggedIn = redditBearer.status === 'auth' || false;
 
     const hideExtras = !isEmpty(filterText);
 
     return (
       <div className="w-100">
+        {!hideExtras && <NavigationPrimaryLinks />}
+        {!hideExtras && <div className="nav-divider" />}
+        {loggedIn && !hideExtras && <MultiReddits />}
+        <NavigationSubReddits />
+        <div className="sidebar-heading d-flex text-muted">
+          <span className="mr-auto">Subreddits (Old)</span>
+        </div>
         {noItems && (
           <div>
             <div className="nav-divider" />
@@ -229,21 +214,6 @@ class Navigation extends React.Component {
             </div>
           </div>
         )}
-        {!hideExtras && <NavigationPrimaryLinks />}
-        {!hideExtras && <div className="nav-divider" />}
-        {loggedIn && !hideExtras && <MultiReddits />}
-        <div className="sidebar-heading d-flex text-muted">
-          <span className="mr-auto">Subreddits</span>
-          <span>
-            <button
-              className="btn btn-link btn-sm m-0 p-0 text-muted"
-              onClick={this.reloadSubredditsClick}
-              type="button"
-            >
-              <i className="fas fa-sync-alt" />
-            </button>
-          </span>
-        </div>
         <ul className="nav flex-column">{navItems}</ul>
       </div>
     );
@@ -257,7 +227,6 @@ Navigation.propTypes = {
   fetchSubreddits: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   subreddits: PropTypes.object.isRequired,
-  me: PropTypes.object.isRequired,
   lastUpdated: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
@@ -272,7 +241,6 @@ Navigation.defaultProps = {
 const mapStateToProps = state => ({
   sort: state.listingsFilter.sort,
   subreddits: state.subreddits,
-  me: state.redditMe.me,
   lastUpdated: state.lastUpdated,
   disableHotkeys: state.disableHotKeys,
   subredditsFilter: state.subredditsFilter,
