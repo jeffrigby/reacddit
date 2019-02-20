@@ -1,10 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import {
-  subredditsFilter,
-  subredditsFilterActive,
-} from '../redux/actions/subreddits';
+import { subredditsFilter } from '../redux/actions/subreddits';
 import { disableHotKeys } from '../redux/actions/misc';
 
 class FilterReddits extends React.Component {
@@ -72,7 +69,7 @@ class FilterReddits extends React.Component {
     const { setFilter } = this.props;
     const filterText = item.target.value;
     if (!filterText) {
-      return setFilter('');
+      return setFilter({ filterText: '' });
     }
     return setFilter({ filterText });
   }
