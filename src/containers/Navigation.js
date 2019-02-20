@@ -208,8 +208,6 @@ Navigation.propTypes = {
   subreddits: PropTypes.object.isRequired,
   lastUpdated: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
-  setDisableHotkeys: PropTypes.func.isRequired,
-  setFilter: PropTypes.func.isRequired,
   redditBearer: PropTypes.object.isRequired,
 };
 
@@ -230,9 +228,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   fetchSubreddits: (reset, where) =>
     dispatch(subredditsActions.subredditsFetchData(reset, where)),
-  setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
   push: url => dispatch(push(url)),
-  setFilter: filter => dispatch(subredditsActions.subredditsFilter(filter)),
 });
 
 export default connect(
