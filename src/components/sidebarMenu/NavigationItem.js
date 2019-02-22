@@ -42,7 +42,7 @@ class NavigationItem extends React.Component {
   }
 
   render() {
-    const { sort, location, item, trigger } = this.props;
+    const { sort, location, item } = this.props;
     const query = queryString.parse(location.search);
     const { t } = query;
     let currentSort = sort || '';

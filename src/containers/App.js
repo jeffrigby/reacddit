@@ -62,7 +62,7 @@ class App extends React.Component {
 
   render() {
     const { error, message } = this.state;
-    const { redditBearer } = this.props;
+    const { redditBearer, subredditsFilter } = this.props;
 
     if (error) {
       return (
@@ -121,7 +121,10 @@ class App extends React.Component {
         </header>
         <aside className="sidebar bg-light" id="navigation">
           <div id="aside-content" className="h-100 d-flex px-3">
-            <Navigation />
+            <Navigation
+              redditBearer={redditBearer}
+              subredditsFilter={subredditsFilter}
+            />
           </div>
         </aside>
 
@@ -144,17 +147,17 @@ App.propTypes = {
   setSiteSetting: PropTypes.func.isRequired,
   siteSettings: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
+  subredditsFilter: PropTypes.object.isRequired,
 };
 
-App.defaultProps = {
-  // authInfo: {},
-};
+App.defaultProps = {};
 
 const mapStateToProps = state => ({
   // authInfo: state.redditAuthInfo,
   redditBearer: state.redditBearer,
   disableHotkeys: state.disableHotKeys,
   siteSettings: state.siteSettings,
+  subredditsFilter: state.subredditsFilter,
 });
 
 const mapDispatchToProps = dispatch => ({

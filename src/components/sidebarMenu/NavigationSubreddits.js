@@ -1,10 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import * as subredditsActions from '../../redux/actions/subreddits';
 import isEmpty from 'lodash.isempty';
+import { subredditsFetchData } from '../../redux/actions/subreddits';
+import NavigationItem from './NavigationItem';
 
-// const queryString = require('query-string');
+const queryString = require('query-string');
 
 class NavigationSubReddits extends React.Component {
   constructor(props) {
@@ -74,6 +75,50 @@ class NavigationSubReddits extends React.Component {
     return true;
   }
 
+  /**
+   * Generate the subreddit nav items.
+   * @param subreddits
+   * @returns {Array}
+   */
+  generateNavItems(subreddits) {
+    const { lastUpdated, sort, subredditsFilter, location } = this.props;
+    const query = queryString.parse(location.search);
+    const { t } = query;
+
+    const navigationItems = [];
+    let idx = 0;
+    Object.keys(subreddits).forEach((key, index) => {
+      if (Object.prototype.hasOwnProperty.call(subreddits, key)) {
+        const item = subreddits[key];
+        if (this.isSubredditFiltered(item)) return;
+        const subLastUpdated = lastUpdated[item.name]
+          ? lastUpdated[item.name]
+          : 0;
+        const trigger =
+          subredditsFilter.activeIndex === idx &&
+          (subredditsFilter.active || !isEmpty(subredditsFilter.filterText));
+        if (trigger) {
+          let currentSort = sort || '';
+          if (currentSort === 'top') {
+            currentSort = `${currentSort}?t=${t}`;
+          }
+          this.subredditTarget = `${item.url}${currentSort}`;
+        }
+        idx += 1;
+        navigationItems.push(
+          <NavigationItem
+            item={item}
+            key={item.name}
+            lastUpdated={subLastUpdated}
+            trigger={trigger}
+          />
+        );
+      }
+    });
+
+    return navigationItems;
+  }
+
   render() {
     const { subreddits } = this.props;
 
@@ -103,7 +148,24 @@ class NavigationSubReddits extends React.Component {
         </div>
       );
     } else if (subreddits.status === 'loaded') {
-      content = <div>Subreddits Here</div>;
+      // const filteredSubreddits = this.filterSubreddits(subreddits.subreddits);
+      const navItems = this.generateNavItems(subreddits.subreddits);
+      const noItems = isEmpty(navItems);
+      if (noItems) {
+        content = (
+          <div className="alert alert-info" id="subreddits-end" role="alert">
+            <i className="fas fa-info-circle" />
+            {' No subreddits found'}
+          </div>
+        );
+      } else {
+        content = <ul className="nav flex-column">{navItems}</ul>;
+      }
+    }
+
+    let spinnerClass = 'fas fa-sync-alt reload';
+    if (subreddits.status === 'loading') {
+      spinnerClass += ' fa-spin';
     }
 
     return (
@@ -116,7 +178,7 @@ class NavigationSubReddits extends React.Component {
               onClick={this.reloadSubredditsClick}
               type="button"
             >
-              <i className="fas fa-sync-alt" />
+              <i className={spinnerClass} />
             </button>
           </span>
         </div>
@@ -127,25 +189,31 @@ class NavigationSubReddits extends React.Component {
 }
 
 NavigationSubReddits.propTypes = {
-  fetchSubreddits: PropTypes.func.isRequired,
-  redditBearer: PropTypes.object.isRequired,
-  subredditsFilter: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
+  fetchSubreddits: PropTypes.func.isRequired,
+  lastUpdated: PropTypes.object.isRequired,
+  location: PropTypes.object.isRequired,
+  redditBearer: PropTypes.object.isRequired,
+  sort: PropTypes.string.isRequired,
   subreddits: PropTypes.object.isRequired,
+  subredditsFilter: PropTypes.object.isRequired,
 };
 
 NavigationSubReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
-  redditBearer: state.redditBearer,
-  subredditsFilter: state.subredditsFilter,
   disableHotkeys: state.disableHotKeys,
+  lastUpdated: state.lastUpdated,
+  location: state.router.location,
+  redditBearer: state.redditBearer,
+  sort: state.listingsFilter.sort,
   subreddits: state.subreddits,
+  subredditsFilter: state.subredditsFilter,
 });
 
 const mapDispatchToProps = dispatch => ({
   fetchSubreddits: (reset, where) =>
-    dispatch(subredditsActions.subredditsFetchData(reset, where)),
+    dispatch(subredditsFetchData(reset, where)),
 });
 
 export default connect(

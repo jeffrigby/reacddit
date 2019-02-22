@@ -137,7 +137,6 @@ class FilterReddits extends React.Component {
 FilterReddits.propTypes = {
   setFilter: PropTypes.func.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
-  setFilterActive: PropTypes.func.isRequired,
   filter: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
 };
@@ -152,7 +151,6 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
   setFilter: filter => dispatch(subredditsFilter(filter)),
-  setFilterActive: active => dispatch(subredditsFilterActive(active)),
 });
 
 export default connect(

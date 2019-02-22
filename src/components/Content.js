@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-// import { connect } from 'react-redux';
 import IFrame16x9 from './contentTypes/IFrame16x9';
 import Image from './contentTypes/Image';
 import VideoComp from './contentTypes/VideoComp';
@@ -50,18 +49,3 @@ Content.propTypes = {
 };
 
 export default Content;
-
-// Content.defaultProps = {
-// };
-//
-// const mapStateToProps = (state, ownProps) => ({
-// });
-//
-// const mapDispatchToProps = dispatch => ({
-//
-// });
-//
-// export default connect(
-//   mapStateToProps,
-//   mapDispatchToProps,
-// )(Content);

@@ -59,9 +59,7 @@ export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
           return;
         }
         if (value.url !== '/r/mine' && value.quarantine === false) {
-          const url = `https://www.reddit.com${
-            value.url
-          }new.json?limit=1&sort=new`;
+          const url = `https://www.reddit.com${value.url}new.json?limit=2`;
           createdToGet.push(axios.get(url).catch(() => null));
         }
       }
