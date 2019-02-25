@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
 import { subredditsFilter } from '../redux/actions/subreddits';
 import { disableHotKeys } from '../redux/actions/misc';
 
@@ -20,8 +21,15 @@ class FilterReddits extends React.Component {
   }
 
   handleFilterHotkey(event) {
-    const { disableHotkeys, filter, setFilter } = this.props;
+    const {
+      disableHotkeys,
+      filter,
+      setFilter,
+      subredditUrls,
+      goto,
+    } = this.props;
     const pressedKey = event.key;
+    const subLength = subredditUrls.length;
 
     if (!disableHotkeys) {
       switch (pressedKey) {
@@ -45,9 +53,16 @@ class FilterReddits extends React.Component {
           break;
         }
         case 'ArrowDown': {
+          if (subLength <= filter.activeIndex + 1) {
+            break;
+          }
           const activeIndex = filter.activeIndex + 1;
           setFilter({ activeIndex });
           event.preventDefault();
+          break;
+        }
+        case 'Enter': {
+          goto(subredditUrls[filter.activeIndex]);
           break;
         }
         case 'Escape':
@@ -68,10 +83,12 @@ class FilterReddits extends React.Component {
   filterReddits(item) {
     const { setFilter } = this.props;
     const filterText = item.target.value;
+    // Always reset the index.
+    const activeIndex = 0;
     if (!filterText) {
-      return setFilter({ filterText: '' });
+      return setFilter({ filterText: '', activeIndex });
     }
-    return setFilter({ filterText });
+    return setFilter({ filterText, activeIndex });
   }
 
   /**
@@ -100,7 +117,8 @@ class FilterReddits extends React.Component {
   enableHotkeys() {
     const { setDisableHotkeys, setFilter } = this.props;
     const active = false;
-    setFilter({ active });
+    const activeIndex = 0;
+    setFilter({ active, activeIndex });
     setDisableHotkeys(false);
   }
 
@@ -134,11 +152,36 @@ class FilterReddits extends React.Component {
   }
 }
 
+const getFilteredUrls = (subreddits, filterText, sort, search) => {
+  if (subreddits.status === 'unloaded' || subreddits.status === 'loading') {
+    return [];
+  }
+
+  const filterLower = filterText.toLowerCase();
+
+  let currentSort = sort || '';
+  if (search) {
+    currentSort += `?${search}`;
+  }
+
+  const urls = Object.keys(subreddits.subreddits)
+    .filter(key => key.indexOf(filterLower) > -1)
+    .reduce((arr, key) => {
+      const { url } = subreddits.subreddits[key];
+      arr.push(`${url}${currentSort}`);
+      return arr;
+    }, []);
+
+  return urls;
+};
+
 FilterReddits.propTypes = {
   setFilter: PropTypes.func.isRequired,
+  goto: PropTypes.func.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
   filter: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
+  subredditUrls: PropTypes.array.isRequired,
 };
 
 FilterReddits.defaultProps = {};
@@ -146,14 +189,24 @@ FilterReddits.defaultProps = {};
 const mapStateToProps = state => ({
   filter: state.subredditsFilter,
   disableHotkeys: state.disableHotKeys,
+  subredditUrls: getFilteredUrls(
+    state.subreddits,
+    state.subredditsFilter.filterText,
+    state.listingsFilter.sort,
+    state.router.location.search
+  ),
 });
 
-const mapDispatchToProps = dispatch => ({
-  setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
-  setFilter: filter => dispatch(subredditsFilter(filter)),
-});
+// const mapDispatchToProps = dispatch => ({
+//   setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
+//   setFilter: filter => dispatch(subredditsFilter(filter)),
+// });
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {
+    setDisableHotkeys: disableHotKeys,
+    setFilter: subredditsFilter,
+    goto: push,
+  }
 )(FilterReddits);

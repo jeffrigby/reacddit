@@ -3,8 +3,8 @@ import RedditAPI from './redditAPI';
 
 class RedditHelpers {
   static mapSubreddits(children) {
-    return Object.keys(children)
-      .map(objectKey => children[objectKey].data)
+    return Object.entries(children)
+      .map(([key, value]) => value.data)
       .reduce((ac, s) => ({ ...ac, [s.display_name.toLowerCase()]: s }), {});
   }
 
