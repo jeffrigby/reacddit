@@ -29,7 +29,8 @@ const render = async entry => {
     .replace(/^\/|\/$/g, '')
     .split('.')[0]
     .split('/')
-    .pop();
+    .pop()
+    .split('-')[0];
 
   // Get info directly from gfycat
   const apiInfo = await getInfo(cleanID);
