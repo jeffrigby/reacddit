@@ -50,16 +50,38 @@ export function redditFetchMe(reset) {
   return async (dispatch, getState) => {
     try {
       const currentState = getState();
+      const isAuth = currentState.redditBearer.status === 'auth' || false;
+
       if (currentState.redditMe !== undefined) {
-        if (currentState.redditMe.status === 'loaded' && !reset) {
+        // Cache anon for a day.
+        const anonExpired =
+          Date.now() > currentState.redditMe.lastUpdated + 3600 * 24 * 1000;
+        if (
+          currentState.redditMe.status === 'loaded' &&
+          !reset &&
+          !isAuth &&
+          !anonExpired
+        ) {
+          return;
+        }
+
+        // Cache the auth user profile for as long as the bearer matches (1 hour max)
+        if (
+          isAuth &&
+          !reset &&
+          currentState.redditMe.id === currentState.redditBearer.bearer
+        ) {
           return;
         }
       }
 
       const me = await RedditAPI.me();
+      const lastUpdated = Date.now();
       const result = {
         me,
         status: 'loaded',
+        lastUpdated,
+        id: currentState.redditBearer.bearer,
       };
       dispatch(redditMe(result));
     } catch (e) {
