@@ -46,10 +46,6 @@ class Header extends React.Component {
 }
 
 Header.propTypes = {
-  // params: PropTypes.object,
-  // query: PropTypes.object,
-  // accessToken: PropTypes.object,
-  // location: PropTypes.object,
   listingsFilter: PropTypes.object.isRequired,
 };
 
