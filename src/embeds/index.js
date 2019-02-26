@@ -26,7 +26,6 @@ const inlineLinks = entry => {
   // Remove the end </a> to fix a bug with the regex
   const text = stripTags(entry.selftext_html, '<a>').replace(/<\/a>/g, ' ');
   const links = getUrls(text);
-  console.log(links);
   const inline = [];
   links.forEach(url => {
     const cleanUrl = url.replace(/^\(|\)$/g, '');

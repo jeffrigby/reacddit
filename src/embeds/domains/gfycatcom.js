@@ -2,29 +2,29 @@ import parse from 'url-parse';
 import axios from 'axios';
 
 // This seemed like a good idea but it actually seemed slower.
-const enableCache = false;
-
-const setCache = gfyItem => {
-  if (!enableCache) return;
-  const key = `gfycat_${gfyItem.gfyId}`;
-  sessionStorage.setItem(key, JSON.stringify(gfyItem));
-};
-
-const getCache = gfyId => {
-  if (!enableCache) return;
-  const id = gfyId.toLowerCase();
-  const cachedItem = sessionStorage.getItem(`gfycat_${id}`);
-  return cachedItem ? JSON.parse(cachedItem) : null;
-};
+// const enableCache = false;
+//
+// const setCache = gfyItem => {
+//   if (!enableCache) return;
+//   const key = `gfycat_${gfyItem.gfyId}`;
+//   sessionStorage.setItem(key, JSON.stringify(gfyItem));
+// };
+//
+// const getCache = gfyId => {
+//   if (!enableCache) return;
+//   const id = gfyId.toLowerCase();
+//   const cachedItem = sessionStorage.getItem(`gfycat_${id}`);
+//   return cachedItem ? JSON.parse(cachedItem) : null;
+// };
 
 const getInfo = async id => {
-  const cache = getCache(id);
-  if (cache) {
-    return cache;
-  }
+  // const cache = getCache(id);
+  // if (cache) {
+  //   return cache;
+  // }
   const url = `https://api.gfycat.com/v1/gfycats/${id}`;
   const apiInfo = await axios.get(url);
-  setCache(apiInfo.data.gfyItem);
+  // setCache(apiInfo.data.gfyItem);
   return apiInfo.data.gfyItem;
 };
 
