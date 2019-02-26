@@ -29,7 +29,7 @@ class MultiRedditsSubs extends React.Component {
     return subredditsOrdered;
   }
 
-  generateNavItems(subreddits) {
+  generateNavItems() {
     const subredditsOrdered = this.getSortedNavItems();
     const { lastUpdated } = this.props;
     const navigationItems = [];
@@ -39,7 +39,7 @@ class MultiRedditsSubs extends React.Component {
         const trigger = false;
 
         const subLastUpdated = lastUpdated[item.name]
-          ? lastUpdated[item.name]
+          ? lastUpdated[item.name].lastPost
           : 0;
 
         navigationItems.push(
@@ -57,7 +57,7 @@ class MultiRedditsSubs extends React.Component {
 
   render() {
     const { multiRedditSubs } = this.props;
-    const navItems = this.generateNavItems(multiRedditSubs);
+    const navItems = this.generateNavItems();
     if (multiRedditSubs) {
       return <ul className="nav subnav pl-2">{navItems}</ul>;
     }

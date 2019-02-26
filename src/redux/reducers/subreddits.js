@@ -22,8 +22,13 @@ export function subreddits(
 
 export function lastUpdated(state = {}, action) {
   switch (action.type) {
+    case 'SUBREDDITS_LAST_UPDATED_CLEAR':
+      return {};
     case 'SUBREDDITS_LAST_UPDATED':
-      return Object.assign({}, action.lastUpdated);
+      return {
+        ...state,
+        ...action.lastUpdated,
+      };
     default:
       return state;
   }

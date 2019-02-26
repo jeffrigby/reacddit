@@ -30,70 +30,91 @@ export function subredditsLastUpdated(lastUpdated) {
   };
 }
 
-export function subredditsLastUpdatedTime(lastUpdatedTime) {
+export function subredditsClearLastUpdated() {
+  const clear = true;
   return {
-    type: 'SUBREDDITS_LAST_UPDATED_TIME',
-    lastUpdatedTime,
+    type: 'SUBREDDITS_LAST_UPDATED_CLEAR',
+    clear,
   };
 }
 
-export function subredditsFetchLastUpdated(subreddits, lastUpdated = {}) {
-  return (dispatch, getState) => {
-    const now = Date.now();
-    const currentState = getState();
-    const { lastUpdatedTime } = currentState;
-    const modifyLastUpdated = { ...lastUpdated };
+const getExpiredTime = lastPost => {
+  if (lastPost === undefined) return 3600;
+  const nowSec = Date.now() / 1000;
+  const timeSinceLastPost = nowSec - lastPost;
 
-    // Check if these resuls are expired, default to 15
-    // @todo make this configurable in dotenv
-    const timeSinceCached = now - lastUpdatedTime;
-    const cacheExpired = timeSinceCached >= 15 * 60 * 1000;
+  // if the time is below 30m. Expire exactly when it hits 30m
+  if (timeSinceLastPost < 1800) {
+    return lastPost + 1800;
+  }
+
+  // if the time is below 1h. Expire exactly when it hits 1h
+  if (timeSinceLastPost < 3600) {
+    return lastPost + 3600;
+  }
+
+  // Otherwise, check every hour.
+  return nowSec + 3600;
+};
+
+export function subredditsFetchLastUpdated() {
+  return (dispatch, getState) => {
+    const currentState = getState();
+    const { subreddits } = currentState.subreddits;
+    const nowSec = Date.now() / 1000;
 
     const createdToGet = [];
-    Object.keys(subreddits).forEach((key, index) => {
-      if (Object.prototype.hasOwnProperty.call(subreddits, key)) {
-        const value = subreddits[key];
-        if (!cacheExpired && currentState.lastUpdated[value.name]) {
-          // Get the cached version.
-          modifyLastUpdated[value.name] = currentState.lastUpdated[value.name];
-          return;
-        }
-        if (value.url !== '/r/mine' && value.quarantine === false) {
-          const url = `https://www.reddit.com${value.url}new.json?limit=2`;
+    Object.entries(subreddits).forEach(([key, value]) => {
+      // @todo convert to API? Concerned about rate limit.
+      const url = `https://www.reddit.com${value.url}new.json?limit=2`;
+      // look for cache
+
+      const lastUpdated = currentState.lastUpdated[value.name];
+      if (lastUpdated) {
+        const { expires } = lastUpdated;
+        const expired = nowSec >= expires;
+        if (expired) {
           createdToGet.push(axios.get(url).catch(() => null));
         }
+      } else {
+        createdToGet.push(axios.get(url).catch(() => null));
       }
     });
 
-    // Don't do anything if there's no new data
+    // Nothing to update
     if (createdToGet.length === 0) {
       return;
     }
 
-    // @todo move this to common
+    // Do 50 at a time.
     const chunks = [];
     while (createdToGet.length) {
       chunks.push(createdToGet.splice(0, 50));
     }
 
+    // Loop through them and create an object to insert.
     chunks.forEach(async value => {
       const results = await axios
         .all(value)
         .then(axios.spread((...args) => args));
-      // const newLastUpdated = lastUpdated;
+
+      const toUpdate = {};
       results.forEach(item => {
         const entry = item.data;
         // process item
         if (typeof entry.data.children[0] === 'object') {
-          const created = entry.data.children[0].data.created_utc;
+          const lastPost = entry.data.children[0].data.created_utc;
           const subredditId = entry.data.children[0].data.subreddit_id;
-          modifyLastUpdated[subredditId] = created;
+          const expires = getExpiredTime(lastPost);
+          toUpdate[subredditId] = {
+            lastPost,
+            expires,
+          };
         }
       });
-      dispatch(subredditsLastUpdated(modifyLastUpdated));
+
+      dispatch(subredditsLastUpdated(toUpdate));
     });
-    const updateTime = Date.now();
-    dispatch(subredditsLastUpdatedTime(updateTime));
   };
 }
 
@@ -103,7 +124,7 @@ export function subredditsFetchData(reset, where) {
     try {
       const subs = await RedditHelpers.subredditsAll(where, {}, reset);
       await dispatch(subredditsFetchDataSuccess(subs.subreddits));
-      dispatch(subredditsFetchLastUpdated(subs.subreddits));
+      dispatch(subredditsFetchLastUpdated());
     } catch (e) {
       dispatch(subredditsStatus('error', e.toString()));
     }

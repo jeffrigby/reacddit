@@ -2,7 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash.isempty';
-import { subredditsFetchData } from '../../redux/actions/subreddits';
+import {
+  subredditsFetchData,
+  subredditsFetchLastUpdated,
+} from '../../redux/actions/subreddits';
 import NavigationItem from './NavigationItem';
 
 class NavigationSubReddits extends React.Component {
@@ -10,13 +13,19 @@ class NavigationSubReddits extends React.Component {
     super(props);
     this.reloadSubredditsClick = this.reloadSubredditsClick.bind(this);
     this.handleSubredditHotkey = this.handleSubredditHotkey.bind(this);
+    this.checkLastUpdated = null;
   }
 
   componentDidMount() {
-    const { fetchSubreddits, redditBearer } = this.props;
+    const { fetchSubreddits, redditBearer, fetchLastUpdated } = this.props;
     document.addEventListener('keydown', this.handleSubredditHotkey);
     const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
     fetchSubreddits(false, where);
+    this.checkLastUpdated = setInterval(fetchLastUpdated, 60000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.checkLastUpdated);
   }
 
   /**
@@ -69,8 +78,9 @@ class NavigationSubReddits extends React.Component {
 
     Object.values(subreddits).forEach((item, index) => {
       const subLastUpdated = lastUpdated[item.name]
-        ? lastUpdated[item.name]
+        ? lastUpdated[item.name].lastPost
         : 0;
+
       const trigger =
         filter.activeIndex === index &&
         filter.active &&
@@ -183,6 +193,7 @@ const filterSubs = (subreddits, filterText) => {
 NavigationSubReddits.propTypes = {
   disableHotkeys: PropTypes.bool.isRequired,
   fetchSubreddits: PropTypes.func.isRequired,
+  fetchLastUpdated: PropTypes.func.isRequired,
   lastUpdated: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subreddits: PropTypes.object.isRequired,
@@ -208,5 +219,6 @@ export default connect(
   mapStateToProps,
   {
     fetchSubreddits: subredditsFetchData,
+    fetchLastUpdated: subredditsFetchLastUpdated,
   }
 )(NavigationSubReddits);

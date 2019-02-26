@@ -8,14 +8,14 @@ const setCache = gfyItem => {
   if (!enableCache) return;
   const key = `gfycat_${gfyItem.gfyId}`;
   sessionStorage.setItem(key, JSON.stringify(gfyItem));
-}
+};
 
 const getCache = gfyId => {
   if (!enableCache) return;
   const id = gfyId.toLowerCase();
   const cachedItem = sessionStorage.getItem(`gfycat_${id}`);
   return cachedItem ? JSON.parse(cachedItem) : null;
-}
+};
 
 const getInfo = async id => {
   const cache = getCache(id);

@@ -22,6 +22,12 @@ if (parsed.logout !== undefined) {
   window.history.replaceState({}, document.title, '/');
 }
 
+// Clear the local/session cache. Mostly for debugging.
+if (parsed.cb !== undefined) {
+  localStorage.clear();
+  sessionStorage.clear();
+}
+
 // Check for hash, this is for cloudflare caching.
 // Set up a page rule for https://mydomain.com/* -> https://mydomain.com/#$1
 // This allows all request to come through to / allowing the CDN to cache
