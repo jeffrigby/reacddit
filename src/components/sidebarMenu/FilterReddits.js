@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
-import { subredditsFilter } from '../redux/actions/subreddits';
-import { disableHotKeys } from '../redux/actions/misc';
+import { subredditsFilter } from '../../redux/actions/subreddits';
+import { disableHotKeys } from '../../redux/actions/misc';
 
 class FilterReddits extends React.Component {
   constructor(props) {

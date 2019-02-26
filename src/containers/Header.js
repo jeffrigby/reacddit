@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import Search from '../components/Search';
 import Sort from '../components/Sort';
 import SortTop from '../components/SortTop';
-import FilterReddits from '../components/FilterReddits';
+import FilterReddits from '../components/sidebarMenu/FilterReddits';
 import '../styles/navbar.scss';
 
 class Header extends React.Component {
