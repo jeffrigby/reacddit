@@ -82,7 +82,7 @@ class Entries extends React.Component {
     this.accessToken = await RedditAPI.getToken(false);
     this.scrollResizeStop = false;
     const { match, location } = this.props;
-    jQuery(document).keypress(this.handleEntriesHotkey);
+    document.addEventListener('keydown', this.handleEntriesHotkey);
     this.setRedux(match, location);
     jQuery(window).on('load resize scroll', () => {
       this.scrollResize = true;
@@ -150,6 +150,7 @@ class Entries extends React.Component {
 
   componentWillUnmount() {
     this.scrollResizeStop = true;
+    clearInterval(this.monitorEntriesInterval);
   }
 
   setInitFocusedAndVisible() {

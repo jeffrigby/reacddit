@@ -153,7 +153,6 @@ App.propTypes = {
 App.defaultProps = {};
 
 const mapStateToProps = state => ({
-  // authInfo: state.redditAuthInfo,
   redditBearer: state.redditBearer,
   disableHotkeys: state.disableHotKeys,
   siteSettings: state.siteSettings,
