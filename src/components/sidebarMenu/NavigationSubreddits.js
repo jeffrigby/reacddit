@@ -72,26 +72,17 @@ class NavigationSubReddits extends React.Component {
    * @returns {Array}
    */
   generateNavItems(subreddits) {
-    const { lastUpdated, filter } = this.props;
+    const { filter } = this.props;
 
     const navigationItems = [];
 
     Object.values(subreddits).forEach((item, index) => {
-      const subLastUpdated = lastUpdated[item.name]
-        ? lastUpdated[item.name].lastPost
-        : 0;
-
       const trigger =
         filter.activeIndex === index &&
         filter.active &&
         !isEmpty(filter.filterText);
       navigationItems.push(
-        <NavigationItem
-          item={item}
-          key={item.name}
-          lastUpdated={subLastUpdated}
-          trigger={trigger}
-        />
+        <NavigationItem item={item} key={item.name} trigger={trigger} />
       );
     });
 
@@ -194,7 +185,6 @@ NavigationSubReddits.propTypes = {
   disableHotkeys: PropTypes.bool.isRequired,
   fetchSubreddits: PropTypes.func.isRequired,
   fetchLastUpdated: PropTypes.func.isRequired,
-  lastUpdated: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subreddits: PropTypes.object.isRequired,
   filter: PropTypes.object.isRequired,
@@ -205,7 +195,6 @@ NavigationSubReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
   disableHotkeys: state.disableHotKeys,
-  lastUpdated: state.lastUpdated,
   redditBearer: state.redditBearer,
   subreddits: state.subreddits,
   filter: state.subredditsFilter,

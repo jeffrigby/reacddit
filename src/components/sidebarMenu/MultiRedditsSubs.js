@@ -1,86 +1,38 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import NavigationItem from './NavigationItem';
 
-class MultiRedditsSubs extends React.Component {
-  // constructor(props) {
-  //   super(props);
-  // }
+const genNavItems = multiRedditSubs => {
+  const navigationItems = [];
+  const multiRedditSubsKeyed = multiRedditSubs.reduce((obj, subreddit) => {
+    obj[subreddit.data.display_name.toLowerCase()] = subreddit.data; // eslint-disable-line no-param-reassign
+    return obj;
+  }, {});
 
-  getSortedNavItems() {
-    const { multiRedditSubs } = this.props;
-    const multiRedditSubsKeyed = {};
+  Object.keys(multiRedditSubsKeyed)
+    .sort()
+    .forEach((key, index) => {
+      const item = multiRedditSubsKeyed[key];
+      const trigger = false;
 
-    Object.keys(multiRedditSubs).forEach((key, index) => {
-      if (Object.prototype.hasOwnProperty.call(multiRedditSubs, key)) {
-        const item = multiRedditSubs[key].data;
-        multiRedditSubsKeyed[item.display_name.toLowerCase()] = item;
-      }
+      navigationItems.push(
+        <NavigationItem item={item} key={item.name} trigger={trigger} />
+      );
     });
 
-    const subredditsOrdered = {};
-    Object.keys(multiRedditSubsKeyed)
-      .sort()
-      .forEach(key => {
-        subredditsOrdered[key] = multiRedditSubsKeyed[key];
-      });
+  return navigationItems;
+};
 
-    return subredditsOrdered;
+const MultiRedditsSubs = ({ multiRedditSubs }) => {
+  if (multiRedditSubs) {
+    const navItems = genNavItems(multiRedditSubs);
+    return <ul className="nav subnav pl-2">{navItems}</ul>;
   }
-
-  generateNavItems() {
-    const subredditsOrdered = this.getSortedNavItems();
-    const { lastUpdated } = this.props;
-    const navigationItems = [];
-    Object.keys(subredditsOrdered).forEach((key, index) => {
-      if (Object.prototype.hasOwnProperty.call(subredditsOrdered, key)) {
-        const item = subredditsOrdered[key];
-        const trigger = false;
-
-        const subLastUpdated = lastUpdated[item.name]
-          ? lastUpdated[item.name].lastPost
-          : 0;
-
-        navigationItems.push(
-          <NavigationItem
-            item={item}
-            key={item.name}
-            lastUpdated={subLastUpdated}
-            trigger={trigger}
-          />
-        );
-      }
-    });
-    return navigationItems;
-  }
-
-  render() {
-    const { multiRedditSubs } = this.props;
-    const navItems = this.generateNavItems();
-    if (multiRedditSubs) {
-      return <ul className="nav subnav pl-2">{navItems}</ul>;
-    }
-    return <div />;
-  }
-}
+  return <div />;
+};
 
 MultiRedditsSubs.propTypes = {
   multiRedditSubs: PropTypes.array.isRequired,
-  lastUpdated: PropTypes.object.isRequired,
 };
 
-MultiRedditsSubs.defaultProps = {};
-
-const mapStateToProps = state => ({
-  lastUpdated: state.lastUpdated,
-});
-
-const mapDispatchToProps = dispatch => ({
-  // push: url => dispatch(push(url)),
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(MultiRedditsSubs);
+export default MultiRedditsSubs;

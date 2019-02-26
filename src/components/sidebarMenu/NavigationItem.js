@@ -84,9 +84,20 @@ NavigationItem.defaultProps = {
   location: {},
 };
 
-const mapStateToProps = state => ({
+const getLastUpdated = (lastUpdated, subreddit) => {
+  if (subreddit.name === undefined) return 0;
+
+  const subLastUpdated = lastUpdated[subreddit.name]
+    ? lastUpdated[subreddit.name].lastPost
+    : 0;
+
+  return subLastUpdated;
+};
+
+const mapStateToProps = (state, ownProps) => ({
   sort: state.listingsFilter.sort,
   location: state.router.location,
+  lastUpdated: getLastUpdated(state.lastUpdated, ownProps.item),
 });
 
 const mapDispatchToProps = dispatch => ({});
