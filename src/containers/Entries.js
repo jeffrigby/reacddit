@@ -231,55 +231,30 @@ class Entries extends React.Component {
   monitorEntries() {
     if (this.scrollResize && !this.scrollResizeStop) {
       this.scrollResize = false;
-      // Set the focus.
-      const entries = jQuery('.entry');
-      let focused = 0;
-      const visibleContent = [];
-      let visibleItr = 'looking';
-      let newVisible = false;
-      let newFocuseId = null;
-      jQuery.each(entries, (idx, entry) => {
-        if (focused === 0) {
-          const inFocus = Entries.isInViewport(entry, -50);
-          if (inFocus) {
-            newFocuseId = entry.id;
-            focused = 1;
+
+      const postsCollection = document.getElementsByClassName('entry');
+      const posts = Array.from(postsCollection);
+      let newFocus = false;
+      const newVis = [];
+
+      posts.forEach(post => {
+        const { top, bottom } = post.getBoundingClientRect();
+
+        // If it's not visible skip it.
+        if (bottom >= -980 && top - window.innerHeight <= 1000) {
+          if (!newFocus) {
+            const focusTop = bottom - 55;
+            if (focusTop > 0) {
+              newFocus = post.id;
+            }
           }
+          newVis.push(post.id);
         }
-        const visible = Entries.isInViewport(entry, 1000);
-
-        if (visible) {
-          visibleItr = 'visible';
-          visibleContent.push(entry.id);
-          if (!newVisible) {
-            newVisible = true;
-          }
-
-          // Check to see if there's a video to autoplay (mostly for Safari in High Sierra.
-          const videos = jQuery(entry)
-            .find('video')
-            .not('.autoplay-triggered');
-          if (videos.length > 0) {
-            jQuery.each(videos, (videoidx, video) => {
-              document.getElementById(video.id).play();
-              jQuery(video).addClass('autoplay-triggered');
-            });
-
-            //   document.getElementById(video[0].id).play();
-          }
-        }
-
-        if (!visible && visibleItr === 'visible') {
-          // Stop this loop. We have everything we need.
-          return false;
-        }
-
-        return true;
       });
 
       this.setState({
-        focused: newFocuseId,
-        visible: visibleContent,
+        focused: newFocus,
+        visible: newVis,
       });
 
       this.checkLoadMore();
