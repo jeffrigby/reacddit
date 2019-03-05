@@ -8,7 +8,7 @@ import throttle from 'lodash/throttle';
 import configureStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
-import Root from './containers/Root';
+import Root from './layout/Root';
 
 const queryString = require('query-string');
 

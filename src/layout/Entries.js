@@ -11,50 +11,41 @@ import '../styles/entries.scss';
 const queryString = require('query-string');
 
 class Entries extends React.Component {
-  static nextEntry() {
-    let focus = jQuery('div.entry.focused');
-    if (focus.length === 0) {
-      focus = jQuery('div.entry:first');
-    }
-    const goto = focus.next('div.entry');
-    if (goto.length > 0) {
-      jQuery('html, body').scrollTop(goto.offset().top - 50);
+  static nextEntry(focused) {
+    const next =
+      focused === undefined
+        ? document.getElementsByClassName('entry')[0].nextElementSibling
+        : document.getElementById(focused).nextElementSibling;
+
+    if (next.classList.contains('entry')) {
+      const scrollBy =
+        next.getBoundingClientRect().top +
+        document.documentElement.scrollTop -
+        50 -
+        window.scrollY;
+      window.scrollBy({ top: scrollBy, left: 0 });
     } else {
       Entries.scrollToBottom();
     }
   }
 
-  static prevEntry() {
-    const focus = jQuery('div.entry.focused');
-    const goto = focus.prev('div.entry');
-    if (goto.length > 0) {
-      jQuery('html, body').scrollTop(goto.offset().top - 50);
-    }
+  static prevEntry(focused) {
+    if (focused === undefined) return;
+
+    const prev = document.getElementById(focused).previousElementSibling;
+    if (prev === undefined || !prev.classList.contains('entry')) return;
+
+    const scrollBy =
+      prev.getBoundingClientRect().top +
+      document.documentElement.scrollTop -
+      50 -
+      window.scrollY;
+
+    window.scrollBy({ top: scrollBy, left: 0 });
   }
 
   static scrollToBottom() {
     window.scrollTo(0, document.body.scrollHeight);
-  }
-
-  static isInViewport(elm, y) {
-    const viewport = {};
-    viewport.top = jQuery(window).scrollTop();
-    viewport.height = jQuery(window).height();
-    viewport.bottom = viewport.top + viewport.height;
-
-    const element = {};
-    element.top = jQuery(elm).offset().top;
-    element.height = jQuery(elm).height();
-    element.bottom = element.top + element.height;
-
-    if (
-      viewport.top - element.bottom <= y &&
-      element.top - viewport.bottom <= y
-    ) {
-      return true;
-    }
-
-    return false;
   }
 
   constructor(props) {
@@ -71,22 +62,20 @@ class Entries extends React.Component {
       hasError: false,
     };
     this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
+    this.setScrollResize = this.setScrollResize.bind(this);
   }
-
-  // static getDerivedStateFromError(error) {
-  //   // Update state so the next render will show the fallback UI.
-  //   return { hasError: true };
-  // }
 
   async componentDidMount() {
     this.accessToken = await RedditAPI.getToken(false);
     this.scrollResizeStop = false;
     const { match, location } = this.props;
-    document.addEventListener('keydown', this.handleEntriesHotkey);
     this.setRedux(match, location);
-    jQuery(window).on('load resize scroll', () => {
-      this.scrollResize = true;
-    });
+
+    // Events.
+    document.addEventListener('keydown', this.handleEntriesHotkey);
+    document.addEventListener('resize', this.setScrollResize, false);
+    document.addEventListener('scroll', this.setScrollResize, false);
+
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 500);
   }
 
@@ -143,7 +132,7 @@ class Entries extends React.Component {
     ) {
       getEntriesReddit(listingsFilter);
     }
-    jQuery('body').removeClass('show-menu');
+    document.body.classList.add('show-menu');
 
     this.setInitFocusedAndVisible();
   }
@@ -195,6 +184,10 @@ class Entries extends React.Component {
     }
   }
 
+  setScrollResize() {
+    this.scrollResize = true;
+  }
+
   handleEntriesHotkey(event) {
     const { disableHotkeys, setSiteSetting, siteSettings } = this.props;
     const { focused } = this.state;
@@ -202,10 +195,10 @@ class Entries extends React.Component {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'j':
-          Entries.nextEntry();
+          Entries.nextEntry(focused);
           break;
         case 'k':
-          Entries.prevEntry();
+          Entries.prevEntry(focused);
           break;
         case '.':
           Entries.scrollToBottom();
@@ -271,8 +264,8 @@ class Entries extends React.Component {
     const loadedStatus = listingsStatus;
     if (
       loadedStatus === 'loaded' &&
-      jQuery(window).scrollTop() + jQuery(window).height() >
-        jQuery(document).height() - 2500
+      window.scrollY + window.innerHeight >
+        document.documentElement.scrollHeight - 2500
     ) {
       // getMoreEntries();
       getMoreRedditEntries();
