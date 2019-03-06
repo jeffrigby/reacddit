@@ -48,9 +48,10 @@ class NavigationItem extends React.Component {
     let currentSort = sort || '';
     if (currentSort === 'top' || currentSort === 'controversial') {
       currentSort = `${currentSort}?t=${t}`;
-    } else if (currentSort === 'relavance') {
+    } else if (currentSort === 'relevance') {
       currentSort = '';
     }
+
     const href =
       item.subreddit_type === 'user'
         ? `${Common.stripTrailingSlash(item.url)}/submitted/${currentSort}`

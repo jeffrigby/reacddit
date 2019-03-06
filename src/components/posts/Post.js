@@ -1,16 +1,16 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import * as moment from 'moment';
 import Content from './Content';
-import EntryVote from './EntryVote';
-import EntrySave from './EntrySave';
+import PostVote from './PostVote';
+import PostSave from './PostSave';
+import PostCondensed from './PostCondensed';
+import PostDebug from './PostDebug';
 import RenderContent from './embeds';
 
-const ReactJson = React.lazy(() => import('react-json-view'));
-
-class Entry extends React.Component {
+class Post extends React.Component {
   mounted = false;
 
   constructor(props) {
@@ -23,6 +23,7 @@ class Entry extends React.Component {
     };
     this.showDebug = this.showDebug.bind(this);
     this.expand = this.expand.bind(this);
+    this.condense = this.condense.bind(this);
   }
 
   componentDidMount() {
@@ -117,6 +118,11 @@ class Entry extends React.Component {
     event.preventDefault();
   }
 
+  condense(event) {
+    this.setState({ expand: false });
+    event.preventDefault();
+  }
+
   render() {
     const { entry, focused, visible, siteSettings } = this.props;
     const { data } = entry;
@@ -150,53 +156,48 @@ class Entry extends React.Component {
       process.env.NODE_ENV === 'development' && siteSettings.debug;
 
     if (!expand) {
-      classes += ' collapsed d-flex';
-      // gotta be a better way to do this, but, whatever, sticking with timeago for now.
-      const timeagoshort = timeago
-        .replace(' ago', '')
-        .replace(/^a|^an/, '1')
-        .replace(/seconds?/g, 'S')
-        .replace(/minutes?/g, 'M')
-        .replace(/hours?/g, 'H')
-        .replace(/days?/g, 'D')
-        .replace(/months?/g, 'M')
-        .replace(/years?/g, 'Y')
-        .replace(' ', '');
       return (
-        <div
-          className={classes}
-          key={data.name}
-          id={data.name}
-          onClick={this.expand}
-        >
-          <div className="">
-            {sticky && <i className="fas fa-sticky-note" />}
-          </div>
-          <div className="px-2">
-            <div className="text-nowrap px-2 text-truncate font-weight-bold">
-              {data.title}
-            </div>
-            <div />
-          </div>
-          <div className="ml-auto text-nowrap">{timeagoshort}</div>
-        </div>
+        <PostCondensed
+          focused={focused}
+          expand={this.expand}
+          sticky={sticky}
+          timeago={timeago}
+          data={data}
+          commentCount={commentCount}
+          authorFlair={authorFlair}
+        />
       );
     }
 
     return (
       <div className={classes} key={data.name} id={data.name}>
         <div className="entry-interior">
-          <h6 className="title list-group-item-heading">
-            <a
-              href={data.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="list-group-item-heading"
-            >
-              {data.title}
-            </a>{' '}
-            {linkFlair}
-          </h6>
+          <header className="d-flex">
+            <h6 className="title list-group-item-heading">
+              <a
+                href={data.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="list-group-item-heading"
+              >
+                {data.title}
+              </a>{' '}
+              {linkFlair}
+            </h6>
+            <div className="text-nowrap d-flex actions ml-auto">
+              <PostVote id={data.id} likes={data.likes} ups={data.ups} />
+              <PostSave name={data.name} saved={data.saved} />
+              <div>
+                <button
+                  onClick={this.condense}
+                  type="button"
+                  className="btn btn-link btn-sm m-0 p-0"
+                >
+                  <i className="fas fa-compress-arrows-alt" />
+                </button>
+              </div>
+            </div>
+          </header>
           {content}
           <footer className="d-flex clearfix align-middle">
             <div className="mr-auto">
@@ -228,28 +229,9 @@ class Entry extends React.Component {
                 </span>
               )}
             </div>
-            <EntryVote id={data.id} likes={data.likes} ups={data.ups} />
-            <EntrySave name={data.name} saved={data.saved} />
           </footer>
           {showDebug && (
-            <div className="debug">
-              <Suspense fallback={<div>Loading JSON...</div>}>
-                <ReactJson
-                  src={renderedContent}
-                  name="content"
-                  theme="harmonic"
-                  sortKeys
-                  collapsed
-                />
-                <ReactJson
-                  src={entry}
-                  name="entry"
-                  theme="harmonic"
-                  sortKeys
-                  collapsed
-                />
-              </Suspense>
-            </div>
+            <PostDebug renderedContent={renderedContent} entry={entry} />
           )}
         </div>
       </div>
@@ -257,7 +239,7 @@ class Entry extends React.Component {
   }
 }
 
-Entry.propTypes = {
+Post.propTypes = {
   entry: PropTypes.object.isRequired,
   focused: PropTypes.bool.isRequired,
   listingFilter: PropTypes.object.isRequired,
@@ -265,7 +247,7 @@ Entry.propTypes = {
   visible: PropTypes.bool.isRequired,
 };
 
-Entry.defaultProps = {};
+Post.defaultProps = {};
 
 const mapStateToProps = state => ({
   listingFilter: state.listingsFilter,
@@ -277,4 +259,4 @@ const mapDispatchToProps = dispatch => ({});
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Entry);
+)(Post);

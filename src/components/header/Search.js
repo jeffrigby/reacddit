@@ -47,7 +47,7 @@ class Search extends React.Component {
 
         qs.t = currentSearch.t || null;
       } else {
-        qs.sort = 'relavance';
+        qs.sort = 'relevance';
       }
 
       let url = '';

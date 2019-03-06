@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { redditSave, redditUnsave } from '../../redux/actions/reddit';
 
-class EntrySave extends React.Component {
+class PostSave extends React.Component {
   saveUnsave() {
     const { saved, unsave, name, save } = this.props;
     return saved === true ? unsave(name) : save(name);
@@ -34,7 +34,7 @@ class EntrySave extends React.Component {
   }
 }
 
-EntrySave.propTypes = {
+PostSave.propTypes = {
   name: PropTypes.string.isRequired,
   saved: PropTypes.bool.isRequired,
   save: PropTypes.func.isRequired,
@@ -58,4 +58,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(EntrySave);
+)(PostSave);

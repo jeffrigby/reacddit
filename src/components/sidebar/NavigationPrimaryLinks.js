@@ -108,7 +108,7 @@ class NavigationPrimaryLinks extends React.Component {
 
   render() {
     const { me, sort } = this.props;
-    const currentSort = sort && sort !== 'relavance' ? sort : '';
+    const currentSort = sort && sort !== 'relevance' ? sort : '';
 
     return (
       <ul className="nav flex-column">

@@ -5,7 +5,7 @@ import isEqual from 'lodash/isEqual';
 import isNil from 'lodash/isNil';
 import * as listings from '../../redux/actions/listings';
 import * as misc from '../../redux/actions/misc';
-import Entry from '../posts/Entry';
+import Post from '../posts/Post';
 import RedditAPI from '../../reddit/redditAPI';
 import '../../styles/entries.scss';
 
@@ -139,7 +139,7 @@ class Entries extends React.Component {
     ) {
       getEntriesReddit(listingsFilter);
     }
-    document.body.classList.add('show-menu');
+    document.body.classList.remove('show-menu');
 
     this.setInitFocusedAndVisible();
   }
@@ -203,7 +203,10 @@ class Entries extends React.Component {
       listingsStatus,
     } = this.props;
     const { focused } = this.state;
-    if (!disableHotkeys && listingsStatus === 'loaded') {
+    if (
+      !disableHotkeys &&
+      (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')
+    ) {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'j':
@@ -219,7 +222,11 @@ class Entries extends React.Component {
           setSiteSetting({
             view: siteSettings.view === 'expanded' ? 'condensed' : 'expanded',
           });
-          window.scrollTo(0, document.getElementById(focused).offsetTop);
+          try {
+            window.scrollTo(0, document.getElementById(focused).offsetTop);
+          } catch (e) {
+            // continue regardless of error
+          }
           break;
         default:
           break;
@@ -359,7 +366,7 @@ class Entries extends React.Component {
         const isFocused = focused === entriesObject[key].data.name;
         const isVisible = visible.includes(entriesObject[key].data.name);
         return (
-          <Entry
+          <Post
             entry={entriesObject[key]}
             key={entriesObject[key].data.id}
             loaded={entriesObject[key].data.loaded}

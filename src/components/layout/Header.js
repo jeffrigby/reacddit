@@ -36,9 +36,15 @@ class Header extends React.Component {
           <span className="navbar-brand px-2">ReactReddit {title}</span>
         </div>
         <div className="d-flex flex-nowrap align-middle m-0 pr-2 header-main">
-          <Search />
-          <Sort />
-          <SortTop />
+          <div className="pr-2">
+            <Search />
+          </div>
+          <div className="pr-2">
+            <Sort />
+          </div>
+          <div className="header-action">
+            <SortTop />
+          </div>
         </div>
       </>
     );

@@ -30,15 +30,11 @@ class MultiRedditsItem extends React.Component {
     let currentSort = sort || '';
     if (currentSort.match(/^(top|controversial)$/) && search.t) {
       currentSort = `${currentSort}?t=${search.t}`;
-    } else if (currentSort === 'relavance') {
+    } else if (currentSort === 'relevance') {
       currentSort = '';
     }
 
     const navTo = `/me/m/${item.data.name}/${currentSort}`;
-
-    // Am I active?
-    // const { location } = this.props;
-    // const active = navTo.indexOf(location.pathname) === 0;
 
     const arrowClass = showSubs ? 'down' : 'left';
 
