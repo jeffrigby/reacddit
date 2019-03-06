@@ -1,9 +1,37 @@
 div#entries {
   max-width: 1024px;
 
+  div.condensed {
+    .post-title {
+      white-space: normal;
+      text-align: left;
+    }
+
+    .direct-link {
+      display: none;
+    }
+
+    header:hover {
+      .direct-link {
+        display: inline !important;
+      }
+    }
+
+  }
+
   div.entry {
     &:first-child {
       padding-top: 0.5em;
+    }
+
+    .actions {
+      div {
+        margin-left: 0.25rem;
+      }
+      button {
+        margin: 0;
+        padding: 0;
+      }
     }
 
     div.ratio-bg {

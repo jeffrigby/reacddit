@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { redditVote } from '../../redux/actions/reddit';
 
-const EntryVote = props => {
+const PostVote = props => {
   const { bearer, likes, vote, id, ups } = props;
   const disabled = bearer.status !== 'auth';
   const upClass = likes === true ? 'fas' : 'far';
@@ -33,7 +33,7 @@ const EntryVote = props => {
   );
 };
 
-EntryVote.propTypes = {
+PostVote.propTypes = {
   id: PropTypes.string.isRequired,
   ups: PropTypes.number.isRequired,
   likes: PropTypes.bool,
@@ -41,7 +41,7 @@ EntryVote.propTypes = {
   bearer: PropTypes.object.isRequired,
 };
 
-EntryVote.defaultProps = {
+PostVote.defaultProps = {
   likes: null,
 };
 
@@ -56,4 +56,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(EntryVote);
+)(PostVote);

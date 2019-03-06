@@ -13,7 +13,7 @@ const SortTop = ({ listingFilter, location }) => {
   const { search, pathname } = location;
 
   if (
-    !sort.match(/^(top|controversial|relavance)$/) ||
+    !sort.match(/^(top|controversial|relevance)$/) ||
     target === 'friends' ||
     listType === 'u'
   ) {
