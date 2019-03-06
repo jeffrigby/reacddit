@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
-import { disableHotKeys } from '../redux/actions/misc';
+import { disableHotKeys } from '../../redux/actions/misc';
 
 const queryString = require('query-string');
 

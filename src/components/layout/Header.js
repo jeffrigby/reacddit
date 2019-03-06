@@ -2,11 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 // import SubredditActions from './SubredditActions';
-import Search from '../components/Search';
-import Sort from '../components/Sort';
-import SortTop from '../components/SortTop';
-import FilterReddits from '../components/sidebarMenu/FilterReddits';
-import '../styles/navbar.scss';
+import Search from '../header/Search';
+import Sort from '../header/Sort';
+import SortTop from '../header/SortTop';
+import FilterReddits from '../sidebar/FilterReddits';
+import '../../styles/navbar.scss';
 
 class Header extends React.Component {
   static showMenu() {

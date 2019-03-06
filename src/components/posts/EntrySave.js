@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { redditSave, redditUnsave } from '../redux/actions/reddit';
+import { redditSave, redditUnsave } from '../../redux/actions/reddit';
 
 class EntrySave extends React.Component {
   saveUnsave() {

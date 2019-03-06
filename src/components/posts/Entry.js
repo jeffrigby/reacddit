@@ -6,7 +6,7 @@ import * as moment from 'moment';
 import Content from './Content';
 import EntryVote from './EntryVote';
 import EntrySave from './EntrySave';
-import RenderContent from '../embeds';
+import RenderContent from './embeds';
 
 const ReactJson = React.lazy(() => import('react-json-view'));
 
