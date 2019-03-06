@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 import isNil from 'lodash/isNil';
-import * as listings from '../redux/actions/listings';
-import * as misc from '../redux/actions/misc';
-import Entry from '../components/Entry';
-import RedditAPI from '../reddit/redditAPI';
-import '../styles/entries.scss';
+import * as listings from '../../redux/actions/listings';
+import * as misc from '../../redux/actions/misc';
+import Entry from '../posts/Entry';
+import RedditAPI from '../../reddit/redditAPI';
+import '../../styles/entries.scss';
 
 const queryString = require('query-string');
 

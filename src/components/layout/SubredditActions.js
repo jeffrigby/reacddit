@@ -1,6 +1,6 @@
 import React from 'react';
-import Sort from '../components/Sort';
-import SortTop from '../components/SortTop';
+import Sort from '../header/Sort';
+import SortTop from '../header/SortTop';
 // import Search from '../components/Search';
 
 const SubredditActions = () => (

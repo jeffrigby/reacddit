@@ -6,9 +6,9 @@ import { connect } from 'react-redux';
 import Navigation from './Navigation';
 import Header from './Header';
 import Entries from './Entries';
-import * as reddit from '../redux/actions/reddit';
-import '../styles/layout.scss';
-import * as misc from '../redux/actions/misc';
+import * as reddit from '../../redux/actions/reddit';
+import '../../styles/layout.scss';
+import * as misc from '../../redux/actions/misc';
 
 class App extends React.Component {
   constructor(props) {
