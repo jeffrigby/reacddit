@@ -27,8 +27,6 @@
     "js-cookie": "^2.2.0",
     "locutus": "^2.0.10",
     "lodash": "^4.17.11",
-    "lodash.isempty": "^4.4.0",
-    "lodash.isequal": "^4.5.0",
     "moment": "^2.23.0",
     "prop-types": "^15.6.2",
     "query-string": "^6.2.0",

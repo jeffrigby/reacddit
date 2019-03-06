@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import isEqual from 'lodash.isequal';
+import isEqual from 'lodash/isEqual';
+import isNil from 'lodash/isNil';
 import * as listings from '../redux/actions/listings';
 import * as misc from '../redux/actions/misc';
 import Entry from '../components/Entry';
@@ -12,10 +13,12 @@ const queryString = require('query-string');
 
 class Entries extends React.Component {
   static nextEntry(focused) {
-    const next =
-      focused === undefined
-        ? document.getElementsByClassName('entry')[0].nextElementSibling
-        : document.getElementById(focused).nextElementSibling;
+    if (isNil(focused)) return;
+
+    const current = document.getElementById(focused);
+    if (isNil(current)) return;
+
+    const next = current.nextElementSibling;
 
     if (next.classList.contains('entry')) {
       const scrollBy =
@@ -30,10 +33,14 @@ class Entries extends React.Component {
   }
 
   static prevEntry(focused) {
-    if (focused === undefined) return;
+    if (isNil(focused)) return;
 
-    const prev = document.getElementById(focused).previousElementSibling;
-    if (prev === undefined || !prev.classList.contains('entry')) return;
+    const current = document.getElementById(focused);
+    if (isNil(current)) return;
+
+    const prev = current.previousElementSibling;
+    // Is this the last one?
+    if (isNil(prev) || !prev.classList.contains('entry')) return;
 
     const scrollBy =
       prev.getBoundingClientRect().top +
@@ -189,9 +196,14 @@ class Entries extends React.Component {
   }
 
   handleEntriesHotkey(event) {
-    const { disableHotkeys, setSiteSetting, siteSettings } = this.props;
+    const {
+      disableHotkeys,
+      setSiteSetting,
+      siteSettings,
+      listingsStatus,
+    } = this.props;
     const { focused } = this.state;
-    if (!disableHotkeys) {
+    if (!disableHotkeys && listingsStatus === 'loaded') {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'j':

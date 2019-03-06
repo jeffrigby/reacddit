@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import isEmpty from 'lodash.isempty';
+import isEmpty from 'lodash/isEmpty';
 import MultiReddits from '../components/sidebarMenu/MultiReddits';
 import NavigationPrimaryLinks from '../components/sidebarMenu/NavigationPrimaryLinks';
 import '../styles/sidebar.scss';

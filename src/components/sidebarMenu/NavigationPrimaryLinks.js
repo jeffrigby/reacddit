@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
-import isEmpty from 'lodash.isempty';
+import isEmpty from 'lodash/isEmpty';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 class NavigationPrimaryLinks extends React.Component {
