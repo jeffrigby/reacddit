@@ -1,10 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-// import SubredditActions from './SubredditActions';
 import Search from '../header/Search';
 import Sort from '../header/Sort';
-import SortTop from '../header/SortTop';
 import FilterReddits from '../sidebar/FilterReddits';
 import '../../styles/navbar.scss';
 
@@ -41,9 +39,6 @@ class Header extends React.Component {
           </div>
           <div className="pr-2">
             <Sort />
-          </div>
-          <div className="header-action">
-            <SortTop />
           </div>
         </div>
       </>
