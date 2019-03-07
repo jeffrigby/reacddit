@@ -88,9 +88,6 @@ class Sort extends React.Component {
         default:
           break;
       }
-      this.lastKeyPressed = pressedKey;
-    } else {
-      this.lastKeyPressed = '';
     }
   }
 
@@ -122,6 +119,9 @@ class Sort extends React.Component {
     }
 
     if (!isEmpty(qs)) {
+      if (!sort.match(/^(top|controversial|relevance)$/)) {
+        delete qs.t;
+      }
       const searchRendered = queryString.stringify(qs);
       link += `?${searchRendered}`;
     }
@@ -133,7 +133,6 @@ class Sort extends React.Component {
     const { listingsFilter, search } = this.props;
     const { listType, target } = listingsFilter;
 
-    console.log(search);
     const qs = queryString.parse(search);
 
     if (
@@ -158,7 +157,7 @@ class Sort extends React.Component {
           activeClassName="sort-active"
           isActive={active}
         >
-          {linkString}
+          <span className="sort-title pl-3">{linkString}</span>
         </NavLink>
       );
     });
@@ -184,7 +183,7 @@ class Sort extends React.Component {
         const sortName = links2render[key];
         const subLinks = this.renderTimeSubLinks(sortName);
         const subLinksRendered = !isEmpty(subLinks) ? (
-          <div className="subsortlinks pl-3">{subLinks}</div>
+          <div className="subsortlinks">{subLinks}</div>
         ) : null;
 
         links.push(
@@ -194,7 +193,7 @@ class Sort extends React.Component {
               className="dropdown-item d-flex"
               activeClassName="sort-active"
             >
-              <div className="mr-auto pr-2">{sortName}</div>{' '}
+              <div className="mr-auto pr-2 sort-title">{sortName}</div>{' '}
               <span className="menu-shortcut">&#x21E7;{key}</span>
             </NavLink>
             {subLinksRendered}
@@ -223,6 +222,9 @@ class Sort extends React.Component {
       currentSort = searchParsed.sort || 'relevance';
     }
 
+    const searchParsed = queryString.parse(search);
+    const timeSearch = searchParsed.t ? ` > ${searchParsed.t}` : '';
+
     const links = this.renderLinks();
 
     return (
@@ -234,7 +236,8 @@ class Sort extends React.Component {
           aria-haspopup="true"
           aria-expanded="false"
         >
-          <i className="fas fa-sort" /> {currentSort}
+          <i className="fas fa-clock" /> {currentSort}
+          {timeSearch}
         </button>
         <div className="dropdown-menu dropdown-menu-right">{links}</div>
       </div>
