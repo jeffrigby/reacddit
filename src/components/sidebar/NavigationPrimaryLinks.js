@@ -122,7 +122,7 @@ class NavigationPrimaryLinks extends React.Component {
           />
         )}
         <NavigationGenericNavItem
-          to={`/${sort}`}
+          to={`/${currentSort}`}
           text="Front"
           title="Show My Subreddit Posts"
           iconClass="fas fa-home"

@@ -38,3 +38,9 @@
   position: absolute;
   cursor: pointer;
 }
+
+.sort-menu {
+  .sort-active:before {
+      content: "> ";
+  }
+}
