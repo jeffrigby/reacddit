@@ -40,7 +40,7 @@
 }
 
 .sort-menu {
-  .sort-active:before {
+  .sort-active .sort-title:before {
       content: "> ";
   }
 }
