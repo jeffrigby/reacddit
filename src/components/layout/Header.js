@@ -8,7 +8,7 @@ import '../../styles/navbar.scss';
 
 class Header extends React.Component {
   static showMenu() {
-    jQuery('body').toggleClass('show-menu');
+    document.body.classList.toggle('show-menu');
   }
 
   render() {
