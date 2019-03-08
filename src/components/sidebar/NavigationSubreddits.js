@@ -142,13 +142,13 @@ class NavigationSubReddits extends React.Component {
         <div className="sidebar-heading d-flex text-muted">
           <span className="mr-auto">Subreddits</span>
           <span>
-            <button
-              className="btn btn-link btn-sm m-0 p-0 text-muted"
+            <i
+              className={spinnerClass}
               onClick={this.reloadSubredditsClick}
-              type="button"
-            >
-              <i className={spinnerClass} />
-            </button>
+              role="button"
+              tabIndex="0"
+              onKeyDown={this.reloadSubredditsClick}
+            />
           </span>
         </div>
         {content}

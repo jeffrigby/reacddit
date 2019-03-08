@@ -17,9 +17,12 @@ the following files in this order.
  The content of the file looks something like this:  
    
 ```javascript 1.8  
-const render = entry => { const html = entry.selftext_html ? entry.selftext_html : '';  
- const content = {  type: 'self',  
- html, };  
+const render = entry => { 
+  const html = entry.selftext_html ? entry.selftext_html : '';  
+  const content = {  
+    type: 'self',  
+    html, 
+ };  
  return content;  
 };  
   

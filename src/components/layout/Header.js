@@ -5,6 +5,7 @@ import Search from '../header/Search';
 import Sort from '../header/Sort';
 import FilterReddits from '../sidebar/FilterReddits';
 import '../../styles/navbar.scss';
+import ViewMode from '../header/ViewMode';
 
 class Header extends React.Component {
   static showMenu() {
@@ -31,7 +32,10 @@ class Header extends React.Component {
           </button>
         </div>
         <div className="d-flex flex-nowrap mr-auto header-main">
-          <span className="navbar-brand px-2">ReactReddit {title}</span>
+          <span className="navbar-brand px-2">
+            <span className="react">reac</span>
+            <span className="reddit">ddit</span> {title}
+          </span>
         </div>
         <div className="d-flex flex-nowrap align-middle m-0 pr-2 header-main">
           <div className="pr-2">
@@ -39,6 +43,9 @@ class Header extends React.Component {
           </div>
           <div className="pr-2">
             <Sort />
+          </div>
+          <div>
+            <ViewMode />
           </div>
         </div>
       </>
