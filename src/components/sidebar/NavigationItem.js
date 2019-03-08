@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import Common from '../../common';
+import _trim from 'lodash/trim';
+import _trimEnd from 'lodash/trimEnd';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 const queryString = require('query-string');
@@ -48,20 +49,20 @@ class NavigationItem extends React.Component {
     let currentSort = sort || '';
     if (currentSort === 'top' || currentSort === 'controversial') {
       currentSort = `${currentSort}?t=${t}`;
-    } else if (currentSort === 'relevance') {
+    } else if (currentSort === 'relevance' || currentSort === 'best') {
       currentSort = '';
     }
 
     const href =
       item.subreddit_type === 'user'
-        ? `${Common.stripTrailingSlash(item.url)}/submitted/${currentSort}`
-        : `${Common.stripTrailingSlash(item.url)}/${currentSort}`;
+        ? `/${_trim(item.url, '/')}/submitted/${_trim(currentSort, '/')}`
+        : `/${_trim(item.url, '/')}/${_trim(currentSort, '/')}`;
     const classNameStr = this.getDiffClassName();
     const subLabel = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;
 
     return (
       <NavigationGenericNavItem
-        to={href}
+        to={_trimEnd(href, '/')}
         text={item.display_name}
         id={item.id}
         classes={classNameStr}

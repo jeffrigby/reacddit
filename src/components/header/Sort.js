@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import isEmpty from 'lodash/isEmpty';
+import _isEmpty from 'lodash/isEmpty';
 import { NavLink } from 'react-router-dom';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
@@ -23,8 +23,15 @@ class Sort extends React.Component {
       T: 'top',
       N: 'new',
     };
-    this.catsReddits = {
+    this.catsFront = {
       B: 'best',
+      H: 'hot',
+      T: 'top',
+      N: 'new',
+      C: 'controversial',
+      R: 'rising',
+    };
+    this.catsReddits = {
       H: 'hot',
       T: 'top',
       N: 'new',
@@ -118,7 +125,7 @@ class Sort extends React.Component {
       }
     }
 
-    if (!isEmpty(qs)) {
+    if (!_isEmpty(qs)) {
       if (!sort.match(/^(top|controversial|relevance)$/)) {
         delete qs.t;
       }
@@ -167,12 +174,16 @@ class Sort extends React.Component {
 
   renderLinks() {
     const { listingsFilter } = this.props;
+    const { listType, target } = listingsFilter;
     let links2render = {};
-    if (listingsFilter.listType === 'r') {
+
+    if (listType === 'r' && target === 'mine') {
+      links2render = { ...this.catsFront };
+    } else if (listType === 'r') {
       links2render = { ...this.catsReddits };
-    } else if (listingsFilter.listType === 's') {
+    } else if (listType === 's') {
       links2render = { ...this.catsSearch };
-    } else if (listingsFilter.listType === 'm') {
+    } else if (listType === 'm') {
       links2render = { ...this.catsMultis };
     }
 
@@ -182,7 +193,7 @@ class Sort extends React.Component {
       if (Object.prototype.hasOwnProperty.call(links2render, key)) {
         const sortName = links2render[key];
         const subLinks = this.renderTimeSubLinks(sortName);
-        const subLinksRendered = !isEmpty(subLinks) ? (
+        const subLinksRendered = !_isEmpty(subLinks) ? (
           <div className="subsortlinks">{subLinks}</div>
         ) : null;
 
@@ -207,17 +218,18 @@ class Sort extends React.Component {
 
   render() {
     const { listingsFilter, subreddits, search } = this.props;
+    const { listType, sort, target } = listingsFilter;
     if (
-      listingsFilter.target === 'friends' ||
-      listingsFilter.listType === 'u' ||
+      target === 'friends' ||
+      listType === 'u' ||
       subreddits.status !== 'loaded'
     ) {
       return false;
     }
     let currentSort;
-    if (listingsFilter.listType === 'r' || listingsFilter.listType === 'm') {
-      currentSort = listingsFilter.sort || 'hot';
-    } else if (listingsFilter.listType === 's') {
+    if (listType === 'r' || listType === 'm') {
+      currentSort = sort || 'hot';
+    } else if (listType === 's') {
       const searchParsed = queryString.parse(search);
       currentSort = searchParsed.sort || 'relevance';
     }

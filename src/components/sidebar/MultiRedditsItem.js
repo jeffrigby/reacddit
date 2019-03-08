@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import _trimEnd from 'lodash/trimEnd';
 import MultiRedditsSubs from './MultiRedditsSubs';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
@@ -30,7 +31,7 @@ class MultiRedditsItem extends React.Component {
     let currentSort = sort || '';
     if (currentSort.match(/^(top|controversial)$/) && search.t) {
       currentSort = `${currentSort}?t=${search.t}`;
-    } else if (currentSort === 'relevance') {
+    } else if (currentSort === 'relevance' || currentSort === 'best') {
       currentSort = '';
     }
 
@@ -43,7 +44,7 @@ class MultiRedditsItem extends React.Component {
         <div className="d-flex align-middle">
           <span className="mr-auto">
             <NavigationGenericNavItem
-              to={navTo}
+              to={_trimEnd(navTo, '/')}
               text={item.data.name}
               title={item.data.description_md}
               noLi

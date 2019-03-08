@@ -144,7 +144,7 @@ class NavigationPrimaryLinks extends React.Component {
         {me.name && (
           <>
             <NavigationGenericNavItem
-              to={`/r/friends/${currentSort}`}
+              to="/r/friends"
               text="Friends"
               title="Show Friend's Posts"
               iconClass="fas fa-user-friends"
