@@ -13,7 +13,12 @@ const getKeys = url => {
       greedyDomain: 'self',
     };
   }
+
   const parsedDomain = parse(url);
+  if (!parsedDomain.domain) {
+    // no domain extracted. skip this.
+    return null;
+  }
   const domain = parsedDomain.domain.replace(regex, '');
   const greedyDomain = parsedDomain.domain
     .replace(parsedDomain.publicSuffix, '')
@@ -30,6 +35,7 @@ const inlineLinks = entry => {
   links.forEach(url => {
     const cleanUrl = url.replace(/^\(|\)$/g, '');
     const keys = getKeys(cleanUrl);
+    if (!keys) return;
 
     const fakeEntry = {
       ...entry,
