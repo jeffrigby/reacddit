@@ -297,9 +297,11 @@ class Entries extends React.Component {
       listingsEntries,
       siteSettings,
       listingsFilter,
+      location,
     } = this.props;
 
     const { hasError } = this.state;
+    const qs = queryString.parse(location.search);
     let message = '';
 
     if (listingsStatus === 'unloaded' || listingsStatus === 'loading') {
@@ -383,30 +385,28 @@ class Entries extends React.Component {
       <>
         {siteSettings.debug && (
           <div id="debugInfo" className="p-2">
-            <div>
-              <strong>Target:</strong> {listingsFilter.target}
-            </div>
-            <div>
-              <strong>Sort:</strong> {listingsFilter.sort}
-            </div>
-            <div>
-              <strong>t:</strong> {listingsFilter.t}
-            </div>
-            <div>
-              {' '}
-              <strong>Type:</strong> {listingsFilter.listType}
-            </div>
-            <div>
-              {' '}
-              <strong>URL:</strong> {listingsEntries.requestUrl}
-            </div>
-            <div>
-              {' '}
-              <strong>Focus:</strong> {focused}
-            </div>
-            <div>
-              {' '}
-              <strong>Visible:</strong> {visibleString}
+            <div className="small">
+              <div>
+                <strong>Target:</strong> {listingsFilter.target}
+              </div>
+              <div>
+                <strong>Sort:</strong> {listingsFilter.sort}
+              </div>
+              <div>
+                <strong>t:</strong> {qs.t}
+              </div>
+              <div>
+                <strong>Type:</strong> {listingsFilter.listType}
+              </div>
+              <div>
+                <strong>URL:</strong> {listingsEntries.requestUrl}
+              </div>
+              <div>
+                <strong>Focus:</strong> {focused}
+              </div>
+              <div>
+                <strong>Visible:</strong> {visibleString}
+              </div>
             </div>
           </div>
         )}
