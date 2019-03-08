@@ -92,8 +92,8 @@ class Sort extends React.Component {
   }
 
   genLink(sort, t) {
-    const { listingsFilter, search } = this.props;
-    const { listType, target, userType, me } = listingsFilter;
+    const { listingsFilter, search, me } = this.props;
+    const { listType, target, userType } = listingsFilter;
     const qs = queryString.parse(search);
     // add the timeline if requested.
     if (t) {
@@ -104,9 +104,9 @@ class Sort extends React.Component {
     if (listType === 'r') {
       link = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
     } else if (listType === 'm' && !me) {
-      link = `/user/${target}/m/${userType}/${sort}`;
+      link = `/user/${target}/m${userType}/${sort}`;
     } else if (listType === 'm' && me) {
-      link = `/me/m/${userType}/${sort}`;
+      link = `/me/m/${target}/${sort}`;
     } else if (listType === 's') {
       // add the sort query string
       qs.sort = sort;
@@ -251,6 +251,7 @@ Sort.propTypes = {
   search: PropTypes.string,
   disableHotKeys: PropTypes.bool.isRequired,
   push: PropTypes.func.isRequired,
+  me: PropTypes.object.isRequired,
 };
 
 Sort.defaultProps = {
@@ -258,6 +259,7 @@ Sort.defaultProps = {
 };
 
 const mapStateToProps = (state, ownProps) => ({
+  me: state.redditMe.me,
   search: state.router.location.search,
   listingsFilter: state.listingsFilter,
   subreddits: state.subreddits,
