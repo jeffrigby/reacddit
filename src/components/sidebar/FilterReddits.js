@@ -63,6 +63,7 @@ class FilterReddits extends React.Component {
         }
         case 'Enter': {
           goto(subredditUrls[filter.activeIndex]);
+          this.filterInput.current.blur();
           break;
         }
         case 'Escape':
