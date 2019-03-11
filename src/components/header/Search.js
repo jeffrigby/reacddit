@@ -29,7 +29,7 @@ class Search extends React.Component {
   }
 
   processSearch(e) {
-    const { listingsFilter, pushUrl, location } = this.props;
+    const { listingsFilter, pushUrl, search } = this.props;
     const { listType, target, user } = listingsFilter;
     const q = e.target.value;
     if (!q) {
@@ -37,7 +37,7 @@ class Search extends React.Component {
     }
 
     if (e.keyCode === 13) {
-      const currentSearch = queryString.parse(location.search);
+      const currentSearch = queryString.parse(search);
       const qs = { q };
 
       if (currentSearch.sort !== undefined) {
@@ -69,7 +69,7 @@ class Search extends React.Component {
   }
 
   render() {
-    const { listingsFilter, location } = this.props;
+    const { listingsFilter, search } = this.props;
 
     let placeholder = 'search Reddit';
     if (listingsFilter.listType === 'r' && listingsFilter.target !== 'mine') {
@@ -83,7 +83,7 @@ class Search extends React.Component {
         ? 'Press shift-entry to search all of reddit'
         : '';
 
-    const currentSearch = queryString.parse(location.search);
+    const currentSearch = queryString.parse(search);
 
     return (
       <>
@@ -104,7 +104,7 @@ class Search extends React.Component {
 
 Search.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
-  location: PropTypes.object.isRequired,
+  search: PropTypes.string.isRequired,
   pushUrl: PropTypes.func.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
 };
@@ -112,7 +112,7 @@ Search.propTypes = {
 Search.defaultProps = {};
 
 const mapStateToProps = (state, ownProps) => ({
-  location: state.router.location,
+  search: state.router.location.search,
   listingsFilter: state.listingsFilter,
 });
 
