@@ -399,13 +399,15 @@ class Entries extends React.Component {
                 <strong>Type:</strong> {listingsFilter.listType}
               </div>
               <div>
-                <strong>URL:</strong> {listingsEntries.requestUrl}
+                <strong>URL:</strong>
+                <div>{listingsEntries.requestUrl}</div>
               </div>
               <div>
                 <strong>Focus:</strong> {focused}
               </div>
               <div>
-                <strong>Visible:</strong> {visibleString}
+                <strong>Visible:</strong>
+                <div>{visibleString}</div>
               </div>
             </div>
           </div>
