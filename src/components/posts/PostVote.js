@@ -17,6 +17,7 @@ const PostVote = props => {
         className="btn btn-link btn-sm"
         disabled={disabled}
         onClick={() => vote(`t3_${id}`, upDir)}
+        title="Vote Up"
       >
         <i className={`fa-arrow-alt-circle-up ${upClass}`} />
       </button>
@@ -26,6 +27,7 @@ const PostVote = props => {
         className="btn btn-link btn-sm"
         disabled={disabled}
         onClick={() => vote(`t3_${id}`, downDir)}
+        title="Vote Down"
       >
         <i className={`fa-arrow-alt-circle-down ${downClass}`} />
       </button>
