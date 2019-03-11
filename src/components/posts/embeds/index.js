@@ -4,6 +4,7 @@ import stripTags from 'locutus/php/strings/strip_tags';
 import Embeds from './embeds';
 import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
+import redditMediaEmbed from './defaults/redditMediaEmbed';
 
 const getKeys = url => {
   const regex = /[^a-zA-Z\d\s:]/g;
@@ -107,6 +108,20 @@ const getContent = async (keys, entry) => {
     console.error(e);
   }
 
+  // Fallback media content
+  try {
+    const embed = redditMediaEmbed(entry);
+    if (embed) {
+      return {
+        ...embed,
+        renderFunction: 'redditMediaEmbed',
+      };
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error(e);
+  }
+
   // Check for preview image:
   try {
     const image = redditImagePreview(entry);
@@ -121,12 +136,15 @@ const getContent = async (keys, entry) => {
     console.error(e);
   }
 
+  if (entry.media_embed && entry.media_embed.content) {
+    console.log(entry.media_embed);
+  }
+
   return {};
 };
 
 const RenderContent = async entry => {
   const keys = getKeys(entry.domain);
-
   const content = await getContent(keys, entry);
 
   if (keys.greedyDomain === 'self' && entry.selftext_html) {
