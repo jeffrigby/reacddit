@@ -9,6 +9,7 @@ const IFrame16x9 = ({ content, load }) => {
         src={src}
         scrolling="no"
         title={content.name}
+        allow={content.allow}
         className="embed-responsive-item"
         allowFullScreen
       />
