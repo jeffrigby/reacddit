@@ -17,6 +17,8 @@ class PostSave extends React.Component {
       ) : (
         <i className="far fa-bookmark" />
       );
+    const title = saved === true ? 'Unsave Post' : 'Save Post';
+
     if (bearer.status !== 'auth') {
       return null;
     }
@@ -26,6 +28,7 @@ class PostSave extends React.Component {
           className="btn btn-link btn-sm m-0 p-0"
           onClick={() => this.saveUnsave()}
           type="button"
+          title={title}
         >
           {saveStr}
         </button>
