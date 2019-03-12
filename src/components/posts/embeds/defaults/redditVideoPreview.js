@@ -1,8 +1,4 @@
 const redditVideoPreview = entry => {
-  if (entry.preview === undefined) {
-    return null;
-  }
-
   const rvp =
     entry.preview && entry.preview.reddit_video_preview
       ? entry.preview.reddit_video_preview
@@ -39,7 +35,12 @@ const redditVideoPreview = entry => {
       renderFunction: 'redditVideoPreview',
       thumb: entry.thumbnail ? entry.thumbnail : null,
     };
+
     return videoPreview;
+  }
+
+  if (entry.preview === undefined) {
+    return null;
   }
 
   // Look for the mp4 source. Split this up?
