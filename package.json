@@ -38,6 +38,7 @@
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
     "react-time-ago": "^5.0.0",
+    "react-twitter-embed": "^2.0.4",
     "redux": "^4.0.1",
     "redux-axios-middleware": "^4.0.0",
     "redux-devtools-extension": "^2.13.7",
