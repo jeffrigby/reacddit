@@ -51,6 +51,7 @@ store.subscribe(
       lastUpdatedTime: store.getState().lastUpdatedTime,
       redditMe: store.getState().redditMe,
       siteSettings: store.getState().siteSettings,
+      redditMultiReddits: store.getState().redditMultiReddits,
     });
   }, 1000)
 );

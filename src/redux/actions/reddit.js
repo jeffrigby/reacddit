@@ -93,10 +93,25 @@ export function redditFetchMe(reset) {
 export function redditFetchMultis(reset) {
   return async (dispatch, getState) => {
     try {
-      const multis = await RedditHelpers.multiMine({ expand_srs: true }, reset);
+      const currentState = getState();
+      if (currentState.redditMultiReddits !== undefined && !reset) {
+        const multiExpired =
+          Date.now() >
+          currentState.redditMultiReddits.lastUpdated + 3600 * 24 * 1000;
+        if (
+          currentState.redditMultiReddits.status === 'loaded' &&
+          !multiExpired
+        ) {
+          return;
+        }
+      }
+      const multis = await RedditAPI.multiMine({ expand_srs: true });
+      const lastUpdated = Date.now();
+
       const result = {
-        multis: multis.data,
+        multis,
         status: 'loaded',
+        lastUpdated,
       };
       dispatch(redditMultiReddits(result));
     } catch (e) {

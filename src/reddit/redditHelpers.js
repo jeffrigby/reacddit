@@ -8,30 +8,6 @@ class RedditHelpers {
       .reduce((ac, s) => ({ ...ac, [s.display_name.toLowerCase()]: s }), {});
   }
 
-  static async multiMine(options, reset) {
-    const expandSrs = options.expand_srs ? 't' : 'f';
-    const cacheKey = `multis_${expandSrs}`;
-    const cachedValue = sessionStorage.getItem(cacheKey);
-    if (cachedValue !== null && reset !== true) {
-      const cachedObject = JSON.parse(cachedValue);
-      const multiReturn = {
-        cached: 1,
-        data: cachedObject,
-      };
-      return multiReturn;
-    }
-
-    const multis = await RedditAPI.multiMine(options);
-    sessionStorage.setItem(cacheKey, JSON.stringify(multis));
-
-    const multiReturn = {
-      cached: 0,
-      data: multis,
-    };
-
-    return multiReturn;
-  }
-
   static async subredditsAll(where, options, reset) {
     let init = true;
     let qsAfter = null;
