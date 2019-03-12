@@ -52,3 +52,19 @@
       content: "> ";
   }
 }
+
+#search {
+  position: relative;
+  min-width: 250px;
+  .searchToolTip {
+    position: absolute;
+    background-color: #343a40;
+    color: white;
+  }
+}
+
+//@media (max-width: 640px) {
+//  header {
+//    flex-wrap: wrap !important;
+//  }
+//}
