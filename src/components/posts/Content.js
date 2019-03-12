@@ -7,6 +7,8 @@ import IFrame4x4 from './contentTypes/IFrame4x4';
 import Thumb from './contentTypes/Thumb';
 import Self from './contentTypes/Self';
 import ImgurAlbum from './contentTypes/ImgurAlbum';
+import RawHTML from './contentTypes/RawHTML';
+import Twitter from './contentTypes/Twitter';
 
 const Content = ({ content, name, load }) => {
   let contentRendered = '';
@@ -32,6 +34,12 @@ const Content = ({ content, name, load }) => {
         break;
       case 'self':
         contentRendered = <Self content={content} load={load} name={name} />;
+        break;
+      case 'raw_html':
+        contentRendered = <RawHTML content={content} load={load} />;
+        break;
+      case 'twitter':
+        contentRendered = <Twitter content={content} load={load} />;
         break;
       default:
         break;
