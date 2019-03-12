@@ -1,4 +1,3 @@
-import update from 'immutability-helper';
 import RedditAPI from './redditAPI';
 
 class RedditHelpers {
@@ -61,18 +60,6 @@ class RedditHelpers {
     };
 
     return subredditsReturn;
-  }
-
-  static keyEntryChildren(entries) {
-    const arrayToObject = (arr, keyField) =>
-      Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
-
-    const newChildren = arrayToObject(entries.data.children, 'name');
-    const newEntries = update(entries, {
-      data: { children: { $set: newChildren } },
-    });
-
-    return newEntries;
   }
 }
 

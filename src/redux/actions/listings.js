@@ -1,6 +1,5 @@
 import update from 'immutability-helper';
 import RedditAPI from '../../reddit/redditAPI';
-import RedditHelper from '../../reddit/redditHelpers';
 
 const queryString = require('query-string');
 
@@ -32,6 +31,18 @@ export function listingsRedditStatus(status) {
   };
 }
 
+const keyEntryChildren = entries => {
+  const arrayToObject = (arr, keyField) =>
+    Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
+
+  const newChildren = arrayToObject(entries.data.children, 'name');
+  const newEntries = update(entries, {
+    data: { children: { $set: newChildren } },
+  });
+
+  return newEntries;
+};
+
 const getContent = async (filters, params) => {
   const target = filters.target !== 'mine' ? filters.target : null;
   const { user, sort, multi, listType } = filters;
@@ -56,7 +67,7 @@ const getContent = async (filters, params) => {
   }
 
   if (entries) {
-    entries = RedditHelper.keyEntryChildren(entries);
+    entries = keyEntryChildren(entries);
   }
 
   return entries;
