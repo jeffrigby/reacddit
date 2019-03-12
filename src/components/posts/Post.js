@@ -2,13 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import * as moment from 'moment';
 import Content from './Content';
 import PostVote from './PostVote';
 import PostSave from './PostSave';
-import PostCondensed from './PostCondensed';
 import PostDebug from './PostDebug';
+import PostByline from './PostByline';
 import RenderContent from './embeds';
+
+const queryString = require('query-string');
 
 class Post extends React.Component {
   mounted = false;
@@ -22,8 +23,7 @@ class Post extends React.Component {
       expand: props.siteSettings.view === 'expanded' || false,
     };
     this.showDebug = this.showDebug.bind(this);
-    this.expand = this.expand.bind(this);
-    this.condense = this.condense.bind(this);
+    this.toggleView = this.toggleView.bind(this);
   }
 
   componentDidMount() {
@@ -34,7 +34,9 @@ class Post extends React.Component {
       this.setState({ expand: false });
     }
 
-    const getContent = RenderContent(entry.data);
+    const getContent = entry.data.crosspost_parent
+      ? RenderContent(entry.data.crosspost_parent_list[0])
+      : RenderContent(entry.data);
 
     Promise.resolve(getContent).then(content => {
       if (this.mounted) {
@@ -113,13 +115,13 @@ class Post extends React.Component {
     event.preventDefault();
   }
 
-  expand(event) {
-    this.setState({ expand: true });
-    event.preventDefault();
-  }
-
-  condense(event) {
-    this.setState({ expand: false });
+  toggleView(event) {
+    const { expand } = this.state;
+    if (expand) {
+      this.setState({ expand: false });
+    } else {
+      this.setState({ expand: true });
+    }
     event.preventDefault();
   }
 
@@ -127,18 +129,19 @@ class Post extends React.Component {
     const { entry, focused, visible, siteSettings } = this.props;
     const { data } = entry;
     const { showDebug, renderedContent, expand } = this.state;
-    const timeago = moment(data.created_utc * 1000).from();
-    const subUrl = `/r/${data.subreddit}`;
 
-    let classes = 'entry list-group-item';
+    const classArray = ['entry', 'list-group-item'];
     if (focused) {
-      classes += ' focused';
+      classArray.push('focused');
+    }
+
+    if (!expand) {
+      classArray.push('condensed');
     }
 
     const sticky = data.stickied || false;
-    const commentCount = parseFloat(data.num_comments).toLocaleString('en');
 
-    const content = (
+    const content = expand && (
       <Content
         content={renderedContent}
         name={data.name}
@@ -146,77 +149,112 @@ class Post extends React.Component {
         key={data.id}
       />
     );
-    const authorFlair = data.author_flair_text ? (
-      <span className="badge badge-dark">{data.author_flair_text}</span>
-    ) : null;
+
     const linkFlair = data.link_flair_text ? (
       <span className="badge badge-dark">{data.link_flair_text}</span>
     ) : null;
     const currentDebug =
       process.env.NODE_ENV === 'development' && siteSettings.debug;
 
-    if (!expand) {
-      return (
-        <PostCondensed
-          focused={focused}
-          expand={this.expand}
-          sticky={sticky}
-          timeago={timeago}
-          data={data}
-          commentCount={commentCount}
-          authorFlair={authorFlair}
-        />
+    const crossPost = data.crosspost_parent || false;
+
+    let searchLink = '';
+    if (!data.is_self) {
+      const query = queryString.stringify({
+        q: `url:${data.url}`,
+        sort: 'relevance',
+      });
+      const searchTo = `/search?${query}`;
+      searchLink = (
+        <div>
+          <Link
+            to={searchTo}
+            title="Search for other posts linking to this link"
+          >
+            <i className="fas fa-search small" />
+          </Link>
+        </div>
       );
     }
 
+    const viewIcon = expand
+      ? 'fas fa-compress-arrows-alt'
+      : 'fas fa-expand-arrows-alt';
+    const expandContractButton = (
+      <button
+        onClick={this.toggleView}
+        type="button"
+        className="btn btn-link btn-sm m-0 p-0"
+        title="Compress this post"
+      >
+        <i className={viewIcon} />
+      </button>
+    );
+
+    const title = expand ? (
+      <h6 className="title list-group-item-heading">
+        <a
+          href={data.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="list-group-item-heading"
+        >
+          {data.title}
+        </a>{' '}
+        {linkFlair}
+      </h6>
+    ) : (
+      <>
+        <button
+          onClick={this.toggleView}
+          className="btn btn-link btn-sm m-0 p-0 post-title"
+          type="button"
+        >
+          <h6 className="p-0 m-0">{data.title}</h6>
+        </button>
+        <a
+          href={data.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="list-group-item-heading"
+          title="Open link in new tab"
+        >
+          {' '}
+          <i className="fas fa-link direct-link" />
+        </a>
+      </>
+    );
+
     return (
-      <div className={classes} key={data.name} id={data.name}>
+      <div className={classArray.join(' ')} key={data.name} id={data.name}>
         <div className="entry-interior">
           <header className="d-flex">
-            <h6 className="title list-group-item-heading">
-              <a
-                href={data.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="list-group-item-heading"
-              >
-                {data.title}
-              </a>{' '}
-              {linkFlair}
-            </h6>
+            {title}
             <div className="text-nowrap d-flex actions ml-auto">
               <PostVote id={data.id} likes={data.likes} ups={data.ups} />
               <PostSave name={data.name} saved={data.saved} />
-              <div>
-                <button
-                  onClick={this.condense}
-                  type="button"
-                  className="btn btn-link btn-sm m-0 p-0"
-                >
-                  <i className="fas fa-compress-arrows-alt" />
-                </button>
-              </div>
+              {searchLink}
+              <div>{expandContractButton}</div>
             </div>
           </header>
           {content}
           <footer className="d-flex clearfix align-middle">
             <div className="mr-auto">
-              Submitted {timeago} by{' '}
-              <Link to={`/user/${data.author}/submitted/new`}>
-                {data.author}
-              </Link>{' '}
-              {authorFlair} to <Link to={subUrl}>/r/{data.subreddit}</Link>{' '}
-              {data.domain}{' '}
-              <a
-                href={`https://www.reddit.com${data.permalink}`}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                comments{' '}
-                <span className="badge badge-primary">{commentCount}</span>
-              </a>{' '}
+              <PostByline data={data} />
+              {crossPost && (
+                <>
+                  <i className="fas fa-exchange-alt px-2" title="Crossposted" />{' '}
+                  <PostByline data={data.crosspost_parent_list[0]} />
+                </>
+              )}
+              {sticky && (
+                <i className="fas fa-sticky-note px-2" title="Sticky" />
+              )}
+            </div>
+            <div>
               {currentDebug && (
                 <span className="pl-3">
+                  {data.name}
                   <button
                     className="btn btn-link m-0 p-0"
                     onClick={this.showDebug}
@@ -224,13 +262,13 @@ class Post extends React.Component {
                     type="button"
                   >
                     <i className="fas fa-code" />
-                  </button>{' '}
-                  {data.name}
+                  </button>
                 </span>
               )}
+              {!data.is_self && data.domain}
             </div>
           </footer>
-          {showDebug && (
+          {showDebug && currentDebug && (
             <PostDebug renderedContent={renderedContent} entry={entry} />
           )}
         </div>
