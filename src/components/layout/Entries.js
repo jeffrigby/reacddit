@@ -21,11 +21,7 @@ class Entries extends React.Component {
     const next = current.nextElementSibling;
 
     if (next.classList.contains('entry')) {
-      const scrollBy =
-        next.getBoundingClientRect().top +
-        document.documentElement.scrollTop -
-        50 -
-        window.scrollY;
+      const scrollBy = next.getBoundingClientRect().top - 50;
       window.scrollBy({ top: scrollBy, left: 0 });
     } else {
       Entries.scrollToBottom();
@@ -42,12 +38,7 @@ class Entries extends React.Component {
     // Is this the last one?
     if (isNil(prev) || !prev.classList.contains('entry')) return;
 
-    const scrollBy =
-      prev.getBoundingClientRect().top +
-      document.documentElement.scrollTop -
-      50 -
-      window.scrollY;
-
+    const scrollBy = prev.getBoundingClientRect().top - 50;
     window.scrollBy({ top: scrollBy, left: 0 });
   }
 
@@ -262,6 +253,20 @@ class Entries extends React.Component {
           }
           newVis.push(post.id);
         }
+
+        // Check to see if there's a video to autoplay (mostly for Safari in High Sierra.
+        // const videos = jQuery(post)
+        //   .find('video')
+        //   .not('.autoplay-triggered');
+        //   if (videos.length > 0) {
+        //     jQuery.each(videos, (videoidx, video) => {
+        //       document.getElementById(video.id).play();
+        //       jQuery(video).addClass('autoplay-triggered');
+        //     });
+        //
+        //     //   document.getElementById(video[0].id).play();
+        //   }
+        // }
       });
 
       this.setState({
