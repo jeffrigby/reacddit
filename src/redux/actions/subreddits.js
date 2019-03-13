@@ -1,5 +1,5 @@
 import axios from 'axios';
-import RedditHelpers from '../../reddit/redditHelpers';
+import RedditAPI from '../../reddit/redditAPI';
 
 export function subredditsStatus(status, message) {
   return {
@@ -38,6 +38,11 @@ export function subredditsClearLastUpdated() {
   };
 }
 
+/**
+ * Firgure out when to recheck the last updated post.
+ * @param lastPost
+ * @returns {*}
+ */
 const getExpiredTime = lastPost => {
   if (lastPost === undefined) return 3600;
   const nowSec = Date.now() / 1000;
@@ -57,6 +62,11 @@ const getExpiredTime = lastPost => {
   return nowSec + 3600;
 };
 
+/**
+ * Fetch the last post for each subreddit and recheck based on when
+ * it was last updated.
+ * @returns {Function}
+ */
 export function subredditsFetchLastUpdated() {
   return (dispatch, getState) => {
     const currentState = getState();
@@ -67,8 +77,8 @@ export function subredditsFetchLastUpdated() {
     Object.entries(subreddits).forEach(([key, value]) => {
       // @todo convert to API? Concerned about rate limit.
       const url = `https://www.reddit.com${value.url}new.json?limit=2`;
-      // look for cache
 
+      // look for cache
       const lastUpdated = currentState.lastUpdated[value.name];
       if (lastUpdated) {
         const { expires } = lastUpdated;
@@ -94,36 +104,120 @@ export function subredditsFetchLastUpdated() {
 
     // Loop through them and create an object to insert.
     chunks.forEach(async value => {
-      const results = await axios
-        .all(value)
-        .then(axios.spread((...args) => args));
+      try {
+        const results = await axios
+          .all(value)
+          .then(axios.spread((...args) => args));
 
-      const toUpdate = {};
-      results.forEach(item => {
-        const entry = item.data;
-        // process item
-        if (typeof entry.data.children[0] === 'object') {
-          const lastPost = entry.data.children[0].data.created_utc;
-          const subredditId = entry.data.children[0].data.subreddit_id;
-          const expires = getExpiredTime(lastPost);
-          toUpdate[subredditId] = {
-            lastPost,
-            expires,
-          };
-        }
-      });
+        const toUpdate = {};
+        results.forEach(item => {
+          const entry = item.data;
+          // process item
+          if (typeof entry.data.children[0] === 'object') {
+            const lastPost = entry.data.children[0].data.created_utc;
+            const subredditId = entry.data.children[0].data.subreddit_id;
+            const expires = getExpiredTime(lastPost);
+            toUpdate[subredditId] = {
+              lastPost,
+              expires,
+            };
+          }
+        });
 
-      dispatch(subredditsLastUpdated(toUpdate));
+        dispatch(subredditsLastUpdated(toUpdate));
+      } catch (e) {
+        console.log(e);
+      }
     });
   };
 }
 
+/**
+ * Map the post children ids to the keys.
+ * @param children
+ * @returns {*}
+ */
+const mapSubreddits = children => {
+  return Object.entries(children)
+    .map(([key, value]) => value.data)
+    .reduce((ac, s) => ({ ...ac, [s.display_name.toLowerCase()]: s }), {});
+};
+
+/**
+ * Fetch all the subreddits and concat them together
+ * This is because of the 100 sub limit.
+ * @param where
+ * @param options
+ * @returns {Promise<void>}
+ */
+const subredditsAll = async (where, options) => {
+  let init = true;
+  let qsAfter = null;
+  let srs = null;
+  let subreddits = {};
+
+  // console.log('uncached');
+
+  const newOptions = options || {};
+
+  /* eslint-disable no-await-in-loop */
+  while (init || qsAfter) {
+    init = false;
+    newOptions.after = qsAfter;
+    srs = await RedditAPI.subreddits(where, newOptions);
+    const mapped = mapSubreddits(srs.data.children);
+    subreddits = { ...mapped, ...subreddits };
+    qsAfter = srs.data.after || null;
+  }
+
+  // Sort by alpha
+  const subredditsOrdered = {};
+  Object.keys(subreddits)
+    .sort()
+    .forEach(key => {
+      subredditsOrdered[key] = subreddits[key];
+    });
+
+  return subredditsOrdered;
+};
+
+/**
+ * Fetch the subreddits from the cache first or from reddit directly
+ * @param reset - ignore the cache
+ * @param where - what kind of subreddits to fetch This is useless
+ *  right now. Keyed to subscriber.
+ *    subscriber - subreddits the user is subscribed to
+ *    contributor - subreddits the user is an approved submitter in
+ *    moderator - subreddits the user is a moderator of
+ *    streams - subscribed to subreddits that contain hosted video links
+ * @returns {Function}
+ */
 export function subredditsFetchData(reset, where) {
-  return async dispatch => {
-    dispatch(subredditsStatus('loading'));
+  return async (dispatch, getState) => {
     try {
-      const subs = await RedditHelpers.subredditsAll(where, {}, reset);
-      await dispatch(subredditsFetchDataSuccess(subs.subreddits));
+      const currentState = getState();
+
+      // Look for the cache.
+      if (currentState.subreddits !== undefined && !reset) {
+        // Cache for one day
+        const subExpired =
+          Date.now() > currentState.subreddits.lastUpdated + 3600 * 24 * 1000;
+        if (currentState.subreddits.status === 'loaded' && !subExpired) {
+          dispatch(subredditsFetchLastUpdated());
+          return;
+        }
+      }
+
+      // Not cached.
+      dispatch(subredditsStatus('loading'));
+      const subreddits = await subredditsAll(where, {});
+      const lastUpdated = Date.now();
+      const storeSubs = {
+        status: 'loaded',
+        subreddits,
+        lastUpdated,
+      };
+      await dispatch(subredditsFetchDataSuccess(storeSubs));
       dispatch(subredditsFetchLastUpdated());
     } catch (e) {
       dispatch(subredditsStatus('error', e.toString()));

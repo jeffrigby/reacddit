@@ -1,5 +1,4 @@
 import { listingsEntryUpdate } from './listings';
-import RedditHelpers from '../../reddit/redditHelpers';
 import RedditAPI from '../../reddit/redditAPI';
 
 export function redditMultiReddits(multiReddits) {

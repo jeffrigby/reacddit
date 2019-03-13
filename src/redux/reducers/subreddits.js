@@ -9,11 +9,7 @@ export function subreddits(
         message: action.message,
       };
     case 'SUBREDDITS_FETCH_DATA_SUCCESS': {
-      const successState = {
-        status: 'loaded',
-        subreddits: action.subreddits,
-      };
-      return successState;
+      return action.subreddits;
     }
     default:
       return state;
