@@ -85,7 +85,7 @@ class Search extends React.Component {
 
   processSearch(e) {
     const { listingsFilter, pushUrl, location } = this.props;
-    const { listType, target, user } = listingsFilter;
+    const { listType, target, user, multi } = listingsFilter;
     const q = e.target.value;
     if (!q) {
       return;
@@ -107,11 +107,20 @@ class Search extends React.Component {
 
       let url = '';
       if (!e.shiftKey) {
-        if (listType === 'r' && target !== 'mine') {
+        if (
+          (listType === 'r' || (listType === 's' && !multi)) &&
+          target !== 'mine'
+        ) {
           url = `/r/${target}`;
-        } else if (listType === 'm' && user !== 'me') {
+        } else if (
+          (listType === 'm' || (listType === 's' && multi)) &&
+          user !== 'me'
+        ) {
           url = `/user/${target}/m/${target}`;
-        } else if (listType === 'm' && user === 'me') {
+        } else if (
+          (listType === 'm' || (listType === 's' && multi)) &&
+          user === 'me'
+        ) {
           url = `/me/m/${target}`;
         }
       }
