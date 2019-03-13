@@ -8,6 +8,7 @@ import * as misc from '../../redux/actions/misc';
 import Post from '../posts/Post';
 import RedditAPI from '../../reddit/redditAPI';
 import '../../styles/entries.scss';
+import PostsDebug from './PostsDebug';
 
 const queryString = require('query-string');
 
@@ -303,10 +304,10 @@ class Entries extends React.Component {
       siteSettings,
       listingsFilter,
       location,
+      match,
     } = this.props;
 
     const { hasError } = this.state;
-    const qs = queryString.parse(location.search);
     let message = '';
 
     if (listingsStatus === 'unloaded' || listingsStatus === 'loading') {
@@ -384,38 +385,17 @@ class Entries extends React.Component {
       });
     }
 
-    const visibleString = visible.join(' ');
-
     return (
       <>
         {siteSettings.debug && (
-          <div id="debugInfo" className="p-2">
-            <div className="small">
-              <div>
-                <strong>Target:</strong> {listingsFilter.target}
-              </div>
-              <div>
-                <strong>Sort:</strong> {listingsFilter.sort}
-              </div>
-              <div>
-                <strong>t:</strong> {qs.t}
-              </div>
-              <div>
-                <strong>Type:</strong> {listingsFilter.listType}
-              </div>
-              <div>
-                <strong>URL:</strong>
-                <div>{listingsEntries.requestUrl}</div>
-              </div>
-              <div>
-                <strong>Focus:</strong> {focused}
-              </div>
-              <div>
-                <strong>Visible:</strong>
-                <div>{visibleString}</div>
-              </div>
-            </div>
-          </div>
+          <PostsDebug
+            visible={visible}
+            requestURL={listingsEntries.requestUrl}
+            focused={focused}
+            match={match}
+            location={location}
+            listingsFilter={listingsFilter}
+          />
         )}
         {entries}
         <div className="footer-status">{footerStatus}</div>
