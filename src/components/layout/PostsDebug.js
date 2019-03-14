@@ -48,11 +48,15 @@ const PostsDebug = ({
 
 PostsDebug.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
-  focused: PropTypes.string.isRequired,
-  visible: PropTypes.array.isRequired,
+  focused: PropTypes.string,
+  visible: PropTypes.array,
   location: PropTypes.object.isRequired,
   match: PropTypes.object.isRequired,
   requestURL: PropTypes.string.isRequired,
 };
 
+PostsDebug.defaultProps = {
+  focused: '',
+  visible: [],
+};
 export default PostsDebug;

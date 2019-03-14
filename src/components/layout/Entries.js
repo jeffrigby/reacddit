@@ -75,6 +75,11 @@ class Entries extends React.Component {
     document.addEventListener('resize', this.setScrollResize, false);
     document.addEventListener('scroll', this.setScrollResize, false);
 
+    // Trigger this after a second/two seconds to load anything missed.
+    // Delayed to let component load.
+    setTimeout(() => this.monitorEntries(true), 1000);
+    setTimeout(() => this.monitorEntries(true), 2000);
+
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 500);
   }
 
@@ -137,6 +142,10 @@ class Entries extends React.Component {
 
   componentWillUnmount() {
     this.scrollResizeStop = true;
+    // Events.
+    document.removeEventListener('keydown', this.handleEntriesHotkey);
+    document.removeEventListener('resize', this.setScrollResize, false);
+    document.removeEventListener('scroll', this.setScrollResize, false);
     clearInterval(this.monitorEntriesInterval);
   }
 
@@ -231,8 +240,8 @@ class Entries extends React.Component {
   //   console.log(error, info);
   // }
 
-  monitorEntries() {
-    if (this.scrollResize && !this.scrollResizeStop) {
+  monitorEntries(force) {
+    if ((this.scrollResize && !this.scrollResizeStop) || force) {
       this.scrollResize = false;
 
       const postsCollection = document.getElementsByClassName('entry');

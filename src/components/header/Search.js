@@ -44,6 +44,10 @@ class Search extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleSearchHotkey);
+  }
+
   handleSearchHotkey(event) {
     const { disableHotkeys } = this.props;
     const { focused } = this.state;

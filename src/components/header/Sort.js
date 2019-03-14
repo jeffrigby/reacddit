@@ -63,6 +63,10 @@ class Sort extends React.Component {
     document.addEventListener('keydown', this.handleSortHotkey);
   }
 
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleSortHotkey);
+  }
+
   handleSortHotkey(event) {
     const { disableHotKeys, listingsFilter, ...props } = this.props;
     if (!disableHotKeys && listingsFilter.target !== 'friends') {

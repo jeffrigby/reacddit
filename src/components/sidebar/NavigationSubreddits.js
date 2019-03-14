@@ -25,6 +25,7 @@ class NavigationSubReddits extends React.Component {
   }
 
   componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleSubredditHotkey);
     clearInterval(this.checkLastUpdated);
   }
 

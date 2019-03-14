@@ -17,6 +17,10 @@ class NavigationPrimaryLinks extends React.Component {
     document.addEventListener('keydown', this.handleNavPrimaryHotkey);
   }
 
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleNavPrimaryHotkey);
+  }
+
   /**
    * Configure the navigation hotkeys.
    * @param event

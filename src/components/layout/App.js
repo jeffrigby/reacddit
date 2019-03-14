@@ -40,6 +40,10 @@ class App extends React.Component {
 
   componentWillUnmount() {
     clearInterval(this.tokenQuery);
+    document.removeEventListener(
+      'keydown',
+      this.handleNGlobalHotkey.bind(this)
+    );
   }
 
   handleNGlobalHotkey(event) {

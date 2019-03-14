@@ -20,6 +20,10 @@ class FilterReddits extends React.Component {
     document.addEventListener('keydown', this.handleFilterHotkey);
   }
 
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleFilterHotkey);
+  }
+
   handleFilterHotkey(event) {
     const {
       disableHotkeys,
