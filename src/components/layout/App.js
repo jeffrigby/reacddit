@@ -115,7 +115,7 @@ class App extends React.Component {
     });
 
     return (
-      <>
+      <div>
         <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
           <Header />
         </header>
@@ -135,7 +135,7 @@ class App extends React.Component {
         </main>
 
         <div id="push" />
-      </>
+      </div>
     );
   }
 }

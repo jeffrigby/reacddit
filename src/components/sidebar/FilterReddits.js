@@ -35,6 +35,7 @@ class FilterReddits extends React.Component {
       switch (pressedKey) {
         case 'F':
           this.filterInput.current.focus();
+          document.body.classList.add('show-menu');
           this.clearSearch();
           event.preventDefault();
           break;
@@ -63,11 +64,13 @@ class FilterReddits extends React.Component {
         }
         case 'Enter': {
           goto(subredditUrls[filter.activeIndex]);
+          document.body.classList.remove('show-menu');
           this.filterInput.current.blur();
           break;
         }
         case 'Escape':
           this.filterInput.current.blur();
+          document.body.classList.remove('show-menu');
           this.clearSearch();
           break;
         default:

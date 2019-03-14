@@ -243,7 +243,7 @@ class Post extends React.Component {
               <PostByline data={data} />
               {crossPost && (
                 <>
-                  <i className="fas fa-exchange-alt px-2" title="Crossposted" />{' '}
+                  <i className="fas fa-random px-2" title="Crossposted" />{' '}
                   <PostByline data={data.crosspost_parent_list[0]} />
                 </>
               )}

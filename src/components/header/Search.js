@@ -18,6 +18,7 @@ class Search extends React.Component {
     this.processSearch = this.processSearch.bind(this);
     this.handleSearchHotkey = this.handleSearchHotkey.bind(this);
     this.searchInput = React.createRef();
+    this.searchInputParent = React.createRef();
     this.state = {
       focused: false,
     };
@@ -53,6 +54,7 @@ class Search extends React.Component {
         case 'S':
           this.searchInput.current.focus();
           this.searchInput.current.value = '';
+          document.body.classList.remove('show-menu');
           event.preventDefault();
           break;
         default:
@@ -154,9 +156,10 @@ class Search extends React.Component {
         : '';
 
     const currentSearch = queryString.parse(location.search);
+    const searchClassName = focused ? 'search-focused' : undefined;
 
     return (
-      <div id="search">
+      <div id="search" ref={this.searchInputParent} className={searchClassName}>
         <input
           type="text"
           className="form-control form-control-dark form-control-sm w-100"

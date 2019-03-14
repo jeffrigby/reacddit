@@ -243,13 +243,16 @@ class Sort extends React.Component {
       <div className="btn-group sort-menu">
         <button
           type="button"
-          className="btn btn-sm dropdown-toggle form-control-sm"
+          className="btn btn-secondary btn-sm dropdown-toggle form-control-sm"
           data-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
         >
-          <i className="fas fa-clock" /> {currentSort}
-          {timeSearch}
+          <i className="fas fa-sort" />{' '}
+          <span className="d-none d-md-inline">
+            {currentSort}
+            {timeSearch}
+          </span>
         </button>
         <div className="dropdown-menu dropdown-menu-right">{links}</div>
       </div>

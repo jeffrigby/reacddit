@@ -131,7 +131,6 @@ class Entries extends React.Component {
     ) {
       getEntriesReddit(listingsFilter);
     }
-    document.body.classList.remove('show-menu');
 
     this.setInitFocusedAndVisible();
   }

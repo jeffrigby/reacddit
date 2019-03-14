@@ -2,6 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 
+const closeMenu = () => {
+  document.body.classList.remove('show-menu');
+};
+
 const NavigationGenericNavItem = props => {
   const {
     to,
@@ -45,6 +49,7 @@ const NavigationGenericNavItem = props => {
           activeClassName="activeSubreddit"
           data-toggle="tooltip"
           data-placement="right"
+          onClick={closeMenu}
         >
           {iconString} {text}
         </NavLink>

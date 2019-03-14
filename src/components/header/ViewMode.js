@@ -15,29 +15,31 @@ const toggleView = async (view, setSiteSetting) => {
 
 const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
   const btnClasses = 'btn btn-secondary btn-sm';
-  const cndClass =
-    siteSettingsView === 'condensed' ? `${btnClasses} active` : btnClasses;
-  const expClass =
-    siteSettingsView === 'expanded' ? `${btnClasses} active` : btnClasses;
 
-  return (
-    <div className="btn-group" role="group" aria-label="View Mode">
+  const button =
+    siteSettingsView === 'expanded' ? (
       <button
         onClick={() => toggleView('condensed', setSiteSetting)}
         type="button"
-        className={cndClass}
+        className={btnClasses}
         title="Condensed View"
       >
         <i className="fas fa-compress-arrows-alt" />
       </button>
+    ) : (
       <button
         onClick={() => toggleView('expanded', setSiteSetting)}
         type="button"
-        className={expClass}
+        className={btnClasses}
         title="Full View"
       >
         <i className="fas fa-expand-arrows-alt" />
       </button>
+    );
+
+  return (
+    <div>
+      {button}
     </div>
   );
 };
