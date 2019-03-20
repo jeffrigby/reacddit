@@ -136,10 +136,6 @@ const getContent = async (keys, entry) => {
     console.error(e);
   }
 
-  if (entry.media_embed && entry.media_embed.content) {
-    console.log(entry.media_embed);
-  }
-
   return {};
 };
 
