@@ -37,11 +37,7 @@ const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
       </button>
     );
 
-  return (
-    <div>
-      {button}
-    </div>
-  );
+  return <div>{button}</div>;
 };
 
 ViewMode.propTypes = {
