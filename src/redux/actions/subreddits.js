@@ -126,7 +126,7 @@ export function subredditsFetchLastUpdated() {
 
         dispatch(subredditsLastUpdated(toUpdate));
       } catch (e) {
-        console.log(e);
+        // console.log(e);
       }
     });
   };
