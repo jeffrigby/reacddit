@@ -435,6 +435,7 @@ class Entries extends React.Component {
             visible={visible}
             requestURL={listingsEntries.requestUrl}
             focused={focused}
+            actionable={actionable}
             match={match}
             location={location}
             listingsFilter={listingsFilter}

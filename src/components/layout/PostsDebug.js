@@ -10,6 +10,7 @@ const PostsDebug = ({
   location,
   match,
   requestURL,
+  actionable,
 }) => {
   const qs = queryString.parse(location.search);
 
@@ -19,7 +20,7 @@ const PostsDebug = ({
     2
   );
 
-  const visFocu = JSON.stringify({ focused, visible }, null, 2);
+  const visFocu = JSON.stringify({ focused, visible, actionable }, null, 2);
   const router = JSON.stringify({ location, match }, null, 2);
 
   return (
@@ -49,6 +50,7 @@ const PostsDebug = ({
 PostsDebug.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
   focused: PropTypes.string,
+  actionable: PropTypes.string,
   visible: PropTypes.array,
   location: PropTypes.object.isRequired,
   match: PropTypes.object.isRequired,
