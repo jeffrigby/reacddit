@@ -1,22 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { redditVote } from '../../redux/actions/reddit';
 
 const PostVote = props => {
-  const { bearer, likes, vote, id, ups } = props;
+  const { bearer, likes, ups, voteUp, voteDown } = props;
   const disabled = bearer.status !== 'auth';
   const upClass = likes === true ? 'fas' : 'far';
-  const upDir = likes === true ? 0 : 1;
   const downClass = likes === false ? 'fas' : 'far';
-  const downDir = likes === false ? 0 : -1;
   return (
     <div className="vote">
       <button
         type="button"
         className="btn btn-link btn-sm"
         disabled={disabled}
-        onClick={() => vote(`t3_${id}`, upDir)}
+        onClick={voteUp}
         title="Vote Up"
       >
         <i className={`fa-arrow-alt-circle-up ${upClass}`} />
@@ -26,7 +22,7 @@ const PostVote = props => {
         type="button"
         className="btn btn-link btn-sm"
         disabled={disabled}
-        onClick={() => vote(`t3_${id}`, downDir)}
+        onClick={voteDown}
         title="Vote Down"
       >
         <i className={`fa-arrow-alt-circle-down ${downClass}`} />
@@ -36,10 +32,10 @@ const PostVote = props => {
 };
 
 PostVote.propTypes = {
-  id: PropTypes.string.isRequired,
   ups: PropTypes.number.isRequired,
   likes: PropTypes.bool,
-  vote: PropTypes.func.isRequired,
+  voteUp: PropTypes.func.isRequired,
+  voteDown: PropTypes.func.isRequired,
   bearer: PropTypes.object.isRequired,
 };
 
@@ -47,15 +43,4 @@ PostVote.defaultProps = {
   likes: null,
 };
 
-const mapStateToProps = state => ({
-  bearer: state.redditBearer,
-});
-
-const mapDispatchToProps = dispatch => ({
-  vote: (id, dir) => dispatch(redditVote(id, dir)),
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(PostVote);
+export default PostVote;

@@ -8,6 +8,11 @@ import PostSave from './PostSave';
 import PostDebug from './PostDebug';
 import PostByline from './PostByline';
 import RenderContent from './embeds';
+import {
+  redditSave,
+  redditUnsave,
+  redditVote,
+} from '../../redux/actions/reddit';
 
 const queryString = require('query-string');
 
@@ -24,6 +29,10 @@ class Post extends React.Component {
     };
     this.showDebug = this.showDebug.bind(this);
     this.toggleView = this.toggleView.bind(this);
+    this.voteUp = this.voteUp.bind(this);
+    this.voteDown = this.voteDown.bind(this);
+    this.save = this.save.bind(this);
+    this.toggleViewAction = this.toggleViewAction.bind(this);
   }
 
   componentDidMount() {
@@ -87,6 +96,9 @@ class Post extends React.Component {
     if (props.visible !== nextProps.visible) {
       return true;
     }
+    if (props.actionable !== nextProps.actionable) {
+      return true;
+    }
     if (props.siteSettings.view !== nextProps.siteSettings.view) {
       return true;
     }
@@ -115,24 +127,70 @@ class Post extends React.Component {
     event.preventDefault();
   }
 
-  toggleView(event) {
+  toggleViewAction() {
     const { expand } = this.state;
     if (expand) {
       this.setState({ expand: false });
     } else {
       this.setState({ expand: true });
     }
+  }
+
+  toggleView(event) {
+    this.toggleViewAction();
     event.preventDefault();
   }
 
+  voteUp() {
+    const { entry, vote, bearer } = this.props;
+    if (bearer.status !== 'auth') return;
+
+    const { data } = entry;
+    const dir = data.likes === true ? 0 : 1;
+    vote(data.name, dir);
+  }
+
+  voteDown() {
+    const { entry, vote, bearer } = this.props;
+    if (bearer.status !== 'auth') return;
+
+    const { data } = entry;
+    const dir = data.likes === false ? 0 : -1;
+    vote(data.name, dir);
+  }
+
+  save() {
+    const { entry, save, unsave, bearer } = this.props;
+    if (bearer.status !== 'auth') return;
+
+    const { data } = entry;
+    const { saved, name } = data;
+    if (saved) {
+      unsave(name);
+    } else {
+      save(name);
+    }
+  }
+
   render() {
-    const { entry, focused, visible, siteSettings } = this.props;
+    const {
+      entry,
+      focused,
+      visible,
+      siteSettings,
+      bearer,
+      actionable,
+    } = this.props;
     const { data } = entry;
     const { showDebug, renderedContent, expand } = this.state;
 
     const classArray = ['entry', 'list-group-item'];
     if (focused) {
       classArray.push('focused');
+    }
+
+    if (actionable) {
+      classArray.push('actionable');
     }
 
     if (!expand) {
@@ -231,8 +289,14 @@ class Post extends React.Component {
           <header className="d-flex">
             {title}
             <div className="text-nowrap d-flex actions ml-auto">
-              <PostVote id={data.id} likes={data.likes} ups={data.ups} />
-              <PostSave name={data.name} saved={data.saved} />
+              <PostVote
+                likes={data.likes}
+                ups={data.ups}
+                voteDown={this.voteDown}
+                voteUp={this.voteUp}
+                bearer={bearer}
+              />
+              <PostSave saved={data.saved} save={this.save} bearer={bearer} />
               {searchLink}
               <div>{expandContractButton}</div>
             </div>
@@ -280,9 +344,14 @@ class Post extends React.Component {
 Post.propTypes = {
   entry: PropTypes.object.isRequired,
   focused: PropTypes.bool.isRequired,
+  actionable: PropTypes.bool.isRequired,
   listingFilter: PropTypes.object.isRequired,
   siteSettings: PropTypes.object.isRequired,
   visible: PropTypes.bool.isRequired,
+  vote: PropTypes.func.isRequired,
+  unsave: PropTypes.func.isRequired,
+  save: PropTypes.func.isRequired,
+  bearer: PropTypes.object.isRequired,
 };
 
 Post.defaultProps = {};
@@ -290,11 +359,18 @@ Post.defaultProps = {};
 const mapStateToProps = state => ({
   listingFilter: state.listingsFilter,
   siteSettings: state.siteSettings,
+  bearer: state.redditBearer,
 });
 
-const mapDispatchToProps = dispatch => ({});
+const mapDispatchToProps = dispatch => ({
+  vote: (id, dir) => dispatch(redditVote(id, dir)),
+  save: id => dispatch(redditSave(id)),
+  unsave: id => dispatch(redditUnsave(id)),
+});
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
+  null,
+  { forwardRef: true }
 )(Post);

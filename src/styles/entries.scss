@@ -25,6 +25,14 @@ div#entries {
     }
 
     .actions {
+      opacity: 0.5;
+    }
+
+    &.actionable .actions, .actions:hover {
+      opacity: 1;
+    }
+
+    .actions {
       div {
         margin-left: 0.25rem;
       }

@@ -58,10 +58,12 @@ class Entries extends React.Component {
     this.state = {
       focused: null,
       visible: [],
+      actionable: null,
       hasError: false,
     };
     this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
     this.setScrollResize = this.setScrollResize.bind(this);
+    this.actionPost = React.createRef();
   }
 
   async componentDidMount() {
@@ -85,7 +87,7 @@ class Entries extends React.Component {
 
   shouldComponentUpdate(nextProps, nextState) {
     const { ...props } = this.props;
-    const { focused, visible } = this.state;
+    const { focused, visible, actionable } = this.state;
 
     if (!isEqual(nextProps.listingsFilter, props.listingsFilter)) {
       return true;
@@ -107,6 +109,10 @@ class Entries extends React.Component {
     }
 
     if (focused !== nextState.focused) {
+      return true;
+    }
+
+    if (actionable !== nextState.actionable) {
       return true;
     }
 
@@ -134,6 +140,7 @@ class Entries extends React.Component {
       !isEqual(prevProps.listingsFilter, listingsFilter) ||
       !locationCompare
     ) {
+      this.postRefs = [];
       getEntriesReddit(listingsFilter);
     }
 
@@ -147,6 +154,7 @@ class Entries extends React.Component {
     document.removeEventListener('resize', this.setScrollResize, false);
     document.removeEventListener('scroll', this.setScrollResize, false);
     clearInterval(this.monitorEntriesInterval);
+    this.postRefs = {};
   }
 
   setInitFocusedAndVisible() {
@@ -215,6 +223,18 @@ class Entries extends React.Component {
         case 'k':
           Entries.prevEntry(focused);
           break;
+        case 'a':
+          this.actionPost.current.voteUp();
+          break;
+        case 'z':
+          this.actionPost.current.voteDown();
+          break;
+        case 's':
+          this.actionPost.current.save();
+          break;
+        case 'o':
+          this.actionPost.current.toggleViewAction();
+          break;
         case '.':
           Entries.scrollToBottom();
           break;
@@ -247,6 +267,7 @@ class Entries extends React.Component {
       const postsCollection = document.getElementsByClassName('entry');
       const posts = Array.from(postsCollection);
       let newFocus = false;
+      let newActionable = false;
       const newVis = [];
 
       posts.forEach(post => {
@@ -260,6 +281,14 @@ class Entries extends React.Component {
               newFocus = post.id;
             }
           }
+
+          if (!newActionable) {
+            const actionTop = top - 16;
+            if (actionTop > 0) {
+              newActionable = post.id;
+            }
+          }
+
           newVis.push(post.id);
         }
 
@@ -280,15 +309,17 @@ class Entries extends React.Component {
 
       this.setState({
         focused: newFocus,
+        actionable: newActionable,
         visible: newVis,
       });
 
       this.checkLoadMore();
     }
 
-    // Check if iframe is focused. If it is, unfocus it.
+    // Check if iframe is focused. If it is, unfocus it so hotkeys work.
     if (document.activeElement.tagName === 'IFRAME') {
       window.focus();
+      document.activeElement.blur();
     }
   }
 
@@ -375,12 +406,14 @@ class Entries extends React.Component {
 
     let entries = '';
     const entriesObject = listingsEntries.children;
-    const { focused, visible } = this.state;
+    const { focused, visible, actionable } = this.state;
     const entriesKeys = Object.keys(entriesObject);
     if (entriesKeys.length > 0) {
       entries = entriesKeys.map(key => {
         const isFocused = focused === entriesObject[key].data.name;
         const isVisible = visible.includes(entriesObject[key].data.name);
+        const isActionable = actionable === entriesObject[key].data.name;
+        const ref = isActionable ? this.actionPost : null;
         return (
           <Post
             entry={entriesObject[key]}
@@ -388,6 +421,8 @@ class Entries extends React.Component {
             loaded={entriesObject[key].data.loaded}
             focused={isFocused}
             visible={isVisible}
+            actionable={isActionable}
+            ref={ref}
           />
         );
       });
@@ -413,17 +448,17 @@ class Entries extends React.Component {
 }
 
 Entries.propTypes = {
-  match: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
-  location: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
-  setFilter: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  getEntriesReddit: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  getMoreRedditEntries: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  setSiteSetting: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
-  listingsEntries: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
-  listingsFilter: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
-  listingsStatus: PropTypes.string.isRequired, // eslint-disable-line react/no-unused-prop-types
-  entries: PropTypes.object,
   disableHotkeys: PropTypes.bool.isRequired,
+  entries: PropTypes.object,
+  getEntriesReddit: PropTypes.func.isRequired,
+  getMoreRedditEntries: PropTypes.func.isRequired,
+  listingsEntries: PropTypes.object.isRequired,
+  listingsFilter: PropTypes.object.isRequired,
+  listingsStatus: PropTypes.string.isRequired,
+  location: PropTypes.object.isRequired,
+  match: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
+  setSiteSetting: PropTypes.func.isRequired,
   siteSettings: PropTypes.object,
 };
 
@@ -433,11 +468,11 @@ Entries.defaultProps = {
 };
 
 const mapStateToProps = (state, ownProps) => ({
-  listingsFilter: state.listingsFilter,
-  listingsEntries: state.listingsRedditEntries,
-  listingsStatus: state.listingsRedditStatus,
-  entries: state.listingsRedditEntries.children,
   disableHotkeys: state.disableHotKeys,
+  entries: state.listingsRedditEntries.children,
+  listingsEntries: state.listingsRedditEntries,
+  listingsFilter: state.listingsFilter,
+  listingsStatus: state.listingsRedditStatus,
   siteSettings: state.siteSettings,
 });
 

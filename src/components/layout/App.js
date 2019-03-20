@@ -120,25 +120,27 @@ class App extends React.Component {
 
     return (
       <div>
-        <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
-          <Header />
-        </header>
-        <aside className="sidebar bg-light" id="navigation">
-          <div id="aside-content" className="h-100 d-flex px-3">
-            <Navigation
-              redditBearer={redditBearer}
-              subredditsFilter={subredditsFilter}
-            />
-          </div>
-        </aside>
+        <React.StrictMode>
+          <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
+            <Header />
+          </header>
+          <aside className="sidebar bg-light" id="navigation">
+            <div id="aside-content" className="h-100 d-flex px-3">
+              <Navigation
+                redditBearer={redditBearer}
+                subredditsFilter={subredditsFilter}
+              />
+            </div>
+          </aside>
 
-        <main id="main">
-          <div className="list-group" id="entries">
-            <Switch>{routes}</Switch>
-          </div>
-        </main>
+          <main id="main">
+            <div className="list-group" id="entries">
+              <Switch>{routes}</Switch>
+            </div>
+          </main>
 
-        <div id="push" />
+          <div id="push" />
+        </React.StrictMode>
       </div>
     );
   }
