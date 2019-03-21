@@ -11,14 +11,12 @@ import '../../styles/layout.scss';
 import * as misc from '../../redux/actions/misc';
 
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.tokenQuery = null;
-    this.state = {
-      error: false,
-      message: null,
-    };
-  }
+  tokenQuery = null;
+
+  state = {
+    error: false,
+    message: null,
+  };
 
   async componentDidMount() {
     const { getBearer, getMe } = this.props;
@@ -66,7 +64,7 @@ class App extends React.Component {
 
   render() {
     const { error, message } = this.state;
-    const { redditBearer, subredditsFilter } = this.props;
+    const { redditBearer, subredditsFilter, listingsFilter } = this.props;
 
     if (error) {
       return (
@@ -122,7 +120,7 @@ class App extends React.Component {
       <div>
         <React.StrictMode>
           <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
-            <Header />
+            <Header listingsFilter={listingsFilter} />
           </header>
           <aside className="sidebar bg-light" id="navigation">
             <div id="aside-content" className="h-100 d-flex px-3">
@@ -154,6 +152,7 @@ App.propTypes = {
   siteSettings: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
+  listingsFilter: PropTypes.object.isRequired,
 };
 
 App.defaultProps = {};
@@ -163,6 +162,7 @@ const mapStateToProps = state => ({
   disableHotkeys: state.disableHotKeys,
   siteSettings: state.siteSettings,
   subredditsFilter: state.subredditsFilter,
+  listingsFilter: state.listingsFilter,
 });
 
 const mapDispatchToProps = dispatch => ({

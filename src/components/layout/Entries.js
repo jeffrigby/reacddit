@@ -47,24 +47,22 @@ class Entries extends React.Component {
     window.scrollTo(0, document.body.scrollHeight);
   }
 
-  constructor(props) {
-    super(props);
-    this.monitorEntriesInterval = null;
-    this.scrollResize = true;
-    this.scrollResizeStop = true;
-    this.initTriggered = null;
-    // this.renderedLinks = [];
-    this.monitorEntries = this.monitorEntries.bind(this);
-    this.state = {
-      focused: null,
-      visible: [],
-      actionable: null,
-      hasError: false,
-    };
-    this.handleEntriesHotkey = this.handleEntriesHotkey.bind(this);
-    this.setScrollResize = this.setScrollResize.bind(this);
-    this.actionPost = React.createRef();
-  }
+  monitorEntriesInterval = null;
+
+  scrollResize = true;
+
+  scrollResizeStop = true;
+
+  initTriggered = null;
+
+  state = {
+    focused: null,
+    visible: [],
+    actionable: null,
+    hasError: false,
+  };
+
+  actionPost = React.createRef();
 
   async componentDidMount() {
     this.accessToken = await RedditAPI.getToken(false);
@@ -200,11 +198,11 @@ class Entries extends React.Component {
     }
   }
 
-  setScrollResize() {
+  setScrollResize = () => {
     this.scrollResize = true;
-  }
+  };
 
-  handleEntriesHotkey(event) {
+  handleEntriesHotkey = event => {
     const {
       disableHotkeys,
       setSiteSetting,
@@ -257,15 +255,9 @@ class Entries extends React.Component {
         // console.log(e);
       }
     }
-  }
+  };
 
-  // componentDidCatch(error, info) {
-  //   // You can also log the error to an error reporting service
-  //   // eslint-disable-next-line no-console
-  //   console.log(error, info);
-  // }
-
-  monitorEntries(force) {
+  monitorEntries = force => {
     if ((this.scrollResize && !this.scrollResizeStop) || force) {
       this.scrollResize = false;
 
@@ -326,7 +318,7 @@ class Entries extends React.Component {
       window.focus();
       document.activeElement.blur();
     }
-  }
+  };
 
   checkLoadMore() {
     const { listingsStatus, getMoreRedditEntries } = this.props;

@@ -42,7 +42,7 @@ const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
 
 ViewMode.propTypes = {
   siteSettingsView: PropTypes.string,
-  setSiteSetting: PropTypes.func.isRequired, // eslint-disable-line react/no-unused-prop-types
+  setSiteSetting: PropTypes.func.isRequired,
 };
 
 ViewMode.defaultProps = {

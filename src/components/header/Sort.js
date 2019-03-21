@@ -12,52 +12,45 @@ const queryString = require('query-string');
  */
 
 class Sort extends React.Component {
-  constructor(props) {
-    super(props);
-    this.handleSortHotkey = this.handleSortHotkey.bind(this);
-    this.genLink = this.genLink.bind(this);
-    this.renderLinks = this.renderLinks.bind(this);
-    this.renderTimeSubLinks = this.renderTimeSubLinks.bind(this);
-    this.catsSearch = {
-      R: 'relevance',
-      T: 'top',
-      N: 'new',
-    };
-    this.catsFront = {
-      B: 'best',
-      H: 'hot',
-      T: 'top',
-      N: 'new',
-      C: 'controversial',
-      R: 'rising',
-    };
-    this.catsReddits = {
-      H: 'hot',
-      T: 'top',
-      N: 'new',
-      C: 'controversial',
-      R: 'rising',
-    };
+  catsSearch = {
+    R: 'relevance',
+    T: 'top',
+    N: 'new',
+  };
 
-    this.catsMultis = {
-      H: 'hot',
-      T: 'top',
-      N: 'new',
-      C: 'controversial',
-      R: 'rising',
-    };
+  catsFront = {
+    B: 'best',
+    H: 'hot',
+    T: 'top',
+    N: 'new',
+    C: 'controversial',
+    R: 'rising',
+  };
 
-    this.timeCats = {
-      hour: 'past hour',
-      day: 'past 24 hour',
-      week: 'past week',
-      month: 'past month',
-      year: 'past year',
-      all: 'all time',
-    };
+  catsReddits = {
+    H: 'hot',
+    T: 'top',
+    N: 'new',
+    C: 'controversial',
+    R: 'rising',
+  };
 
-    this.lastKeyPressed = null;
-  }
+  catsMultis = {
+    H: 'hot',
+    T: 'top',
+    N: 'new',
+    C: 'controversial',
+    R: 'rising',
+  };
+
+  timeCats = {
+    hour: 'past hour',
+    day: 'past 24 hour',
+    week: 'past week',
+    month: 'past month',
+    year: 'past year',
+    all: 'all time',
+  };
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleSortHotkey);
@@ -67,7 +60,7 @@ class Sort extends React.Component {
     document.removeEventListener('keydown', this.handleSortHotkey);
   }
 
-  handleSortHotkey(event) {
+  handleSortHotkey = event => {
     const { disableHotKeys, listingsFilter, ...props } = this.props;
     if (!disableHotKeys && listingsFilter.target !== 'friends') {
       const pressedKey = event.key;
@@ -100,9 +93,9 @@ class Sort extends React.Component {
           break;
       }
     }
-  }
+  };
 
-  genLink(sort, t) {
+  genLink = (sort, t) => {
     const { listingsFilter, search, me } = this.props;
     const { listType, target, userType } = listingsFilter;
     const qs = queryString.parse(search);
@@ -138,9 +131,9 @@ class Sort extends React.Component {
     }
 
     return link;
-  }
+  };
 
-  renderTimeSubLinks(sort) {
+  renderTimeSubLinks = sort => {
     const { listingsFilter, search } = this.props;
     const { listType, target } = listingsFilter;
 
@@ -174,9 +167,9 @@ class Sort extends React.Component {
     });
 
     return links;
-  }
+  };
 
-  renderLinks() {
+  renderLinks = () => {
     const { listingsFilter } = this.props;
     const { listType, target } = listingsFilter;
     let links2render = {};
@@ -218,7 +211,7 @@ class Sort extends React.Component {
     });
 
     return links;
-  }
+  };
 
   render() {
     const { listingsFilter, subreddits, search } = this.props;

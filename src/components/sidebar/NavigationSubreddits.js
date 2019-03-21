@@ -9,12 +9,7 @@ import {
 import NavigationItem from './NavigationItem';
 
 class NavigationSubReddits extends React.Component {
-  constructor(props) {
-    super(props);
-    this.reloadSubredditsClick = this.reloadSubredditsClick.bind(this);
-    this.handleSubredditHotkey = this.handleSubredditHotkey.bind(this);
-    this.checkLastUpdated = null;
-  }
+  checkLastUpdated = null;
 
   componentDidMount() {
     const { fetchSubreddits, redditBearer, fetchLastUpdated } = this.props;
@@ -33,7 +28,7 @@ class NavigationSubReddits extends React.Component {
    * Configure the navigation hotkeys.
    * @param event
    */
-  handleSubredditHotkey(event) {
+  handleSubredditHotkey = event => {
     const { disableHotkeys } = this.props;
     const pressedKey = event.key;
 
@@ -46,16 +41,16 @@ class NavigationSubReddits extends React.Component {
           break;
       }
     }
-  }
+  };
 
   /**
    * Force reload all of the subreddits.
    */
-  reloadSubreddits() {
+  reloadSubreddits = () => {
     const { fetchSubreddits, redditBearer } = this.props;
     const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
     fetchSubreddits(true, where);
-  }
+  };
 
   /**
    * Handle the click on the reload subreddits

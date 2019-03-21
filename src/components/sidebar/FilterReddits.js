@@ -6,15 +6,7 @@ import { subredditsFilter } from '../../redux/actions/subreddits';
 import { disableHotKeys } from '../../redux/actions/misc';
 
 class FilterReddits extends React.Component {
-  constructor(props) {
-    super(props);
-    this.clearSearch = this.clearSearch.bind(this);
-    this.disableHotkeys = this.disableHotkeys.bind(this);
-    this.enableHotkeys = this.enableHotkeys.bind(this);
-    this.filterReddits = this.filterReddits.bind(this);
-    this.handleFilterHotkey = this.handleFilterHotkey.bind(this);
-    this.filterInput = React.createRef();
-  }
+  filterInput = React.createRef();
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleFilterHotkey);
@@ -24,7 +16,7 @@ class FilterReddits extends React.Component {
     document.removeEventListener('keydown', this.handleFilterHotkey);
   }
 
-  handleFilterHotkey(event) {
+  handleFilterHotkey = event => {
     const {
       disableHotkeys,
       filter,
@@ -81,14 +73,14 @@ class FilterReddits extends React.Component {
           break;
       }
     }
-  }
+  };
 
   /**
    * Set the subreddit filter data.
    * @param item
    * @returns {void|*}
    */
-  filterReddits(item) {
+  filterReddits = item => {
     const { setFilter } = this.props;
     const filterText = item.target.value;
     // Always reset the index.
@@ -97,38 +89,38 @@ class FilterReddits extends React.Component {
       return setFilter({ filterText: '', activeIndex });
     }
     return setFilter({ filterText, activeIndex });
-  }
+  };
 
   /**
    * Helper to clear the filter textbox
    */
-  clearSearch() {
+  clearSearch = () => {
     const { setFilter } = this.props;
     const filterText = '';
     const activeIndex = 0;
     setFilter({ filterText, activeIndex });
-  }
+  };
 
   /**
    * Disable the hotkeys when using the filter.
    */
-  disableHotkeys() {
+  disableHotkeys = () => {
     const { setDisableHotkeys, setFilter } = this.props;
     const active = true;
     setFilter({ active });
     setDisableHotkeys(true);
-  }
+  };
 
   /**
    * Enable the hotkeys when not in a textbox.
    */
-  enableHotkeys() {
+  enableHotkeys = () => {
     const { setDisableHotkeys, setFilter } = this.props;
     const active = false;
     const activeIndex = 0;
     setFilter({ active, activeIndex });
     setDisableHotkeys(false);
-  }
+  };
 
   render() {
     const { filter } = this.props;

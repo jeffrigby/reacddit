@@ -18,8 +18,8 @@ class Search extends React.Component {
   state = {
     focused: false,
     search: '',
-    qs: null,
-    pathname: null,
+    qs: this.props.location.search,
+    pathname: this.props.location.pathname,
   };
 
   componentDidMount() {

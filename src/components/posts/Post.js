@@ -22,8 +22,8 @@ class Post extends React.Component {
   state = {
     showDebug: false,
     renderedContent: {},
-    viewSetting: 'expanded',
-    expand: false,
+    viewSetting: this.props.siteSettings.view,
+    expand: this.props.siteSettings.view === 'expanded' || false,
   };
 
   componentDidMount() {

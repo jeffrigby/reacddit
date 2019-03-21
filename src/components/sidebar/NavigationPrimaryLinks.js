@@ -6,12 +6,7 @@ import isEmpty from 'lodash/isEmpty';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 class NavigationPrimaryLinks extends React.Component {
-  constructor(props) {
-    super(props);
-    this.lastKeyPressed = null;
-    this.randomSubPush = this.randomSubPush.bind(this);
-    this.handleNavPrimaryHotkey = this.handleNavPrimaryHotkey.bind(this);
-  }
+  lastKeyPressed = null;
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleNavPrimaryHotkey);
@@ -25,7 +20,7 @@ class NavigationPrimaryLinks extends React.Component {
    * Configure the navigation hotkeys.
    * @param event
    */
-  handleNavPrimaryHotkey(event) {
+  handleNavPrimaryHotkey = event => {
     const { disableHotkeys, sort, me, ...props } = this.props;
     const pressedKey = event.key;
 
@@ -86,13 +81,13 @@ class NavigationPrimaryLinks extends React.Component {
 
       this.lastKeyPressed = pressedKey;
     }
-  }
+  };
 
   /**
    * Load a random subreddit from the current users subscribed reddits.
    * @returns {*}
    */
-  randomSubPush(e) {
+  randomSubPush = e => {
     if (e) e.preventDefault();
     const { subreddits, sort, t, ...props } = this.props;
     if (isEmpty(subreddits.subreddits)) {
@@ -108,7 +103,7 @@ class NavigationPrimaryLinks extends React.Component {
 
     const url = randomSubreddit.url + (sort || 'hot') + sortTopQS;
     return props.push(url);
-  }
+  };
 
   render() {
     const { me, sort } = this.props;

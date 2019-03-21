@@ -8,18 +8,14 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 const queryString = require('query-string');
 
 class MultiRedditsItem extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      showSubs: false,
-    };
-    this.hideShowSubs = this.hideShowSubs.bind(this);
-  }
+  state = {
+    showSubs: false,
+  };
 
-  hideShowSubs() {
+  hideShowSubs = () => {
     const { showSubs } = this.state;
     this.setState({ showSubs: !showSubs });
-  }
+  };
 
   render() {
     const { item, sort, location } = this.props;

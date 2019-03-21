@@ -6,14 +6,11 @@ import RedditAPI from '../../reddit/redditAPI';
 import MultiRedditsItem from './MultiRedditsItem';
 
 class MultiReddits extends React.Component {
-  constructor(props) {
-    super(props);
-    this.accessToken = null;
-    this.state = {
-      loading: true,
-    };
-    this.reloadMultis = this.reloadMultis.bind(this);
-  }
+  accessToken = null;
+
+  state = {
+    loading: true,
+  };
 
   async componentDidMount() {
     const { fetchMultis } = this.props;
@@ -25,12 +22,12 @@ class MultiReddits extends React.Component {
     }
   }
 
-  async reloadMultis() {
+  reloadMultis = async () => {
     const { fetchMultis } = this.props;
     this.setState({ loading: true });
     await fetchMultis(true);
     this.setState({ loading: false });
-  }
+  };
 
   generateMultiItems() {
     const { multireddits } = this.props;
