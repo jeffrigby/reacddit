@@ -19,21 +19,12 @@ const queryString = require('query-string');
 class Post extends React.Component {
   mounted = false;
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      showDebug: false,
-      renderedContent: {},
-      condenseSticky: props.siteSettings.condenseSticky,
-      expand: props.siteSettings.view === 'expanded' || false,
-    };
-    this.showDebug = this.showDebug.bind(this);
-    this.toggleView = this.toggleView.bind(this);
-    this.voteUp = this.voteUp.bind(this);
-    this.voteDown = this.voteDown.bind(this);
-    this.save = this.save.bind(this);
-    this.toggleViewAction = this.toggleViewAction.bind(this);
-  }
+  state = {
+    showDebug: false,
+    renderedContent: {},
+    viewSetting: 'expanded',
+    expand: false,
+  };
 
   componentDidMount() {
     this.mounted = true;
@@ -62,24 +53,28 @@ class Post extends React.Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { entry, siteSettings } = this.props;
-    if (siteSettings.view !== nextProps.siteSettings.view) {
-      if (!entry.data.stickied) {
-        this.setState({
-          expand: nextProps.siteSettings.view === 'expanded' || false,
-        });
-      } else {
-        this.setState({
-          expand: !nextProps.siteSettings.condenseSticky,
-        });
-      }
+  static getDerivedStateFromProps(props, state) {
+    const { entry, siteSettings } = props;
+    if (siteSettings.view === state.viewSetting) {
+      return null;
     }
+
+    if (!entry.data.stickied) {
+      return {
+        expand: siteSettings.view === 'expanded' || false,
+        viewSetting: siteSettings.view,
+      };
+    }
+
+    return {
+      expand: !siteSettings.condenseSticky,
+      viewSetting: siteSettings.view,
+    };
   }
 
   shouldComponentUpdate(nextProps, nextState) {
     const { ...props } = this.props;
-    const { showDebug, renderedContent, condenseSticky, expand } = this.state;
+    const { showDebug, renderedContent, expand } = this.state;
 
     if (props.listingFilter.sort !== nextProps.listingFilter.sort) {
       return true;
@@ -105,11 +100,7 @@ class Post extends React.Component {
     if (props.siteSettings.debug !== nextProps.siteSettings.debug) {
       return true;
     }
-    if (
-      showDebug !== nextState.showDebug ||
-      condenseSticky !== nextState.condenseSticky ||
-      expand !== nextState.expand
-    ) {
+    if (showDebug !== nextState.showDebug || expand !== nextState.expand) {
       return true;
     }
     if (renderedContent !== nextState.renderedContent) {
@@ -122,44 +113,44 @@ class Post extends React.Component {
     this.mounted = false;
   }
 
-  showDebug(event) {
+  showDebug = event => {
     this.setState({ showDebug: true });
     event.preventDefault();
-  }
+  };
 
-  toggleViewAction() {
+  toggleViewAction = () => {
     const { expand } = this.state;
     if (expand) {
       this.setState({ expand: false });
     } else {
       this.setState({ expand: true });
     }
-  }
+  };
 
-  toggleView(event) {
+  toggleView = event => {
     this.toggleViewAction();
     event.preventDefault();
-  }
+  };
 
-  voteUp() {
+  voteUp = () => {
     const { entry, vote, bearer } = this.props;
     if (bearer.status !== 'auth') return;
 
     const { data } = entry;
     const dir = data.likes === true ? 0 : 1;
     vote(data.name, dir);
-  }
+  };
 
-  voteDown() {
+  voteDown = () => {
     const { entry, vote, bearer } = this.props;
     if (bearer.status !== 'auth') return;
 
     const { data } = entry;
     const dir = data.likes === false ? 0 : -1;
     vote(data.name, dir);
-  }
+  };
 
-  save() {
+  save = () => {
     const { entry, save, unsave, bearer } = this.props;
     if (bearer.status !== 'auth') return;
 
@@ -170,7 +161,7 @@ class Post extends React.Component {
     } else {
       save(name);
     }
-  }
+  };
 
   render() {
     const {
