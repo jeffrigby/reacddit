@@ -19,53 +19,63 @@ const parsed = queryString.parse(search);
 if (parsed.logout !== undefined) {
   localStorage.clear();
   sessionStorage.clear();
-  window.history.replaceState({}, document.title, '/');
+  window.location.href = '/';
 }
 
-// Clear the local/session cache. Mostly for debugging.
-if (parsed.cb !== undefined) {
-  localStorage.clear();
-  sessionStorage.clear();
+if (parsed.login !== undefined) {
+  localStorage.removeItem('state');
+  window.location.href = '/';
 }
 
-// Check for hash, this is for cloudflare caching.
-// Set up a page rule for https://mydomain.com/* -> https://mydomain.com/#$1
-// This allows all request to come through to / allowing the CDN to cache
-// Everything.
-if (hash) {
-  window.history.replaceState({}, document.title, hash.substring(1));
-}
+if (parsed.login !== undefined || parsed.logout !== undefined) {
+  // Don't render anything if logging out/in.
+  ReactDOM.render(<></>, document.getElementById('root'));
+} else {
+  // Clear the local/session cache. Mostly for debugging.
+  if (parsed.cb !== undefined) {
+    localStorage.clear();
+    sessionStorage.clear();
+  }
 
-const persistedState = loadState();
+  // Check for hash, this is for cloudflare caching.
+  // Set up a page rule for https://mydomain.com/* -> https://mydomain.com/#$1
+  // This allows all request to come through to / allowing the CDN to cache
+  // Everything.
+  if (hash) {
+    window.history.replaceState({}, document.title, hash.substring(1));
+  }
 
-// Create a history of your choosing (we're using a browser history in this case)
-const history = createBrowserHistory();
-const store = configureStore(persistedState, history);
+  const persistedState = loadState();
 
-store.subscribe(
-  throttle(() => {
-    saveState({
-      // subreddits: store.getState().subreddits,
-      debugMode: store.getState().debugMode,
-      lastUpdated: store.getState().lastUpdated,
-      lastUpdatedTime: store.getState().lastUpdatedTime,
-      redditMe: store.getState().redditMe,
-      siteSettings: store.getState().siteSettings,
-      subreddits: store.getState().subreddits,
-      redditMultiReddits: store.getState().redditMultiReddits,
-    });
-  }, 1000)
-);
+  // Create a history of your choosing (we're using a browser history in this case)
+  const history = createBrowserHistory();
+  const store = configureStore(persistedState, history);
 
-const render = Component => {
-  ReactDOM.render(
-    <Provider store={store}>
-      <ConnectedRouter history={history}>
-        <Component />
-      </ConnectedRouter>
-    </Provider>,
-    document.getElementById('root')
+  store.subscribe(
+    throttle(() => {
+      saveState({
+        // subreddits: store.getState().subreddits,
+        debugMode: store.getState().debugMode,
+        lastUpdated: store.getState().lastUpdated,
+        lastUpdatedTime: store.getState().lastUpdatedTime,
+        redditMe: store.getState().redditMe,
+        siteSettings: store.getState().siteSettings,
+        subreddits: store.getState().subreddits,
+        redditMultiReddits: store.getState().redditMultiReddits,
+      });
+    }, 1000)
   );
-};
 
-render(Root);
+  const render = Component => {
+    ReactDOM.render(
+      <Provider store={store}>
+        <ConnectedRouter history={history}>
+          <Component />
+        </ConnectedRouter>
+      </Provider>,
+      document.getElementById('root')
+    );
+  };
+
+  render(Root);
+}

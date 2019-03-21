@@ -288,7 +288,7 @@ router.get('/api/callback', async (ctx, next) => {
       // we are good.
       const accessToken = addExtraInfo(token);
       setSessAndCookie(accessToken, ctx);
-      ctx.redirect('/');
+      ctx.redirect('/?login');
       return;
     }
   } catch (exception) {
