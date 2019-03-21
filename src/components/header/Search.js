@@ -11,44 +11,44 @@ const queryString = require('query-string');
  */
 
 class Search extends React.Component {
-  constructor(props) {
-    super(props);
-    this.focusSearch = this.focusSearch.bind(this);
-    this.blurSearch = this.blurSearch.bind(this);
-    this.processSearch = this.processSearch.bind(this);
-    this.handleSearchHotkey = this.handleSearchHotkey.bind(this);
-    this.searchInput = React.createRef();
-    this.searchInputParent = React.createRef();
-    this.state = {
-      focused: false,
-    };
-  }
+  searchInput = React.createRef();
+
+  searchInputParent = React.createRef();
+
+  state = {
+    focused: false,
+    search: '',
+    qs: null,
+    pathname: null,
+  };
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleSearchHotkey);
   }
 
-  componentWillReceiveProps(nextProps) {
-    // @TODO not convinced this is the right or best way to do this.
-    const { location } = this.props;
-    if (
-      location.pathname !== nextProps.location.pathname &&
-      nextProps.location.pathname.indexOf('search') === -1
-    ) {
-      this.searchInput.current.value = '';
+  static getDerivedStateFromProps(props, state) {
+    const { location } = props;
+    if (state.pathname === location.pathname && state.qs === location.search) {
+      return null;
     }
 
-    if (location.search !== nextProps.location.search) {
-      const qs = queryString.parse(nextProps.location.search);
-      this.searchInput.current.value = qs.q || '';
-    }
+    const qs = queryString.parse(location.search);
+    return {
+      search: qs.q || '',
+      pathname: location.pathname,
+      qs: location.search,
+    };
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleSearchHotkey);
   }
 
-  handleSearchHotkey(event) {
+  handleChange = event => {
+    this.setState({ search: event.target.value });
+  };
+
+  handleSearchHotkey = event => {
     const { disableHotkeys } = this.props;
     const { focused } = this.state;
     const pressedKey = event.key;
@@ -75,21 +75,21 @@ class Search extends React.Component {
           break;
       }
     }
-  }
+  };
 
-  focusSearch() {
+  focusSearch = () => {
     const { setDisableHotkeys } = this.props;
     this.setState({ focused: true });
     setDisableHotkeys(true);
-  }
+  };
 
-  blurSearch() {
+  blurSearch = () => {
     const { setDisableHotkeys } = this.props;
     this.setState({ focused: false });
     setDisableHotkeys(false);
-  }
+  };
 
-  processSearch(e) {
+  processSearch = e => {
     const { listingsFilter, pushUrl, location } = this.props;
     const { listType, target, user, multi } = listingsFilter;
     const q = e.target.value;
@@ -137,11 +137,11 @@ class Search extends React.Component {
       pushUrl(url);
       this.searchInput.current.blur();
     }
-  }
+  };
 
   render() {
     const { listingsFilter, location } = this.props;
-    const { focused } = this.state;
+    const { focused, search } = this.state;
 
     let placeholder = 'search Reddit';
     let global = true;
@@ -171,8 +171,10 @@ class Search extends React.Component {
           onFocus={this.focusSearch}
           onBlur={this.blurSearch}
           onKeyUp={this.processSearch}
+          onChange={this.handleChange}
           placeholder={placeholder}
           title={title}
+          value={search}
           defaultValue={currentSearch.q}
           ref={this.searchInput}
         />
