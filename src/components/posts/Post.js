@@ -238,12 +238,17 @@ class Post extends React.Component {
     const viewIcon = expand
       ? 'fas fa-compress-arrows-alt'
       : 'fas fa-expand-arrows-alt';
+
+    const viewTitle = expand
+      ? 'Close this post (press o)'
+      : 'Open this post (press o)';
+
     const expandContractButton = (
       <button
         onClick={this.toggleView}
         type="button"
         className="btn btn-link btn-sm m-0 p-0"
-        title="Compress this post"
+        title={viewTitle}
       >
         <i className={viewIcon} />
       </button>
