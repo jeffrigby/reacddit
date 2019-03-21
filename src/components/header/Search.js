@@ -140,7 +140,7 @@ class Search extends React.Component {
   };
 
   render() {
-    const { listingsFilter, location } = this.props;
+    const { listingsFilter } = this.props;
     const { focused, search } = this.state;
 
     let placeholder = 'search Reddit';
@@ -159,7 +159,6 @@ class Search extends React.Component {
         ? 'Press shift-return to search all of reddit'
         : '';
 
-    const currentSearch = queryString.parse(location.search);
     const searchClassName = focused ? 'search-focused' : undefined;
 
     return (
@@ -175,7 +174,6 @@ class Search extends React.Component {
           placeholder={placeholder}
           title={title}
           value={search}
-          defaultValue={currentSearch.q}
           ref={this.searchInput}
         />
         {focused && !global && (
