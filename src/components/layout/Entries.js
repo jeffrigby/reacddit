@@ -6,7 +6,6 @@ import isNil from 'lodash/isNil';
 import * as listings from '../../redux/actions/listings';
 import * as misc from '../../redux/actions/misc';
 import Post from '../posts/Post';
-import RedditAPI from '../../reddit/redditAPI';
 import '../../styles/entries.scss';
 import PostsDebug from './PostsDebug';
 
@@ -47,6 +46,8 @@ class Entries extends React.Component {
     window.scrollTo(0, document.body.scrollHeight);
   }
 
+  mounted = false;
+
   monitorEntriesInterval = null;
 
   scrollResize = true;
@@ -64,8 +65,9 @@ class Entries extends React.Component {
 
   actionPost = React.createRef();
 
-  async componentDidMount() {
-    this.accessToken = await RedditAPI.getToken(false);
+  componentDidMount() {
+    this.mounted = true;
+
     this.scrollResizeStop = false;
     const { match, location } = this.props;
     this.setRedux(match, location);
@@ -147,6 +149,8 @@ class Entries extends React.Component {
 
   componentWillUnmount() {
     this.scrollResizeStop = true;
+    this.mounted = false;
+
     // Events.
     document.removeEventListener('keydown', this.handleEntriesHotkey);
     document.removeEventListener('resize', this.setScrollResize, false);
@@ -258,6 +262,7 @@ class Entries extends React.Component {
   };
 
   monitorEntries = force => {
+    if (!this.mounted) return;
     if ((this.scrollResize && !this.scrollResizeStop) || force) {
       this.scrollResize = false;
 

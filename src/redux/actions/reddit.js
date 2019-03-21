@@ -121,97 +121,86 @@ export function redditFetchMultis(reset) {
 
 export function redditSave(id) {
   return async (dispatch, getState) => {
-    const token = await RedditAPI.getToken(false);
-    if (token) {
-      await RedditAPI.save(id);
-      const updatedEntry = {
-        name: id,
-        saved: true,
-      };
-      dispatch(listingsEntryUpdate(updatedEntry));
-    }
+    await RedditAPI.save(id);
+    const updatedEntry = {
+      name: id,
+      saved: true,
+    };
+    dispatch(listingsEntryUpdate(updatedEntry));
   };
 }
 
 export function redditUnsave(id) {
   return async (dispatch, getState) => {
-    const token = await RedditAPI.getToken(false);
-    if (token) {
-      await RedditAPI.unsave(id);
-      const updatedEntry = {
-        name: id,
-        saved: false,
-      };
-      dispatch(listingsEntryUpdate(updatedEntry));
-    }
+    await RedditAPI.unsave(id);
+    const updatedEntry = {
+      name: id,
+      saved: false,
+    };
+    dispatch(listingsEntryUpdate(updatedEntry));
   };
 }
 
 export function redditVote(id, dir) {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const token = await RedditAPI.getToken(false);
-    if (token) {
-      try {
-        let { likes, ups } = currentState.listingsRedditEntries.children[
-          id
-        ].data;
-        await RedditAPI.vote(id, dir);
+    try {
+      let { likes, ups } = currentState.listingsRedditEntries.children[id].data;
+      await RedditAPI.vote(id, dir);
 
-        switch (dir) {
-          case 1:
-            switch (likes) {
-              case true:
-                break;
-              case false:
-                ups += 2;
-                break;
-              default:
-                ups += 1;
-                break;
-            }
-            likes = true;
-            break;
-          case -1:
-            switch (likes) {
-              case true:
-                ups -= 2;
-                break;
-              case false:
-                break;
-              default:
-                ups -= 1;
-                break;
-            }
-            likes = false;
-            break;
-          case 0:
-            switch (likes) {
-              case true:
-                ups -= 1;
-                break;
-              case false:
-                ups += 1;
-                break;
-              default:
-                break;
-            }
-            likes = null;
-            break;
-          default:
-            break;
-        }
-
-        const updatedEntry = {
-          name: id,
-          ups,
-          likes,
-        };
-
-        dispatch(listingsEntryUpdate(updatedEntry));
-      } catch (e) {
-        // console.log(e);
+      switch (dir) {
+        case 1:
+          switch (likes) {
+            case true:
+              break;
+            case false:
+              ups += 2;
+              break;
+            default:
+              ups += 1;
+              break;
+          }
+          likes = true;
+          break;
+        case -1:
+          switch (likes) {
+            case true:
+              ups -= 2;
+              break;
+            case false:
+              break;
+            default:
+              ups -= 1;
+              break;
+          }
+          likes = false;
+          break;
+        case 0:
+          switch (likes) {
+            case true:
+              ups -= 1;
+              break;
+            case false:
+              ups += 1;
+              break;
+            default:
+              break;
+          }
+          likes = null;
+          break;
+        default:
+          break;
       }
+
+      const updatedEntry = {
+        name: id,
+        ups,
+        likes,
+      };
+
+      dispatch(listingsEntryUpdate(updatedEntry));
+    } catch (e) {
+      // console.log(e);
     }
   };
 }
