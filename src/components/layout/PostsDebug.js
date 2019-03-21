@@ -59,6 +59,7 @@ PostsDebug.propTypes = {
 
 PostsDebug.defaultProps = {
   focused: '',
+  actionable: '',
   visible: [],
 };
 export default PostsDebug;

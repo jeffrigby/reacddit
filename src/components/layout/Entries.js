@@ -82,7 +82,7 @@ class Entries extends React.Component {
     setTimeout(() => this.monitorEntries(true), 1000);
     setTimeout(() => this.monitorEntries(true), 2000);
 
-    this.monitorEntriesInterval = setInterval(this.monitorEntries, 500);
+    this.monitorEntriesInterval = setInterval(this.monitorEntries, 250);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -168,6 +168,7 @@ class Entries extends React.Component {
       const entryKeys = Object.keys(listingsEntries.children);
       const newState = {
         focused: entryKeys[0],
+        actionable: entryKeys[0],
         visible: entryKeys.slice(0, 5),
       };
       this.setState(newState);
@@ -216,40 +217,44 @@ class Entries extends React.Component {
       (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')
     ) {
       const pressedKey = event.key;
-      switch (pressedKey) {
-        case 'j':
-          Entries.nextEntry(focused);
-          break;
-        case 'k':
-          Entries.prevEntry(focused);
-          break;
-        case 'a':
-          this.actionPost.current.voteUp();
-          break;
-        case 'z':
-          this.actionPost.current.voteDown();
-          break;
-        case 's':
-          this.actionPost.current.save();
-          break;
-        case 'o':
-          this.actionPost.current.toggleViewAction();
-          break;
-        case '.':
-          Entries.scrollToBottom();
-          break;
-        case 'V':
-          setSiteSetting({
-            view: siteSettings.view === 'expanded' ? 'condensed' : 'expanded',
-          });
-          try {
-            window.scrollTo(0, document.getElementById(focused).offsetTop);
-          } catch (e) {
-            // continue regardless of error
-          }
-          break;
-        default:
-          break;
+      try {
+        switch (pressedKey) {
+          case 'j':
+            Entries.nextEntry(focused);
+            break;
+          case 'k':
+            Entries.prevEntry(focused);
+            break;
+          case 'a':
+            this.actionPost.current.voteUp();
+            break;
+          case 'z':
+            this.actionPost.current.voteDown();
+            break;
+          case 's':
+            this.actionPost.current.save();
+            break;
+          case 'o':
+            this.actionPost.current.toggleViewAction();
+            break;
+          case '.':
+            Entries.scrollToBottom();
+            break;
+          case 'V':
+            setSiteSetting({
+              view: siteSettings.view === 'expanded' ? 'condensed' : 'expanded',
+            });
+            try {
+              window.scrollTo(0, document.getElementById(focused).offsetTop);
+            } catch (e) {
+              // continue regardless of error
+            }
+            break;
+          default:
+            break;
+        }
+      } catch (e) {
+        // console.log(e);
       }
     }
   }
