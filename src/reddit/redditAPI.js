@@ -3,6 +3,8 @@ import cookies from 'js-cookie';
 
 const queryString = require('query-string');
 
+/* eslint class-methods-use-this: ["error", { "exceptMethods": ["getToken"] }] */
+
 class RedditAPI {
   constructor() {
     this.redditAPI = axios.create({
@@ -65,6 +67,7 @@ class RedditAPI {
    * @returns {Promise<*>}
    */
   async getToken(reset) {
+    // @todo eslint says this should be static, but I need to access it from redux.
     let token = RedditAPI.getTokenStorage();
 
     if (token === 'expired' || reset === true || token === null) {
@@ -78,7 +81,6 @@ class RedditAPI {
       localStorage.clear();
       sessionStorage.clear();
     }
-
     return token;
   }
 
