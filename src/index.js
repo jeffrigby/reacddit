@@ -16,6 +16,9 @@ const { hash, search } = window.location;
 
 const parsed = queryString.parse(search);
 
+// Start at the top of the page
+window.scrollTo(0, 0);
+
 if (parsed.logout !== undefined) {
   localStorage.clear();
   sessionStorage.clear();
