@@ -58,6 +58,45 @@ div#entries {
         }
       }
     }
+    .video-container {
+      position: relative;
+      &.unmuted .video-audio {
+        visibility: hidden;
+        opacity: 0;
+        transition: visibility 0s 0.25s, opacity 0.25s linear;
+      }
+      &.unmuted:hover .video-audio {
+        visibility: visible;
+        opacity: 1;
+      }
+      &:hover .video-audio .tooltip {
+        opacity: 1;
+      }
+
+      .video-audio {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        button {
+          color: white;
+          text-shadow: 1px 1px #000;
+          position: relative;
+        }
+        .audio-disabled {
+          position: absolute;
+          width: 300px;
+          right:0;
+          font-size: 0.75rem;
+          visibility: hidden;
+          opacity: 0;
+        }
+
+        &:hover .audio-disabled {
+          visibility: visible;
+          opacity: 1;
+        }
+      }
+    }
 
     footer {
       font-size: 0.8em;

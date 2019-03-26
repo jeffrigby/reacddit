@@ -40,14 +40,19 @@ const render = async entry => {
   // Get info directly from gfycat
   const apiInfo = await getInfo(cleanID);
 
+  const sources = [
+    { type: 'video/mp4', src: apiInfo.mp4Url },
+    { type: 'video/webm', src: apiInfo.webmUrl },
+  ];
+
   const videoContent = {
     width: apiInfo.width,
     height: apiInfo.height,
-    mp4: apiInfo.mp4Url,
-    webm: apiInfo.webmUrl,
+    sources,
     id: cleanID,
     type: 'video',
     thumb: apiInfo.thumb100PosterUrl,
+    hasAudio: apiInfo.hasAudio,
   };
 
   const iframe = `https://gfycat.com/ifr${parsedUrl.pathname}`;

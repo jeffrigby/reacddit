@@ -4,7 +4,9 @@ const redditVideoPreview = entry => {
       ? entry.preview.reddit_video_preview
       : null;
   const mrv =
-    entry.media && entry.media.reddit_video ? entry.media.reddit_video : null;
+    entry.secure_media && entry.secure_media.reddit_video
+      ? entry.secure_media.reddit_video
+      : null;
 
   let media = null;
   if (mrv) {
@@ -13,27 +15,34 @@ const redditVideoPreview = entry => {
     media = rvp;
   }
 
+  let poster = entry.thumbnail ? entry.thumbnail : null;
+  try {
+    poster = entry.preview.images[0].source.url;
+  } catch (e) {
+    // continue
+  }
+
   if (media) {
     const sources = [
       { type: 'video/mp4', src: media.fallback_url },
-      { type: 'video/mp4', src: media.scrubber_media_url },
-      {
-        type: 'application/vnd.apple.mpegURL',
-        src: media.hls_url,
-      },
+      // HLS is unusaable due to a CORS violation.
+      // {
+      //   type: 'application/vnd.apple.mpegURL',
+      //   src: media.hls_url,
+      // },
     ];
 
     const videoPreview = {
+      media,
       width: media.width,
       height: media.height,
-      mp4: media.fallback_url,
-      // webm: apiInfo.webmUrl,
-      m3u8: media.hls_url,
+      mpd: media.dash_url,
+      hasAudio: !media.is_gif || false,
       id: entry.name,
       type: 'video',
       sources,
       renderFunction: 'redditVideoPreview',
-      thumb: entry.thumbnail ? entry.thumbnail : null,
+      thumb: poster,
     };
 
     return videoPreview;
@@ -55,11 +64,10 @@ const redditVideoPreview = entry => {
       const videoPreview = {
         width: source.width,
         height: source.height,
-        mp4: source.url,
         id: entry.name,
         type: 'video',
         sources,
-        // thumb: apiInfo.thumb100PosterUrl,
+        thumb: poster,
       };
       return videoPreview;
     }
