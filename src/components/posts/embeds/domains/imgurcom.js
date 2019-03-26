@@ -38,22 +38,24 @@ const render = entry => {
   if (cleanedPath.match(/gifv$/)) {
     const mp4Filename = cleanedPath.replace(/gifv$/, 'mp4');
     const mp4 = `https://i.imgur.com/${mp4Filename}`;
+    const sources = [{ type: 'video/mp4', src: mp4 }];
     return {
       type: 'video',
       width,
       height,
-      mp4,
+      sources,
     };
   }
 
   // Check for mp4 content
   if (cleanedPath.match(/mp4$/)) {
     const mp4 = `https://i.imgur.com/${cleanedPath}`;
+    const sources = [{ type: 'video/mp4', src: mp4 }];
     return {
       type: 'video',
       width,
       height,
-      mp4,
+      sources,
     };
   }
 

@@ -31,6 +31,13 @@ export function listingsRedditStatus(status) {
   };
 }
 
+export function currentSubreddit(subreddit) {
+  return {
+    type: 'CURRENT_SUBREDDIT',
+    subreddit,
+  };
+}
+
 const keyEntryChildren = entries => {
   const arrayToObject = (arr, keyField) =>
     Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
@@ -73,9 +80,24 @@ const getContent = async (filters, params) => {
   return entries;
 };
 
+const subredditAbout = async filter => {
+  const { target, listType, multi } = filter;
+  const badTarget = !target || target.match(/mine|popular|friends/);
+
+  // Check if we are on a subreddit.
+  if ((listType !== 's' && listType !== 'r') || multi || badTarget) {
+    return {};
+  }
+
+  const about = await RedditAPI.subredditAbout(target);
+  return about.data;
+};
+
 export function listingsFetchEntriesReddit(filters) {
   return async (dispatch, getState) => {
     dispatch(listingsRedditStatus('loading'));
+    dispatch(currentSubreddit({}));
+
     await dispatch(listingsRedditEntries({}));
     try {
       const currentState = getState();
@@ -96,6 +118,8 @@ export function listingsFetchEntriesReddit(filters) {
       await dispatch(listingsRedditEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';
       dispatch(listingsRedditStatus(loaded));
+      const about = await subredditAbout(filters);
+      dispatch(currentSubreddit(about));
     } catch (e) {
       dispatch(listingsRedditStatus('error'));
     }

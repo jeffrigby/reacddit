@@ -170,15 +170,7 @@ const subredditsAll = async (where, options) => {
     qsAfter = srs.data.after || null;
   }
 
-  // Sort by alpha
-  const subredditsOrdered = {};
-  Object.keys(subreddits)
-    .sort()
-    .forEach(key => {
-      subredditsOrdered[key] = subreddits[key];
-    });
-
-  return subredditsOrdered;
+  return subreddits;
 };
 
 /**
@@ -192,13 +184,17 @@ const subredditsAll = async (where, options) => {
  *    streams - subscribed to subreddits that contain hosted video links
  * @returns {Function}
  */
-export function subredditsFetchData(reset, where) {
+export function subredditsFetchData(reset, where = 'subscriber') {
   return async (dispatch, getState) => {
     try {
       const currentState = getState();
 
       // Look for the cache.
-      if (currentState.subreddits !== undefined && !reset) {
+      if (
+        currentState.subreddits !== undefined &&
+        !reset &&
+        currentState.subreddits.status === 'loaded'
+      ) {
         // Cache for one day
         const subExpired =
           Date.now() > currentState.subreddits.lastUpdated + 3600 * 24 * 1000;

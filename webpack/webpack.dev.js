@@ -22,7 +22,15 @@ module.exports = {
     overlay: false,
   },
   devtool: 'cheap-module-source-map',
-  module: {},
+  module: {
+    rules: [
+      {
+        test: /\.jsx?$/,
+        include: /node_modules/,
+        use: ['react-hot-loader/webpack'],
+      },
+    ],
+  },
   plugins: [
     // new CleanTerminalPlugin(),
     new FriendlyErrorsWebpackPlugin(),

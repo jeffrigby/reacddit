@@ -9,7 +9,20 @@ export function subreddits(
         message: action.message,
       };
     case 'SUBREDDITS_FETCH_DATA_SUCCESS': {
-      return action.subreddits;
+      // sort subs before storing them.
+      const subredditsOrdered = {};
+      Object.keys(action.subreddits.subreddits)
+        .sort()
+        .forEach(key => {
+          subredditsOrdered[key] = action.subreddits.subreddits[key];
+        });
+
+      const sortedList = {
+        ...action.subreddits,
+        subreddits: subredditsOrdered,
+      };
+
+      return sortedList;
     }
     default:
       return state;

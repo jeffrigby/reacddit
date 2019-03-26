@@ -153,7 +153,7 @@ class FilterReddits extends React.Component {
 }
 
 const getFilteredUrls = (subreddits, filterText, sort, search) => {
-  if (subreddits.status === 'unloaded' || subreddits.status === 'loading') {
+  if (subreddits.status !== 'loaded') {
     return [];
   }
 

@@ -5,6 +5,9 @@ import Sort from '../header/Sort';
 import FilterReddits from '../sidebar/FilterReddits';
 import '../../styles/navbar.scss';
 import ViewMode from '../header/ViewMode';
+// import RedditInfo from '../header/RedditInfo';
+import SubUnSub from '../header/SubUnSub';
+// import SubUnSub from '../header/SubUnSub';
 
 const Header = ({ listingsFilter }) => {
   const { listType, target } = listingsFilter;
@@ -26,6 +29,8 @@ const Header = ({ listingsFilter }) => {
     </>
   );
 
+  // const redditInfo = <RedditInfo />;
+
   return (
     <>
       <div className="d-flex flex-nowrap align-middle m-0 sidebar sidebar-navbar navbar-group">
@@ -33,18 +38,22 @@ const Header = ({ listingsFilter }) => {
         <FilterReddits />
       </div>
 
-      <div className="d-none d-md-flex flex-nowrap header-main pr-1">
-        <span className="navbar-brand px-2">
+      <div className="d-none d-md-flex flex-nowrap header-main pr-0">
+        <div className="navbar-brand pl-2">
           {brand} {title}
-        </span>
+        </div>
       </div>
 
-      <div className="d-flex d-md-none flex-nowrap header-main small pr-1">
-        <div className="px-2 open-menu-link">{menuButton}</div>
-        <div className="d-block">
+      <div className="d-flex d-md-none flex-nowrap header-main small pr-0">
+        <div className="pl-2 open-menu-link">{menuButton}</div>
+        <div className="d-block px-2">
           <div className="w-100">{brand}</div>
           <div>{title}</div>
         </div>
+      </div>
+
+      <div>
+        <SubUnSub />
       </div>
 
       <div className="p-2 m-auto w-100 search-cont">

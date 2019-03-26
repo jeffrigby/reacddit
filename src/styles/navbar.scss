@@ -62,3 +62,15 @@
     color: white;
   }
 }
+
+.subInfo {
+  position: absolute;
+  background-color: white;
+  color: #343a40;
+  border: solid 1px #343a40;
+  padding: 5px;
+  margin-top: 15px;
+  width: 50%;
+  min-width: 200px;
+  white-space: normal !important;
+}

@@ -199,7 +199,13 @@ class Post extends React.Component {
     const currentDebug =
       process.env.NODE_ENV === 'development' && siteSettings.debug;
 
-    const crossPost = data.crosspost_parent || false;
+    const crossPost =
+      (data.crosspost_parent && data.crosspost_parent_list[0]) || false;
+
+    if (data.crosspost_parent && !data.crosspost_parent_list[0]) {
+      // This is weird and occasionally happens.
+      // console.log(data);
+    }
 
     let searchLink = '';
     if (!data.is_self) {

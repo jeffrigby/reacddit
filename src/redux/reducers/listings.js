@@ -10,6 +10,16 @@ export function listingsFilter(state = { sort: 'hot', t: 'day' }, action) {
   }
 }
 
+export function currentSubreddit(state = {}, action) {
+  switch (action.type) {
+    case 'CURRENT_SUBREDDIT':
+      return action.subreddit;
+
+    default:
+      return state;
+  }
+}
+
 export function listingsRedditEntries(state = {}, action) {
   switch (action.type) {
     case 'LISTINGS_REDDIT_ENTRIES':
