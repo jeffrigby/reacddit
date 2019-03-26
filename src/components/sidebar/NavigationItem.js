@@ -66,7 +66,7 @@ class NavigationItem extends React.Component {
         text={item.display_name}
         id={item.id}
         classes={classNameStr}
-        title={item.public_description}
+        title={item.title}
         badge={subLabel}
       />
     );
@@ -102,9 +102,7 @@ const mapStateToProps = (state, ownProps) => ({
   lastUpdated: getLastUpdated(state.lastUpdated, ownProps.item),
 });
 
-const mapDispatchToProps = dispatch => ({});
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  null
 )(NavigationItem);

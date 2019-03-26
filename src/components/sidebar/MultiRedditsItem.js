@@ -77,9 +77,7 @@ const mapStateToProps = state => ({
   location: state.router.location,
 });
 
-const mapDispatchToProps = dispatch => ({});
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  null
 )(MultiRedditsItem);

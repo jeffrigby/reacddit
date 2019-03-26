@@ -57,10 +57,10 @@ class NavigationSubReddits extends React.Component {
    * @TODO why is this separate?
    * @param e
    */
-  reloadSubredditsClick(e) {
+  reloadSubredditsClick = e => {
     e.preventDefault();
     this.reloadSubreddits();
-  }
+  };
 
   /**
    * Generate the subreddit nav items.

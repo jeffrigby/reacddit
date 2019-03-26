@@ -19,7 +19,7 @@
     "module": false,
     "process": false
   },
-  "plugins": ["flowtype", "react", "jsx-a11y", "prettier"],
+  "plugins": ["flowtype", "react", "react-hooks", "jsx-a11y", "prettier"],
   "parserOptions": {
     "ecmaVersion": 2018,
     "sourceType": "module",
@@ -48,6 +48,8 @@
     "no-unused-expressions": [
       "error",
       { "allowShortCircuit": true, "allowTernary": false }
-    ]
+    ],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   }
 }

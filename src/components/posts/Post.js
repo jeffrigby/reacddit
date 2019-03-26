@@ -72,42 +72,36 @@ class Post extends React.Component {
     };
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    const { ...props } = this.props;
-    const { showDebug, renderedContent, expand } = this.state;
-
-    if (props.listingFilter.sort !== nextProps.listingFilter.sort) {
-      return true;
-    }
-    if (props.listingFilter.t !== nextProps.listingFilter.t) {
-      return true;
-    }
-    if (props.entry !== nextProps.entry) {
-      return true;
-    }
-    if (props.focused !== nextProps.focused) {
-      return true;
-    }
-    if (props.visible !== nextProps.visible) {
-      return true;
-    }
-    if (props.actionable !== nextProps.actionable) {
-      return true;
-    }
-    if (props.siteSettings.view !== nextProps.siteSettings.view) {
-      return true;
-    }
-    if (props.siteSettings.debug !== nextProps.siteSettings.debug) {
-      return true;
-    }
-    if (showDebug !== nextState.showDebug || expand !== nextState.expand) {
-      return true;
-    }
-    if (renderedContent !== nextState.renderedContent) {
-      return true;
-    }
-    return false;
-  }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   const { ...props } = this.props;
+  //   const { showDebug, renderedContent, expand } = this.state;
+  //
+  //   if (props.entry !== nextProps.entry) {
+  //     return true;
+  //   }
+  //   if (props.focused !== nextProps.focused) {
+  //     return true;
+  //   }
+  //   if (props.visible !== nextProps.visible) {
+  //     return true;
+  //   }
+  //   if (props.actionable !== nextProps.actionable) {
+  //     return true;
+  //   }
+  //   if (props.siteSettings.view !== nextProps.siteSettings.view) {
+  //     return true;
+  //   }
+  //   if (props.siteSettings.debug !== nextProps.siteSettings.debug) {
+  //     return true;
+  //   }
+  //   if (showDebug !== nextState.showDebug || expand !== nextState.expand) {
+  //     return true;
+  //   }
+  //   if (renderedContent !== nextState.renderedContent) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   componentWillUnmount() {
     this.mounted = false;
@@ -341,7 +335,6 @@ Post.propTypes = {
   entry: PropTypes.object.isRequired,
   focused: PropTypes.bool.isRequired,
   actionable: PropTypes.bool.isRequired,
-  listingFilter: PropTypes.object.isRequired,
   siteSettings: PropTypes.object.isRequired,
   visible: PropTypes.bool.isRequired,
   vote: PropTypes.func.isRequired,
@@ -353,20 +346,17 @@ Post.propTypes = {
 Post.defaultProps = {};
 
 const mapStateToProps = state => ({
-  listingFilter: state.listingsFilter,
   siteSettings: state.siteSettings,
   bearer: state.redditBearer,
 });
 
-const mapDispatchToProps = dispatch => ({
-  vote: (id, dir) => dispatch(redditVote(id, dir)),
-  save: id => dispatch(redditSave(id)),
-  unsave: id => dispatch(redditUnsave(id)),
-});
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps,
+  {
+    vote: redditVote,
+    save: redditSave,
+    unsave: redditUnsave,
+  },
   null,
   { forwardRef: true }
 )(Post);

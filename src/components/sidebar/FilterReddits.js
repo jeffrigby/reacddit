@@ -197,11 +197,6 @@ const mapStateToProps = state => ({
   ),
 });
 
-// const mapDispatchToProps = dispatch => ({
-//   setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
-//   setFilter: filter => dispatch(subredditsFilter(filter)),
-// });
-
 export default connect(
   mapStateToProps,
   {

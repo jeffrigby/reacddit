@@ -207,11 +207,9 @@ const mapStateToProps = state => ({
   subreddits: state.subreddits,
 });
 
-const mapDispatchToProps = dispatch => ({
-  push: url => dispatch(push(url)),
-});
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {
+    push,
+  }
 )(NavigationPrimaryLinks);

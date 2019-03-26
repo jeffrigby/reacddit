@@ -6,7 +6,7 @@
   "scripts": {
     "start": "cross-env NODE_ENV=development webpack-dev-server --public reddit.test --port 3000  --mode development --progress --hot",
     "build": "cross-env NODE_ENV=production webpack --mode production",
-    "profile": "cross-env NODE_ENV=production webpack --mode production --profile --json > stats.json > stats.json && webpack-bundle-analyzer stats.json dist"
+    "profile": "cross-env NODE_ENV=production webpack --mode production --profile --json > stats.json > stats.json && stats.json dist"
   },
   "keywords": [
     "es6",
@@ -21,6 +21,7 @@
     "axios": "^0.18.0",
     "babel-polyfill": "^6.26.0",
     "connected-react-router": "^6.1.0",
+    "deep-object-diff": "^1.1.0",
     "get-urls": "^9.0.0",
     "history": "^4.7.2",
     "immutability-helper": "^3.0.0",
@@ -34,6 +35,7 @@
     "react-dom": "^16.7.0",
     "react-hot-loader": "^4.6.3",
     "react-json-view": "^1.19.1",
+    "react-player": "^1.10.0",
     "react-redux": "^6.0.0",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
@@ -72,7 +74,7 @@
     "connect-history-api-fallback": "^1.5.0",
     "cross-env": "^5.2.0",
     "css-loader": "^2.1.0",
-    "error-overlay-webpack-plugin": "^0.1.5",
+    "error-overlay-webpack-plugin": "^0.2.0",
     "eslint": "^5.12.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^4.0.0",
@@ -83,6 +85,7 @@
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-react": "^7.12.3",
+    "eslint-plugin-react-hooks": "^1.6.0",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",

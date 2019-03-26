@@ -92,11 +92,9 @@ const mapStateToProps = state => ({
   multireddits: state.redditMultiReddits,
 });
 
-const mapDispatchToProps = dispatch => ({
-  fetchMultis: reset => dispatch(redditFetchMultis(reset)),
-});
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {
+    fetchMultis: redditFetchMultis,
+  }
 )(MultiReddits);

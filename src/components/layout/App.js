@@ -6,9 +6,10 @@ import { connect } from 'react-redux';
 import Navigation from './Navigation';
 import Header from './Header';
 import Entries from './Entries';
-import * as reddit from '../../redux/actions/reddit';
+import HotKeys from './Hotkeys';
+import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
+import { siteSettings } from '../../redux/actions/misc';
 import '../../styles/layout.scss';
-import * as misc from '../../redux/actions/misc';
 
 class App extends React.Component {
   tokenQuery = null;
@@ -45,13 +46,13 @@ class App extends React.Component {
   }
 
   handleNGlobalHotkey(event) {
-    const { disableHotkeys, setSiteSetting, siteSettings } = this.props;
+    const { disableHotkeys, setSiteSetting, settings } = this.props;
     const pressedKey = event.key;
 
     if (!disableHotkeys) {
       switch (pressedKey) {
         case 'Î': // opt-shift-d
-          setSiteSetting({ debug: !siteSettings.debug });
+          setSiteSetting({ debug: !settings.debug });
           break;
         case '?':
           jQuery('#hotkeys').modal();
@@ -137,7 +138,7 @@ class App extends React.Component {
             </div>
           </main>
 
-          <div id="push" />
+          <HotKeys />
         </React.StrictMode>
       </div>
     );
@@ -149,7 +150,7 @@ App.propTypes = {
   getBearer: PropTypes.func.isRequired,
   getMe: PropTypes.func.isRequired,
   setSiteSetting: PropTypes.func.isRequired,
-  siteSettings: PropTypes.object.isRequired,
+  settings: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
   listingsFilter: PropTypes.object.isRequired,
@@ -160,20 +161,18 @@ App.defaultProps = {};
 const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
   disableHotkeys: state.disableHotKeys,
-  siteSettings: state.siteSettings,
+  settings: state.siteSettings,
   subredditsFilter: state.subredditsFilter,
   listingsFilter: state.listingsFilter,
-});
-
-const mapDispatchToProps = dispatch => ({
-  getBearer: () => dispatch(reddit.redditGetBearer()),
-  getMe: () => dispatch(reddit.redditFetchMe()),
-  setSiteSetting: setting => dispatch(misc.siteSettings(setting)),
 });
 
 export default withRouter(
   connect(
     mapStateToProps,
-    mapDispatchToProps
+    {
+      getBearer: redditGetBearer,
+      getMe: redditFetchMe,
+      setSiteSetting: siteSettings,
+    }
   )(App)
 );

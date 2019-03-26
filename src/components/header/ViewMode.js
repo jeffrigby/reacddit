@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import * as misc from '../../redux/actions/misc';
+import { siteSettings } from '../../redux/actions/misc';
 
 const toggleView = async (view, setSiteSetting) => {
   const currentFocus = document.getElementsByClassName('focused');
@@ -53,11 +53,9 @@ const mapStateToProps = state => ({
   siteSettingsView: state.siteSettings.view,
 });
 
-const mapDispatchToProps = dispatch => ({
-  setSiteSetting: setting => dispatch(misc.siteSettings(setting)),
-});
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {
+    setSiteSetting: siteSettings,
+  }
 )(ViewMode);

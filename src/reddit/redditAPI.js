@@ -310,6 +310,7 @@ class RedditAPI {
       after: null,
       show: null,
       sr_detail: null,
+      raw_json: 1,
     };
 
     const params = RedditAPI.setParams(defaults, options);
@@ -322,6 +323,33 @@ class RedditAPI {
       mine === null ? `/subreddits/${where}` : `/subreddits/mine/${where}`;
     const subredditsGet = await this.redditAPI.get(url, data);
     return subredditsGet.data;
+  }
+
+  /**
+   * Get the subreddit info
+   * @param subreddit - the subreddit to lookup.
+   * @param type - the type of info to get
+   *   edit|rules|traffic default to ''
+   * @param options
+   * @returns {Promise<*>}
+   */
+  async subredditAbout(subreddit, type = '', options = {}) {
+    const defaults = {
+      raw_json: 1,
+    };
+    const params = RedditAPI.setParams(defaults, options);
+
+    let url = `/r/${subreddit}/about`;
+    if (type.match(/edit|rules|traffic/)) {
+      url += `/${type}`;
+    }
+
+    const data = {
+      params,
+    };
+
+    const subredditsAboutGet = await this.redditAPI.get(url, data);
+    return subredditsAboutGet.data;
   }
 
   /**
@@ -371,6 +399,25 @@ class RedditAPI {
       queryString.stringify({ id })
     );
     return save.data;
+  }
+
+  /**
+   * Subscribe or unsbscribe from a sub.
+   * @param name - the sr name(s) comma separated
+   * @param action - sub or unsub
+   * @returns {Promise<*>}
+   */
+  async subscribe(name, action = 'sub') {
+    const params = {
+      sr: name,
+      action,
+      // skip_initial_defaults: false,
+    };
+    const subscribe = await this.redditAPI.post(
+      '/api/subscribe',
+      queryString.stringify(params)
+    );
+    return subscribe.data;
   }
 
   /**

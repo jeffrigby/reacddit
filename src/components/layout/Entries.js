@@ -3,11 +3,16 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 import isNil from 'lodash/isNil';
-import * as listings from '../../redux/actions/listings';
-import * as misc from '../../redux/actions/misc';
+import {
+  listingsFilter,
+  listingsFetchEntriesReddit,
+  listingsFetchRedditNext,
+} from '../../redux/actions/listings';
+import { siteSettings } from '../../redux/actions/misc';
 import Post from '../posts/Post';
 import '../../styles/entries.scss';
 import PostsDebug from './PostsDebug';
+// import { detailedDiff } from 'deep-object-diff';
 
 const queryString = require('query-string');
 
@@ -85,65 +90,60 @@ class Entries extends React.Component {
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 250);
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    const { ...props } = this.props;
-    const { focused, visible, actionable } = this.state;
-
-    if (!isEqual(nextProps.listingsFilter, props.listingsFilter)) {
-      return true;
-    }
-    if (props.listingsStatus !== nextProps.listingsStatus) {
-      return true;
-    }
-
-    if (props.entries !== nextProps.entries) {
-      return true;
-    }
-
-    if (props.siteSettings.debug !== nextProps.siteSettings.debug) {
-      return true;
-    }
-
-    if (props.siteSettings.view !== nextProps.siteSettings.view) {
-      return true;
-    }
-
-    if (focused !== nextState.focused) {
-      return true;
-    }
-
-    if (actionable !== nextState.actionable) {
-      return true;
-    }
-
-    if (!isEqual(visible, nextState.visible)) {
-      return true;
-    }
-
-    const matchCompare = isEqual(nextProps.match, props.match);
-    const locationCompare = isEqual(nextProps.location, props.location);
-    if (!matchCompare || !locationCompare) {
-      return true;
-    }
-    return false;
-  }
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   const { ...props } = this.props;
+  //   const { focused, visible, actionable } = this.state;
+  //
+  //   if (!isEqual(nextProps.filter, props.filter)) {
+  //     return true;
+  //   }
+  //   if (props.listingsStatus !== nextProps.listingsStatus) {
+  //     return true;
+  //   }
+  //
+  //   if (props.listingsEntries.children !== nextProps.listingsEntries.children) {
+  //     return true;
+  //   }
+  //
+  //   if (props.settings.debug !== nextProps.settings.debug) {
+  //     return true;
+  //   }
+  //
+  //   if (props.settings.view !== nextProps.settings.view) {
+  //     return true;
+  //   }
+  //
+  //   if (focused !== nextState.focused) {
+  //     return true;
+  //   }
+  //
+  //   if (actionable !== nextState.actionable) {
+  //     return true;
+  //   }
+  //
+  //   if (!isEqual(visible, nextState.visible)) {
+  //     return true;
+  //   }
+  //
+  //   const matchCompare = isEqual(nextProps.match, props.match);
+  //   const locationCompare = isEqual(nextProps.location, props.location);
+  //   if (!matchCompare || !locationCompare) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   componentDidUpdate(prevProps) {
-    const { match, location, listingsFilter, getEntriesReddit } = this.props;
+    const { match, location, filter, getEntriesReddit } = this.props;
     const matchCompare = isEqual(prevProps.match, match);
     const locationCompare = prevProps.location.search === location.search;
     if (!matchCompare || !locationCompare) {
       this.setRedux(match, location);
     }
 
-    if (
-      !isEqual(prevProps.listingsFilter, listingsFilter) ||
-      !locationCompare
-    ) {
-      this.postRefs = [];
-      getEntriesReddit(listingsFilter);
+    if (!isEqual(prevProps.filter, filter) || !locationCompare) {
+      getEntriesReddit(filter);
     }
-
     this.setInitFocusedAndVisible();
   }
 
@@ -156,7 +156,6 @@ class Entries extends React.Component {
     document.removeEventListener('resize', this.setScrollResize, false);
     document.removeEventListener('scroll', this.setScrollResize, false);
     clearInterval(this.monitorEntriesInterval);
-    this.postRefs = {};
   }
 
   setInitFocusedAndVisible() {
@@ -179,7 +178,7 @@ class Entries extends React.Component {
 
   setRedux(match, location) {
     const qs = queryString.parse(location.search);
-    const { listingsFilter, setFilter } = this.props;
+    const { filter, setFilter } = this.props;
     const { listType, target, sort, user, userType, multi } = match.params;
 
     let listingType = match.params.listType || 'r';
@@ -188,7 +187,7 @@ class Entries extends React.Component {
     if (listType === 'search') listingType = 's';
 
     // @todo, just pass all the query strings
-    const newListingsFilter = {
+    const newFilter = {
       sort: sort || qs.sort || 'hot',
       target: target || 'mine',
       multi: multi === 'm' || false,
@@ -197,8 +196,8 @@ class Entries extends React.Component {
       listType: listingType,
     };
 
-    if (!isEqual(listingsFilter, newListingsFilter)) {
-      setFilter(newListingsFilter);
+    if (!isEqual(filter, newFilter)) {
+      setFilter(newFilter);
     }
   }
 
@@ -210,7 +209,7 @@ class Entries extends React.Component {
     const {
       disableHotkeys,
       setSiteSetting,
-      siteSettings,
+      settings,
       listingsStatus,
     } = this.props;
     const { focused } = this.state;
@@ -236,7 +235,7 @@ class Entries extends React.Component {
           case 's':
             this.actionPost.current.save();
             break;
-          case 'o':
+          case 'x':
             this.actionPost.current.toggleViewAction();
             break;
           case '.':
@@ -244,7 +243,7 @@ class Entries extends React.Component {
             break;
           case 'V':
             setSiteSetting({
-              view: siteSettings.view === 'expanded' ? 'condensed' : 'expanded',
+              view: settings.view === 'expanded' ? 'condensed' : 'expanded',
             });
             try {
               window.scrollTo(0, document.getElementById(focused).offsetTop);
@@ -269,7 +268,7 @@ class Entries extends React.Component {
       const postsCollection = document.getElementsByClassName('entry');
       const posts = Array.from(postsCollection);
       let newFocus = false;
-      let newActionable = false;
+      let newActionable = null;
       const newVis = [];
 
       posts.forEach(post => {
@@ -342,8 +341,8 @@ class Entries extends React.Component {
     const {
       listingsStatus,
       listingsEntries,
-      siteSettings,
-      listingsFilter,
+      settings,
+      filter,
       location,
       match,
     } = this.props;
@@ -432,7 +431,7 @@ class Entries extends React.Component {
 
     return (
       <>
-        {siteSettings.debug && (
+        {settings.debug && (
           <PostsDebug
             visible={visible}
             requestURL={listingsEntries.requestUrl}
@@ -440,7 +439,7 @@ class Entries extends React.Component {
             actionable={actionable}
             match={match}
             location={location}
-            listingsFilter={listingsFilter}
+            listingsFilter={filter}
           />
         )}
         {entries}
@@ -451,43 +450,41 @@ class Entries extends React.Component {
 }
 
 Entries.propTypes = {
-  disableHotkeys: PropTypes.bool.isRequired,
-  entries: PropTypes.object,
-  getEntriesReddit: PropTypes.func.isRequired,
-  getMoreRedditEntries: PropTypes.func.isRequired,
-  listingsEntries: PropTypes.object.isRequired,
-  listingsFilter: PropTypes.object.isRequired,
-  listingsStatus: PropTypes.string.isRequired,
   location: PropTypes.object.isRequired,
   match: PropTypes.object.isRequired,
+
+  /* Redux Props */
+  disableHotkeys: PropTypes.bool.isRequired,
+  filter: PropTypes.object.isRequired,
+  listingsEntries: PropTypes.object.isRequired,
+  listingsStatus: PropTypes.string.isRequired,
+  settings: PropTypes.object,
+
+  /* Redux actions */
+  getEntriesReddit: PropTypes.func.isRequired,
+  getMoreRedditEntries: PropTypes.func.isRequired,
   setFilter: PropTypes.func.isRequired,
   setSiteSetting: PropTypes.func.isRequired,
-  siteSettings: PropTypes.object,
 };
 
 Entries.defaultProps = {
-  entries: {},
-  siteSettings: { debug: false, view: 'expanded' },
+  settings: { debug: false, view: 'expanded' },
 };
 
 const mapStateToProps = (state, ownProps) => ({
   disableHotkeys: state.disableHotKeys,
-  entries: state.listingsRedditEntries.children,
+  filter: state.listingsFilter,
   listingsEntries: state.listingsRedditEntries,
-  listingsFilter: state.listingsFilter,
   listingsStatus: state.listingsRedditStatus,
-  siteSettings: state.siteSettings,
-});
-
-const mapDispatchToProps = dispatch => ({
-  setFilter: filter => dispatch(listings.listingsFilter(filter)),
-  getEntriesReddit: (subreddit, sort, options) =>
-    dispatch(listings.listingsFetchEntriesReddit(subreddit, sort, options)),
-  getMoreRedditEntries: () => dispatch(listings.listingsFetchRedditNext()),
-  setSiteSetting: setting => dispatch(misc.siteSettings(setting)),
+  settings: state.siteSettings,
 });
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  {
+    getEntriesReddit: listingsFetchEntriesReddit,
+    getMoreRedditEntries: listingsFetchRedditNext,
+    setFilter: listingsFilter,
+    setSiteSetting: siteSettings,
+  }
 )(Entries);
