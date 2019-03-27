@@ -133,9 +133,7 @@ class App extends React.Component {
           </aside>
 
           <main id="main">
-            <div className="list-group" id="entries">
-              <Switch>{routes}</Switch>
-            </div>
+            <Switch>{routes}</Switch>
           </main>
 
           <HotKeys />
