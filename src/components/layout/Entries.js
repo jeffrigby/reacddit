@@ -238,6 +238,13 @@ class Entries extends React.Component {
           case 'x':
             this.actionPost.current.toggleViewAction();
             break;
+          case 'o':
+          case 'Enter':
+            this.actionPost.current.openReddit();
+            break;
+          case 'l':
+            this.actionPost.current.openLink();
+            break;
           case '.':
             Entries.scrollToBottom();
             break;

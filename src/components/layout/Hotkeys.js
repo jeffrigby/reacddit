@@ -116,9 +116,21 @@ const HotKeys = () => {
                 </div>
                 <div className="row">
                   <div className="col-md-6">
-                    <kbd>k</kbd>
+                    <kbd>x</kbd>
                   </div>
                   <div className="col-md-6">Expand/Condense Post</div>
+                </div>
+                <div className="row">
+                  <div className="col-md-6">
+                    <kbd>l</kbd>
+                  </div>
+                  <div className="col-md-6">Open Link</div>
+                </div>
+                <div className="row">
+                  <div className="col-md-6">
+                    <kbd>o</kbd>
+                  </div>
+                  <div className="col-md-6">Open Post on Reddit</div>
                 </div>
                 <div className="row">
                   <div className="col-md-6">

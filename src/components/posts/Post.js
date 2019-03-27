@@ -157,6 +157,17 @@ class Post extends React.Component {
     }
   };
 
+  // @todo is there a way around pop up blockers?
+  openReddit = () => {
+    const { entry } = this.props;
+    window.open(`https://www.reddit.com${entry.data.permalink}`, '_blank');
+  };
+
+  openLink = () => {
+    const { entry } = this.props;
+    window.open(entry.data.url, '_blank');
+  };
+
   render() {
     const {
       entry,
