@@ -1,14 +1,17 @@
 import parse from 'url-parse';
+import axios from 'axios';
 import redditImagePreview from '../defaults/redditImagePreview';
 import redditVideoPreview from '../defaults/redditVideoPreview';
 
-const render = entry => {
+const render = async entry => {
   const parsedUrl = parse(entry.url, true);
   const { pathname } = parsedUrl;
   const cleanedPath = pathname
     .substring(1)
     .replace(/\/new$/, '')
     .replace(/^\/|\/$/g, '');
+
+  const id = cleanedPath.split('.')[0];
 
   // Try to get width and height
   let width = 1024;
@@ -59,6 +62,39 @@ const render = entry => {
     };
   }
 
+  // This is sooo hacky but it works. For now.
+  // Check if an MP4 exists. If it does render it.
+  // This is to cover cases when the image is animated
+  // But Reddit doesn't have a video embed for it.
+  if (
+    !cleanedPath.match(/[gif|jpg|jpeg|mp4|gifv]$/) &&
+    cleanedPath.substr(0, 2) !== 'a/'
+  ) {
+    try {
+      const videoUrl = `https://i.imgur.com/${id}.mp4`;
+      const checkType = await axios.head(videoUrl);
+
+      if (checkType.status === 200) {
+        const header = checkType.headers['content-type'];
+        if (header === 'video/mp4') {
+          const sources = [{ type: 'video/mp4', src: videoUrl }];
+          return {
+            width,
+            height,
+            sources,
+            id: `video-${entry.name}`,
+            type: 'video',
+            thumb: `https://i.imgur.com/${id}.jpg`,
+            hasAudio: false,
+          };
+        }
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      // console.error(e);
+    }
+  }
+
   // Check for preview image:
   try {
     const image = redditImagePreview(entry);
@@ -76,8 +112,6 @@ const render = entry => {
   if (!entry.preview) {
     return null;
   }
-
-  const id = cleanedPath.split('.')[0];
 
   const src = `https://i.imgur.com/${id}h.jpg`;
 
