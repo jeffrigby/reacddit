@@ -13,7 +13,7 @@ const PostByline = ({ data }) => {
     .replace(/minutes?/g, 'M')
     .replace(/hours?/g, 'H')
     .replace(/days?/g, 'D')
-    .replace(/months?/g, 'M')
+    .replace(/months?/g, 'MO')
     .replace(/years?/g, 'Y')
     .replace(' ', '');
 
