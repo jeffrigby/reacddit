@@ -53,7 +53,7 @@
   }
 
   .sidebar-heading {
-    margin: 0.75rem 0 0rem 0;
+    margin: 0.75rem 0 0 0;
     padding: 0;
     font-weight: bold;
     text-transform: uppercase;
@@ -84,9 +84,8 @@
 
 @media (max-width: 767.98px) {
   .sidebar {
-    transition: margin-left 0.5s;
+    transition: margin-left 0.3s;
     margin-left: -14rem !important;
-    transition: 0.3s;
     //display: none !important;
   }
 
