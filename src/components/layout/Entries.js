@@ -438,6 +438,10 @@ class Entries extends React.Component {
 
     return (
       <>
+        <div className="list-group" id="entries">
+          {entries}
+          <div className="footer-status">{footerStatus}</div>
+        </div>
         {settings.debug && (
           <PostsDebug
             visible={visible}
@@ -449,8 +453,6 @@ class Entries extends React.Component {
             listingsFilter={filter}
           />
         )}
-        {entries}
-        <div className="footer-status">{footerStatus}</div>
       </>
     );
   }

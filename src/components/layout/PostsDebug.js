@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 const queryString = require('query-string');
@@ -12,6 +12,7 @@ const PostsDebug = ({
   requestURL,
   actionable,
 }) => {
+  const [closed, setClosed] = useState(false);
   const qs = queryString.parse(location.search);
 
   const listingFilterStriing = JSON.stringify(
@@ -24,25 +25,46 @@ const PostsDebug = ({
   const router = JSON.stringify({ location, match }, null, 2);
 
   return (
-    <div id="debugInfo" className="p-2">
-      <div className="small">
-        <div>
-          <strong>Filter:</strong>
-          <pre className="code">{listingFilterStriing}</pre>
-        </div>
-        <div>
-          <strong>Viewport:</strong>
-          <pre className="code">{visFocu}</pre>
-        </div>
-        <div>
-          <strong>Router:</strong>
-          <pre className="code">{router}</pre>
-        </div>
-        <div>
-          <strong>URL:</strong>
-          <div>{requestURL}</div>
-        </div>
-      </div>
+    <div id="debugInfo" className={`p-2 ${closed && 'closed'}`}>
+      {!closed ? (
+        <>
+          <button
+            type="button"
+            className="close"
+            aria-label="Close"
+            onClick={() => setClosed(true)}
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <div className="small debug-info-content">
+            <div>
+              <strong>Filter:</strong>
+              <pre className="code">{listingFilterStriing}</pre>
+            </div>
+            <div>
+              <strong>Viewport:</strong>
+              <pre className="code">{visFocu}</pre>
+            </div>
+            <div>
+              <strong>Router:</strong>
+              <pre className="code">{router}</pre>
+            </div>
+            <div>
+              <strong>URL:</strong>
+              <div>{requestURL}</div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          title="Open Debug Info"
+          onClick={() => setClosed(false)}
+        >
+          <i className="fas fa-bug" />
+        </button>
+      )}
     </div>
   );
 };

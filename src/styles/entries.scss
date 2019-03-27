@@ -28,6 +28,12 @@ div#entries {
       opacity: 0.5;
     }
 
+    &.actionable {
+      //border-right: 2px solid;
+      //margin-right: -2px;
+      background-color: rgb(245, 245, 245);
+    }
+
     &.actionable .actions, .actions:hover {
       opacity: 1;
     }
@@ -118,8 +124,17 @@ div#entries {
   position: fixed;
   right: 20px;
   top: 75px;
+  bottom: 75px;
   z-index: 1000;
   background-color: white;
-  width: 250px;
   font-family: monospace;
+  overflow: scroll;
+
+  &.closed {
+    background-color: transparent;
+  }
+
+  .debug-info-content {
+    width: 250px;
+  }
 }
