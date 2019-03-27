@@ -22,6 +22,8 @@ const {
   DEBUG,
 } = process.env;
 
+const debugEnabled = DEBUG === '1' || DEBUG === 'true' || false;
+
 const CONFIG = {
   key: 'redditmedia:sess' /** (string) cookie key (default is koa:sess) */,
   /** (number || 'session') maxAge in ms (default is 1 days) */
@@ -245,33 +247,36 @@ router.get('/api/callback', async (ctx, next) => {
   const savedState = ctx.session.state;
   ctx.session.state = null;
 
+  let message;
   if (!code || !state) {
+    message = `Code and/or state query strings missing.`;
+    console.log(message);
     ctx.status = 500;
-    ctx.body = {
-      status: 'error',
-      message: `Code and/or state query strings missing.`,
-    };
+    ctx.body = { status: 'error', message };
     return;
   }
 
   if (error) {
+    message = `ERROR RETRIEVING THE TOKEN. ${error}`;
+    console.log(message);
     ctx.status = 500;
-    ctx.body = {
-      status: 'error',
-      message: `Error retrieving the token. ${error}`,
-    };
+    ctx.body = { status: 'error', message };
     return;
   }
 
   if (!savedState) {
+    message = 'ERROR: SAVED STATE NOT FOUND.';
+    console.log(message);
     ctx.status = 500;
-    ctx.body = { status: 'error', message: 'Saved state not found.' };
+    ctx.body = { status: 'error', message };
     return;
   }
 
   if (state !== savedState) {
+    message = "ERROR: THE STATE DOESN'T MATCH.";
+    console.log(message);
     ctx.status = 500;
-    ctx.body = { status: 'error', message: "The state doesn't match." };
+    ctx.body = { status: 'error', message };
     return;
   }
 
@@ -286,13 +291,14 @@ router.get('/api/callback', async (ctx, next) => {
     const token = await oauth2.authorizationCode.getToken(options);
     if (token.access_token) {
       // we are good.
+      console.log('TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.');
       const accessToken = addExtraInfo(token);
       setSessAndCookie(accessToken, ctx);
       ctx.redirect('/?login');
       return;
     }
   } catch (exception) {
-    const message = `Access Token Error ${exception.message}`;
+    message = `ACCESS TOKEN ERROR ${exception.message}`;
     console.log(message);
     ctx.status = 500;
     ctx.body = { status: 'error', message };
@@ -310,27 +316,36 @@ router.get('/api/callback', async (ctx, next) => {
  */
 router.get('/api/bearer', async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
-  DEBUG && console.log('SESSION', token);
+  debugEnabled && console.log('SESSION', token);
 
   const loginUrl = getLoginUrl(ctx);
 
   // No existing token. Get an anon token.
   if (!token) {
     const anonToken = await getAnonToken();
-    console.log('ANON GRANTED');
+    console.log('ANON TOKEN GRANTED');
     setSessAndCookie(anonToken, ctx);
-
     ctx.body = getBearer(anonToken, { type: 'new', loginUrl });
     return;
   }
 
+  let message;
+
   // Check if it's expired.
   const tokenExpired = isExpired(token);
-  tokenExpired && console.log(`${token.access_token} TOKEN EXPIRED`);
+  if (tokenExpired) {
+    message = `TOKEN EXPIRED ${debugEnabled ? token.access_token : ''} `;
+    console.log(message);
+  }
 
   // Froce refresh?
   const forceRefresh = ctx.query.refresh !== undefined;
-  forceRefresh && console.log(`${token.access_token} Forcing a refresh.`);
+  if (forceRefresh) {
+    message = `FORCED REFRESH IS TRUE ${
+      debugEnabled ? token.access_token : ''
+    }`;
+    console.log(message);
+  }
 
   // Token is not expired and no forced refresh.
   if (!tokenExpired && !forceRefresh) {
@@ -338,39 +353,52 @@ router.get('/api/bearer', async (ctx, next) => {
       ? getBearer(token, { type: 'cached' })
       : getBearer(token, { type: 'cached', loginUrl });
 
-    DEBUG
-      ? console.log('TOKEN NOT EXPIRED. RETURN AS IS', returnBearer)
-      : console.log(`${token.access_token} TOKEN NOT EXPIRED. RETURN AS IS`);
+    console.log(
+      `TOKEN NOT EXPIRED. RETURN AS IS ${
+        debugEnabled ? token.access_token : ''
+      }`
+    );
     ctx.body = returnBearer;
-  } else {
+  } else if (token.refresh_token) {
     // The token is expired or forced refresh.
-    if (token.refresh_token) {
-      // Auth user. Get an new token with the refresh token.
-      const refreshToken = token.refresh_token;
-      const refreshedTokenResult = await getRefreshToken(refreshToken);
-      const newToken = {
-        ...refreshedTokenResult,
-        refresh_token: refreshToken,
-      };
+    // Auth user. Get an new token with the refresh token.
+    const refreshToken = token.refresh_token;
+    const refreshedTokenResult = await getRefreshToken(refreshToken);
+    const newToken = {
+      ...refreshedTokenResult,
+      refresh_token: refreshToken,
+    };
 
-      setSessAndCookie(newToken, ctx);
+    setSessAndCookie(newToken, ctx);
 
-      const returnBody = getBearer(newToken, { type: 'refresh' });
-      ctx.body = returnBody;
+    const returnBody = getBearer(newToken, { type: 'refresh' });
+    ctx.body = returnBody;
 
-      newToken.refresh_token = token.refresh_token;
+    newToken.refresh_token = token.refresh_token;
 
-      const msg = 'AUTH EXPIRED or FORCED & REFRESH TOKEN GRANTED';
-      DEBUG
-        ? console.log(msg, newToken)
-        : console.log(msg, newToken.access_token);
+    if (tokenExpired) {
+      message = 'TOKEN EXPIRED. NEW TOKEN GRANTED';
+    } else if (forceRefresh) {
+      message = 'FORCED REFRESH. NEW TOKEN GRANTED';
     } else {
-      const anonToken = await getAnonToken();
-      console.log('REFRESH ANON TOKEN GRANTED');
-      setSessAndCookie(anonToken, ctx);
-      ctx.body = getBearer(anonToken, { type: 'newanon', loginUrl });
-      const msg = 'ANON EXPIRED or FORCED & REFRESH TOKEN GRANTED';
-      DEBUG ? console.log(msg) : console.log(msg, anonToken.access_token);
+      message = '????';
+    }
+
+    if (debugEnabled) {
+      console.log(message, newToken.access_token);
+    } else {
+      console.log(message);
+    }
+  } else {
+    const anonToken = await getAnonToken();
+    console.log('REFRESH ANON TOKEN GRANTED');
+    setSessAndCookie(anonToken, ctx);
+    ctx.body = getBearer(anonToken, { type: 'newanon', loginUrl });
+    message = 'ANON EXPIRED or FORCED & REFRESH TOKEN GRANTED';
+    if (debugEnabled) {
+      console.log(message, anonToken.access_token);
+    } else {
+      console.log(message);
     }
   }
 });
@@ -384,11 +412,11 @@ router.get('/api/logout', async (ctx, next) => {
       // Revokes both tokens, refresh token is only revoked if the access_token is properly revoked
       await accessToken.revokeAll();
     } catch (error) {
-      console.log('Error revoking token: ', error.message);
+      console.log('ERROR REVOKING TOKEN: ', error.message);
     }
-    console.log('token detroyed');
+    console.log('TOKEN DETROYED');
   } else {
-    console.log('token not found');
+    console.log('TOKEN NOT FOUND');
   }
   ctx.session.token = null;
   ctx.cookies.set('token');
