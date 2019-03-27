@@ -128,7 +128,7 @@ class FilterReddits extends React.Component {
     return (
       <div className="filterText w-100 d-flex m-0 p-2">
         <input
-          type="search"
+          type="text"
           className="form-control form-control-dark form-control-sm w-100"
           onChange={this.filterReddits}
           onFocus={this.disableHotkeys}
@@ -144,7 +144,7 @@ class FilterReddits extends React.Component {
             onClick={this.clearSearch}
             aria-hidden
             role="button"
-            aria-label="Clear Search Box"
+            aria-label="Clear Filter Box"
           />
         )}
       </div>

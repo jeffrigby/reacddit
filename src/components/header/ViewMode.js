@@ -22,7 +22,7 @@ const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
         onClick={() => toggleView('condensed', setSiteSetting)}
         type="button"
         className={btnClasses}
-        title="Condensed View"
+        title="Condensed View (v)"
       >
         <i className="fas fa-compress-arrows-alt" />
       </button>
@@ -31,7 +31,7 @@ const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
         onClick={() => toggleView('expanded', setSiteSetting)}
         type="button"
         className={btnClasses}
-        title="Full View"
+        title="Full View (v)"
       >
         <i className="fas fa-expand-arrows-alt" />
       </button>

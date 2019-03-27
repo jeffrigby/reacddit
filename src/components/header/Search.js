@@ -57,7 +57,7 @@ class Search extends React.Component {
       switch (pressedKey) {
         case 'S':
           this.searchInput.current.focus();
-          this.searchInput.current.value = '';
+          this.setState({ search: '' });
           document.body.classList.remove('show-menu');
           event.preventDefault();
           break;
@@ -68,7 +68,7 @@ class Search extends React.Component {
       switch (pressedKey) {
         case 'Escape':
           this.searchInput.current.blur();
-          this.searchInput.current.value = '';
+          this.setState({ search: '' });
           event.preventDefault();
           break;
         default:
@@ -87,6 +87,11 @@ class Search extends React.Component {
     const { setDisableHotkeys } = this.props;
     this.setState({ focused: false });
     setDisableHotkeys(false);
+  };
+
+  clearSearch = () => {
+    this.setState({ search: '' });
+    this.searchInput.current.blur();
   };
 
   processSearch = e => {
@@ -159,7 +164,7 @@ class Search extends React.Component {
         ? 'Press shift-return to search all of reddit'
         : '';
 
-    const searchClassName = focused ? 'search-focused' : undefined;
+    const searchClassName = focused ? 'search-focused m-0 p-2' : 'm-0 p-2';
 
     return (
       <div id="search" ref={this.searchInputParent} className={searchClassName}>
@@ -176,6 +181,15 @@ class Search extends React.Component {
           value={search}
           ref={this.searchInput}
         />
+        {search && (
+          <i
+            className="far fa-times-circle form-control-clear"
+            onClick={this.clearSearch}
+            aria-hidden
+            role="button"
+            aria-label="Clear Search Box"
+          />
+        )}
         {focused && !global && (
           <div className="searchToolTip small p-1 mt-1">
             <div>shift-return to seach everywhere</div>

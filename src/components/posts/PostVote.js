@@ -13,7 +13,7 @@ const PostVote = props => {
         className="btn btn-link btn-sm"
         disabled={disabled}
         onClick={voteUp}
-        title="Vote Up"
+        title="Vote Up (a)"
       >
         <i className={`fa-arrow-alt-circle-up ${upClass}`} />
       </button>
@@ -23,7 +23,7 @@ const PostVote = props => {
         className="btn btn-link btn-sm"
         disabled={disabled}
         onClick={voteDown}
-        title="Vote Down"
+        title="Vote Down (z)"
       >
         <i className={`fa-arrow-alt-circle-down ${downClass}`} />
       </button>

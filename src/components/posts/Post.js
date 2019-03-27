@@ -241,9 +241,7 @@ class Post extends React.Component {
       ? 'fas fa-compress-arrows-alt'
       : 'fas fa-expand-arrows-alt';
 
-    const viewTitle = expand
-      ? 'Close this post (press o)'
-      : 'Open this post (press o)';
+    const viewTitle = expand ? 'Close this post (x)' : 'Open this post (x)';
 
     const expandContractButton = (
       <button
@@ -285,6 +283,7 @@ class Post extends React.Component {
           title="Open link in new tab"
         >
           {' '}
+          {linkFlair}
           <i className="fas fa-link direct-link" />
         </a>
       </>

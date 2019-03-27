@@ -12,7 +12,7 @@ const PostsDebug = ({
   requestURL,
   actionable,
 }) => {
-  const [closed, setClosed] = useState(false);
+  const [closed, setClosed] = useState(true);
   const qs = queryString.parse(location.search);
 
   const listingFilterStriing = JSON.stringify(

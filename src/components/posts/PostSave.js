@@ -8,7 +8,7 @@ const PostSave = ({ saved, save, bearer }) => {
     ) : (
       <i className="far fa-bookmark" />
     );
-  const title = saved === true ? 'Unsave Post' : 'Save Post';
+  const title = saved === true ? 'Unsave Post (s)' : 'Save Post (s)';
 
   if (bearer.status !== 'auth') {
     return null;

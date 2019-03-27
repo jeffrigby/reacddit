@@ -56,7 +56,7 @@ const Header = ({ listingsFilter }) => {
         <SubUnSub />
       </div>
 
-      <div className="p-2 m-auto w-100 search-cont">
+      <div className="w-100 search-cont">
         <Search />
       </div>
 

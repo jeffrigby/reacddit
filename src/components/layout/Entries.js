@@ -249,7 +249,7 @@ class Entries extends React.Component {
           case '.':
             Entries.scrollToBottom();
             break;
-          case 'V':
+          case 'v':
             setSiteSetting({
               view: settings.view === 'expanded' ? 'condensed' : 'expanded',
             });
@@ -378,7 +378,9 @@ class Entries extends React.Component {
           role="alert"
         >
           <i className="fas fa-exclamation-triangle" />
-          {' Error loading this subreddit.'}
+          {
+            ' Error fetching content from Reddit. Reddit might be down. Try reloading.'
+          }
         </div>
       );
     }

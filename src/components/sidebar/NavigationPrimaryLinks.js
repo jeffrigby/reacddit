@@ -68,15 +68,12 @@ class NavigationPrimaryLinks extends React.Component {
         }
       }
 
-      // Not logged in globals
-      if (!me.name) {
-        switch (pressedKey) {
-          case 'L': // shift-L
-            window.location.href = '/api/login';
-            break;
-          default:
-            break;
-        }
+      switch (pressedKey) {
+        case 'L': // shift-L
+          window.location.href = me.name ? '/api/logout' : '/api/login';
+          break;
+        default:
+          break;
       }
 
       this.lastKeyPressed = pressedKey;
