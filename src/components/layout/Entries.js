@@ -62,7 +62,7 @@ class Entries extends React.Component {
   initTriggered = null;
 
   state = {
-    focused: null,
+    focused: '',
     visible: [],
     actionable: null,
     hasError: false,
@@ -83,7 +83,8 @@ class Entries extends React.Component {
     document.addEventListener('scroll', this.setScrollResize, false);
 
     // Trigger this after a second/two seconds to load anything missed.
-    // Delayed to let component load.
+    // Delayed to let component load. Pretty sure I can remove this
+    // when I implement Hooks
     setTimeout(() => this.monitorEntries(true), 1000);
     setTimeout(() => this.monitorEntries(true), 2000);
 
@@ -274,7 +275,7 @@ class Entries extends React.Component {
 
       const postsCollection = document.getElementsByClassName('entry');
       const posts = Array.from(postsCollection);
-      let newFocus = false;
+      let newFocus = '';
       let newActionable = null;
       const newVis = [];
 
@@ -331,7 +332,7 @@ class Entries extends React.Component {
     }
   };
 
-  checkLoadMore() {
+  async checkLoadMore() {
     const { listingsStatus, getMoreRedditEntries } = this.props;
     const loadedStatus = listingsStatus;
     if (
@@ -340,7 +341,10 @@ class Entries extends React.Component {
         document.documentElement.scrollHeight - 2500
     ) {
       // getMoreEntries();
-      getMoreRedditEntries();
+      await getMoreRedditEntries();
+      // Dumb way to handle this.
+      setTimeout(() => this.monitorEntries(true), 1000);
+      setTimeout(() => this.monitorEntries(true), 2000);
     }
   }
 
