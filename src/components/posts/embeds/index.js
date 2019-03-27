@@ -140,17 +140,22 @@ const getContent = async (keys, entry) => {
 };
 
 const RenderContent = async entry => {
-  const keys = getKeys(entry.domain);
-  const content = await getContent(keys, entry);
+  try {
+    const keys = getKeys(entry.domain);
+    const content = await getContent(keys, entry);
 
-  if (keys.greedyDomain === 'self' && entry.selftext_html) {
-    const inline = inlineLinks(entry);
-    if (inline.length > 0) {
-      content.inline = inline;
+    if (keys.greedyDomain === 'self' && entry.selftext_html) {
+      const inline = inlineLinks(entry);
+      if (inline.length > 0) {
+        content.inline = inline;
+      }
     }
-  }
 
-  return content;
+    return content;
+  } catch (e) {
+    // console.log(e);
+  }
+  return null;
 };
 
 export default RenderContent;
