@@ -187,7 +187,6 @@ class Entries extends React.Component {
     if (listType === 'multi') listingType = 'm';
     if (listType === 'search') listingType = 's';
 
-    // @todo, just pass all the query strings
     const newFilter = {
       sort: sort || qs.sort || 'hot',
       target: target || 'mine',
@@ -278,11 +277,12 @@ class Entries extends React.Component {
       let newFocus = '';
       let newActionable = null;
       const newVis = [];
+      let prevPostId = null;
 
       posts.forEach(post => {
         const { top, bottom } = post.getBoundingClientRect();
 
-        // If it's not visible skip it.
+        // If it's not in the visible range skip it.
         if (bottom >= -980 && top - window.innerHeight <= 1000) {
           if (!newFocus) {
             const focusTop = bottom - 55;
@@ -294,12 +294,15 @@ class Entries extends React.Component {
           if (!newActionable) {
             const actionTop = top - 16;
             if (actionTop > 0) {
-              newActionable = post.id;
+              const inView = top - window.innerHeight <= -16;
+              newActionable = inView ? post.id : prevPostId;
             }
           }
 
           newVis.push(post.id);
         }
+        prevPostId = post.id;
+
 
         // Check to see if there's a video to autoplay (mostly for Safari in High Sierra.
         // const videos = jQuery(post)
