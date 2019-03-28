@@ -68,7 +68,8 @@ const render = async entry => {
   // But Reddit doesn't have a video embed for it.
   if (
     !cleanedPath.match(/[gif|jpg|jpeg|mp4|gifv]$/) &&
-    cleanedPath.substr(0, 2) !== 'a/'
+    cleanedPath.substr(0, 2) !== 'a/' &&
+    cleanedPath.substr(0, 2) !== 'gallery/'
   ) {
     try {
       const videoUrl = `https://i.imgur.com/${id}.mp4`;
