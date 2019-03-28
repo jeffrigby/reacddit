@@ -61,6 +61,7 @@ const VideoComp = ({ content, load }) => {
         autoPlay
         loop
         muted
+        playsInline
         id={videoId}
         key={videoId}
         poster={content.thumb}
