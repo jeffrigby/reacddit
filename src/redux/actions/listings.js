@@ -1,6 +1,7 @@
 import update from 'immutability-helper';
 import RedditAPI from '../../reddit/redditAPI';
 
+// @todo there's no reason for any of this to be in Redux. Move to hooks.
 const queryString = require('query-string');
 
 export function listingsFilter(listFilter) {
@@ -69,6 +70,15 @@ const getContent = async (filters, params) => {
         ? await RedditAPI.getListingSearchMulti(user, target, params)
         : await RedditAPI.getListingSearch(target, params);
       break;
+    case 'duplicates': {
+      const dupes = await RedditAPI.getListingDuplicates(target, params);
+      entries = {
+        ...dupes[1],
+        originalPost: dupes[0],
+        requestUrl: dupes.requestUrl,
+      };
+      break;
+    }
     default:
       break;
   }
@@ -76,7 +86,6 @@ const getContent = async (filters, params) => {
   if (entries) {
     entries = keyEntryChildren(entries);
   }
-
   return entries;
 };
 
@@ -108,12 +117,18 @@ export function listingsFetchEntriesReddit(filters) {
       };
 
       const entries = await getContent(filters, params);
+      const { listType } = filters;
 
       const data = {
         ...entries.data,
         requestUrl: entries.requestUrl,
         type: 'init',
       };
+
+      if (entries.originalPost && listType === 'duplicates') {
+        // eslint-disable-next-line
+        data.originalPost = entries.originalPost.data.children[0];
+      }
 
       await dispatch(listingsRedditEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';

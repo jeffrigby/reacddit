@@ -27,14 +27,19 @@ const PostByline = ({ data }) => {
     <span className="badge badge-dark">{data.author_flair_text}</span>
   ) : null;
 
-  const authorLink = (
-    <>
-      <Link to={`/user/${data.author}/submitted/new`}>
+  const authorLink =
+    data.author === '[deleted]' ? (
+      <>
         <i className="fas fa-user" /> {data.author}
-      </Link>{' '}
-      {authorFlair}
-    </>
-  );
+      </>
+    ) : (
+      <>
+        <Link to={`/user/${data.author}/submitted/new`}>
+          <i className="fas fa-user" /> {data.author}
+        </Link>{' '}
+        {authorFlair}
+      </>
+    );
 
   const subUrl = `/r/${data.subreddit}`;
   const subredditInfo = <Link to={subUrl}>/r/{data.subreddit}</Link>;

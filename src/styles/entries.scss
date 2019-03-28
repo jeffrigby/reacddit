@@ -1,6 +1,11 @@
 div#entries {
   max-width: 1024px;
 
+  .list-title {
+    font-weight: bold;
+    padding: .75rem 1.25rem;
+  }
+
   div.condensed {
     .post-title {
       white-space: normal;
@@ -117,7 +122,8 @@ div#entries {
 }
 
 .footer-status {
-  margin-bottom: calc(90vh);
+  margin-bottom: calc(80vh);
+  padding: 0 1.25rem;
 }
 
 #debugInfo {

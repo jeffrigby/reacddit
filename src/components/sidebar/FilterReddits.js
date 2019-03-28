@@ -30,6 +30,7 @@ class FilterReddits extends React.Component {
     if (!disableHotkeys) {
       switch (pressedKey) {
         case 'F':
+        case 'q':
           this.filterInput.current.focus();
           document.body.classList.add('show-menu');
           this.clearSearch();

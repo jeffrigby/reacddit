@@ -26,6 +26,7 @@ class App extends React.Component {
     // Make sure the token is set before loading the app.
     const token = await getBearer();
     if (token !== null) {
+      // check for a new token every 10s.
       this.tokenQuery = setInterval(getBearer, 10000);
       getMe();
     } else {
@@ -104,11 +105,14 @@ class App extends React.Component {
       `/:listType(user)/:user/:target(upvoted|downvoted|submitted|saved|hidden|gilded)/:sort(${userSorts})?`,
     ];
 
+    const duplicatesPaths = [`/:listType(duplicates)/:target`];
+
     const combinedPaths = [
       ...redditPaths,
       ...searchPaths,
       ...multiPaths,
       ...userPaths,
+      ...duplicatesPaths,
     ];
 
     const routes = [];

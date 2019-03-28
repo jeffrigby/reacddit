@@ -7,10 +7,6 @@ import { connect } from 'react-redux';
 
 const queryString = require('query-string');
 
-/**
- * Import all actions as an object.
- */
-
 class Sort extends React.Component {
   catsSearch = {
     R: 'relevance',
@@ -61,32 +57,32 @@ class Sort extends React.Component {
   }
 
   handleSortHotkey = event => {
-    const { disableHotKeys, listingsFilter, ...props } = this.props;
+    const { disableHotKeys, listingsFilter, gotoLink } = this.props;
     if (!disableHotKeys && listingsFilter.target !== 'friends') {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
-          props.push(this.genLink('hot'));
+          gotoLink(this.genLink('hot'));
           break;
         }
         case 'B': {
-          props.push(this.genLink('best'));
+          gotoLink(this.genLink('best'));
           break;
         }
         case 'N': {
-          props.push(this.genLink('new'));
+          gotoLink(this.genLink('new'));
           break;
         }
         case 'C': {
-          props.push(this.genLink('controversial'));
+          gotoLink(this.genLink('controversial'));
           break;
         }
         case 'R': {
-          props.push(this.genLink('rising'));
+          gotoLink(this.genLink('rising'));
           break;
         }
         case 'T': {
-          props.push(this.genLink('top'));
+          gotoLink(this.genLink('top'));
           break;
         }
         default:
@@ -219,6 +215,7 @@ class Sort extends React.Component {
     if (
       target === 'friends' ||
       listType === 'u' ||
+      listType === 'duplicates' ||
       subreddits.status !== 'loaded'
     ) {
       return false;
@@ -262,7 +259,7 @@ Sort.propTypes = {
   subreddits: PropTypes.object.isRequired,
   search: PropTypes.string,
   disableHotKeys: PropTypes.bool.isRequired,
-  push: PropTypes.func.isRequired,
+  gotoLink: PropTypes.func.isRequired,
   me: PropTypes.object.isRequired,
 };
 
@@ -278,11 +275,7 @@ const mapStateToProps = (state, ownProps) => ({
   disableHotKeys: state.disableHotKeys,
 });
 
-const mapDispatchToProps = dispatch => ({
-  push: url => dispatch(push(url)),
-});
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  { gotoLink: push }
 )(Sort);

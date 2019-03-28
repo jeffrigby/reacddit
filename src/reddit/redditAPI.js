@@ -30,6 +30,7 @@ class RedditAPI {
   }
 
   static setParams(defaults, options) {
+    // @todo this can be modernized
     const params = Object.assign(defaults, options);
     Object.keys(params).forEach(
       key => (params[key] == null || params[key] === '') && delete params[key]
@@ -268,6 +269,33 @@ class RedditAPI {
     };
 
     const url = `user/${user}/${type}/${sort}`;
+    const result = await this.redditAPI.get(url, data);
+    const query = queryString.stringify(params);
+    result.data.requestUrl = `${url}?${query}`;
+    return result.data;
+  }
+
+  async getListingDuplicates(article, options) {
+    const defaults = {
+      after: null,
+      before: null,
+      count: 0,
+      crossposts_only: false,
+      sort: 'num_comments', // one of (num_comments, new)
+      limit: 25,
+      show: 'all',
+      sr: null,
+      sr_detail: false,
+      raw_json: 1,
+    };
+
+    const params = RedditAPI.setParams(defaults, options);
+
+    const data = {
+      params,
+    };
+
+    const url = `duplicates/${article}`;
     const result = await this.redditAPI.get(url, data);
     const query = queryString.stringify(params);
     result.data.requestUrl = `${url}?${query}`;

@@ -186,6 +186,7 @@ class Entries extends React.Component {
     if (listType === 'user') listingType = 'u';
     if (listType === 'multi') listingType = 'm';
     if (listType === 'search') listingType = 's';
+    // if (listType === 'duplicates') listingType = 'd';
 
     const newFilter = {
       sort: sort || qs.sort || 'hot',
@@ -245,6 +246,9 @@ class Entries extends React.Component {
           case 'l':
             this.actionPost.current.openLink();
             break;
+          case 'd':
+            this.actionPost.current.gotoDuplicates();
+            break;
           case '.':
             Entries.scrollToBottom();
             break;
@@ -303,7 +307,6 @@ class Entries extends React.Component {
         }
         prevPostId = post.id;
 
-
         // Check to see if there's a video to autoplay (mostly for Safari in High Sierra.
         // const videos = jQuery(post)
         //   .find('video')
@@ -350,6 +353,25 @@ class Entries extends React.Component {
       setTimeout(() => this.monitorEntries(true), 2000);
     }
   }
+
+  renderPost = post => {
+    const { focused, visible, actionable } = this.state;
+    const isFocused = focused === post.data.name;
+    const isVisible = visible.includes(post.data.name);
+    const isActionable = actionable === post.data.name;
+    const ref = isActionable ? this.actionPost : null;
+    return (
+      <Post
+        entry={post}
+        key={post.data.id}
+        loaded={post.data.loaded}
+        focused={isFocused}
+        visible={isVisible}
+        actionable={isActionable}
+        ref={ref}
+      />
+    );
+  };
 
   render() {
     const {
@@ -427,27 +449,28 @@ class Entries extends React.Component {
     const entriesKeys = Object.keys(entriesObject);
     if (entriesKeys.length > 0) {
       entries = entriesKeys.map(key => {
-        const isFocused = focused === entriesObject[key].data.name;
-        const isVisible = visible.includes(entriesObject[key].data.name);
-        const isActionable = actionable === entriesObject[key].data.name;
-        const ref = isActionable ? this.actionPost : null;
-        return (
-          <Post
-            entry={entriesObject[key]}
-            key={entriesObject[key].data.id}
-            loaded={entriesObject[key].data.loaded}
-            focused={isFocused}
-            visible={isVisible}
-            actionable={isActionable}
-            ref={ref}
-          />
-        );
+        return this.renderPost(entriesObject[key]);
       });
     }
+
+    const { listType } = filter;
+
+    // console.log( listingsEntries.originalPost);
+    // const originalPost = null;
+    const originalPost =
+      listingsEntries.originalPost && listType === 'duplicates'
+        ? this.renderPost(listingsEntries.originalPost)
+        : null;
 
     return (
       <>
         <div className="list-group" id="entries">
+          {originalPost && listType === 'duplicates' && (
+            <>
+              {originalPost}
+              <div className="list-title">Duplicate/Cross Posts</div>
+            </>
+          )}
           {entries}
           <div className="footer-status">{footerStatus}</div>
         </div>

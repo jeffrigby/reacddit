@@ -15,7 +15,10 @@ const Header = ({ listingsFilter }) => {
   if (listType === 's') {
     ltype = multi ? 'm' : 'r';
   }
-  const title = target === 'mine' || !target ? '' : ` ${ltype}/${target}`;
+  const title =
+    target === 'mine' || !target || listType === 'duplicates'
+      ? ''
+      : ` ${ltype}/${target}`;
   const showMenu = () => {
     document.body.classList.toggle('show-menu');
   };

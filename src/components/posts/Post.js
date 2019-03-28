@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { push } from 'connected-react-router';
 import Content from './Content';
 import PostVote from './PostVote';
 import PostSave from './PostSave';
@@ -13,8 +14,6 @@ import {
   redditUnsave,
   redditVote,
 } from '../../redux/actions/reddit';
-
-const queryString = require('query-string');
 
 class Post extends React.Component {
   mounted = false;
@@ -157,6 +156,15 @@ class Post extends React.Component {
     }
   };
 
+  gotoDuplicates = () => {
+    const { entry, gotoLink } = this.props;
+    const { data } = entry;
+    if (!data.is_self) {
+      const searchTo = `/duplicates/${data.id}`;
+      gotoLink(searchTo);
+    }
+  };
+
   // @todo is there a way around pop up blockers?
   openReddit = () => {
     const { entry } = this.props;
@@ -220,11 +228,7 @@ class Post extends React.Component {
 
     let searchLink = '';
     if (!data.is_self) {
-      const query = queryString.stringify({
-        q: `url:${data.url}`,
-        sort: 'relevance',
-      });
-      const searchTo = `/search?${query}`;
+      const searchTo = `/duplicates/${data.id}`;
       searchLink = (
         <div>
           <Link
@@ -357,6 +361,7 @@ Post.propTypes = {
   unsave: PropTypes.func.isRequired,
   save: PropTypes.func.isRequired,
   bearer: PropTypes.object.isRequired,
+  gotoLink: PropTypes.func.isRequired,
 };
 
 Post.defaultProps = {};
@@ -372,6 +377,7 @@ export default connect(
     vote: redditVote,
     save: redditSave,
     unsave: redditUnsave,
+    gotoLink: push,
   },
   null,
   { forwardRef: true }
