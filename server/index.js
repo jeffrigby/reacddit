@@ -124,6 +124,9 @@ const setSessAndCookie = (token, ctx) => {
  * @returns {boolean}
  */
 const isExpired = token => {
+  if (!token.expires) {
+    return true;
+  }
   const now = Date.now() / 1000;
   // Pad it by 5 minutes.
   return token.expires - 300 <= now;
