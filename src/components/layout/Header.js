@@ -10,8 +10,12 @@ import SubUnSub from '../header/SubUnSub';
 // import SubUnSub from '../header/SubUnSub';
 
 const Header = ({ listingsFilter }) => {
-  const { listType, target } = listingsFilter;
-  const title = target === 'mine' || !target ? '' : ` ${listType}/${target}`;
+  const { listType, target, multi } = listingsFilter;
+  let ltype = listType;
+  if (listType === 's') {
+    ltype = multi ? 'm' : 'r';
+  }
+  const title = target === 'mine' || !target ? '' : ` ${ltype}/${target}`;
   const showMenu = () => {
     document.body.classList.toggle('show-menu');
   };
