@@ -7,7 +7,7 @@ import '../../styles/navbar.scss';
 import ViewMode from '../header/ViewMode';
 // import RedditInfo from '../header/RedditInfo';
 import SubUnSub from '../header/SubUnSub';
-// import SubUnSub from '../header/SubUnSub';
+import { NavLink } from 'react-router-dom';
 
 const Header = ({ listingsFilter }) => {
   const { listType, target, multi } = listingsFilter;
@@ -30,10 +30,10 @@ const Header = ({ listingsFilter }) => {
   );
 
   const brand = (
-    <>
+    <NavLink to="/" className="reacddit-title">
       <span className="react">reac</span>
       <span className="reddit">ddit</span>
-    </>
+    </NavLink>
   );
 
   // const redditInfo = <RedditInfo />;

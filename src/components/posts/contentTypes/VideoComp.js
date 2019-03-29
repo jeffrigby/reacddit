@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 const VideoComp = ({ content, load }) => {
   const videoRef = React.createRef();
   const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(true);
+  const [ctrLock, setCtrLock] = useState(false);
 
   const { width, height, sources } = content;
   let videoWidth = width;
@@ -23,6 +25,14 @@ const VideoComp = ({ content, load }) => {
   const ratioStyle = { paddingBottom: `${ratio}%` };
   const videoId = `video-${content.id}`;
 
+  const toggleLock = () => {
+    if (ctrLock) {
+      setCtrLock(false);
+    } else {
+      setCtrLock(true);
+    }
+  };
+
   const toggleSound = () => {
     if (videoRef.current.muted) {
       videoRef.current.muted = false;
@@ -33,18 +43,30 @@ const VideoComp = ({ content, load }) => {
     }
   };
 
-  const playStop = elm => {
-    if (elm.target.paused) {
-      elm.target.play();
-    } else {
-      elm.target.pause();
+  const toggleFullscreen = () => {
+    if (videoRef.current.requestFullScreen) {
+      videoRef.current.requestFullScreen();
+    } else if (videoRef.current.webkitRequestFullScreen) {
+      videoRef.current.webkitRequestFullScreen();
+    } else if (videoRef.current.mozRequestFullScreen) {
+      videoRef.current.mozRequestFullScreen();
+    } else if (videoRef.current.webkitEnterFullscreen) {
+      videoRef.current.webkitEnterFullscreen();
     }
-    // elm.target.paused ? elm.target.play() : elm.target.pause();
   };
 
-  const mutedIconClass = `fas ${
-    muted ? 'fas fa-volume-up' : 'fas fa-volume-mute'
-  }`;
+  const playStop = () => {
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setPlaying(true);
+    } else {
+      videoRef.current.pause();
+      setPlaying(false);
+    }
+  };
+
+  const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
+  const mutedIconClass = `fas ${muted ? 'fa-volume-up' : 'fa-volume-mute'}`;
 
   const muteTitle = muted ? 'Play Sound' : 'Mute';
 
@@ -64,9 +86,10 @@ const VideoComp = ({ content, load }) => {
         playsInline
         id={videoId}
         key={videoId}
+        onClick={toggleLock}
         poster={content.thumb}
         className="loaded embed-responsive-item preload"
-        onClick={playStop}
+        // onClick={toggleControls}
         ref={videoRef}
       >
         {videoSources}
@@ -83,8 +106,17 @@ const VideoComp = ({ content, load }) => {
     );
   }
 
+  const videoContainerClass = [
+    'video-container',
+    muted ? 'muted' : 'unmuted',
+    playing ? 'playing' : 'paused',
+    ctrLock ? 'locked' : 'unlocked',
+  ];
+
+  const btnClasses = 'btn btn-link menu-link m-0 px-1 btn-lg video-ctr';
+
   return (
-    <div className={`video-container${muted ? ' muted' : ' unmuted'}`}>
+    <div className={videoContainerClass.join(' ')}>
       <div className="ratio-bg">
         <div style={contStyle} className="ratio-container">
           <div style={ratioStyle} className="ratio embed-responsive">
@@ -92,28 +124,44 @@ const VideoComp = ({ content, load }) => {
           </div>
         </div>
       </div>
-      {content.hasAudio && (
-        <div className="video-audio">
+      <div className="video-controls">
+        <button
+          type="button"
+          className={`${btnClasses} video-fullscreen`}
+          onClick={toggleFullscreen}
+          title="Full Screen"
+        >
+          <i className="fas fa-expand" />
+        </button>
+        <button
+          type="button"
+          className={`${btnClasses} video-play`}
+          onClick={playStop}
+          title={muteTitle}
+        >
+          <i className={playIconClass} />
+        </button>
+        {content.hasAudio && (
           <button
             type="button"
-            className="btn btn-link menu-link m-0 p-0 btn-lg"
+            className={`${btnClasses} video-audio`}
             onClick={toggleSound}
             title={muteTitle}
             disabled={content.audioWarning}
           >
             <i className={mutedIconClass} />
           </button>
-          {content.audioWarning && (
-            <div
-              className="audio-disabled bg-light border border-dark p-1"
-              role="tooltip"
-            >
-              This video might have audio but Reddit disables audio on
-              third-party sites. Click the link to load the video source.
-            </div>
-          )}
-        </div>
-      )}
+        )}
+        {content.audioWarning && (
+          <div
+            className="audio-disabled bg-light border border-dark p-1"
+            role="tooltip"
+          >
+            This video might have audio but Reddit disables audio on third-party
+            sites. Click the link to load the video source.
+          </div>
+        )}
+      </div>
     </div>
   );
 };

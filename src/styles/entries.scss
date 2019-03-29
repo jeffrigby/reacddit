@@ -1,9 +1,9 @@
 div#entries {
-  max-width: 1024px;
+  max-width: 1366px;
 
   .list-title {
     font-weight: bold;
-    padding: .75rem 1.25rem;
+    padding: 0.75rem 1.25rem;
   }
 
   div.condensed {
@@ -21,26 +21,11 @@ div#entries {
         display: inline !important;
       }
     }
-
   }
 
   div.entry {
     &:first-child {
       padding-top: 0.5em;
-    }
-
-    .actions {
-      opacity: 0.5;
-    }
-
-    &.actionable {
-      //border-right: 2px solid;
-      //margin-right: -2px;
-      background-color: rgb(245, 245, 245);
-    }
-
-    &.actionable .actions, .actions:hover {
-      opacity: 1;
     }
 
     .actions {
@@ -64,51 +49,13 @@ div#entries {
           background-color: #000000;
         }
 
-        img, iframe, video {
+        img,
+        iframe,
+        video {
           max-width: 100%;
         }
       }
     }
-    .video-container {
-      position: relative;
-      &.unmuted .video-audio {
-        visibility: hidden;
-        opacity: 0;
-        transition: visibility 0s 0.25s, opacity 0.25s linear;
-      }
-      &.unmuted:hover .video-audio {
-        visibility: visible;
-        opacity: 1;
-      }
-      &:hover .video-audio .tooltip {
-        opacity: 1;
-      }
-
-      .video-audio {
-        position: absolute;
-        right: 10px;
-        top: 10px;
-        button {
-          color: white;
-          text-shadow: 1px 1px #000;
-          position: relative;
-        }
-        .audio-disabled {
-          position: absolute;
-          width: 300px;
-          right:0;
-          font-size: 0.75rem;
-          visibility: hidden;
-          opacity: 0;
-        }
-
-        &:hover .audio-disabled {
-          visibility: visible;
-          opacity: 1;
-        }
-      }
-    }
-
     footer {
       font-size: 0.8em;
 
@@ -116,6 +63,83 @@ div#entries {
         line-height: 1 !important;
         padding: 0;
         margin: 0;
+      }
+    }
+  }
+}
+
+.video-container {
+  position: relative;
+
+  &.unlocked {
+    .video-ctr,
+    &.unmuted .video-audio {
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s 0.25s, opacity 0.25s linear;
+    }
+    &.muted .video-audio,
+    &.paused .video-play {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+
+  &.locked {
+    .video-ctr,
+    &.unmuted .video-audio {
+      visibility: visible;
+      opacity: 1;
+      transition: visibility 0s 0.25s, opacity 0.25s linear;
+    }
+  }
+
+  .video-controls {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    button {
+      color: white;
+      text-shadow: 1px 1px #000;
+      position: relative;
+    }
+    .audio-disabled {
+      position: absolute;
+      width: 300px;
+      right: 0;
+      font-size: 0.75rem;
+      visibility: hidden;
+      opacity: 0;
+    }
+  }
+}
+
+.no-phone {
+  .actionable {
+    background-color: rgb(245, 245, 245);
+  }
+
+  .actions {
+    opacity: 0.5;
+  }
+
+  .actionable .actions,
+  .actions:hover {
+    opacity: 1;
+  }
+
+}
+
+.no-touch {
+  .video-container {
+    position: relative;
+
+    &.unlocked:hover {
+      .video-ctr,
+      &.unmuted .video-audio {
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s 0.25s, opacity 0.25s linear;
       }
     }
   }
