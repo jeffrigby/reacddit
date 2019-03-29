@@ -1,13 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { NavLink } from 'react-router-dom';
 import Search from '../header/Search';
 import Sort from '../header/Sort';
 import FilterReddits from '../sidebar/FilterReddits';
 import '../../styles/navbar.scss';
 import ViewMode from '../header/ViewMode';
-// import RedditInfo from '../header/RedditInfo';
 import SubUnSub from '../header/SubUnSub';
-import { NavLink } from 'react-router-dom';
 
 const Header = ({ listingsFilter }) => {
   const { listType, target, multi } = listingsFilter;
