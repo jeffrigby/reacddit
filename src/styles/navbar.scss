@@ -54,6 +54,12 @@
   }
 }
 
+body.search-active {
+  .header-actions {
+    display: none !important;
+  }
+}
+
 #search {
   position: relative;
   .searchToolTip {
@@ -79,4 +85,11 @@
   header {
     flex-wrap: wrap-reverse;
   }
+
+  body.search-active {
+    .header-brand-title {
+      display: none !important;
+    }
+  }
+
 }

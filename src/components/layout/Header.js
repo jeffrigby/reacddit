@@ -51,22 +51,24 @@ const Header = ({ listingsFilter }) => {
 
   return (
     <>
-      <div className="d-flex flex-nowrap align-middle m-0 sidebar sidebar-navbar navbar-group">
+      <div className="d-flex flex-nowrap align-middle m-0 sidebar sidebar-navbar navbar-group filter-cont">
         <div className="ml-2 close-menu-link">{menuButton}</div>
         <FilterReddits />
       </div>
 
-      <div className="d-none d-md-flex flex-nowrap header-main pr-0">
-        <div className="navbar-brand pl-2">
-          {brand} {title}
+      <div className="header-brand-title">
+        <div className="d-none d-md-flex flex-nowrap header-main pr-0">
+          <div className="navbar-brand pl-2">
+            {brand} {title}
+          </div>
         </div>
-      </div>
 
-      <div className="d-flex d-md-none flex-nowrap header-main small pr-0">
-        <div className="pl-2 open-menu-link">{menuButton}</div>
-        <div className="d-block px-2">
-          <div className="w-100">{brandMobile}</div>
-          {title && <div>{title}</div>}
+        <div className="d-flex d-md-none flex-nowrap header-main small pr-0">
+          <div className="pl-2 open-menu-link">{menuButton}</div>
+          <div className="d-block px-2">
+            <div className="w-100">{brandMobile}</div>
+            {title && <div>{title}</div>}
+          </div>
         </div>
       </div>
 
@@ -78,7 +80,7 @@ const Header = ({ listingsFilter }) => {
         <Search />
       </div>
 
-      <div className="d-flex flex-nowrap align-middle m-0 pr-2 header-main">
+      <div className="d-flex flex-nowrap align-middle m-0 pr-2 header-main header-actions">
         <div className="pr-2">
           <Sort />
         </div>

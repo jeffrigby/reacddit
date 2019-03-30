@@ -80,12 +80,14 @@ class Search extends React.Component {
   focusSearch = () => {
     const { setDisableHotkeys } = this.props;
     this.setState({ focused: true });
+    document.body.classList.add('search-active');
     setDisableHotkeys(true);
   };
 
   blurSearch = () => {
     const { setDisableHotkeys } = this.props;
     this.setState({ focused: false });
+    document.body.classList.remove('search-active');
     setDisableHotkeys(false);
   };
 
