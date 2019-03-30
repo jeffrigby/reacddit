@@ -113,8 +113,7 @@ const VideoComp = ({ content, load }) => {
     ctrLock ? 'locked' : 'unlocked',
   ];
 
-  const btnClasses = 'btn btn-link menu-link m-0 px-1 btn-lg video-ctr';
-
+  const btnClasses = 'btn btn-link m-0 py-0 px-1 btn-md video-ctr';
   return (
     <div className={videoContainerClass.join(' ')}>
       <div className="ratio-bg">
@@ -124,7 +123,7 @@ const VideoComp = ({ content, load }) => {
           </div>
         </div>
       </div>
-      <div className="video-controls">
+      <div className="video-controls m-0 p-0">
         <button
           type="button"
           className={`${btnClasses} video-fullscreen`}

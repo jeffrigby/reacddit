@@ -333,8 +333,10 @@ class Entries extends React.Component {
 
     // Check if iframe is focused. If it is, unfocus it so hotkeys work.
     if (document.activeElement.tagName === 'IFRAME') {
-      window.focus();
-      document.activeElement.blur();
+      setTimeout(() => {
+        window.focus();
+        document.activeElement.blur();
+      }, 1000);
     }
   };
 

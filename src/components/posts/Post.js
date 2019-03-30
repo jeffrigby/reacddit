@@ -313,7 +313,7 @@ class Post extends React.Component {
           </header>
           {content}
           <footer className="d-flex clearfix align-middle">
-            <div className="mr-auto">
+            <div className="mr-auto byline">
               <PostByline data={data} />
               {crossPost && (
                 <>

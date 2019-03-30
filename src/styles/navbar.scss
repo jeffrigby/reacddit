@@ -1,6 +1,6 @@
 .navbar-brand {
-  padding-top: .75rem;
-  padding-bottom: .75rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
   font-size: 1rem;
   //background-color: rgba(0, 0, 0, .25);
   //box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
@@ -13,7 +13,7 @@
   }
 
   .reddit {
-    color:rgb(252,71,35);
+    color: rgb(252, 71, 35);
   }
 }
 
@@ -24,7 +24,7 @@
 }
 
 .navbar .form-control {
-  padding: .75rem 1rem;
+  padding: 0.75rem 1rem;
   border-width: 0;
   border-radius: 0;
 }
@@ -36,7 +36,7 @@
 
 .filterText {
   position: relative;
-  padding: 0 0 0 1rem
+  padding: 0 0 0 1rem;
 }
 
 .form-group .form-control-clear {
@@ -50,7 +50,7 @@
 
 .sort-menu {
   .sort-active .sort-title:before {
-      content: "> ";
+    content: '> ';
   }
 }
 
@@ -73,4 +73,10 @@
   width: 50%;
   min-width: 200px;
   white-space: normal !important;
+}
+
+@media (max-width: 767.98px) {
+  header {
+    flex-wrap: wrap-reverse;
+  }
 }

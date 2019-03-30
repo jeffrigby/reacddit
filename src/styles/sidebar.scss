@@ -1,6 +1,6 @@
 #aside-content {
   overflow-y: scroll;
-  font-size: .925em;
+  font-size: 0.925em;
 
   .nav {
     width: 100%;
@@ -19,30 +19,16 @@
       &.sub-stale {
         color: #d3d3d3;
       }
-      &.sub-new, &.sub-today {
+      &.sub-new,
+      &.sub-today {
         font-weight: 600;
       }
-      &.activeSubreddit, &.mark {
+      &.activeSubreddit,
+      &.mark {
         &:before {
-          content: "> ";
+          content: '> ';
         }
       }
-    }
-
-    &:hover {
-      background-color: #fcf8e3;
-    }
-
-
-  }
-
-  // Override hover for multis
-  #sidebar-multis {
-    .nav-item:hover {
-      background-color: unset;
-    }
-    .subnav .nav-item:hover {
-      background-color: #fcf8e3;
     }
   }
 
@@ -115,7 +101,9 @@
       visibility: hidden !important;
     }
 
-    .navbar-brand, .header-main, .search-cont {
+    .navbar-brand,
+    .header-main,
+    .search-cont {
       display: none !important;
     }
   }
@@ -124,5 +112,21 @@
     display: inline !important;
     margin: 0 0 0 !important;
     padding: 0 !important;
+  }
+}
+
+.no-touch {
+  #aside-content .nav-item:hover {
+    background-color: #fcf8e3;
+  }
+
+  // Override hover for multis
+  #sidebar-multis {
+    .nav-item:hover {
+      background-color: unset;
+    }
+    .subnav .nav-item:hover {
+      background-color: #fcf8e3;
+    }
   }
 }

@@ -23,9 +23,21 @@ const Header = ({ listingsFilter }) => {
   };
 
   const menuButton = (
-    <button type="button" className="btn btn-link menu-link" onClick={showMenu}>
+    <button
+      type="button"
+      className="btn btn-secondary btn-sm"
+      onClick={showMenu}
+    >
       <i className="fas fa-bars" />
     </button>
+  );
+
+  const brandMobile = (
+    <NavLink to="/" className="reacddit-title">
+      <span className="react">reac</span>
+      {!title && <br />}
+      <span className="reddit">ddit</span>
+    </NavLink>
   );
 
   const brand = (
@@ -53,8 +65,8 @@ const Header = ({ listingsFilter }) => {
       <div className="d-flex d-md-none flex-nowrap header-main small pr-0">
         <div className="pl-2 open-menu-link">{menuButton}</div>
         <div className="d-block px-2">
-          <div className="w-100">{brand}</div>
-          <div>{title}</div>
+          <div className="w-100">{brandMobile}</div>
+          {title && <div>{title}</div>}
         </div>
       </div>
 
