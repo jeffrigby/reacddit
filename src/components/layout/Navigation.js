@@ -4,8 +4,8 @@ import isEmpty from 'lodash/isEmpty';
 import MultiReddits from '../sidebar/MultiReddits';
 import NavigationPrimaryLinks from '../sidebar/NavigationPrimaryLinks';
 import NavigationSubReddits from '../sidebar/NavigationSubreddits';
-import '../../styles/sidebar.scss';
 import SearchRedditNames from '../sidebar/SearchRedditNames';
+import '../../styles/sidebar.scss';
 
 const Navigation = ({ redditBearer, subredditsFilter }) => {
   const { filterText } = subredditsFilter;

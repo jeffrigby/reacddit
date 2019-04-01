@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
+import _trimEnd from 'lodash/trimEnd';
 
 const closeMenu = () => {
   document.body.classList.remove('show-menu');
@@ -11,7 +12,6 @@ const NavigationGenericNavItem = props => {
     to,
     text,
     title,
-    key,
     isStatic,
     onClickAction,
     classes,
@@ -21,8 +21,6 @@ const NavigationGenericNavItem = props => {
     iconClass,
   } = props;
   const titleNew = title || text;
-  const keyNew = key || to;
-  const itemKey = `navLink-${keyNew}`;
   let classNames = 'nav-link';
   if (classes) {
     classNames += ` ${classes}`;
@@ -36,6 +34,8 @@ const NavigationGenericNavItem = props => {
     ''
   );
 
+  const trimmedTo = _trimEnd(to, '/');
+
   let navItem;
 
   if (!isStatic) {
@@ -43,7 +43,7 @@ const NavigationGenericNavItem = props => {
       <>
         <NavLink
           id={id}
-          to={to}
+          to={trimmedTo}
           title={titleNew}
           className={classNames}
           activeClassName="activeSubreddit"
@@ -60,7 +60,7 @@ const NavigationGenericNavItem = props => {
     navItem = (
       <>
         <a
-          href={to}
+          href={trimmedTo}
           title={titleNew}
           className={classNames}
           onClick={onClickAction}
@@ -75,11 +75,7 @@ const NavigationGenericNavItem = props => {
   if (noLi) {
     return navItem;
   }
-  return (
-    <li key={itemKey} className="nav-item">
-      {navItem}
-    </li>
-  );
+  return <li className="nav-item">{navItem}</li>;
 };
 
 NavigationGenericNavItem.propTypes = {
@@ -89,7 +85,6 @@ NavigationGenericNavItem.propTypes = {
   classes: PropTypes.string,
   id: PropTypes.string,
   badge: PropTypes.string,
-  key: PropTypes.string,
   iconClass: PropTypes.string,
   isStatic: PropTypes.bool,
   noLi: PropTypes.bool,
@@ -98,7 +93,6 @@ NavigationGenericNavItem.propTypes = {
 
 NavigationGenericNavItem.defaultProps = {
   title: null,
-  key: null,
   onClickAction: null,
   isStatic: false,
   noLi: false,
