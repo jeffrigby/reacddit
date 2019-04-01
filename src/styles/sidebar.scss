@@ -1,5 +1,6 @@
 #aside-content {
   overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
   font-size: 0.925em;
 
   .nav {
