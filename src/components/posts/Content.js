@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import IFrame16x9 from './contentTypes/IFrame16x9';
 import Image from './contentTypes/Image';
@@ -11,35 +11,53 @@ import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
 
 const Content = ({ content, name, load }) => {
+  const [resolvedContent, setResolvedContent] = useState(null);
+
+  useEffect(() => {
+    if (Promise.resolve(content) === content) {
+      Promise.resolve(content).then(resolved => {
+        setResolvedContent(resolved);
+      });
+    } else {
+      setResolvedContent(content);
+    }
+  }, [content]);
+
+  if (!resolvedContent) {
+    return null;
+  }
+
   let contentRendered = '';
-  if (content.type) {
-    switch (content.type) {
+  if (resolvedContent.type) {
+    switch (resolvedContent.type) {
       case 'image':
-        contentRendered = <Image content={content} load={load} />;
+        contentRendered = <Image content={resolvedContent} load={load} />;
         break;
       case 'video':
-        contentRendered = <VideoComp content={content} load={load} />;
+        contentRendered = <VideoComp content={resolvedContent} load={load} />;
         break;
       case 'iframe_4x4':
-        contentRendered = <IFrame4x4 content={content} load={load} />;
+        contentRendered = <IFrame4x4 content={resolvedContent} load={load} />;
         break;
       case 'iframe16x9':
-        contentRendered = <IFrame16x9 content={content} load={load} />;
+        contentRendered = <IFrame16x9 content={resolvedContent} load={load} />;
         break;
       case 'imgur_album':
-        contentRendered = <ImgurAlbum content={content} load={load} />;
+        contentRendered = <ImgurAlbum content={resolvedContent} load={load} />;
         break;
       case 'thumb':
-        contentRendered = <Thumb content={content} load={load} />;
+        contentRendered = <Thumb content={resolvedContent} load={load} />;
         break;
       case 'self':
-        contentRendered = <Self content={content} load={load} name={name} />;
+        contentRendered = (
+          <Self content={resolvedContent} load={load} name={name} />
+        );
         break;
       case 'raw_html':
-        contentRendered = <RawHTML content={content} load={load} />;
+        contentRendered = <RawHTML content={resolvedContent} load={load} />;
         break;
       case 'twitter':
-        contentRendered = <Twitter content={content} load={load} />;
+        contentRendered = <Twitter content={resolvedContent} load={load} />;
         break;
       default:
         break;
