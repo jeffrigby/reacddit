@@ -5,6 +5,7 @@ import MultiReddits from '../sidebar/MultiReddits';
 import NavigationPrimaryLinks from '../sidebar/NavigationPrimaryLinks';
 import NavigationSubReddits from '../sidebar/NavigationSubreddits';
 import '../../styles/sidebar.scss';
+import SearchRedditNames from '../sidebar/SearchRedditNames';
 
 const Navigation = ({ redditBearer, subredditsFilter }) => {
   const { filterText } = subredditsFilter;
@@ -17,6 +18,7 @@ const Navigation = ({ redditBearer, subredditsFilter }) => {
       {!hideExtras && <div className="nav-divider" />}
       {loggedIn && !hideExtras && <MultiReddits />}
       <NavigationSubReddits />
+      <SearchRedditNames filterText={filterText} />
     </div>
   );
 };

@@ -302,6 +302,24 @@ class RedditAPI {
     return result.data;
   }
 
+  async searchRedditNames(query, options) {
+    const defaults = {
+      exact: false,
+      include_over_18: true,
+      include_unadvertisable: true,
+      query,
+      raw_json: 1,
+    };
+
+    const data = {
+      params: RedditAPI.setParams(defaults, options),
+    };
+
+    const url = `/api/search_reddit_names`;
+    const result = await this.redditAPI.get(url, data);
+    return result.data;
+  }
+
   /**
    * Get the logged in users mutlireddits
    * @param options
