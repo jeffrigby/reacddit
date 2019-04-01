@@ -71,6 +71,7 @@ module.exports = {
     new webpack.ProgressPlugin(),
     new HtmlWebpackPlugin({
       template: commonPaths.templatePath,
+      favicon: commonPaths.favicon,
     }),
     new MiniCssExtractPlugin({
       filename: `${commonPaths.cssFolder}/styles.[hash].css`,
