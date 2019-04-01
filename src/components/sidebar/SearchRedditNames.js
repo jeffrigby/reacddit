@@ -21,14 +21,7 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
         if (names.length === 0) {
           setSearchResults('');
         } else {
-          // Filter out subscribed reddits
-          const filteredSubs = [];
-          names.forEach(value => {
-            if (subreddits.indexOf(value.toLowerCase()) === -1) {
-              filteredSubs.push(value);
-            }
-          });
-          setSearchResults(filteredSubs);
+          setSearchResults(names);
         }
       } else {
         setSearchResults([]);
@@ -36,11 +29,19 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
     };
 
     getResults(filterText);
-  }, [filterText, showNSFW, subreddits]);
+  }, [filterText, showNSFW]);
 
   if (!filterText) {
     return null;
   }
+
+  // Filter out subscribed reddits
+  const filteredSubs = [];
+  searchResults.forEach(value => {
+    if (subreddits.indexOf(value.toLowerCase()) === -1) {
+      filteredSubs.push(value);
+    }
+  });
 
   let currentSort = sort || '';
   const query = queryString.parse(window.location.search);
@@ -59,8 +60,8 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
       break;
   }
   let navItems = [];
-  if (searchResults.length > 0) {
-    navItems = searchResults.map((value, idx) => {
+  if (filteredSubs.length > 0) {
+    navItems = filteredSubs.map((value, idx) => {
       const key = `sr_search_${value}_${idx}`;
       const to = `/r/${value}/${currentSort}`;
       return (
