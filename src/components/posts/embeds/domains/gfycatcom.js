@@ -43,6 +43,7 @@ const render = async entry => {
   const sources = [
     { type: 'video/mp4', src: apiInfo.mp4Url },
     { type: 'video/webm', src: apiInfo.webmUrl },
+    { type: 'video/mp4', src: apiInfo.mobileUrl },
   ];
 
   const videoContent = {
