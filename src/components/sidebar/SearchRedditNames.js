@@ -118,7 +118,10 @@ SearchRedditNames.defaultProps = {
 
 const mapStateToProps = state => ({
   over18: state.redditMe.me.over_18,
-  subreddits: Object.keys(state.subreddits.subreddits),
+  subreddits:
+    state.subreddits.subreddits !== undefined
+      ? Object.keys(state.subreddits.subreddits)
+      : [],
   sort: state.listingsFilter.sort,
   auth: state.redditBearer.status === 'auth' || false,
 });
