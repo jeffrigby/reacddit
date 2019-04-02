@@ -66,7 +66,7 @@ const VideoComp = ({ content, load }) => {
   };
 
   const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
-  const mutedIconClass = `fas ${muted ? 'fa-volume-up' : 'fa-volume-mute'}`;
+  const mutedIconClass = `fas ${muted ? 'fa-volume-mute' : 'fa-volume-up'}`;
 
   const muteTitle = muted ? 'Play Sound' : 'Mute';
 
