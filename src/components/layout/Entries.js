@@ -287,7 +287,7 @@ class Entries extends React.Component {
         const { top, bottom } = post.getBoundingClientRect();
 
         // If it's not in the visible range skip it.
-        if (bottom >= -980 && top - window.innerHeight <= 1000) {
+        if (bottom >= -780 && top - window.innerHeight <= 800) {
           if (!newFocus) {
             const focusTop = bottom - 55;
             if (focusTop > 0) {
