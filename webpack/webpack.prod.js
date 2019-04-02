@@ -15,5 +15,5 @@ module.exports = {
     rules: [],
   },
   plugins: [new CleanWebpackPlugin()],
-  devtool: 'source-map',
+  devtool: false,
 };
