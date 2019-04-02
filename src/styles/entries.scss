@@ -107,13 +107,23 @@ div#entries {
       text-shadow: 1px 1px #000;
       position: relative;
     }
-    .audio-disabled {
-      position: absolute;
-      width: 300px;
-      right: 0;
-      font-size: 0.75rem;
-      visibility: hidden;
-      opacity: 0;
+    .video-audio-cont {
+      .audio-disabled {
+        position: absolute;
+        width: 300px;
+        right: 0;
+        font-size: 0.75rem;
+        visibility: hidden;
+        opacity: 0;
+        color: white;
+        transition: visibility 0s 0.25s, opacity 0.25s linear;
+      }
+      &:hover {
+        .audio-disabled {
+          visibility: visible;
+          opacity: 1;
+        }
+      }
     }
   }
 }
@@ -160,7 +170,6 @@ div#entries {
   .byline span {
     white-space: nowrap;
   }
-
 }
 
 .no-touch {

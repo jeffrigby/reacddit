@@ -125,7 +125,6 @@ class FilterReddits extends React.Component {
 
   render() {
     const { filter } = this.props;
-
     return (
       <div className="filterText w-100 d-flex m-0 p-2">
         <input
@@ -139,7 +138,7 @@ class FilterReddits extends React.Component {
           value={filter.filterText}
           ref={this.filterInput}
         />
-        {filter.filterText && (
+        {filter.active && (
           <i
             className="far fa-times-circle form-control-clear"
             onClick={this.clearSearch}

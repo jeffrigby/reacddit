@@ -69,6 +69,7 @@ const VideoComp = ({ content, load }) => {
   const mutedIconClass = `fas ${muted ? 'fa-volume-mute' : 'fa-volume-up'}`;
 
   const muteTitle = muted ? 'Play Sound' : 'Mute';
+  const playTitle = playing ? 'Pause' : 'Play';
 
   // load = false;
   let video;
@@ -136,29 +137,31 @@ const VideoComp = ({ content, load }) => {
           type="button"
           className={`${btnClasses} video-play`}
           onClick={playStop}
-          title={muteTitle}
+          title={playTitle}
         >
           <i className={playIconClass} />
         </button>
         {content.hasAudio && (
-          <button
-            type="button"
-            className={`${btnClasses} video-audio`}
-            onClick={toggleSound}
-            title={muteTitle}
-            disabled={content.audioWarning}
-          >
-            <i className={mutedIconClass} />
-          </button>
-        )}
-        {content.audioWarning && (
-          <div
-            className="audio-disabled bg-light border border-dark p-1"
-            role="tooltip"
-          >
-            This video might have audio but Reddit disables audio on third-party
-            sites. Click the link to load the video source.
-          </div>
+          <span className="video-audio-cont">
+            <button
+              type="button"
+              className={`${btnClasses} video-audio`}
+              onClick={toggleSound}
+              title={muteTitle}
+              // disabled={content.audioWarning}
+            >
+              <i className={mutedIconClass} />
+            </button>
+            {content.audioWarning && (
+              <div
+                className="audio-disabled bg-dark border border-light p-1"
+                role="tooltip"
+              >
+                This video might have audio but Reddit disables audio on
+                third-party sites. Click the link to load the video source.
+              </div>
+            )}
+          </span>
         )}
       </div>
     </div>

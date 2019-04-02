@@ -183,7 +183,7 @@ class Search extends React.Component {
           value={search}
           ref={this.searchInput}
         />
-        {search && (
+        {focused && (
           <i
             className="far fa-times-circle form-control-clear"
             onClick={this.clearSearch}
