@@ -8,7 +8,7 @@ const queryString = require('query-string');
 
 const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
   const initShowSearchResuts = over18 !== undefined ? over18 : false;
-  const [searchResults, setSearchResults] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
     getResults(filterText);
   }, [filterText, showNSFW]);
 
-  if (!filterText) {
+  if (!filterText || searchResults.length === 0) {
     return null;
   }
 
