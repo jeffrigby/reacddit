@@ -6,11 +6,7 @@ import { disableHotKeys } from '../../redux/actions/misc';
 
 const queryString = require('query-string');
 
-/**
- * Import all actions as an object.
- */
-
-class Search extends React.Component {
+class Search extends React.PureComponent {
   searchInput = React.createRef();
 
   searchInputParent = React.createRef();
@@ -87,8 +83,11 @@ class Search extends React.Component {
   blurSearch = () => {
     const { setDisableHotkeys } = this.props;
     this.setState({ focused: false });
-    document.body.classList.remove('search-active');
     setDisableHotkeys(false);
+    // @TODO I have no idea why this is needed. Doesn't work w/o it.
+    setTimeout(() => {
+      document.body.classList.remove('search-active');
+    }, 250);
   };
 
   clearSearch = () => {
@@ -166,7 +165,7 @@ class Search extends React.Component {
         ? 'Press shift-return to search all of reddit'
         : '';
 
-    const searchClassName = focused ? 'search-focused m-0 p-2' : 'm-0 p-2';
+    const searchClassName = focused ? 'search-focused m-0' : 'm-0';
 
     return (
       <div id="search" ref={this.searchInputParent} className={searchClassName}>
@@ -183,7 +182,7 @@ class Search extends React.Component {
           value={search}
           ref={this.searchInput}
         />
-        {focused && (
+        {(focused || search) && (
           <i
             className="far fa-times-circle form-control-clear"
             onClick={this.clearSearch}

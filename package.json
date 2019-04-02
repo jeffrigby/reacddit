@@ -1,7 +1,7 @@
 {
-  "name": "reddit-react",
+  "name": "Reacddit",
   "version": "1.0.0",
-  "description": "A react front-end for Reddit",
+  "description": "A Reddit client built in reactjs.",
   "main": "index.js",
   "scripts": {
     "start": "cross-env NODE_ENV=development webpack-dev-server --public reddit.test --port 3000  --mode development --progress --hot",
@@ -21,7 +21,8 @@
     "axios": "^0.18.0",
     "babel-polyfill": "^6.26.0",
     "connected-react-router": "^6.1.0",
-    "deep-object-diff": "^1.1.0",
+    "favicons-webpack-plugin": "^0.0.9",
+    "file-loader": "^3.0.1",
     "get-urls": "^9.0.0",
     "history": "^4.7.2",
     "immutability-helper": "^3.0.0",
@@ -46,7 +47,8 @@
     "redux-devtools-extension": "^2.13.7",
     "redux-thunk": "^2.3.0",
     "tldjs": "^2.3.1",
-    "url-parse": "^1.4.4"
+    "url-parse": "^1.4.4",
+    "webapp-webpack-plugin": "^2.6.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

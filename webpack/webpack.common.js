@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const WebappWebpackPlugin = require('webapp-webpack-plugin');
 const commonPaths = require('./paths');
 
 module.exports = {
@@ -69,9 +70,17 @@ module.exports = {
   },
   plugins: [
     new webpack.ProgressPlugin(),
+    new WebappWebpackPlugin({
+      logo: commonPaths.icon, // svg works too!
+      favicons: {
+        background: '#343a40',
+        theme_color: '#343a40',
+        appleStatusBarStyle: 'black',
+      },
+    }),
     new HtmlWebpackPlugin({
       template: commonPaths.templatePath,
-      favicon: commonPaths.favicon,
+      // favicon: commonPaths.favicon,
     }),
     new MiniCssExtractPlugin({
       filename: `${commonPaths.cssFolder}/styles.[hash].css`,

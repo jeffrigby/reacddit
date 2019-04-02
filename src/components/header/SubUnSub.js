@@ -2,16 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
-import {
-  subredditsFetchData,
-  subredditsFetchDataSuccess,
-} from '../../redux/actions/subreddits';
+import { subredditsFetchDataSuccess } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
 
 const SubUnSub = ({
   about,
-  fetchSubreddits,
   setCurrentSubreddit,
   subreddits,
   setSubreddits,
@@ -44,25 +40,27 @@ const SubUnSub = ({
   const iconClass = `fas ${
     about.user_is_subscriber ? 'fa-minus-circle' : 'fa-plus-circle'
   }`;
-  const title = `${
-    about.user_is_subscriber ? 'Unsubscribe From' : 'Subscribe To'
-  } ${about.display_name_prefixed}`;
+
+  const text = about.user_is_subscriber ? 'Unsubscribe' : 'Subscribe';
+
+  const title = `${about.user_is_subscriber ? `${text} From` : `${text} To`} ${
+    about.display_name_prefixed
+  }`;
 
   return (
     <button
       type="button"
-      className="btn btn-secondary btn-sm sub-un-sub"
+      className="btn btn-primary btn-sm sub-un-sub"
       title={title}
       onClick={buttonAction}
     >
-      <i className={iconClass} />
+      <i className={iconClass} /> {text}
     </button>
   );
 };
 
 SubUnSub.propTypes = {
   about: PropTypes.object,
-  fetchSubreddits: PropTypes.func.isRequired,
   setCurrentSubreddit: PropTypes.func.isRequired,
   subreddits: PropTypes.object.isRequired,
   setSubreddits: PropTypes.func.isRequired,
@@ -82,7 +80,6 @@ const mapStateToProps = state => ({
 export default connect(
   mapStateToProps,
   {
-    fetchSubreddits: subredditsFetchData,
     setCurrentSubreddit: currentSubreddit,
     setSubreddits: subredditsFetchDataSuccess,
   }

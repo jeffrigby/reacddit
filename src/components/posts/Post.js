@@ -15,7 +15,7 @@ import {
   redditVote,
 } from '../../redux/actions/reddit';
 
-class Post extends React.Component {
+class Post extends React.PureComponent {
   mounted = false;
 
   state = {

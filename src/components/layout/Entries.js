@@ -12,7 +12,7 @@ import { siteSettings } from '../../redux/actions/misc';
 import Post from '../posts/Post';
 import '../../styles/entries.scss';
 import PostsDebug from './PostsDebug';
-// import { detailedDiff } from 'deep-object-diff';
+import ListingsHeader from './ListingsHeader';
 
 const queryString = require('query-string');
 
@@ -90,49 +90,6 @@ class Entries extends React.Component {
 
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 250);
   }
-
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   const { ...props } = this.props;
-  //   const { focused, visible, actionable } = this.state;
-  //
-  //   if (!isEqual(nextProps.filter, props.filter)) {
-  //     return true;
-  //   }
-  //   if (props.listingsStatus !== nextProps.listingsStatus) {
-  //     return true;
-  //   }
-  //
-  //   if (props.listingsEntries.children !== nextProps.listingsEntries.children) {
-  //     return true;
-  //   }
-  //
-  //   if (props.settings.debug !== nextProps.settings.debug) {
-  //     return true;
-  //   }
-  //
-  //   if (props.settings.view !== nextProps.settings.view) {
-  //     return true;
-  //   }
-  //
-  //   if (focused !== nextState.focused) {
-  //     return true;
-  //   }
-  //
-  //   if (actionable !== nextState.actionable) {
-  //     return true;
-  //   }
-  //
-  //   if (!isEqual(visible, nextState.visible)) {
-  //     return true;
-  //   }
-  //
-  //   const matchCompare = isEqual(nextProps.match, props.match);
-  //   const locationCompare = isEqual(nextProps.location, props.location);
-  //   if (!matchCompare || !locationCompare) {
-  //     return true;
-  //   }
-  //   return false;
-  // }
 
   componentDidUpdate(prevProps) {
     const { match, location, filter, getEntriesReddit } = this.props;
@@ -385,6 +342,8 @@ class Entries extends React.Component {
       match,
     } = this.props;
 
+    const { listType } = filter;
+
     const { hasError } = this.state;
     let message = '';
 
@@ -455,8 +414,6 @@ class Entries extends React.Component {
       });
     }
 
-    const { listType } = filter;
-
     // console.log( listingsEntries.originalPost);
     // const originalPost = null;
     const originalPost =
@@ -467,6 +424,7 @@ class Entries extends React.Component {
     return (
       <>
         <div className="list-group" id="entries">
+          <ListingsHeader />
           {originalPost && listType === 'duplicates' && (
             <>
               {originalPost}

@@ -110,6 +110,7 @@ class FilterReddits extends React.Component {
     const active = true;
     setFilter({ active });
     setDisableHotkeys(true);
+    document.body.classList.add('filter-active');
   };
 
   /**
@@ -121,6 +122,7 @@ class FilterReddits extends React.Component {
     const activeIndex = 0;
     setFilter({ active, activeIndex });
     setDisableHotkeys(false);
+    document.body.classList.remove('filter-active');
   };
 
   render() {
@@ -138,7 +140,7 @@ class FilterReddits extends React.Component {
           value={filter.filterText}
           ref={this.filterInput}
         />
-        {filter.active && (
+        {(filter.active || filter.filterText) && (
           <i
             className="far fa-times-circle form-control-clear"
             onClick={this.clearSearch}

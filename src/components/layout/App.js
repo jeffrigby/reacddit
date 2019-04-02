@@ -66,7 +66,7 @@ class App extends React.Component {
 
   render() {
     const { error, message } = this.state;
-    const { redditBearer, subredditsFilter, listingsFilter } = this.props;
+    const { redditBearer, subredditsFilter } = this.props;
 
     if (error) {
       return (
@@ -122,10 +122,10 @@ class App extends React.Component {
     });
 
     return (
-      <div>
+      <>
         <React.StrictMode>
           <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
-            <Header listingsFilter={listingsFilter} />
+            <Header />
           </header>
           <aside className="sidebar bg-light" id="navigation">
             <div id="aside-content" className="h-100 d-flex px-3">
@@ -142,7 +142,7 @@ class App extends React.Component {
 
           <HotKeys />
         </React.StrictMode>
-      </div>
+      </>
     );
   }
 }
@@ -155,7 +155,6 @@ App.propTypes = {
   settings: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
-  listingsFilter: PropTypes.object.isRequired,
 };
 
 App.defaultProps = {};
@@ -165,7 +164,6 @@ const mapStateToProps = state => ({
   disableHotkeys: state.disableHotKeys,
   settings: state.siteSettings,
   subredditsFilter: state.subredditsFilter,
-  listingsFilter: state.listingsFilter,
 });
 
 export default withRouter(

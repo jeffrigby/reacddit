@@ -8,13 +8,18 @@
 
 .header-main {
   color: #ffffff;
-  .react {
-    color: #61dafb;
-  }
+  //.react {
+  //  color: #61dafb;
+  //}
+  //
+  //.reddit {
+  //  color: rgb(252, 71, 35);
+  //}
+}
 
-  .reddit {
-    color: rgb(252, 71, 35);
-  }
+#search .form-control-clear {
+  top: 10px;
+  z-index: 100000;
 }
 
 .menu-link {
@@ -60,6 +65,12 @@ body.search-active {
   }
 }
 
+.touch body.search-active {
+  header.navbar {
+    position: absolute;
+  }
+}
+
 #search {
   position: relative;
   .searchToolTip {
@@ -91,5 +102,4 @@ body.search-active {
       display: none !important;
     }
   }
-
 }

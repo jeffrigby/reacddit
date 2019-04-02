@@ -1,25 +1,22 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import Search from '../header/Search';
 import Sort from '../header/Sort';
 import FilterReddits from '../sidebar/FilterReddits';
 import '../../styles/navbar.scss';
 import ViewMode from '../header/ViewMode';
-import SubUnSub from '../header/SubUnSub';
+import Logo from '../../images/reacddit-menu.png';
 
-const Header = ({ listingsFilter }) => {
-  const { listType, target, multi } = listingsFilter;
-  let ltype = listType;
-  if (listType === 's') {
-    ltype = multi ? 'm' : 'r';
-  }
-  const title =
-    target === 'mine' || !target || listType === 'duplicates'
-      ? ''
-      : ` ${ltype}/${target}`;
+const Header = () => {
   const showMenu = () => {
-    document.body.classList.toggle('show-menu');
+    document.body.classList.add('show-menu');
+    document.body.classList.remove('hide-menu');
+  };
+
+  const hideMenu = () => {
+    document.body.classList.remove('show-menu');
+    document.body.classList.add('hide-menu');
   };
 
   const menuButton = (
@@ -32,51 +29,37 @@ const Header = ({ listingsFilter }) => {
     </button>
   );
 
-  const brandMobile = (
-    <NavLink to="/" className="reacddit-title">
-      <span className="react">reac</span>
-      {!title && <br />}
-      <span className="reddit">ddit</span>
-    </NavLink>
+  const closeMenuButton = (
+    <button
+      type="button"
+      className="btn btn-secondary btn-sm"
+      onClick={hideMenu}
+    >
+      <i className="fas fa-times" />
+    </button>
   );
 
   const brand = (
     <NavLink to="/" className="reacddit-title">
-      <span className="react">reac</span>
-      <span className="reddit">ddit</span>
+      <img src={Logo} width={30} height={30} alt="reacddit" />
     </NavLink>
   );
-
-  // const redditInfo = <RedditInfo />;
 
   return (
     <>
       <div className="d-flex flex-nowrap align-middle m-0 sidebar sidebar-navbar navbar-group filter-cont">
-        <div className="ml-2 close-menu-link">{menuButton}</div>
+        <div className="ml-2 close-menu-link">{closeMenuButton}</div>
         <FilterReddits />
       </div>
 
-      <div className="header-brand-title">
-        <div className="d-none d-md-flex flex-nowrap header-main pr-0">
-          <div className="navbar-brand pl-2">
-            {brand} {title}
-          </div>
-        </div>
-
-        <div className="d-flex d-md-none flex-nowrap header-main small pr-0">
-          <div className="pl-2 open-menu-link">{menuButton}</div>
-          <div className="d-block px-2">
-            <div className="w-100">{brandMobile}</div>
-            {title && <div>{title}</div>}
-          </div>
+      <div className="header-brand-title pr-2 d-flex">
+        <div className="px-2 open-menu-link">{menuButton}</div>
+        <div className="dflex-nowrap header-main pr-0 m-0">
+          <div className="navbar-brand p-0 m-0">{brand}</div>
         </div>
       </div>
 
-      <div>
-        <SubUnSub />
-      </div>
-
-      <div className="w-100 search-cont">
+      <div className="w-100 search-cont pr-2">
         <Search />
       </div>
 
@@ -92,8 +75,6 @@ const Header = ({ listingsFilter }) => {
   );
 };
 
-Header.propTypes = {
-  listingsFilter: PropTypes.object.isRequired,
-};
+Header.propTypes = {};
 
 export default Header;

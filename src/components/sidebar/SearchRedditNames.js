@@ -105,7 +105,7 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
 
 SearchRedditNames.propTypes = {
   filterText: PropTypes.string,
-  over18: PropTypes.bool.isRequired,
+  over18: PropTypes.bool,
   sort: PropTypes.string.isRequired,
   subreddits: PropTypes.array,
   auth: PropTypes.bool.isRequired,
@@ -114,6 +114,7 @@ SearchRedditNames.propTypes = {
 SearchRedditNames.defaultProps = {
   filterText: '',
   subreddits: [],
+  over18: false,
 };
 
 const mapStateToProps = state => ({
