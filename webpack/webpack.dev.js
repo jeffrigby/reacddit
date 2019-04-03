@@ -1,6 +1,6 @@
 const commonPaths = require('./paths');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
-const CleanTerminalPlugin = require('clean-terminal-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ErrorOverlayPlugin = require('error-overlay-webpack-plugin');
 
 module.exports = {
@@ -13,7 +13,11 @@ module.exports = {
   },
   devServer: {
     contentBase: commonPaths.outputPath,
-    historyApiFallback: true,
+    historyApiFallback: {
+      // Paths with dots should still use the history fallback.
+      // See https://github.com/facebook/create-react-app/issues/387.
+      disableDotRule: true,
+    },
     compress: true,
     stats: 'normal',
     clientLogLevel: 'none',
@@ -32,6 +36,10 @@ module.exports = {
     ],
   },
   plugins: [
+    new HtmlWebpackPlugin({
+      inject: true,
+      template: commonPaths.templatePath,
+    }),
     // new CleanTerminalPlugin(),
     new FriendlyErrorsWebpackPlugin(),
     new ErrorOverlayPlugin(),

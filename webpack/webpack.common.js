@@ -1,7 +1,8 @@
 const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WebappWebpackPlugin = require('webapp-webpack-plugin');
+const ManifestPlugin = require('webpack-manifest-plugin');
+const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const commonPaths = require('./paths');
 
 module.exports = {
@@ -22,6 +23,7 @@ module.exports = {
         test: /\.(js|jsx)$/,
         loader: 'babel-loader',
         exclude: /(node_modules)/,
+        options: { cacheDirectory: true },
       },
       {
         test: /\.(css|scss)$/,
@@ -71,6 +73,7 @@ module.exports = {
   plugins: [
     new webpack.ProgressPlugin(),
     new WebappWebpackPlugin({
+      prefix: commonPaths.webapp,
       logo: commonPaths.icon, // svg works too!
       favicons: {
         background: '#343a40',
@@ -78,13 +81,19 @@ module.exports = {
         appleStatusBarStyle: 'black',
       },
     }),
-    new HtmlWebpackPlugin({
-      template: commonPaths.templatePath,
-      // favicon: commonPaths.favicon,
-    }),
+    new WatchMissingNodeModulesPlugin(commonPaths.modules),
+    // Generate a manifest file which contains a mapping of all asset filenames
+    // to their corresponding output file so that tools can pick it up without
+    // having to parse `index.html`.
     new MiniCssExtractPlugin({
-      filename: `${commonPaths.cssFolder}/styles.[hash].css`,
-      chunkFilename: '[id].css',
+      filename: `${commonPaths.cssFolder}/[name].[contenthash:8].css`,
+      chunkFilename: `${
+        commonPaths.cssFolder
+      }/[name].[contenthash:8].chunk.css`,
+    }),
+    new ManifestPlugin({
+      fileName: 'asset-manifest.json',
+      // publicPath: commonPaths.root,
     }),
   ],
 };

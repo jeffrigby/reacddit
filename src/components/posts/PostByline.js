@@ -1,21 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import * as moment from 'moment';
+import { distanceInWordsToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 
 const PostByline = ({ data }) => {
-  const timeago = moment(data.created_utc * 1000).from();
-  // gotta be a better way to do this, but, whatever, sticking with moment for now.
+  const timeago = distanceInWordsToNow(data.created_utc * 1000);
+  // gotta be a better way to do this, but, whatever
   const timeagoshort = timeago
-    .replace(' ago', '')
-    .replace(/^a|^an/, '1')
     .replace(/seconds?/g, 'S')
     .replace(/minutes?/g, 'M')
     .replace(/hours?/g, 'H')
     .replace(/days?/g, 'D')
     .replace(/months?/g, 'MO')
     .replace(/years?/g, 'Y')
-    .replace(' ', '');
+    .replace(/over/g, '>')
+    .replace(/about/g, '')
+    .replace(/almost/g, '')
+    .replace(/ /g, '');
 
   const when = (
     <>

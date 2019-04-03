@@ -1,4 +1,4 @@
-import { parse } from 'tldjs';
+import { getPublicSuffix, getDomain } from 'tldts';
 import getUrls from 'get-urls';
 import stripTags from 'locutus/php/strings/strip_tags';
 import Embeds from './embeds';
@@ -15,15 +15,10 @@ const getKeys = url => {
     };
   }
 
-  const parsedDomain = parse(url);
-  if (!parsedDomain.domain) {
-    // no domain extracted. skip this.
-    return null;
-  }
-  const domain = parsedDomain.domain.replace(regex, '');
-  const greedyDomain = parsedDomain.domain
-    .replace(parsedDomain.publicSuffix, '')
-    .replace(regex, '');
+  const parsedDomain = getDomain(url);
+  const suffix = getPublicSuffix(url);
+  const domain = parsedDomain.replace(regex, '');
+  const greedyDomain = parsedDomain.replace(suffix, '').replace(regex, '');
 
   return { domain, greedyDomain };
 };
