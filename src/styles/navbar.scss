@@ -66,8 +66,8 @@ body.search-active {
 }
 
 .touch body.search-active {
-  header.navbar {
-    position: absolute;
+  .searchToolTip {
+    display: none !important;
   }
 }
 
@@ -100,6 +100,9 @@ body.search-active {
   body.search-active {
     .header-brand-title {
       display: none !important;
+    }
+    .search-cont {
+      padding-left: 0.5rem;
     }
   }
 }
