@@ -11,6 +11,7 @@ const ListingsHeader = ({ about, filter }) => {
   if (target === 'mine' && listType !== 's') return null;
 
   let title = '';
+  let subInfo;
   let searchEverywhere;
   switch (listType) {
     case 'u':
@@ -23,12 +24,13 @@ const ListingsHeader = ({ about, filter }) => {
         title = 'Popular Posts';
       } else {
         const subscribers = about.subscribers
-          ? ` - ${about.subscribers.toLocaleString()} Subcribers`
+          ? `${about.subscribers.toLocaleString()} Subcribers`
           : '';
         const online = about.active_user_count
-          ? ` - ${about.active_user_count.toLocaleString()} Online`
+          ? `${about.active_user_count.toLocaleString()} Online`
           : '';
-        title = `/r/${target} ${subscribers} ${online}`;
+        subInfo = `${subscribers} - ${online}`;
+        title = `/r/${target}`;
       }
       break;
     }
@@ -37,7 +39,7 @@ const ListingsHeader = ({ about, filter }) => {
       break;
     case 's': {
       const qs = queryString.parse(window.location.search);
-      searchEverywhere = (
+      searchEverywhere = target !== 'mine' && (
         <NavLink to={`/search?q=${qs.q}`}>Search Everywhere</NavLink>
       );
       title = `Results for '${qs.q}'`;
@@ -57,9 +59,9 @@ const ListingsHeader = ({ about, filter }) => {
     <div className="list-group-item listings-header">
       <div className="d-flex">
         <div className="mr-auto">
-          <h6 className="m-0 p-0 w-100">
+          <h5 className="m-0 p-0 w-100">
             {title} {searchEverywhere && <>- {searchEverywhere}</>}
-          </h6>
+          </h5>
         </div>
         {listType === 'r' && (
           <div>
@@ -67,6 +69,11 @@ const ListingsHeader = ({ about, filter }) => {
           </div>
         )}
       </div>
+      {subInfo && (
+        <div>
+          <small>{subInfo}</small>
+        </div>
+      )}
       {about.public_description && (
         <div>
           <small>{about.public_description}</small>
