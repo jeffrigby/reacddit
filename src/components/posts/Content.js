@@ -63,7 +63,7 @@ const Content = ({ content, name, load }) => {
         break;
     }
   } else {
-    contentRendered = <div>No preview available!</div>;
+    return null;
   }
   return <div className="content">{contentRendered}</div>;
 };
