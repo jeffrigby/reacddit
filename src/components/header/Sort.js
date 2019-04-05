@@ -262,10 +262,7 @@ class Sort extends React.Component {
           aria-haspopup="true"
           aria-expanded="false"
         >
-          <span className="d-none d-md-inline">
-            {icon}
-            {timeSearch}
-          </span>
+          {icon} {timeSearch}
         </button>
         <div className="dropdown-menu dropdown-menu-right">{links}</div>
       </div>
