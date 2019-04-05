@@ -119,6 +119,7 @@ export function redditFetchMultis(reset) {
   };
 }
 
+// @todo, this is kind of dumb to have in redux. Remove when I convert save to hooks.
 export function redditSave(id) {
   return async (dispatch, getState) => {
     await RedditAPI.save(id);
@@ -130,6 +131,7 @@ export function redditSave(id) {
   };
 }
 
+// @todo, this is kind of dumb to have in redux. Remove when I convert save to hooks.
 export function redditUnsave(id) {
   return async (dispatch, getState) => {
     await RedditAPI.unsave(id);
@@ -141,6 +143,7 @@ export function redditUnsave(id) {
   };
 }
 
+// @todo, this is kind of dumb to have in redux. Remove when I convert vote to hooks.
 export function redditVote(id, dir) {
   return async (dispatch, getState) => {
     const currentState = getState();
