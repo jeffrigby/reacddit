@@ -47,10 +47,18 @@ class NavigationItem extends React.Component {
     const query = queryString.parse(location.search);
     const { t } = query;
     let currentSort = sort || '';
-    if (currentSort === 'top' || currentSort === 'controversial') {
-      currentSort = `${currentSort}?t=${t}`;
-    } else if (currentSort === 'relevance' || currentSort === 'best') {
-      currentSort = '';
+    switch (currentSort) {
+      case 'top':
+      case 'controversial':
+        currentSort += `?t=${t}`;
+        break;
+      case 'relevance':
+      case 'best':
+      case 'comments':
+        currentSort = '';
+        break;
+      default:
+        break;
     }
 
     const href =

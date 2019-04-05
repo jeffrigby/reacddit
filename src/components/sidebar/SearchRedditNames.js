@@ -54,6 +54,7 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
       break;
     case 'relevance':
     case 'best':
+    case 'comments':
       currentSort = '';
       break;
     default:

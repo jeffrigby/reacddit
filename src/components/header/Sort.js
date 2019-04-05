@@ -11,7 +11,9 @@ class Sort extends React.Component {
   catsSearch = {
     R: 'relevance',
     T: 'top',
+    H: 'hot',
     N: 'new',
+    C: 'comments',
   };
 
   catsFront = {
@@ -46,6 +48,17 @@ class Sort extends React.Component {
     month: 'past month',
     year: 'past year',
     all: 'all time',
+  };
+
+  iconClasses = {
+    relevance: 'fas fa-bullseye',
+    hot: 'fas fa-fire-alt',
+    best: 'fas fa-award',
+    rising: 'fas fa-chart-line',
+    new: 'fas fa-clock',
+    controversial: 'fas fa-bolt',
+    top: 'fas fa-sort-amount-up',
+    comments: 'fas fa-comment',
   };
 
   componentDidMount() {
@@ -165,6 +178,10 @@ class Sort extends React.Component {
     return links;
   };
 
+  getIcon = sort => {
+    return <i className={this.iconClasses[sort]} />;
+  };
+
   renderLinks = () => {
     const { listingsFilter } = this.props;
     const { listType, target } = listingsFilter;
@@ -197,7 +214,9 @@ class Sort extends React.Component {
               className="dropdown-item d-flex"
               activeClassName="sort-active"
             >
-              <div className="mr-auto pr-2 sort-title">{sortName}</div>{' '}
+              <div className="mr-auto pr-2 sort-title">
+                {this.getIcon(sortName)} {sortName}
+              </div>{' '}
               <span className="menu-shortcut">&#x21E7;{key}</span>
             </NavLink>
             {subLinksRendered}
@@ -230,6 +249,7 @@ class Sort extends React.Component {
 
     const searchParsed = queryString.parse(search);
     const timeSearch = searchParsed.t ? ` > ${searchParsed.t}` : '';
+    const icon = this.getIcon(currentSort);
 
     const links = this.renderLinks();
 
@@ -242,9 +262,8 @@ class Sort extends React.Component {
           aria-haspopup="true"
           aria-expanded="false"
         >
-          <i className="fas fa-sort" />{' '}
           <span className="d-none d-md-inline">
-            {currentSort}
+            {icon}
             {timeSearch}
           </span>
         </button>

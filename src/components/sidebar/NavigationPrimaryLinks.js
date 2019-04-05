@@ -21,12 +21,10 @@ class NavigationPrimaryLinks extends React.Component {
    * @param event
    */
   handleNavPrimaryHotkey = event => {
-    const { disableHotkeys, sort, me, ...props } = this.props;
+    const { disableHotkeys, me, ...props } = this.props;
     const pressedKey = event.key;
 
     if (!disableHotkeys) {
-      const currentSort = sort || 'hot';
-
       // Navigation key commands
       if (this.lastKeyPressed === 'g') {
         // Logged in only
@@ -37,13 +35,13 @@ class NavigationPrimaryLinks extends React.Component {
               props.push('/r/friends');
               break;
             case 'u':
-              props.push(`/user/${name}/upvoted/${currentSort}`);
+              props.push(`/user/${name}/upvoted`);
               break;
             case 'd':
-              props.push(`/user/${name}/downvoted/${currentSort}`);
+              props.push(`/user/${name}/downvoted`);
               break;
             case 'b':
-              props.push(`/user/${name}/submitted/${currentSort}`);
+              props.push(`/user/${name}/submitted`);
               break;
             case 's':
               props.push(`/user/${name}/saved`);
@@ -58,7 +56,7 @@ class NavigationPrimaryLinks extends React.Component {
             props.push('/');
             break;
           case 'p':
-            props.push(`/r/popular/${currentSort}`);
+            props.push(`/r/popular`);
             break;
           case 'r':
             this.randomSubPush();
