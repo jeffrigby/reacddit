@@ -45,7 +45,6 @@
     "terser-webpack-plugin": "^1.2.3",
     "tldts": "^4.0.5",
     "url-parse": "^1.4.4",
-    "webapp-webpack-plugin": "^2.6.1",
     "webpack-manifest-plugin": "^2.0.4"
   },
   "devDependencies": {
@@ -98,11 +97,13 @@
     "react-dev-utils": "^8.0.0",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
+    "webapp-webpack-plugin": "^2.6.1",
     "webpack": "^4.28.3",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-cli": "^3.2.0",
     "webpack-dev-server": "^3.1.14",
-    "webpack-merge": "^4.2.1"
+    "webpack-merge": "^4.2.1",
+    "webpack-pwa-manifest": "^4.0.0"
   },
   "resolutions": {
     "ajv": "^6.9.1"

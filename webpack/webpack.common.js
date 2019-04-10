@@ -79,6 +79,10 @@ module.exports = {
         background: '#343a40',
         theme_color: '#343a40',
         appleStatusBarStyle: 'black',
+        icons: {
+          coast: false,
+          yandex: false,
+        },
       },
     }),
     new WatchMissingNodeModulesPlugin(commonPaths.modules),
