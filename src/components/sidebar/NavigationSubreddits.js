@@ -107,6 +107,7 @@ class NavigationSubReddits extends React.Component {
             className="astext"
             onClick={this.reloadSubredditsClick}
             type="button"
+            aria-label="Reload Subreddits"
           >
             try again.
           </button>
@@ -141,6 +142,7 @@ class NavigationSubReddits extends React.Component {
               className={spinnerClass}
               onClick={this.reloadSubredditsClick}
               role="button"
+              aria-label="Reload Subreddits"
               tabIndex="0"
               onKeyDown={this.reloadSubredditsClick}
             />

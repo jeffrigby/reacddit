@@ -24,6 +24,7 @@ const Header = () => {
       type="button"
       className="btn btn-secondary btn-sm"
       onClick={showMenu}
+      aria-label="Show Menu"
     >
       <i className="fas fa-bars" />
     </button>
@@ -33,6 +34,7 @@ const Header = () => {
     <button
       type="button"
       className="btn btn-secondary btn-sm"
+      aria-label="Hide Menu"
       onClick={hideMenu}
     >
       <i className="fas fa-times" />

@@ -261,6 +261,7 @@ class Sort extends React.Component {
           data-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
+          aria-label="Sort"
         >
           {icon} {timeSearch}
         </button>
