@@ -42,3 +42,4 @@ ngrok
 /stats.json
 /src/components/posts/embeds/domains_custom/*.js
 /server/.env
+/.env
