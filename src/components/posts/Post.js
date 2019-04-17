@@ -213,7 +213,12 @@ class Post extends React.PureComponent {
     );
 
     const linkFlair = data.link_flair_text ? (
-      <span className="badge badge-dark">{data.link_flair_text}</span>
+      <Link
+        className="badge badge-dark"
+        to={`/r/${data.subreddit}/search?q=flair:%22${data.link_flair_text}%22`}
+      >
+        {data.link_flair_text}
+      </Link>
     ) : null;
     const currentDebug =
       process.env.NODE_ENV === 'development' && siteSettings.debug;
@@ -340,7 +345,13 @@ class Post extends React.PureComponent {
                   </button>
                 </span>
               )}
-              {!data.is_self && data.domain}
+              {!data.is_self && (
+                <Link
+                  to={`/r/${data.subreddit}/search?q=site:%22${data.domain}%22`}
+                >
+                  {data.domain}
+                </Link>
+              )}
             </div>
           </footer>
           {showDebug && currentDebug && (
