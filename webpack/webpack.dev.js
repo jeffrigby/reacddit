@@ -5,6 +5,7 @@ const ErrorOverlayPlugin = require('error-overlay-webpack-plugin');
 
 module.exports = {
   mode: 'development',
+  entry: [commonPaths.entryPath],
   output: {
     filename: '[name].js',
     path: commonPaths.outputPath,
@@ -24,6 +25,11 @@ module.exports = {
     watchContentBase: true,
     quiet: true,
     overlay: false,
+    public: commonPaths.publicDevPath,
+    disableHostCheck: true,
+    publicPath: '/',
+    port: 3000,
+    hot: true,
   },
   devtool: 'cheap-module-source-map',
   module: {

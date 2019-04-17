@@ -49,6 +49,7 @@
       "error",
       { "allowShortCircuit": true, "allowTernary": false }
     ],
+    "import/no-cycle": [2, { "maxDepth": 1 }],
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn"
   }

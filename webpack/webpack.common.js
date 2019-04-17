@@ -3,10 +3,10 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const WebappWebpackPlugin = require('webapp-webpack-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
+const Dotenv = require('dotenv-webpack');
 const commonPaths = require('./paths');
 
 module.exports = {
-  entry: commonPaths.entryPath,
   module: {
     rules: [
       {
@@ -72,6 +72,7 @@ module.exports = {
   },
   plugins: [
     new webpack.ProgressPlugin(),
+    new Dotenv(),
     new WebappWebpackPlugin({
       prefix: commonPaths.webapp,
       logo: commonPaths.icon, // svg works too!

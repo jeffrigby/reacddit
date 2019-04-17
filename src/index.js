@@ -9,6 +9,7 @@ import configureStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
 import Root from './components/layout/Root';
+import * as serviceWorker from './serviceWorker';
 
 const queryString = require('query-string');
 
@@ -82,3 +83,5 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
 
   render(Root);
 }
+
+serviceWorker.register();
