@@ -277,14 +277,15 @@ class Post extends React.PureComponent {
         {linkFlair}
       </h6>
     ) : (
-      <>
+      <h6 className="p-0 m-0">
         <button
           onClick={this.toggleView}
           className="btn btn-link btn-sm m-0 p-0 post-title"
           type="button"
         >
-          <h6 className="p-0 m-0">{data.title}</h6>
+          {data.title}
         </button>
+        {linkFlair}
         <a
           href={data.url}
           target="_blank"
@@ -292,10 +293,9 @@ class Post extends React.PureComponent {
           className="list-group-item-heading"
           title="Open link in new tab"
         >
-          {linkFlair}
           <i className="fas fa-link direct-link" />
         </a>
-      </>
+      </h6>
     );
 
     return (
