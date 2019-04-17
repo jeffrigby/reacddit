@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import SelfInline from './SelfInline';
 
 const cleanLinks = html => {
   let rawhtml = html;
   rawhtml = rawhtml
-    .replace(/<a\s+href=/gi, '<a target="_blank" href=')
+    .replace(
+      /<a\s+href=/gi,
+      '<a target="_blank" rel="noopener noreferrer" href='
+    )
     .replace(/<p>&#x200B;<\/p>/gi, '')
     .replace(/<p>\s+<\/p>/gi, '');
 
@@ -33,6 +36,7 @@ const cleanLinks = html => {
 };
 
 const Self = ({ content, load, name }) => {
+  const [showAll, setShowAll] = useState(false);
   const rawhtml = cleanLinks(content.html);
 
   // eslint-disable-next-line react/no-danger
@@ -43,7 +47,15 @@ const Self = ({ content, load, name }) => {
 
   return (
     <div className="self">
-      {html}
+      <div
+        className={`self-html mb-2 ${showAll ? ' sf-html-show-all' : ''}`}
+        onClick={() => {
+          setShowAll(!showAll);
+        }}
+        role="presentation"
+      >
+        {html}
+      </div>
       {inlineRendered}
     </div>
   );

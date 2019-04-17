@@ -214,7 +214,7 @@ class Post extends React.PureComponent {
 
     const linkFlair = data.link_flair_text ? (
       <Link
-        className="badge badge-dark"
+        className="badge badge-dark mx-1"
         to={`/r/${data.subreddit}/search?q=flair:%22${data.link_flair_text}%22`}
       >
         {data.link_flair_text}
@@ -273,7 +273,7 @@ class Post extends React.PureComponent {
           className="list-group-item-heading"
         >
           {data.title}
-        </a>{' '}
+        </a>
         {linkFlair}
       </h6>
     ) : (
@@ -292,7 +292,6 @@ class Post extends React.PureComponent {
           className="list-group-item-heading"
           title="Open link in new tab"
         >
-          {' '}
           {linkFlair}
           <i className="fas fa-link direct-link" />
         </a>
