@@ -7,6 +7,7 @@ import {
   listingsFilter,
   listingsFetchEntriesReddit,
   listingsFetchRedditNext,
+  listingsFetchRedditNew,
 } from '../../redux/actions/listings';
 import { siteSettings } from '../../redux/actions/misc';
 import Post from '../posts/Post';
@@ -55,6 +56,8 @@ class Entries extends React.Component {
 
   monitorEntriesInterval = null;
 
+  streamNewPostsInterval = null;
+
   scrollResize = true;
 
   scrollResizeStop = true;
@@ -82,16 +85,13 @@ class Entries extends React.Component {
     document.addEventListener('resize', this.setScrollResize, false);
     document.addEventListener('scroll', this.setScrollResize, false);
 
-    // Trigger this after a second/two seconds to load anything missed.
-    // Delayed to let component load. Pretty sure I can remove this
-    // when I implement Hooks
-    setTimeout(() => this.monitorEntries(true), 1000);
-    setTimeout(() => this.monitorEntries(true), 2000);
-
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 250);
+    this.streamNewPostsInterval = setInterval(this.streamNewPosts, 5000);
+
+    this.forceMonitorEntries();
   }
 
-  componentDidUpdate(prevProps) {
+  async componentDidUpdate(prevProps) {
     const { match, location, filter, getEntriesReddit } = this.props;
     const matchCompare = isEqual(prevProps.match, match);
     const locationCompare = prevProps.location.search === location.search;
@@ -100,9 +100,12 @@ class Entries extends React.Component {
     }
 
     if (!isEqual(prevProps.filter, filter) || !locationCompare) {
-      getEntriesReddit(filter);
+      await getEntriesReddit(filter);
+      this.monitorEntries(true);
     }
     this.setInitFocusedAndVisible();
+
+    this.forceMonitorEntries();
   }
 
   componentWillUnmount() {
@@ -114,9 +117,10 @@ class Entries extends React.Component {
     document.removeEventListener('resize', this.setScrollResize, false);
     document.removeEventListener('scroll', this.setScrollResize, false);
     clearInterval(this.monitorEntriesInterval);
+    clearInterval(this.streamNewPostsInterval);
   }
 
-  setInitFocusedAndVisible() {
+  setInitFocusedAndVisible = () => {
     const { listingsEntries } = this.props;
     if (
       listingsEntries.type === 'init' &&
@@ -132,9 +136,9 @@ class Entries extends React.Component {
       };
       this.setState(newState);
     }
-  }
+  };
 
-  setRedux(match, location) {
+  setRedux = (match, location) => {
     const qs = queryString.parse(location.search);
     const { filter, setFilter } = this.props;
     const { listType, target, sort, user, userType, multi } = match.params;
@@ -157,10 +161,33 @@ class Entries extends React.Component {
     if (!isEqual(filter, newFilter)) {
       setFilter(newFilter);
     }
-  }
+  };
+
+  forceMonitorEntries = () => {
+    // Trigger this after a second/two seconds to load anything missed.
+    // Delayed to let component load. Pretty sure I can remove this
+    // when I implement Hooks
+    // setTimeout(() => this.monitorEntries(true), 1000);
+    // setTimeout(() => this.monitorEntries(true), 2000);
+  };
 
   setScrollResize = () => {
     this.scrollResize = true;
+  };
+
+  streamNewPosts = async () => {
+    const { settings } = this.props;
+    if (!settings.stream) return;
+
+    // Don't stream when you scroll down.
+    if (window.scrollY > 10) return;
+
+    const { getNewRedditEntries } = this.props;
+    // const { newEntries } = this.state;
+    const change = await getNewRedditEntries(true);
+    if (change > 0) {
+      this.monitorEntries(true);
+    }
   };
 
   handleEntriesHotkey = event => {
@@ -169,6 +196,7 @@ class Entries extends React.Component {
       setSiteSetting,
       settings,
       listingsStatus,
+      getNewRedditEntries,
     } = this.props;
     const { focused } = this.state;
     if (
@@ -207,7 +235,16 @@ class Entries extends React.Component {
             this.actionPost.current.gotoDuplicates();
             break;
           case '.':
+            window.scrollTo(0, 0);
+            getNewRedditEntries();
+            break;
+          case '/':
             Entries.scrollToBottom();
+            break;
+          case '>':
+            setSiteSetting({
+              stream: !settings.stream,
+            });
             break;
           case 'v':
             setSiteSetting({
@@ -299,9 +336,8 @@ class Entries extends React.Component {
 
   async checkLoadMore() {
     const { listingsStatus, getMoreRedditEntries } = this.props;
-    const loadedStatus = listingsStatus;
     if (
-      loadedStatus === 'loaded' &&
+      listingsStatus === 'loaded' &&
       window.scrollY + window.innerHeight >
         document.documentElement.scrollHeight - 2500
     ) {
@@ -431,6 +467,16 @@ class Entries extends React.Component {
               <div className="list-title">Duplicate/Cross Posts</div>
             </>
           )}
+          {listingsStatus === 'loadingNew' && (
+            <div
+              className="alert alert-info m-2"
+              id="content-loading"
+              role="alert"
+            >
+              <i className="fas fa-spinner fa-spin" />
+              {' Getting new entries from Reddit.'}
+            </div>
+          )}
           {entries}
           <div className="footer-status">{footerStatus}</div>
         </div>
@@ -464,6 +510,7 @@ Entries.propTypes = {
   /* Redux actions */
   getEntriesReddit: PropTypes.func.isRequired,
   getMoreRedditEntries: PropTypes.func.isRequired,
+  getNewRedditEntries: PropTypes.func.isRequired,
   setFilter: PropTypes.func.isRequired,
   setSiteSetting: PropTypes.func.isRequired,
 };
@@ -485,6 +532,7 @@ export default connect(
   {
     getEntriesReddit: listingsFetchEntriesReddit,
     getMoreRedditEntries: listingsFetchRedditNext,
+    getNewRedditEntries: listingsFetchRedditNew,
     setFilter: listingsFilter,
     setSiteSetting: siteSettings,
   }

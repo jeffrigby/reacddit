@@ -3,6 +3,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import Search from '../header/Search';
 import Sort from '../header/Sort';
+import Reload from '../header/Reload';
 import FilterReddits from '../sidebar/FilterReddits';
 import '../../styles/navbar.scss';
 import ViewMode from '../header/ViewMode';
@@ -66,6 +67,9 @@ const Header = () => {
       </div>
 
       <div className="d-flex flex-nowrap align-middle m-0 pr-2 header-main header-actions">
+        <div className="pr-2">
+          <Reload />
+        </div>
         <div className="pr-2">
           <Sort />
         </div>

@@ -172,3 +172,80 @@ export function listingsFetchRedditNext() {
     }
   };
 }
+
+/**
+ * Get new results and prepend it to the top of the current results.
+ * This is for live streaming.
+ * @returns {Function}
+ */
+export function listingsFetchRedditNew(stream = false) {
+  return async (dispatch, getState) => {
+    const currentState = getState();
+
+    if (
+      currentState.listingsRedditStatus !== 'loaded' &&
+      currentState.listingsRedditStatus !== 'loadedAll'
+    ) {
+      return 0;
+    }
+
+    const childKeys = Object.keys(currentState.listingsRedditEntries.children);
+    const before = childKeys[0];
+    const status = stream ? 'loadingStream' : 'loadingNew';
+    dispatch(listingsRedditStatus(status));
+    try {
+      const { search } = currentState.router.location;
+      const qs = queryString.parse(search);
+      const params = {
+        ...qs,
+        limit: 100,
+        before,
+      };
+
+      const entries = await getContent(currentState.listingsFilter, params);
+      const newlyFetchCount = Object.keys(entries.data.children).length;
+
+      if (newlyFetchCount === 0) {
+        dispatch(listingsRedditStatus('loaded'));
+        return 0;
+      }
+
+      // if the returned amount is greater than 100, replace the results with
+      // the newest results.
+      if (newlyFetchCount === 100) {
+        await dispatch(listingsRedditEntries(entries.data));
+        dispatch(listingsRedditStatus('loaded'));
+        return newlyFetchCount;
+      }
+
+      const newChildren = {
+        ...entries.data.children,
+        ...currentState.listingsRedditEntries.children,
+      };
+
+      // Truncate the posts to 400 to conserve memory.
+      const newChildKeys = Object.keys(newChildren);
+
+      if (newChildKeys.length > 500) {
+        const sliced = newChildKeys.slice(500);
+        sliced.forEach(key => {
+          delete newChildren[key];
+        });
+      }
+
+      const newListings = update(currentState.listingsRedditEntries, {
+        before: { $set: entries.data.before },
+        children: { $set: newChildren },
+        type: { $set: 'new' },
+      });
+
+      await dispatch(listingsRedditEntries(newListings));
+
+      dispatch(listingsRedditStatus('loaded'));
+      return newChildKeys.length;
+    } catch (e) {
+      dispatch(listingsRedditStatus('error'));
+    }
+    return false;
+  };
+}

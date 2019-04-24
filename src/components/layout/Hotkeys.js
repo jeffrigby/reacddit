@@ -173,7 +173,13 @@ const HotKeys = () => {
                   <div className="col-md-6 text-right">
                     <kbd>.</kbd>
                   </div>
-                  <div className="col-md-6">Load More Entries</div>
+                  <div className="col-md-6">Load New Entries</div>
+                </div>
+                <div className="row">
+                  <div className="col-md-6 text-right">
+                    <kbd>/</kbd>
+                  </div>
+                  <div className="col-md-6">Load Next Entries</div>
                 </div>
                 <h5>Sort</h5>
                 <div className="row">

@@ -9,7 +9,12 @@ export function disableHotKeys(state = false, action) {
 }
 
 export function siteSettings(
-  state = { view: 'expanded', debug: false, condenseSticky: true },
+  state = {
+    view: 'expanded',
+    debug: false,
+    condenseSticky: true,
+    stream: false,
+  },
   action
 ) {
   switch (action.type) {

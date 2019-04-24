@@ -257,7 +257,7 @@ class Sort extends React.Component {
       <div className="btn-group sort-menu">
         <button
           type="button"
-          className="btn btn-secondary btn-sm dropdown-toggle form-control-sm"
+          className="btn btn-secondary btn-sm form-control-sm"
           data-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
