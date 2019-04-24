@@ -66,7 +66,7 @@ const VideoComp = ({ content, load }) => {
   };
 
   const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
-  const mutedIconClass = `fas ${muted ? 'fa-volume-mute' : 'fa-volume-up'}`;
+  const mutedIconClass = `fas ${muted ? 'fa-volume-up' : 'fa-volume-mute'}`;
 
   const muteTitle = muted ? 'Play Sound' : 'Mute';
   const playTitle = playing ? 'Pause' : 'Play';
@@ -157,7 +157,7 @@ const VideoComp = ({ content, load }) => {
                 className="audio-disabled bg-dark border border-light p-1"
                 role="tooltip"
               >
-                This video might have audio but Reddit disables audio on
+                This video probably has audio but Reddit disables it on
                 third-party sites. Click the link to load the video source.
               </div>
             )}
