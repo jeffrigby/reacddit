@@ -7,6 +7,7 @@ const PostByline = ({ data }) => {
   const timeago = distanceInWordsToNow(data.created_utc * 1000);
   // gotta be a better way to do this, but, whatever
   const timeagoshort = timeago
+    .replace(/less than a minute?/g, '<1M')
     .replace(/seconds?/g, 'S')
     .replace(/minutes?/g, 'M')
     .replace(/hours?/g, 'H')
