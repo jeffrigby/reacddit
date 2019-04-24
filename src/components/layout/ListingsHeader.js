@@ -8,7 +8,7 @@ const queryString = require('query-string');
 
 const ListingsHeader = ({ about, filter }) => {
   const { listType, target, multi, user } = filter;
-  if (target === 'mine' && listType !== 's') return null;
+  // if (listType !== 's') return null;
 
   let title = '';
   let subInfo;
@@ -22,6 +22,8 @@ const ListingsHeader = ({ about, filter }) => {
         title = 'My Friends';
       } else if (target === 'popular') {
         title = 'Popular Posts';
+      } else if (target === 'mine') {
+        title = 'Home';
       } else {
         const subscribers = about.subscribers
           ? `${about.subscribers.toLocaleString()} Subcribers`
@@ -63,8 +65,8 @@ const ListingsHeader = ({ about, filter }) => {
             {title} {searchEverywhere && <>- {searchEverywhere}</>}
           </h5>
         </div>
-        {listType === 'r' && (
-          <div>
+        {listType === 'r' && target !== 'mine' && (
+          <div className="actions">
             <SubUnSub />
           </div>
         )}
