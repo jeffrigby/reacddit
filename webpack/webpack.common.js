@@ -46,8 +46,9 @@ module.exports = {
         test: /\.(png|jpg|gif|svg)$/,
         use: [
           {
-            loader: 'file-loader',
+            loader: 'url-loader',
             options: {
+              limit: 8192,
               outputPath: commonPaths.imagesFolder,
             },
           },
@@ -83,6 +84,8 @@ module.exports = {
         icons: {
           coast: false,
           yandex: false,
+          firefox: false,
+          mstile: false,
         },
       },
     }),
