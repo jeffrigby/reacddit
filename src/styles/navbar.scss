@@ -75,40 +75,40 @@ body.search-active {
   .menu-shortcut {
     display: none;
   }
+}
 
-  #search {
-    position: relative;
-    .searchToolTip {
-      position: absolute;
-      background-color: #343a40;
-      color: white;
-    }
-  }
-
-  .subInfo {
+#search {
+  position: relative;
+  .searchToolTip {
     position: absolute;
-    background-color: white;
-    color: #343a40;
-    border: solid 1px #343a40;
-    padding: 5px;
-    margin-top: 15px;
-    width: 50%;
-    min-width: 200px;
-    white-space: normal !important;
+    background-color: #343a40;
+    color: white;
+  }
+}
+
+.subInfo {
+  position: absolute;
+  background-color: white;
+  color: #343a40;
+  border: solid 1px #343a40;
+  padding: 5px;
+  margin-top: 15px;
+  width: 50%;
+  min-width: 200px;
+  white-space: normal !important;
+}
+
+@media (max-width: 767.98px) {
+  header {
+    flex-wrap: wrap-reverse;
   }
 
-  @media (max-width: 767.98px) {
-    header {
-      flex-wrap: wrap-reverse;
+  body.search-active {
+    .header-brand-title {
+      display: none !important;
     }
-
-    body.search-active {
-      .header-brand-title {
-        display: none !important;
-      }
-      .search-cont {
-        padding-left: 0.5rem;
-      }
+    .search-cont {
+      padding-left: 0.5rem;
     }
   }
 }
