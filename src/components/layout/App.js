@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Navigation from './Navigation';
 import Header from './Header';
-import Entries from './Entries';
+import Listings from './Listings';
 import Help from './Help';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import { siteSettings } from '../../redux/actions/misc';
@@ -118,7 +118,7 @@ class App extends React.Component {
     const routes = [];
     combinedPaths.forEach((value, i) => {
       const key = `route${i}}`;
-      routes.push(<Route exact path={value} component={Entries} key={key} />);
+      routes.push(<Route exact path={value} component={Listings} key={key} />);
     });
 
     return (

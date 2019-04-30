@@ -11,13 +11,13 @@ import {
 } from '../../redux/actions/listings';
 import { siteSettings } from '../../redux/actions/misc';
 import Post from '../posts/Post';
-import '../../styles/entries.scss';
+import '../../styles/listings.scss';
 import PostsDebug from './PostsDebug';
 import ListingsHeader from './ListingsHeader';
 
 const queryString = require('query-string');
 
-class Entries extends React.Component {
+class Listings extends React.Component {
   static nextEntry(focused) {
     if (isNil(focused)) return;
 
@@ -30,7 +30,7 @@ class Entries extends React.Component {
       const scrollBy = next.getBoundingClientRect().top - 50;
       window.scrollBy({ top: scrollBy, left: 0 });
     } else {
-      Entries.scrollToBottom();
+      Listings.scrollToBottom();
     }
   }
 
@@ -207,10 +207,10 @@ class Entries extends React.Component {
       try {
         switch (pressedKey) {
           case 'j':
-            Entries.nextEntry(focused);
+            Listings.nextEntry(focused);
             break;
           case 'k':
-            Entries.prevEntry(focused);
+            Listings.prevEntry(focused);
             break;
           case 'a':
             this.actionPost.current.voteUp();
@@ -239,7 +239,7 @@ class Entries extends React.Component {
             getNewRedditEntries();
             break;
           case '/':
-            Entries.scrollToBottom();
+            Listings.scrollToBottom();
             break;
           case '>':
             setSiteSetting({
@@ -491,7 +491,7 @@ class Entries extends React.Component {
   }
 }
 
-Entries.propTypes = {
+Listings.propTypes = {
   location: PropTypes.object.isRequired,
   match: PropTypes.object.isRequired,
 
@@ -510,7 +510,7 @@ Entries.propTypes = {
   setSiteSetting: PropTypes.func.isRequired,
 };
 
-Entries.defaultProps = {
+Listings.defaultProps = {
   settings: { debug: false, view: 'expanded' },
 };
 
@@ -531,4 +531,4 @@ export default connect(
     setFilter: listingsFilter,
     setSiteSetting: siteSettings,
   }
-)(Entries);
+)(Listings);

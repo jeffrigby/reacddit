@@ -8,7 +8,7 @@ import FilterReddits from '../sidebar/FilterReddits';
 import ViewMode from '../header/ViewMode';
 import Logo from '../../images/reacddit-menu.png';
 import Settings from '../header/Settings';
-import '../../styles/navbar.scss';
+import '../../styles/header.scss';
 
 const Header = () => {
   const showMenu = () => {
