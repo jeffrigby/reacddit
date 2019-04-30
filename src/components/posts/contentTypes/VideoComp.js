@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import '../../../styles/video.scss';
 
 const VideoComp = ({ content, load }) => {
   const videoRef = React.createRef();
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [ctrLock, setCtrLock] = useState(false);
+  const [controls, setControls] = useState(false);
 
   const { width, height, sources } = content;
   let videoWidth = width;
@@ -28,8 +30,10 @@ const VideoComp = ({ content, load }) => {
   const toggleLock = () => {
     if (ctrLock) {
       setCtrLock(false);
+      videoRef.current.controls = false;
     } else {
       setCtrLock(true);
+      videoRef.current.controls = true;
     }
   };
 
@@ -65,6 +69,11 @@ const VideoComp = ({ content, load }) => {
     }
   };
 
+  // const timeUpdate = () => {
+  //   const { currentTime, duration } = videoRef.current;
+  //   scrubberRef.current.value = (currentTime / duration) * 100;
+  // };
+
   const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
   const mutedIconClass = `fas ${muted ? 'fa-volume-up' : 'fa-volume-mute'}`;
 
@@ -85,13 +94,14 @@ const VideoComp = ({ content, load }) => {
         loop
         muted
         playsInline
-        // controls
+        controls={controls}
         id={videoId}
         key={videoId}
         onClick={toggleLock}
         poster={content.thumb}
         className="loaded embed-responsive-item preload"
         // onClick={toggleControls}
+        // onTimeUpdate={timeUpdate}
         ref={videoRef}
       >
         {videoSources}
@@ -126,6 +136,16 @@ const VideoComp = ({ content, load }) => {
         </div>
       </div>
       <div className="video-controls m-0 p-0">
+        <button
+          type="button"
+          className={`${btnClasses} ${
+            controls ? 'ctrl-visible' : 'ctrl-hidden'
+          } video-controls-toggle`}
+          onClick={() => setControls(!controls)}
+          title="Toggle Browser Video Controls"
+        >
+          <i className="fas fa-sliders-h" />
+        </button>
         <button
           type="button"
           className={`${btnClasses} video-fullscreen`}
