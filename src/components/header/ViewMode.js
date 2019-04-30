@@ -37,7 +37,7 @@ const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
       </button>
     );
 
-  return <div>{button}</div>;
+  return <div className="header-button">{button}</div>;
 };
 
 ViewMode.propTypes = {

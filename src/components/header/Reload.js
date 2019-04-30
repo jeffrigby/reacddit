@@ -16,15 +16,17 @@ const Reload = ({ getNewRedditEntries, listingsStatus, stream }) => {
   };
 
   return (
-    <button
-      type="button"
-      className={btnClass}
-      title="Load New Entries"
-      onClick={refresh}
-      disabled={loading}
-    >
-      <i className={iconClass} />
-    </button>
+    <div className="header-button">
+      <button
+        type="button"
+        className={btnClass}
+        title="Load New Entries"
+        onClick={refresh}
+        disabled={loading}
+      >
+        <i className={iconClass} />
+      </button>
+    </div>
   );
 };
 

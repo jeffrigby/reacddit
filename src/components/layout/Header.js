@@ -5,9 +5,10 @@ import Search from '../header/Search';
 import Sort from '../header/Sort';
 import Reload from '../header/Reload';
 import FilterReddits from '../sidebar/FilterReddits';
-import '../../styles/navbar.scss';
 import ViewMode from '../header/ViewMode';
 import Logo from '../../images/reacddit-menu.png';
+import Settings from '../header/Settings';
+import '../../styles/navbar.scss';
 
 const Header = () => {
   const showMenu = () => {
@@ -62,20 +63,15 @@ const Header = () => {
         </div>
       </div>
 
-      <div className="w-100 search-cont pr-2">
+      <div className="w-100 search-cont">
         <Search />
       </div>
 
       <div className="d-flex flex-nowrap align-middle m-0 pr-2 header-main header-actions">
-        <div className="pr-2">
-          <Reload />
-        </div>
-        <div className="pr-2">
-          <Sort />
-        </div>
-        <div>
-          <ViewMode />
-        </div>
+        <Reload />
+        <Sort />
+        <ViewMode />
+        <Settings />
       </div>
     </>
   );

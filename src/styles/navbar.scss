@@ -8,13 +8,6 @@
 
 .header-main {
   color: #ffffff;
-  //.react {
-  //  color: #61dafb;
-  //}
-  //
-  //.reddit {
-  //  color: rgb(252, 71, 35);
-  //}
 }
 
 #search .form-control-clear {
@@ -59,9 +52,21 @@
   }
 }
 
+.header-actions {
+  .header-button {
+    padding-left: 0.5rem !important;
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
 body.search-active {
   .header-actions {
     display: none !important;
+  }
+  #search {
+    padding-right: 0.5rem !important;
   }
 }
 

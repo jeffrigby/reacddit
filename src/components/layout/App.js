@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import Navigation from './Navigation';
 import Header from './Header';
 import Entries from './Entries';
-import HotKeys from './Hotkeys';
+import Help from './Help';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import { siteSettings } from '../../redux/actions/misc';
 import '../../styles/layout.scss';
@@ -140,7 +140,7 @@ class App extends React.Component {
             <Switch>{routes}</Switch>
           </main>
 
-          <HotKeys />
+          <Help />
         </React.StrictMode>
       </>
     );

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import SubUnSub from '../header/SubUnSub';
-import AutoRefresh from '../header/AutoRefresh';
 
 const queryString = require('query-string');
 
@@ -24,7 +23,12 @@ const ListingsHeader = ({ about, filter }) => {
       } else if (target === 'popular') {
         title = 'Popular Posts';
       } else if (target === 'mine') {
-        title = 'Home';
+        title = (
+          <>
+            <span className="react">reac</span>
+            <span className="reddit">ddit</span>: Home
+          </>
+        );
       } else {
         const subscribers = about.subscribers
           ? `${about.subscribers.toLocaleString()} Subcribers`
@@ -32,7 +36,9 @@ const ListingsHeader = ({ about, filter }) => {
         const online = about.active_user_count
           ? `${about.active_user_count.toLocaleString()} Online`
           : '';
-        subInfo = `${subscribers} - ${online}`;
+        if (subscribers && online) {
+          subInfo = `${subscribers} - ${online}`;
+        }
         title = `/r/${target}`;
       }
       break;
@@ -78,10 +84,6 @@ const ListingsHeader = ({ about, filter }) => {
         </div>
         <div className="listing-actions">
           {listType === 'r' && target !== 'mine' && <SubUnSub />}
-
-          <div className="pt-1">
-            <AutoRefresh />
-          </div>
         </div>
       </div>
     </div>

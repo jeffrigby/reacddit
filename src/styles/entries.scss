@@ -1,6 +1,14 @@
 div#entries {
   max-width: 1366px;
 
+  .react {
+    color: #61dafb;
+  }
+
+  .reddit {
+    color: rgb(252, 71, 35);
+  }
+
   .self-html {
     max-height: 100px;
     overflow: hidden;

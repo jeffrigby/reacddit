@@ -89,11 +89,11 @@ class NavigationSubReddits extends React.Component {
 
     let content;
     if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
-      content = (
-        <div className="alert alert-info" id="subreddits-loading" role="alert">
-          <i className="fas fa-spinner fa-spin" /> Loading Subreddits
-        </div>
-      );
+      // content = (
+      //   <div className="alert alert-info" id="subreddits-loading" role="alert">
+      //     <i className="fas fa-spinner fa-spin" /> Loading Subreddits
+      //   </div>
+      // );
     } else if (subreddits.status === 'error') {
       content = (
         <div
@@ -143,7 +143,7 @@ class NavigationSubReddits extends React.Component {
               onClick={this.reloadSubredditsClick}
               role="button"
               aria-label="Reload Subreddits"
-              tabIndex="0"
+              tabIndex="-1"
               onKeyDown={this.reloadSubredditsClick}
             />
           </span>

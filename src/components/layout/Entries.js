@@ -301,19 +301,14 @@ class Entries extends React.Component {
         }
         prevPostId = post.id;
 
-        // Check to see if there's a video to autoplay (mostly for Safari in High Sierra.
-        // const videos = jQuery(post)
-        //   .find('video')
-        //   .not('.autoplay-triggered');
-        //   if (videos.length > 0) {
-        //     jQuery.each(videos, (videoidx, video) => {
-        //       document.getElementById(video.id).play();
-        //       jQuery(video).addClass('autoplay-triggered');
-        //     });
-        //
-        //     //   document.getElementById(video[0].id).play();
-        //   }
-        // }
+        // Trigger autoplay if not triggered automatically.
+        // This is for a weird bug in iOS where videos suddenly stop
+        // autoplaying.
+        const video = post.querySelector('video:not(.autoplay-triggered)');
+        if (video) {
+          video.play();
+          video.classList.add('autoplay-triggered');
+        }
       });
 
       this.setState({

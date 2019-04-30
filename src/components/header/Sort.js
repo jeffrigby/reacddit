@@ -254,7 +254,7 @@ class Sort extends React.Component {
     const links = this.renderLinks();
 
     return (
-      <div className="btn-group sort-menu">
+      <div className="btn-group sort-menu header-button">
         <button
           type="button"
           className="btn btn-secondary btn-sm form-control-sm"
