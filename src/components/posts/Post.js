@@ -71,37 +71,6 @@ class Post extends React.PureComponent {
     };
   }
 
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   const { ...props } = this.props;
-  //   const { showDebug, renderedContent, expand } = this.state;
-  //
-  //   if (props.entry !== nextProps.entry) {
-  //     return true;
-  //   }
-  //   if (props.focused !== nextProps.focused) {
-  //     return true;
-  //   }
-  //   if (props.visible !== nextProps.visible) {
-  //     return true;
-  //   }
-  //   if (props.actionable !== nextProps.actionable) {
-  //     return true;
-  //   }
-  //   if (props.siteSettings.view !== nextProps.siteSettings.view) {
-  //     return true;
-  //   }
-  //   if (props.siteSettings.debug !== nextProps.siteSettings.debug) {
-  //     return true;
-  //   }
-  //   if (showDebug !== nextState.showDebug || expand !== nextState.expand) {
-  //     return true;
-  //   }
-  //   if (renderedContent !== nextState.renderedContent) {
-  //     return true;
-  //   }
-  //   return false;
-  // }
-
   componentWillUnmount() {
     this.mounted = false;
   }
