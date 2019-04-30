@@ -30,10 +30,8 @@ const VideoComp = ({ content, load }) => {
   const toggleLock = () => {
     if (ctrLock) {
       setCtrLock(false);
-      videoRef.current.controls = false;
     } else {
       setCtrLock(true);
-      videoRef.current.controls = true;
     }
   };
 

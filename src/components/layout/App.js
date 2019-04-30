@@ -142,6 +142,7 @@ class App extends React.Component {
 
           <Help />
         </React.StrictMode>
+        <div id="menu-overlay" />
       </>
     );
   }
