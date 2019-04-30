@@ -15,6 +15,8 @@ import {
   redditVote,
 } from '../../redux/actions/reddit';
 
+const classNames = require('classnames');
+
 class Post extends React.PureComponent {
   mounted = false;
 
@@ -157,18 +159,11 @@ class Post extends React.PureComponent {
     const { data } = entry;
     const { showDebug, renderedContent, expand } = this.state;
 
-    const classArray = ['entry', 'list-group-item'];
-    if (focused) {
-      classArray.push('focused');
-    }
-
-    if (actionable) {
-      classArray.push('actionable');
-    }
-
-    if (!expand) {
-      classArray.push('condensed');
-    }
+    const classArray = classNames('entry', 'list-group-item', {
+      focused,
+      actionable,
+      condensed: !expand,
+    });
 
     const sticky = data.stickied || false;
 
@@ -268,7 +263,7 @@ class Post extends React.PureComponent {
     );
 
     return (
-      <div className={classArray.join(' ')} key={data.name} id={data.name}>
+      <div className={classArray} key={data.name} id={data.name}>
         <div className="entry-interior">
           <header className="d-flex">
             {title}
