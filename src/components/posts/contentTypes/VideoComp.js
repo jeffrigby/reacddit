@@ -85,6 +85,7 @@ const VideoComp = ({ content, load }) => {
         loop
         muted
         playsInline
+        // controls
         id={videoId}
         key={videoId}
         onClick={toggleLock}

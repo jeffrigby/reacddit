@@ -90,15 +90,16 @@ module.exports = {
       },
     }),
     new WatchMissingNodeModulesPlugin(commonPaths.modules),
-    // Generate a manifest file which contains a mapping of all asset filenames
-    // to their corresponding output file so that tools can pick it up without
-    // having to parse `index.html`.
+
     new MiniCssExtractPlugin({
       filename: `${commonPaths.cssFolder}/[name].[contenthash:8].css`,
       chunkFilename: `${
         commonPaths.cssFolder
       }/[name].[contenthash:8].chunk.css`,
     }),
+    // Generate a manifest file which contains a mapping of all asset filenames
+    // to their corresponding output file so that tools can pick it up without
+    // having to parse `index.html`.
     new ManifestPlugin({
       fileName: 'asset-manifest.json',
       // publicPath: commonPaths.root,

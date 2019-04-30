@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import _trim from 'lodash/trim';
 import _trimEnd from 'lodash/trimEnd';
+import { distanceInWordsToNow } from 'date-fns';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 const queryString = require('query-string');
@@ -43,7 +44,7 @@ class NavigationItem extends React.Component {
   }
 
   render() {
-    const { sort, location, item } = this.props;
+    const { sort, location, item, lastUpdated } = this.props;
     const query = queryString.parse(location.search);
     const { t } = query;
     let currentSort = sort || '';
@@ -68,13 +69,19 @@ class NavigationItem extends React.Component {
     const classNameStr = this.getDiffClassName();
     const subLabel = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;
 
+    let { title } = item;
+    if (lastUpdated !== 0) {
+      const timeago = distanceInWordsToNow(lastUpdated * 1000);
+      title += ` - updated ${timeago} ago`;
+    }
+
     return (
       <NavigationGenericNavItem
         to={_trimEnd(href, '/')}
         text={item.display_name}
         id={item.id}
         classes={classNameStr}
-        title={item.title}
+        title={title}
         badge={subLabel}
       />
     );

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import SubUnSub from '../header/SubUnSub';
+import AutoRefresh from '../header/AutoRefresh';
 
 const queryString = require('query-string');
 
@@ -64,23 +65,25 @@ const ListingsHeader = ({ about, filter }) => {
           <h5 className="m-0 p-0 w-100">
             {title} {searchEverywhere && <>- {searchEverywhere}</>}
           </h5>
+          {subInfo && (
+            <div>
+              <small>{subInfo}</small>
+            </div>
+          )}
+          {about.public_description && (
+            <div>
+              <small>{about.public_description}</small>
+            </div>
+          )}
         </div>
-        {listType === 'r' && target !== 'mine' && (
-          <div className="actions">
-            <SubUnSub />
+        <div className="listing-actions">
+          {listType === 'r' && target !== 'mine' && <SubUnSub />}
+
+          <div className="pt-1">
+            <AutoRefresh />
           </div>
-        )}
+        </div>
       </div>
-      {subInfo && (
-        <div>
-          <small>{subInfo}</small>
-        </div>
-      )}
-      {about.public_description && (
-        <div>
-          <small>{about.public_description}</small>
-        </div>
-      )}
     </div>
   );
 };

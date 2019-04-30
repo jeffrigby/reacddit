@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { listingsFetchRedditNew } from '../../redux/actions/listings';
 
 const Reload = ({ getNewRedditEntries, listingsStatus, stream }) => {
-  const loading = listingsStatus !== 'loaded';
+  const loading = listingsStatus !== 'loaded' && listingsStatus !== 'loadedAll';
   const iconClass = `fas fa-sync-alt${loading ? ' fa-spin' : ''}`;
   const btnClass = stream
     ? 'btn btn-primary btn-sm'
