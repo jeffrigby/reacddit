@@ -17,7 +17,7 @@ const Thumb = ({ content, load }) => {
       <img
         src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
         data-orig={content.thumbnail}
-        alt={content.title}
+        alt="Placeholder"
         className="unloaded reddit-thumb"
       />
     );

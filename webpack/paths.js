@@ -26,6 +26,7 @@ module.exports = {
   favicon: path.resolve(__dirname, '../', 'src/images/favicon.ico'),
   icon: path.resolve(__dirname, '../', 'src/images/icon.png'),
   imagesFolder: 'static/images',
+  pwaFolder: 'static/pwa',
   fontsFolder: 'static/fonts',
   cssFolder: 'static/css',
   jsFolder: 'static/js',

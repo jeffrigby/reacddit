@@ -111,7 +111,7 @@ const VideoComp = ({ content, load }) => {
       <img
         src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
         className="embed-responsive-item"
-        alt={content.id}
+        alt="Placeholder"
       />
     );
   }
