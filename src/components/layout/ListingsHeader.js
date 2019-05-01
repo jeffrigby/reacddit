@@ -71,21 +71,21 @@ const ListingsHeader = ({ about, filter }) => {
           <h5 className="m-0 p-0 w-100">
             {title} {searchEverywhere && <>- {searchEverywhere}</>}
           </h5>
-          {subInfo && (
-            <div>
-              <small>{subInfo}</small>
-            </div>
-          )}
-          {about.public_description && (
-            <div>
-              <small>{about.public_description}</small>
-            </div>
-          )}
         </div>
         <div className="listing-actions">
           {listType === 'r' && target !== 'mine' && <SubUnSub />}
         </div>
       </div>
+      {subInfo && (
+        <div>
+          <small>{subInfo}</small>
+        </div>
+      )}
+      {about.public_description && (
+        <div>
+          <small>{about.public_description}</small>
+        </div>
+      )}
     </div>
   );
 };

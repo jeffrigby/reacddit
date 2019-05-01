@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import '../../../styles/video.scss';
 
+const classNames = require('classnames');
+
 const VideoComp = ({ content, load }) => {
   const videoRef = React.createRef();
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [ctrLock, setCtrLock] = useState(false);
   const [controls, setControls] = useState(false);
+  const [manualStop, setManualStop] = useState(false);
 
   const { width, height, sources } = content;
   let videoWidth = width;
@@ -61,22 +64,40 @@ const VideoComp = ({ content, load }) => {
     if (videoRef.current.paused) {
       videoRef.current.play();
       setPlaying(true);
+      setManualStop(false);
     } else {
       videoRef.current.pause();
       setPlaying(false);
+      setManualStop(true);
     }
   };
 
-  // const timeUpdate = () => {
-  //   const { currentTime, duration } = videoRef.current;
-  //   scrubberRef.current.value = (currentTime / duration) * 100;
-  // };
+  const changeAudio = () => {
+    if (videoRef.current.muted) {
+      setMuted(true);
+    } else {
+      setMuted(false);
+    }
+  };
 
   const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
-  const mutedIconClass = `fas ${muted ? 'fa-volume-up' : 'fa-volume-mute'}`;
+  const mutedIconClass = `fas ${muted ? 'fa-volume-mute' : 'fa-volume-up'}`;
 
   const muteTitle = muted ? 'Play Sound' : 'Mute';
   const playTitle = playing ? 'Pause' : 'Play';
+
+  const videoClasses = classNames(
+    'loaded',
+    'embed-responsive-item',
+    'preload',
+    {
+      'video-playing': playing,
+      'video-paused': !playing,
+      'audio-muted': muted,
+      'audio-on': !muted,
+      'manual-stop': manualStop,
+    }
+  );
 
   // load = false;
   let video;
@@ -97,9 +118,10 @@ const VideoComp = ({ content, load }) => {
         key={videoId}
         onClick={toggleLock}
         poster={content.thumb}
-        className="loaded embed-responsive-item preload"
-        // onClick={toggleControls}
-        // onTimeUpdate={timeUpdate}
+        className={videoClasses}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onVolumeChange={changeAudio}
         ref={videoRef}
       >
         {videoSources}

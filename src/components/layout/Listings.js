@@ -302,12 +302,13 @@ class Listings extends React.Component {
         prevPostId = post.id;
 
         // Trigger autoplay if not triggered automatically.
-        // This is for a weird bug in iOS where videos suddenly stop
-        // autoplaying.
-        const video = post.querySelector('video:not(.autoplay-triggered)');
+        // This is for a weird bug in iOS where videos stops
+        // autoplaying when PWA is reloaded.
+        const video = post.querySelector('video:not(.manual-stop)');
         if (video) {
-          video.play();
-          video.classList.add('autoplay-triggered');
+          if (video.paused) {
+            video.play();
+          }
         }
       });
 
