@@ -16,7 +16,6 @@
   "author": "Jeff Rigby",
   "license": "ISC",
   "dependencies": {
-    "ajv": "^6.9.1",
     "axios": "^0.18.0",
     "babel-polyfill": "^6.26.0",
     "classnames": "^2.2.6",
@@ -46,11 +45,8 @@
     "redux-axios-middleware": "^4.0.0",
     "redux-devtools-extension": "^2.13.7",
     "redux-thunk": "^2.3.0",
-    "terser-webpack-plugin": "^1.2.3",
     "tldts": "^4.0.5",
-    "url-parse": "^1.4.4",
-    "webpack-manifest-plugin": "^2.0.4",
-    "workbox-webpack-plugin": "^4.3.0"
+    "url-parse": "^1.4.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -101,16 +97,18 @@
     "react-dev-utils": "^9.0.0",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
+    "terser-webpack-plugin": "^1.2.3",
     "url-loader": "^1.1.2",
     "webapp-webpack-plugin": "^2.6.1",
     "webpack": "^4.28.3",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-cli": "^3.2.0",
     "webpack-dev-server": "^3.1.14",
+    "webpack-manifest-plugin": "^2.0.4",
     "webpack-merge": "^4.2.1",
-    "webpack-pwa-manifest": "^4.0.0"
+    "webpack-pwa-manifest": "^4.0.0",
+    "workbox-webpack-plugin": "^4.3.0"
   },
   "resolutions": {
-    "ajv": "^6.9.1"
   }
 }
