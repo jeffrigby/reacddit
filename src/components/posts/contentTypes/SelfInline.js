@@ -5,6 +5,18 @@ import Content from '../Content';
 const SelfInline = ({ inline, load, name }) => {
   const [inlineIdx, setInlineIdx] = useState(0);
 
+  const totalLinks = inline.length;
+
+  const prevEntry = async () => {
+    const prevIdx = inlineIdx === 0 ? totalLinks - 1 : inlineIdx - 1;
+    await setInlineIdx(prevIdx);
+  };
+
+  const nextEntry = () => {
+    const nextIdx = inlineIdx === totalLinks - 1 ? 0 : inlineIdx + 1;
+    setInlineIdx(nextIdx);
+  };
+
   if (inline.length === 0) {
     return null;
   }
@@ -17,27 +29,6 @@ const SelfInline = ({ inline, load, name }) => {
 
   let inlineNav;
   if (inline.length > 1) {
-    const pageLinks = [];
-    inline.forEach((value, idx) => {
-      const key = `${name}-inline-${idx}`;
-      pageLinks.push(
-        <li
-          key={key}
-          className={`page-item inline-pager${inlineIdx === idx && ' active'}`}
-        >
-          <button
-            className="page-link"
-            type="button"
-            onClick={() => setInlineIdx(idx)}
-          >
-            {idx + 1}
-          </button>
-        </li>
-      );
-    });
-
-    const prevIdx = inlineIdx === 0 ? inline.length - 1 : inlineIdx - 1;
-    const nextIdx = inlineIdx === inline.length - 1 ? 0 : inlineIdx + 1;
     inlineNav = (
       <nav aria-label="Inline-Link Pagination">
         <ul className="pagination pagination-sm mb-0">
@@ -46,19 +37,23 @@ const SelfInline = ({ inline, load, name }) => {
               className="page-link"
               aria-label="Previous"
               type="button"
-              onClick={() => setInlineIdx(prevIdx)}
+              onClick={prevEntry}
             >
               <span aria-hidden="true">&laquo;</span>
               <span className="sr-only">Previous</span>
             </button>
           </li>
-          {pageLinks}
+          <li className="page-item">
+            <span className="page-link">
+              {inlineIdx + 1} / {totalLinks}
+            </span>
+          </li>
           <li className="page-item">
             <button
               className="page-link"
               aria-label="Next"
               type="button"
-              onClick={() => setInlineIdx(nextIdx)}
+              onClick={nextEntry}
             >
               <span aria-hidden="true">&raquo;</span>
               <span className="sr-only">Next</span>
