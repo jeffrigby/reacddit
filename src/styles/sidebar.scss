@@ -121,7 +121,6 @@
   //.open-menu-link {
   //  display: inherit;
   //}
-
 }
 
 #menu-overlay {
@@ -154,9 +153,7 @@
     display: block;
     left: 14rem;
   }
-
 }
-
 
 @media (max-width: 767.98px) {
   .open-menu-link {
@@ -221,9 +218,30 @@
   }
 }
 
+.friend-li {
+  .friend-actions button {
+    line-height: 1 !important;
+    padding: 0;
+    margin: 0;
+    font-size: 1em;
+    border: none !important;
+  }
+}
+
 .no-touch {
   #aside-content .nav-item:hover {
     background-color: #fcf8e3;
+  }
+
+  .friend-li {
+    .friend-actions {
+       display: none;
+    }
+    &:hover {
+      .friend-actions {
+        display: block;
+      }
+    }
   }
 
   // Override hover for multis

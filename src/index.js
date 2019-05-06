@@ -66,6 +66,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
         siteSettings: store.getState().siteSettings,
         subreddits: store.getState().subreddits,
         redditMultiReddits: store.getState().redditMultiReddits,
+        redditFriends: store.getState().redditFriends,
       });
     }, 1000)
   );

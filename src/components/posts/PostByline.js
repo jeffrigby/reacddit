@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { distanceInWordsToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
+import PostBylineAuthor from './PostBylineAuthor';
 
 const PostByline = ({ data }) => {
   const timeago = distanceInWordsToNow(data.created_utc * 1000);
@@ -25,24 +26,6 @@ const PostByline = ({ data }) => {
     </>
   );
 
-  const authorFlair = data.author_flair_text ? (
-    <span className="badge badge-dark">{data.author_flair_text}</span>
-  ) : null;
-
-  const authorLink =
-    data.author === '[deleted]' ? (
-      <>
-        <i className="fas fa-user" /> {data.author}
-      </>
-    ) : (
-      <>
-        <Link to={`/user/${data.author}/submitted/new`}>
-          <i className="fas fa-user" /> {data.author}
-        </Link>{' '}
-        {authorFlair}
-      </>
-    );
-
   const subUrl = `/r/${data.subreddit}`;
   const subredditInfo = <Link to={subUrl}>/r/{data.subreddit}</Link>;
 
@@ -61,7 +44,9 @@ const PostByline = ({ data }) => {
 
   return (
     <>
-      <span className="pr-1">{authorLink}</span>
+      <span className="pr-1">
+        <PostBylineAuthor author={data.author} flair={data.author_flair_text} />{' '}
+      </span>
       <span className="pr-1">{when}</span>
       <span className="pr-1">{comments}</span>
       <span className="pr-1">{subredditInfo}</span>

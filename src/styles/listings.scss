@@ -25,6 +25,10 @@ div#entries {
     }
   }
 
+  .is-friend {
+    font-weight: bold;
+  }
+
   .self {
     position: relative;
     p {
@@ -33,6 +37,11 @@ div#entries {
         margin-bottom: 0;
       }
     }
+  }
+
+  .media-cont {
+    margin-left: -21px;
+    margin-right: -21px;
   }
 
   .sf-html-show-all {
@@ -107,12 +116,15 @@ div#entries {
     }
 
     footer {
-      font-size: 0.8em;
+      font-size: 0.85em;
 
       button {
         line-height: 1 !important;
         padding: 0;
         margin: 0;
+        font-size: 1em;
+        border: none !important;
+        background-color: transparent;
       }
     }
   }

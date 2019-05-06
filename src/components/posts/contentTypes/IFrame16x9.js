@@ -4,15 +4,17 @@ import PropTypes from 'prop-types';
 const IFrame16x9 = ({ content, load }) => {
   const src = load ? content.src : 'about:blank';
   return (
-    <div className="embed-responsive embed-responsive-16by9 black-bg">
-      <iframe
-        src={src}
-        scrolling="no"
-        title={content.name}
-        allow={content.allow}
-        className="embed-responsive-item"
-        allowFullScreen
-      />
+    <div className="media-cont">
+      <div className="embed-responsive embed-responsive-16by9 black-bg">
+        <iframe
+          src={src}
+          scrolling="no"
+          title={content.name}
+          allow={content.allow}
+          className="embed-responsive-item"
+          allowFullScreen
+        />
+      </div>
     </div>
   );
 };

@@ -24,6 +24,16 @@ const Settings = () => {
         <div className="small">
           <AutoRefresh />
         </div>
+        <div className="dropdown-divider" />
+        <div>
+          <button
+            className="btn btn-primary btn-sm m-0 small w-100"
+            onClick={() => window.location.reload(true)}
+            type="button"
+          >
+            <small>Load Newest Version</small>
+          </button>
+        </div>
       </div>
     </div>
   );

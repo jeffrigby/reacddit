@@ -4,6 +4,7 @@ import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
+import Friends from './Friends';
 
 class NavigationPrimaryLinks extends React.Component {
   lastKeyPressed = null;
@@ -137,12 +138,7 @@ class NavigationPrimaryLinks extends React.Component {
         />
         {me.name && (
           <>
-            <NavigationGenericNavItem
-              to="/r/friends"
-              text="Friends"
-              title="Show Friend's Posts"
-              iconClass="fas fa-user-friends"
-            />
+            <Friends />
             <NavigationGenericNavItem
               to={`/user/${me.name}/submitted/${currentSort}`}
               text="Submitted"

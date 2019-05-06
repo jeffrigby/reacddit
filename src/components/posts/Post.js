@@ -281,7 +281,7 @@ class Post extends React.PureComponent {
             </div>
           </header>
           {content}
-          <footer className="d-flex clearfix align-middle">
+          <footer className="d-flex clearfix align-middle mt-1">
             <div className="mr-auto byline">
               <PostByline data={data} />
               {crossPost && (

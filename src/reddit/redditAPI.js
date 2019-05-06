@@ -467,6 +467,50 @@ class RedditAPI {
   }
 
   /**
+   * Get the user's friend list.
+   * @param options - params to send
+   * @returns {Promise<*>}
+   */
+  async friends(options = {}) {
+    const params = {
+      // after: null,
+      // before: null,
+      // count: 0,
+      // limit: 100,
+      // show: 'all',
+      // sr_detail: false,
+      // include_categories: false,
+    };
+    const friends = await this.redditAPI.get(
+      'api/v1/me/friends',
+      queryString.stringify(params)
+    );
+
+    return friends;
+  }
+
+  /**
+   * remove a friend
+   * @param name - the name of the friend to remove.
+   * @returns {Promise<*>}
+   */
+  removeFriend(name) {
+    return this.redditAPI.delete(`/api/v1/me/friends/${name}`);
+  }
+
+  /**
+   * add a friend
+   * @param name - the name of the friend to remove.
+   * @returns {Promise<*>}
+   */
+  addFriend(name) {
+    const data = { name };
+    return this.redditAPI.put(`/api/v1/me/friends/${name}`, data, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  /**
    * Return reddit user.
    * Reset the cache
    * @returns {Promise<*>}

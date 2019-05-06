@@ -140,6 +140,7 @@ const VideoComp = ({ content, load }) => {
 
   const videoContainerClass = [
     'video-container',
+    'media-cont',
     muted ? 'muted' : 'unmuted',
     playing ? 'playing' : 'paused',
     ctrLock ? 'locked' : 'unlocked',

@@ -31,7 +31,7 @@ const Image = ({ content, load }) => {
   const title = load === true ? contentRender.title : 'placeholder';
 
   return (
-    <div className="ratio-bg">
+    <div className="ratio-bg media-cont">
       <div style={contStyle} className="ratio-container">
         <div style={ratioStyle} className="ratio embed-responsive">
           <img src={src} alt={title} className={imgClass} />

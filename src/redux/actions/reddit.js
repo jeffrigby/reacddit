@@ -22,6 +22,13 @@ export function redditBearer(bearer) {
   };
 }
 
+export function redditFriends(friends) {
+  return {
+    type: 'REDDIT_FRIENDS',
+    friends,
+  };
+}
+
 export function redditGetBearer() {
   return async (dispatch, getState) => {
     try {
@@ -86,6 +93,63 @@ export function redditFetchMe(reset) {
     } catch (e) {
       dispatch(redditMe({ status: 'error', error: e.toString() }));
     }
+  };
+}
+
+export function redditFetchFriends(reset) {
+  return async (dispatch, getState) => {
+    const currentState = getState();
+
+    // Check for cache first. If it exists, do nothing.
+    if (currentState.redditFriends !== undefined && !reset) {
+      const friendsExpired =
+        Date.now() > currentState.redditFriends.lastUpdated + 3600 * 24 * 1000;
+      if (currentState.redditFriends.status === 'loaded' && !friendsExpired) {
+        return;
+      }
+    }
+
+    const friendsRequest = await RedditAPI.friends();
+    if (friendsRequest.status !== 200) {
+      dispatch(
+        redditFriends({
+          status: 'error',
+          lastUpdated: 0,
+          friends: {},
+          response: friendsRequest,
+        })
+      );
+      return;
+    }
+
+    const { children } = friendsRequest.data.data;
+
+    if (children.length === 0) {
+      dispatch(
+        redditFriends({
+          status: 'loaded',
+          lastUpdated: Date.now(),
+          friends: {},
+        })
+      );
+      return;
+    }
+
+    const friendsKeyed = {};
+    const childrenSorted = children.sort((a, b) => {
+      return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+    });
+    childrenSorted.forEach(friend => {
+      friendsKeyed[friend.name.toLowerCase()] = friend;
+    });
+
+    dispatch(
+      redditFriends({
+        status: 'loaded',
+        lastUpdated: Date.now(),
+        friends: friendsKeyed,
+      })
+    );
   };
 }
 
