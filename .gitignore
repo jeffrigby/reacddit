@@ -38,8 +38,7 @@ ngrok
 
 .DS_Store
 /.idea
-/dist
-/stats.json
-/src/components/posts/embeds/domains_custom/*.js
-/server/.env
-/.env
+/client/dist
+stats.json
+/client/src/components/posts/embeds/domains_custom/*.js
+.env
