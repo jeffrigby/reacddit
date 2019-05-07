@@ -184,8 +184,6 @@ class Post extends React.PureComponent {
         {data.link_flair_text}
       </Link>
     ) : null;
-    const currentDebug =
-      process.env.NODE_ENV === 'development' && siteSettings.debug;
 
     const crossPost =
       (data.crosspost_parent && data.crosspost_parent_list[0]) || false;
@@ -295,9 +293,9 @@ class Post extends React.PureComponent {
               )}
             </div>
             <div>
-              {currentDebug && (
+              {siteSettings.debug && (
                 <span className="pl-3">
-                  {data.name}
+                  {data.name}{' '}
                   <button
                     className="btn btn-link m-0 p-0"
                     onClick={this.showDebug}
@@ -305,7 +303,7 @@ class Post extends React.PureComponent {
                     type="button"
                   >
                     <i className="fas fa-code" />
-                  </button>
+                  </button>{' '}
                 </span>
               )}
               {!data.is_self && (
@@ -317,7 +315,7 @@ class Post extends React.PureComponent {
               )}
             </div>
           </footer>
-          {showDebug && currentDebug && (
+          {showDebug && siteSettings.debug && (
             <PostDebug renderedContent={renderedContent} entry={entry} />
           )}
         </div>
