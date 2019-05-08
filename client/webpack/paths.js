@@ -23,8 +23,6 @@ module.exports = {
   outputPath: path.resolve(__dirname, '../', 'dist'),
   entryPath: path.resolve(__dirname, '../', 'src/index.js'),
   templatePath: path.resolve(__dirname, '../', 'src/index.tpl.html'),
-  favicon: path.resolve(__dirname, '../', 'src/images/favicon.ico'),
-  icon: path.resolve(__dirname, '../', 'src/images/icon.png'),
   imagesFolder: 'static/images',
   pwaFolder: 'static/pwa',
   fontsFolder: 'static/fonts',
