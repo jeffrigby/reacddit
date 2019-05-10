@@ -73,8 +73,12 @@ const Content = ({ content, name, link, load }) => {
 Content.propTypes = {
   content: PropTypes.object.isRequired,
   name: PropTypes.string.isRequired,
-  link: PropTypes.string.isRequired,
+  link: PropTypes.string,
   load: PropTypes.bool.isRequired,
+};
+
+Content.defaultProps = {
+  link: '',
 };
 
 export default Content;

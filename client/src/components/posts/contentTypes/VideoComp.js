@@ -193,7 +193,7 @@ const VideoComp = ({ content, load, link }) => {
             >
               <i className={mutedIconClass} />
             </button>
-            {content.audioWarning && (
+            {content.audioWarning && link && (
               <div
                 className="audio-disabled bg-dark border border-light p-1"
                 role="tooltip"
@@ -216,7 +216,11 @@ const VideoComp = ({ content, load, link }) => {
 VideoComp.propTypes = {
   content: PropTypes.object.isRequired,
   load: PropTypes.bool.isRequired,
-  link: PropTypes.string.isRequired,
+  link: PropTypes.string,
+};
+
+VideoComp.defaultProps = {
+  link: '',
 };
 
 export default VideoComp;
