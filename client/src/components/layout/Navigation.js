@@ -36,6 +36,7 @@ const Navigation = ({ redditBearer, subredditsFilter }) => {
       {loggedIn && !hideExtras && <MultiReddits />}
       <NavigationSubReddits />
       <SearchRedditNames filterText={filterText} />
+      <div className="my-5 py-3 bottom-spacer" />
     </div>
   );
 };
