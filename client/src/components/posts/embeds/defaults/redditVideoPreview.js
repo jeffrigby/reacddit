@@ -32,7 +32,7 @@ const redditVideoPreview = entry => {
 
     // For some reason safari doesn't care about the CORS violation and can play sound.
     // Firefox and chrome don't work even with hls.js & dash.js embeds.
-    if (browser.name === 'safari') {
+    if (browser.name === 'safari' || browser.name === 'ios') {
       sources.push({
         type: 'application/vnd.apple.mpegURL',
         src: media.hls_url,
