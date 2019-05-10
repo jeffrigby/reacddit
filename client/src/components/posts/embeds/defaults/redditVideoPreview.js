@@ -1,3 +1,7 @@
+const { detect } = require('detect-browser');
+
+const browser = detect();
+
 const redditVideoPreview = entry => {
   const rvp =
     entry.preview && entry.preview.reddit_video_preview
@@ -23,21 +27,27 @@ const redditVideoPreview = entry => {
   }
 
   if (media) {
-    const sources = [
-      { type: 'video/mp4', src: media.fallback_url },
-      // HLS is unusaable due to a CORS violation.
-      // {
-      //   type: 'application/vnd.apple.mpegURL',
-      //   src: media.hls_url,
-      // },
-    ];
+    const sources = [];
+    let audioWarning = true;
+
+    // For some reason safari doesn't care about the CORS violation and can play sound.
+    // Firefox and chrome don't work even with hls.js & dash.js embeds.
+    if (browser.name === 'safari') {
+      sources.push({
+        type: 'application/vnd.apple.mpegURL',
+        src: media.hls_url,
+      });
+      audioWarning = false;
+    }
+    // sources.push({ type: 'application/dash+xml', src: media.dash_url });
+    sources.push({ type: 'video/mp4', src: media.fallback_url });
 
     const videoPreview = {
       media,
       width: media.width,
       height: media.height,
       hasAudio: !media.is_gif || false,
-      audioWarning: true,
+      audioWarning,
       id: entry.name,
       type: 'video',
       sources,

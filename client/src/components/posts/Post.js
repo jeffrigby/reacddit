@@ -171,6 +171,7 @@ class Post extends React.PureComponent {
       <Content
         content={renderedContent}
         name={data.name}
+        link={data.url}
         load={visible}
         key={data.id}
       />

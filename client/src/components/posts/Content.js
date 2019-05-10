@@ -10,7 +10,7 @@ import ImgurAlbum from './contentTypes/ImgurAlbum';
 import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
 
-const Content = ({ content, name, load }) => {
+const Content = ({ content, name, link, load }) => {
   const [resolvedContent, setResolvedContent] = useState(null);
 
   useEffect(() => {
@@ -34,7 +34,9 @@ const Content = ({ content, name, load }) => {
         contentRendered = <Image content={resolvedContent} load={load} />;
         break;
       case 'video':
-        contentRendered = <VideoComp content={resolvedContent} load={load} />;
+        contentRendered = (
+          <VideoComp content={resolvedContent} load={load} link={link} />
+        );
         break;
       case 'iframe_4x4':
         contentRendered = <IFrame4x4 content={resolvedContent} load={load} />;
@@ -71,6 +73,7 @@ const Content = ({ content, name, load }) => {
 Content.propTypes = {
   content: PropTypes.object.isRequired,
   name: PropTypes.string.isRequired,
+  link: PropTypes.string.isRequired,
   load: PropTypes.bool.isRequired,
 };
 

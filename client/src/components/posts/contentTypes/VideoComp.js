@@ -4,7 +4,7 @@ import '../../../styles/video.scss';
 
 const classNames = require('classnames');
 
-const VideoComp = ({ content, load }) => {
+const VideoComp = ({ content, load, link }) => {
   const videoRef = React.createRef();
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
@@ -99,7 +99,6 @@ const VideoComp = ({ content, load }) => {
     }
   );
 
-  // load = false;
   let video;
   if (load === true) {
     const videoSources = sources.map((source, idx) => {
@@ -200,7 +199,11 @@ const VideoComp = ({ content, load }) => {
                 role="tooltip"
               >
                 This video probably has audio but Reddit disables it on
-                third-party sites. Click the link to load the video source.
+                third-party sites though Safari still works (for now). Click{' '}
+                <a href={link} target="_blank" rel="noopener noreferrer">
+                  here
+                </a>{' '}
+                load the video on reddit.
               </div>
             )}
           </span>
@@ -213,6 +216,7 @@ const VideoComp = ({ content, load }) => {
 VideoComp.propTypes = {
   content: PropTypes.object.isRequired,
   load: PropTypes.bool.isRequired,
+  link: PropTypes.string.isRequired,
 };
 
 export default VideoComp;
