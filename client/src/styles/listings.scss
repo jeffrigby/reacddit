@@ -147,6 +147,8 @@ div#entries {
 
   &.closed {
     background-color: transparent;
+    bottom: inherit !important;
+    padding: 0 !important;
   }
 
   .debug-info-content {
