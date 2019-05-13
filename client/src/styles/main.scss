@@ -19,3 +19,9 @@ div {
   -ms-user-select: none; /* IE 10+ */
   user-select: none; /* Standard syntax */
 }
+
+.app-loading {
+  height: 100vh;
+  width: 100%;
+  background-color: rgb(52, 58, 64);
+}

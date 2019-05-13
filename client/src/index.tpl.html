@@ -29,11 +29,12 @@
       href="/static/pwa/favicon-16x16.png"
     />
     <link rel="manifest" href="/static/pwa/manifest.json" />
+    <!--
     <link
       rel="mask-icon"
       href="/static/pwa/safari-pinned-tab.svg"
       color="#343a40"
-    />
+    /> -->
     <link rel="shortcut icon" href="/static/pwa/favicon.ico" />
     <meta name="msapplication-TileColor" content="#343a40" />
     <meta name="msapplication-config" content="/static/pwa/browserconfig.xml" />
@@ -165,7 +166,9 @@
     />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-loading"></div>
+    </div>
     <noscript
       ><div>The internet does not work without JS. Turn it on!</div></noscript
     >
