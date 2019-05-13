@@ -37,10 +37,12 @@ const cleanLinks = html => {
 
 const Self = ({ content, load, name }) => {
   const [showAll, setShowAll] = useState(false);
-  const rawhtml = cleanLinks(content.html);
+  const { html } = content;
+  if (!html) return null;
+  const rawhtml = cleanLinks(html);
 
   // eslint-disable-next-line react/no-danger
-  const html = <div dangerouslySetInnerHTML={{ __html: rawhtml }} />;
+  const renderedHTML = <div dangerouslySetInnerHTML={{ __html: rawhtml }} />;
   const inlineRendered = (
     <SelfInline inline={content.inline} name={name} load={load} />
   );
@@ -48,13 +50,13 @@ const Self = ({ content, load, name }) => {
   return (
     <div className="self">
       <div
-        className={`self-html mb-2 ${showAll ? ' sf-html-show-all' : ''}`}
+        className={`self-html ${showAll ? ' sf-html-show-all' : ''}`}
         onClick={() => {
           setShowAll(!showAll);
         }}
         role="presentation"
       >
-        {html}
+        {renderedHTML}
       </div>
       {inlineRendered}
     </div>
