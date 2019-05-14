@@ -86,6 +86,8 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new WorkboxWebpackPlugin.GenerateSW({
+      cacheId: 'reacddit',
+      cleanupOutdatedCaches: true,
       clientsClaim: true,
       exclude: [/\.map$/, /asset-manifest\.json$/],
       importWorkboxFrom: 'cdn',
