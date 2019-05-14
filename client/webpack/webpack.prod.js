@@ -6,6 +6,7 @@ const safePostCssParser = require('postcss-safe-parser');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const commonPaths = require('./paths');
+const CreateFileWebpack = require('create-file-webpack');
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = {
@@ -105,6 +106,12 @@ module.exports = {
       // both options are optional
       filename: 'static/css/[name].[contenthash:8].css',
       chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
+    }),
+
+    new CreateFileWebpack({
+      path: commonPaths.outputPath,
+      fileName: 'build.json',
+      content: JSON.stringify({ version: Date.now() }),
     }),
 
     new OptimizeCSSAssetsPlugin({}),

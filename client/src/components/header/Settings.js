@@ -1,6 +1,10 @@
 import React from 'react';
 import AutoRefresh from './AutoRefresh';
 
+const reload = () => {
+  window.location.reload(true);
+};
+
 const Settings = () => {
   return (
     <div
@@ -28,7 +32,7 @@ const Settings = () => {
         <div>
           <button
             className="btn btn-primary btn-sm m-0 small w-100"
-            onClick={() => window.location.reload(true)}
+            onClick={reload}
             type="button"
           >
             <small>Load Newest Version</small>

@@ -1,7 +1,10 @@
 const commonPaths = require('./paths');
+const webpack = require('webpack');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ErrorOverlayPlugin = require('error-overlay-webpack-plugin');
+const CreateFileWebpack = require('create-file-webpack');
+const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 
 module.exports = {
   mode: 'development',
@@ -46,8 +49,15 @@ module.exports = {
       inject: true,
       template: commonPaths.templatePath,
     }),
+    new CreateFileWebpack({
+      path: commonPaths.outputPath,
+      fileName: 'build.json',
+      content: JSON.stringify({ version: 'dev' }),
+    }),
     // new CleanTerminalPlugin(),
     new FriendlyErrorsWebpackPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+    new CaseSensitivePathsPlugin(),
     new ErrorOverlayPlugin(),
   ],
 };

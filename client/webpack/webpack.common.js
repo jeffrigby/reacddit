@@ -1,6 +1,5 @@
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const WebappWebpackPlugin = require('webapp-webpack-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const Dotenv = require('dotenv-webpack');
@@ -75,22 +74,6 @@ module.exports = {
   plugins: [
     new webpack.ProgressPlugin(),
     new Dotenv(),
-    // new WebappWebpackPlugin({
-    //   prefix: commonPaths.webapp,
-    //   logo: commonPaths.icon, // svg works too!
-    //   favicons: {
-    //     background: '#343a40',
-    //     theme_color: '#343a40',
-    //     appleStatusBarStyle: 'black',
-    //     icons: {
-    //       coast: false,
-    //       yandex: false,
-    //       firefox: false,
-    //       mstile: false,
-    //     },
-    //   },
-    // }),
-
     new CopyPlugin([
       {
         from: `${commonPaths.root}/src/PWA`,
@@ -114,4 +97,16 @@ module.exports = {
       // publicPath: commonPaths.root,
     }),
   ],
+  // Some libraries import Node modules but don't use them in the browser.
+  // Tell Webpack to provide empty mocks for them so importing them works.
+  node: {
+    module: 'empty',
+    dgram: 'empty',
+    dns: 'mock',
+    fs: 'empty',
+    http2: 'empty',
+    net: 'empty',
+    tls: 'empty',
+    child_process: 'empty',
+  },
 };
