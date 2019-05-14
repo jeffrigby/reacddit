@@ -3,6 +3,12 @@ import AutoRefresh from './AutoRefresh';
 import * as serviceWorker from '../../serviceWorker';
 
 const reload = () => {
+  if (caches) {
+    // Service worker cache should be cleared with caches.delete()
+    caches.keys().then(names => {
+      names.forEach(name => caches.delete(name));
+    });
+  }
   serviceWorker.unregister();
   window.location.reload(true);
 };

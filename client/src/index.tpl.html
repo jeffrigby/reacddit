@@ -221,6 +221,13 @@
       }, 5000);
 
       const refresh = () => {
+        if (caches) {
+          // Service worker cache should be cleared with caches.delete()
+          caches.keys().then(names => {
+            for (let name of names) caches.delete(name);
+          });
+        }
+
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.ready.then(registration => {
             registration.unregister();
@@ -229,7 +236,7 @@
         } else {
           window.location.reload(true);
         }
-      }
+      };
     </script>
   </body>
 </html>
