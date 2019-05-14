@@ -167,7 +167,27 @@
   </head>
   <body>
     <div id="root">
-      <div class="app-loading"></div>
+      <div class="app-loading" class="d-flex align-content-center h-100">
+        <div class="container h-100">
+          <div class="row align-items-center h-100">
+            <div class="col-6 mx-auto text-center">
+              <div class="landing-icon" id="landing-icon"></div>
+              <div class="d-none text-center" id="error-loading">
+                Damn. Something isn't right.
+                <div>
+                  <button
+                    class="btn btn-primary m-2"
+                    onClick="window.location.reload(true);"
+                    type="button"
+                  >
+                    Reload
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <noscript
       ><div>The internet does not work without JS. Turn it on!</div></noscript
@@ -190,5 +210,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.3/mobile-detect.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.3/mobile-detect-modernizr.js"></script>
+    <script>
+      setTimeout(() => {
+        try {
+          document.getElementById('error-loading').classList.remove('d-none');
+          document.getElementById('landing-icon').classList.add('d-none');
+        } catch (e) {}
+      }, 5000);
+    </script>
   </body>
 </html>

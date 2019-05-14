@@ -33,7 +33,12 @@ if (parsed.login !== undefined) {
 
 if (parsed.login !== undefined || parsed.logout !== undefined) {
   // Don't render anything if logging out/in.
-  ReactDOM.render(<></>, document.getElementById('root'));
+  ReactDOM.render(
+    <>
+      <div className="app-loading" />
+    </>,
+    document.getElementById('root')
+  );
 } else {
   // Clear the local/session cache. Mostly for debugging.
   if (parsed.cb !== undefined) {
