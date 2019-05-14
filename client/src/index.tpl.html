@@ -219,6 +219,17 @@
           document.getElementById('landing-icon').classList.add('d-none');
         } catch (e) {}
       }, 5000);
+
+      const refresh = () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(registration => {
+            registration.unregister();
+            window.location.reload(true);
+          });
+        } else {
+          window.location.reload(true);
+        }
+      }
     </script>
   </body>
 </html>

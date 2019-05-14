@@ -1,7 +1,9 @@
 import React from 'react';
 import AutoRefresh from './AutoRefresh';
+import * as serviceWorker from '../../serviceWorker';
 
 const reload = () => {
+  serviceWorker.unregister();
   window.location.reload(true);
 };
 
