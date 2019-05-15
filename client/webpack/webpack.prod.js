@@ -92,6 +92,7 @@ module.exports = {
       exclude: [/\.map$/, /asset-manifest\.json$/],
       importWorkboxFrom: 'cdn',
       navigateFallback: `${commonPaths.publicProdPath}index.html`,
+      skipWaiting: true,
       navigateFallbackBlacklist: [
         // Exclude URLs starting with /_, as they're likely an API call
         new RegExp('^/_'),
