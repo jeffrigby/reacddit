@@ -9,20 +9,24 @@ const VideoComp = ({ content, load, link, autoplay }) => {
   const videoRef = React.createRef();
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(autoplay);
+  const [autoplayState, setAutoplayState] = useState(autoplay);
   const [ctrLock, setCtrLock] = useState(false);
   const [controls, setControls] = useState(false);
   const [manualStop, setManualStop] = useState(false);
 
   useEffect(() => {
-    if (videoRef.current === null) {
+    if (videoRef.current === null || autoplay === autoplayState) {
       return;
     }
+
     if (autoplay) {
+      setAutoplayState(true);
       videoRef.current.play();
     } else {
+      setAutoplayState(false);
       videoRef.current.pause();
     }
-  }, [videoRef, autoplay]);
+  }, [videoRef, autoplay, autoplayState]);
 
   const { width, height, sources } = content;
   let videoWidth = width;
