@@ -15,6 +15,7 @@ const VideoComp = ({ content, load, link, autoplay }) => {
   const [manualStop, setManualStop] = useState(false);
 
   useEffect(() => {
+    // @todo this seems like a dumb way to handle not firing.
     if (videoRef.current === null || autoplay === autoplayState) {
       return;
     }
