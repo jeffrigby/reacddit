@@ -14,6 +14,7 @@ export function siteSettings(
     debug: false,
     condenseSticky: true,
     stream: false,
+    autoplay: true,
   },
   action
 ) {

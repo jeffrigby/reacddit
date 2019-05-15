@@ -268,6 +268,7 @@ class Listings extends React.Component {
   monitorEntries = force => {
     if (!this.mounted) return;
     if ((this.scrollResize && !this.scrollResizeStop) || force) {
+      const { autoplay } = this.props.settings;
       this.scrollResize = false;
 
       const postsCollection = document.getElementsByClassName('entry');
@@ -306,7 +307,7 @@ class Listings extends React.Component {
         // autoplaying when PWA is reloaded.
         const video = post.querySelector('video:not(.manual-stop)');
         if (video) {
-          if (video.paused) {
+          if (video.paused && autoplay) {
             video.play();
           }
         }

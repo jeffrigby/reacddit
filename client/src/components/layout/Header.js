@@ -7,7 +7,7 @@ import Reload from '../header/Reload';
 import FilterReddits from '../sidebar/FilterReddits';
 import ViewMode from '../header/ViewMode';
 import Logo from '../../images/reacddit-menu.png';
-import Settings from '../header/Settings';
+import Settings from '../header/settings/Settings';
 import '../../styles/header.scss';
 
 const Header = () => {

@@ -1,17 +1,7 @@
 import React from 'react';
 import AutoRefresh from './AutoRefresh';
-import * as serviceWorker from '../../serviceWorker';
-
-const reload = () => {
-  if (caches) {
-    // Service worker cache should be cleared with caches.delete()
-    caches.keys().then(names => {
-      names.forEach(name => caches.delete(name));
-    });
-  }
-  serviceWorker.unregister();
-  window.location.reload(true);
-};
+import ForceRefresh from './ForceRefresh';
+import AutoPlay from './AutoPlay';
 
 const Settings = () => {
   return (
@@ -28,7 +18,7 @@ const Settings = () => {
         data-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
-        aria-label="Sort"
+        aria-label="Settings"
       >
         <i className="fas fa-cog" />
       </button>
@@ -36,16 +26,11 @@ const Settings = () => {
         <div className="small">
           <AutoRefresh />
         </div>
-        <div className="dropdown-divider" />
-        <div>
-          <button
-            className="btn btn-primary btn-sm m-0 small w-100"
-            onClick={reload}
-            type="button"
-          >
-            <small>Load Newest Version</small>
-          </button>
+        <div className="small">
+          <AutoPlay />
         </div>
+        <div className="dropdown-divider" />
+        <ForceRefresh />
       </div>
     </div>
   );

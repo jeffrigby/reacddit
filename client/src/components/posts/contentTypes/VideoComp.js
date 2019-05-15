@@ -1,16 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 import '../../../styles/video.scss';
 
 const classNames = require('classnames');
 
-const VideoComp = ({ content, load, link }) => {
+const VideoComp = ({ content, load, link, autoplay }) => {
   const videoRef = React.createRef();
   const [muted, setMuted] = useState(true);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(autoplay);
   const [ctrLock, setCtrLock] = useState(false);
   const [controls, setControls] = useState(false);
   const [manualStop, setManualStop] = useState(false);
+
+  useEffect(() => {
+    if (videoRef.current === null) {
+      return;
+    }
+    if (autoplay) {
+      videoRef.current.play();
+    } else {
+      videoRef.current.pause();
+    }
+  }, [videoRef, autoplay]);
 
   const { width, height, sources } = content;
   let videoWidth = width;
@@ -108,7 +120,7 @@ const VideoComp = ({ content, load, link }) => {
 
     video = (
       <video
-        autoPlay
+        autoPlay={autoplay}
         loop
         muted
         playsInline
@@ -217,10 +229,19 @@ VideoComp.propTypes = {
   content: PropTypes.object.isRequired,
   load: PropTypes.bool.isRequired,
   link: PropTypes.string,
+  autoplay: PropTypes.bool,
 };
 
 VideoComp.defaultProps = {
   link: '',
+  autoplay: true,
 };
 
-export default VideoComp;
+const mapStateToProps = state => ({
+  autoplay: state.siteSettings.autoplay,
+});
+
+export default connect(
+  mapStateToProps,
+  {}
+)(VideoComp);
