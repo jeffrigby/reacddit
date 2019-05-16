@@ -93,6 +93,7 @@ module.exports = {
       importWorkboxFrom: 'cdn',
       navigateFallback: `${commonPaths.publicProdPath}index.html`,
       skipWaiting: true,
+      debug: true,
       navigateFallbackBlacklist: [
         // Exclude URLs starting with /_, as they're likely an API call
         new RegExp('^/_'),
