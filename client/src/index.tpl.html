@@ -182,8 +182,8 @@
                 <div>
                   <button
                     class="btn btn-primary m-2"
-                    onClick="window.location.reload(true);"
                     type="button"
+                    id="force-refresh"
                   >
                     Reload
                   </button>
@@ -213,34 +213,33 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.3/mobile-detect-modernizr.js"></script>
     <script>
-      setTimeout(() => {
-        try {
-          document.getElementById('error-loading').classList.remove('d-none');
-          document.getElementById('landing-icon').classList.add('d-none');
-        } catch (e) {}
-      }, 5000);
-
       const refresh = () => {
-        if (caches) {
-          // Service worker cache should be cleared with caches.delete()
-          caches.keys().then(names => {
-            for (let name of names) caches.delete(name);
-          });
-        }
-
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker
-            .getRegistrations()
-            .then(function(registrations) {
-              for (let registration of registrations) {
-                registration.unregister();
-              }
+          if (caches) {
+            // Service worker cache should be cleared with caches.delete()
+            caches.keys().then(names => {
+              for (let name of names) caches.delete(name);
             });
-          window.location.reload(true);
+          }
+          
+          navigator.serviceWorker.ready.then(registration => {
+            registration.unregister();
+            window.location.reload(true);
+          });
         } else {
           window.location.reload(true);
         }
       };
+
+      setTimeout(() => {
+        try {
+          document.getElementById('error-loading').classList.remove('d-none');
+          document.getElementById('landing-icon').classList.add('d-none');
+          document
+            .getElementById('force-refresh')
+            .addEventListener('onclick', refresh);
+        } catch (e) {}
+      }, 5000);
     </script>
   </body>
 </html>
