@@ -93,7 +93,7 @@ module.exports = {
       importWorkboxFrom: 'cdn',
       navigateFallback: `${commonPaths.publicProdPath}index.html`,
       config: {
-        deug: true,
+        debug: true,
       },
       // skipWaiting: true,
       navigateFallbackBlacklist: [
