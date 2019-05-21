@@ -1,5 +1,5 @@
 {
-  "name": "Reacddit",
+  "name": "reacddit",
   "version": "1.0.0",
   "description": "A Reddit client built in reactjs.",
   "main": "index.js",
@@ -36,8 +36,7 @@
     "query-string": "^6.2.0",
     "react": "^16.7.0",
     "react-confirm-alert": "^2.4.1",
-    "react-dom": "^16.7.0",
-    "react-hot-loader": "^4.6.3",
+    "react-dom": "^16.8.6",
     "react-json-view": "^1.19.1",
     "react-redux": "^7.0.2",
     "react-router": "^5.0.0",

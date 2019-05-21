@@ -1,5 +1,7 @@
+/**
+ * This file is useless for right now, might be usefl later, so I'm keeing it.
+ */
 import React from 'react';
-import { hot } from 'react-hot-loader/root';
 import App from './App';
 
 const Root = () => (
@@ -8,4 +10,4 @@ const Root = () => (
   </>
 );
 
-export default hot(Root);
+export default Root;

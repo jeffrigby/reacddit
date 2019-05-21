@@ -36,13 +36,7 @@ module.exports = {
   },
   devtool: 'cheap-module-source-map',
   module: {
-    rules: [
-      {
-        test: /\.jsx?$/,
-        include: /node_modules/,
-        use: ['react-hot-loader/webpack'],
-      },
-    ],
+    rules: [],
   },
   plugins: [
     new HtmlWebpackPlugin({
