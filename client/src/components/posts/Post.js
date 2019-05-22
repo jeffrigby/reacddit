@@ -6,14 +6,13 @@ import { push } from 'connected-react-router';
 import Content from './Content';
 import PostVote from './PostVote';
 import PostSave from './PostSave';
-import PostDebug from './PostDebug';
-import PostByline from './PostByline';
 import RenderContent from './embeds';
 import {
   redditSave,
   redditUnsave,
   redditVote,
 } from '../../redux/actions/reddit';
+import PostFooter from './PostFooter';
 
 const classNames = require('classnames');
 
@@ -21,7 +20,6 @@ class Post extends React.PureComponent {
   mounted = false;
 
   state = {
-    showDebug: false,
     renderedContent: {},
     viewSetting: this.props.siteSettings.view,
     expand: this.props.siteSettings.view === 'expanded' || false,
@@ -77,18 +75,9 @@ class Post extends React.PureComponent {
     this.mounted = false;
   }
 
-  showDebug = event => {
-    this.setState({ showDebug: true });
-    event.preventDefault();
-  };
-
   toggleViewAction = () => {
     const { expand } = this.state;
-    if (expand) {
-      this.setState({ expand: false });
-    } else {
-      this.setState({ expand: true });
-    }
+    this.setState({ expand: !expand });
   };
 
   toggleView = event => {
@@ -157,7 +146,7 @@ class Post extends React.PureComponent {
       actionable,
     } = this.props;
     const { data } = entry;
-    const { showDebug, renderedContent, expand } = this.state;
+    const { renderedContent, expand } = this.state;
 
     const classArray = classNames('entry', 'list-group-item', {
       focused,
@@ -185,14 +174,6 @@ class Post extends React.PureComponent {
         {data.link_flair_text}
       </Link>
     ) : null;
-
-    const crossPost =
-      (data.crosspost_parent && data.crosspost_parent_list[0]) || false;
-
-    if (data.crosspost_parent && !data.crosspost_parent_list[0]) {
-      // This is weird and occasionally happens.
-      // console.log(data);
-    }
 
     let searchLink = '';
     if (!data.is_self) {
@@ -243,12 +224,12 @@ class Post extends React.PureComponent {
       <h6 className="p-0 m-0">
         <button
           onClick={this.toggleView}
-          className="btn btn-link btn-sm m-0 p-0 post-title"
+          className="btn btn-link m-0 p-0 post-title"
           type="button"
         >
           {data.title}
         </button>
-        {linkFlair}
+        {linkFlair}{' '}
         <a
           href={data.url}
           target="_blank"
@@ -276,45 +257,6 @@ class Post extends React.PureComponent {
       </>
     );
 
-    const footer = visible ? (
-      <>
-        <div className="mr-auto byline">
-          <PostByline data={data} />
-          {crossPost && (
-            <>
-              <i className="fas fa-random px-2" title="Crossposted" />{' '}
-              <PostByline data={data.crosspost_parent_list[0]} />
-            </>
-          )}
-          {sticky && <i className="fas fa-sticky-note px-2" title="Sticky" />}
-        </div>
-        <div>
-          {siteSettings.debug && (
-            <span className="pl-3">
-              {data.name}{' '}
-              <button
-                className="btn btn-link m-0 p-0"
-                onClick={this.showDebug}
-                title="Show debug"
-                type="button"
-              >
-                <i className="fas fa-code" />
-              </button>{' '}
-            </span>
-          )}
-          {!data.is_self && (
-            <Link
-              to={`/r/${data.subreddit}/search?q=site:%22${data.domain}%22`}
-            >
-              {data.domain}
-            </Link>
-          )}
-        </div>
-      </>
-    ) : (
-      <>&nbsp;</>
-    );
-
     return (
       <div className={classArray} key={data.name} id={data.name}>
         <div className="entry-interior">
@@ -323,12 +265,13 @@ class Post extends React.PureComponent {
             <div className="text-nowrap d-flex actions ml-auto">{actions}</div>
           </header>
           {content}
-          <footer className="d-flex clearfix align-middle mt-1">
-            {footer}
-          </footer>
-          {showDebug && siteSettings.debug && (
-            <PostDebug renderedContent={renderedContent} entry={entry} />
-          )}
+          <PostFooter
+            entry={entry}
+            debug={siteSettings.debug}
+            sticky={sticky}
+            visible={visible}
+            renderedContent={renderedContent}
+          />
         </div>
       </div>
     );
