@@ -19,6 +19,12 @@ class Search extends React.PureComponent {
   };
 
   componentDidMount() {
+    // Set the initial state.
+    const { location } = this.props;
+    const qs = queryString.parse(location.search);
+    this.setState({
+      search: qs.q || '',
+    });
     document.addEventListener('keydown', this.handleSearchHotkey);
   }
 
@@ -29,6 +35,7 @@ class Search extends React.PureComponent {
     }
 
     const qs = queryString.parse(location.search);
+
     return {
       search: qs.q || '',
       pathname: location.pathname,
