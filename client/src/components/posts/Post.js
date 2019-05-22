@@ -154,18 +154,6 @@ class Post extends React.PureComponent {
       condensed: !expand,
     });
 
-    const sticky = data.stickied || false;
-
-    const content = expand && (
-      <Content
-        content={renderedContent}
-        name={data.name}
-        link={data.url}
-        load={visible}
-        key={data.id}
-      />
-    );
-
     const linkFlair = data.link_flair_text ? (
       <Link
         className="badge badge-dark mx-1"
@@ -242,33 +230,46 @@ class Post extends React.PureComponent {
       </h6>
     );
 
-    const actions = visible && (
-      <>
-        <PostVote
-          likes={data.likes}
-          ups={data.ups}
-          voteDown={this.voteDown}
-          voteUp={this.voteUp}
-          bearer={bearer}
-        />
-        <PostSave saved={data.saved} save={this.save} bearer={bearer} />
-        {searchLink}
-        <div>{expandContractButton}</div>
-      </>
-    );
-
     return (
       <div className={classArray} key={data.name} id={data.name}>
         <div className="entry-interior">
           <header className="d-flex">
             {title}
-            <div className="text-nowrap d-flex actions ml-auto">{actions}</div>
+            <div className="text-nowrap d-flex actions ml-auto">
+              {visible ? (
+                <>
+                  <PostVote
+                    likes={data.likes}
+                    ups={data.ups}
+                    voteDown={this.voteDown}
+                    voteUp={this.voteUp}
+                    bearer={bearer}
+                  />
+                  <PostSave
+                    saved={data.saved}
+                    save={this.save}
+                    bearer={bearer}
+                  />
+                  {searchLink}
+                  <div>{expandContractButton}</div>
+                </>
+              ) : (
+                '&nbsp;'
+              )}
+            </div>
           </header>
-          {content}
+          {expand && (
+            <Content
+              content={renderedContent}
+              name={data.name}
+              link={data.url}
+              load={visible}
+              key={data.id}
+            />
+          )}
           <PostFooter
             entry={entry}
             debug={siteSettings.debug}
-            sticky={sticky}
             visible={visible}
             renderedContent={renderedContent}
           />

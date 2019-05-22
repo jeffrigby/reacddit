@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom';
 import PostByline from './PostByline';
 import PostDebug from './PostDebug';
 
-const PostFooter = ({ entry, debug, sticky, visible, renderedContent }) => {
+const PostFooter = ({ entry, debug, visible, renderedContent }) => {
   const [showDebug, setShowDebug] = useState(false);
 
   const { data } = entry;
+  const sticky = data.stickied || false;
 
   if (!visible) {
     return (
@@ -71,7 +72,6 @@ const PostFooter = ({ entry, debug, sticky, visible, renderedContent }) => {
 PostFooter.propTypes = {
   entry: PropTypes.object.isRequired,
   debug: PropTypes.bool.isRequired,
-  sticky: PropTypes.bool.isRequired,
   visible: PropTypes.bool.isRequired,
   renderedContent: PropTypes.object.isRequired,
 };
