@@ -143,15 +143,6 @@ const VideoComp = ({ content, load, link, autoplay }) => {
         {videoSources}
       </video>
     );
-  } else {
-    // replace with thumb if loading is too slow.
-    video = (
-      <img
-        src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-        className="embed-responsive-item"
-        alt="Placeholder"
-      />
-    );
   }
 
   const videoContainerClass = [
@@ -172,60 +163,62 @@ const VideoComp = ({ content, load, link, autoplay }) => {
           </div>
         </div>
       </div>
-      <div className="video-controls m-0 p-0">
-        <button
-          type="button"
-          className={`${btnClasses} ${
-            controls ? 'ctrl-visible' : 'ctrl-hidden'
-          } video-controls-toggle`}
-          onClick={() => setControls(!controls)}
-          title="Toggle Browser Video Controls"
-        >
-          <i className="fas fa-sliders-h" />
-        </button>
-        <button
-          type="button"
-          className={`${btnClasses} video-fullscreen`}
-          onClick={toggleFullscreen}
-          title="Full Screen"
-        >
-          <i className="fas fa-expand" />
-        </button>
-        <button
-          type="button"
-          className={`${btnClasses} video-play`}
-          onClick={playStop}
-          title={playTitle}
-        >
-          <i className={playIconClass} />
-        </button>
-        {content.hasAudio && (
-          <span className="video-audio-cont">
-            <button
-              type="button"
-              className={`${btnClasses} video-audio`}
-              onClick={toggleSound}
-              title={muteTitle}
-              // disabled={content.audioWarning}
-            >
-              <i className={mutedIconClass} />
-            </button>
-            {content.audioWarning && link && (
-              <div
-                className="audio-disabled bg-dark border border-light p-1"
-                role="tooltip"
+      {load && (
+        <div className="video-controls m-0 p-0">
+          <button
+            type="button"
+            className={`${btnClasses} ${
+              controls ? 'ctrl-visible' : 'ctrl-hidden'
+            } video-controls-toggle`}
+            onClick={() => setControls(!controls)}
+            title="Toggle Browser Video Controls"
+          >
+            <i className="fas fa-sliders-h" />
+          </button>
+          <button
+            type="button"
+            className={`${btnClasses} video-fullscreen`}
+            onClick={toggleFullscreen}
+            title="Full Screen"
+          >
+            <i className="fas fa-expand" />
+          </button>
+          <button
+            type="button"
+            className={`${btnClasses} video-play`}
+            onClick={playStop}
+            title={playTitle}
+          >
+            <i className={playIconClass} />
+          </button>
+          {content.hasAudio && (
+            <span className="video-audio-cont">
+              <button
+                type="button"
+                className={`${btnClasses} video-audio`}
+                onClick={toggleSound}
+                title={muteTitle}
+                // disabled={content.audioWarning}
               >
-                This video probably has audio but Reddit disables it on
-                third-party sites though Safari still works (for now). Click{' '}
-                <a href={link} target="_blank" rel="noopener noreferrer">
-                  here
-                </a>{' '}
-                load the video on reddit.
-              </div>
-            )}
-          </span>
-        )}
-      </div>
+                <i className={mutedIconClass} />
+              </button>
+              {content.audioWarning && link && (
+                <div
+                  className="audio-disabled bg-dark border border-light p-1"
+                  role="tooltip"
+                >
+                  This video probably has audio but Reddit disables it on
+                  third-party sites though Safari still works (for now). Click{' '}
+                  <a href={link} target="_blank" rel="noopener noreferrer">
+                    here
+                  </a>{' '}
+                  load the video on reddit.
+                </div>
+              )}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 };

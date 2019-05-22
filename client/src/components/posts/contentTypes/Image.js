@@ -23,18 +23,15 @@ const Image = ({ content, load }) => {
     imgClass += ` ${contentRender.class}`;
   }
 
-  const src =
-    load === true
-      ? contentRender.src
-      : 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-
   const title = load === true ? contentRender.title : 'placeholder';
 
   return (
     <div className="ratio-bg media-cont">
       <div style={contStyle} className="ratio-container">
         <div style={ratioStyle} className="ratio embed-responsive">
-          <img src={src} alt={title} className={imgClass} />
+          {load && (
+            <img src={contentRender.src} alt={title} className={imgClass} />
+          )}
         </div>
       </div>
     </div>

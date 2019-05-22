@@ -261,60 +261,70 @@ class Post extends React.PureComponent {
       </h6>
     );
 
+    const actions = visible && (
+      <>
+        <PostVote
+          likes={data.likes}
+          ups={data.ups}
+          voteDown={this.voteDown}
+          voteUp={this.voteUp}
+          bearer={bearer}
+        />
+        <PostSave saved={data.saved} save={this.save} bearer={bearer} />
+        {searchLink}
+        <div>{expandContractButton}</div>
+      </>
+    );
+
+    const footer = visible ? (
+      <>
+        <div className="mr-auto byline">
+          <PostByline data={data} />
+          {crossPost && (
+            <>
+              <i className="fas fa-random px-2" title="Crossposted" />{' '}
+              <PostByline data={data.crosspost_parent_list[0]} />
+            </>
+          )}
+          {sticky && <i className="fas fa-sticky-note px-2" title="Sticky" />}
+        </div>
+        <div>
+          {siteSettings.debug && (
+            <span className="pl-3">
+              {data.name}{' '}
+              <button
+                className="btn btn-link m-0 p-0"
+                onClick={this.showDebug}
+                title="Show debug"
+                type="button"
+              >
+                <i className="fas fa-code" />
+              </button>{' '}
+            </span>
+          )}
+          {!data.is_self && (
+            <Link
+              to={`/r/${data.subreddit}/search?q=site:%22${data.domain}%22`}
+            >
+              {data.domain}
+            </Link>
+          )}
+        </div>
+      </>
+    ) : (
+      <>&nbsp;</>
+    );
+
     return (
       <div className={classArray} key={data.name} id={data.name}>
         <div className="entry-interior">
           <header className="d-flex">
             {title}
-            <div className="text-nowrap d-flex actions ml-auto">
-              <PostVote
-                likes={data.likes}
-                ups={data.ups}
-                voteDown={this.voteDown}
-                voteUp={this.voteUp}
-                bearer={bearer}
-              />
-              <PostSave saved={data.saved} save={this.save} bearer={bearer} />
-              {searchLink}
-              <div>{expandContractButton}</div>
-            </div>
+            <div className="text-nowrap d-flex actions ml-auto">{actions}</div>
           </header>
           {content}
           <footer className="d-flex clearfix align-middle mt-1">
-            <div className="mr-auto byline">
-              <PostByline data={data} />
-              {crossPost && (
-                <>
-                  <i className="fas fa-random px-2" title="Crossposted" />{' '}
-                  <PostByline data={data.crosspost_parent_list[0]} />
-                </>
-              )}
-              {sticky && (
-                <i className="fas fa-sticky-note px-2" title="Sticky" />
-              )}
-            </div>
-            <div>
-              {siteSettings.debug && (
-                <span className="pl-3">
-                  {data.name}{' '}
-                  <button
-                    className="btn btn-link m-0 p-0"
-                    onClick={this.showDebug}
-                    title="Show debug"
-                    type="button"
-                  >
-                    <i className="fas fa-code" />
-                  </button>{' '}
-                </span>
-              )}
-              {!data.is_self && (
-                <Link
-                  to={`/r/${data.subreddit}/search?q=site:%22${data.domain}%22`}
-                >
-                  {data.domain}
-                </Link>
-              )}
-            </div>
+            {footer}
           </footer>
           {showDebug && siteSettings.debug && (
             <PostDebug renderedContent={renderedContent} entry={entry} />
