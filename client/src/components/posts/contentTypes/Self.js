@@ -36,7 +36,13 @@ const cleanLinks = html => {
 };
 
 const Self = ({ content, load, name }) => {
-  const [showAll, setShowAll] = useState(false);
+  const [showAll, setShowAll] = useState(content.expand || false);
+
+  const toggleShow = () => {
+    if (content.expand) return;
+    setShowAll(!showAll);
+  };
+
   const { html } = content;
   if (!html) return null;
   const rawhtml = cleanLinks(html);
@@ -51,9 +57,7 @@ const Self = ({ content, load, name }) => {
     <div className="self">
       <div
         className={`self-html ${showAll ? ' sf-html-show-all' : ''}`}
-        onClick={() => {
-          setShowAll(!showAll);
-        }}
+        onClick={toggleShow}
         role="presentation"
       >
         {renderedHTML}

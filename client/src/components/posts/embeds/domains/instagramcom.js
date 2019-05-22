@@ -25,6 +25,7 @@ const render = async entry => {
 
   return {
     type: 'self',
+    expand: true,
     html,
     inline: [],
   };
