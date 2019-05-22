@@ -11,7 +11,7 @@ import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import { siteSettings } from '../../redux/actions/misc';
 import '../../styles/layout.scss';
 
-class App extends React.Component {
+class App extends React.PureComponent {
   tokenQuery = null;
 
   state = {

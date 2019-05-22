@@ -6,7 +6,7 @@ import isEmpty from 'lodash/isEmpty';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import Friends from './Friends';
 
-class NavigationPrimaryLinks extends React.Component {
+class NavigationPrimaryLinks extends React.PureComponent {
   lastKeyPressed = null;
 
   componentDidMount() {

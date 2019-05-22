@@ -7,7 +7,7 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 const queryString = require('query-string');
 
-class MultiRedditsItem extends React.Component {
+class MultiRedditsItem extends React.PureComponent {
   state = {
     showSubs: false,
   };

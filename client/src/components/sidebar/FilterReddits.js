@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import isEqual from 'lodash/isEqual';
 import { subredditsFilter } from '../../redux/actions/subreddits';
 import { disableHotKeys } from '../../redux/actions/misc';
 
@@ -10,6 +11,19 @@ class FilterReddits extends React.Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleFilterHotkey);
+  }
+
+  shouldComponentUpdate(nextProps, nextState, nextContext) {
+    // I don't understand why this is needed. But it tries to re-render
+    // constantly with a pureComponent. Something with the subredditUrls
+    // but they are idenical.
+
+    const { filter, subredditUrls } = this.props;
+
+    return (
+      !isEqual(nextProps.filter, filter) ||
+      !isEqual(nextProps.subredditUrls, subredditUrls)
+    );
   }
 
   componentWillUnmount() {
@@ -172,7 +186,8 @@ const getFilteredUrls = (subreddits, filterText, sort, search) => {
       const { url } = subreddits.subreddits[key];
       arr.push(`${url}${currentSort}`);
       return arr;
-    }, []);
+    }, [])
+    .sort();
 
   return urls;
 };

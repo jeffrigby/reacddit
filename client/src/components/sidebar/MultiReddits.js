@@ -5,7 +5,7 @@ import { redditFetchMultis } from '../../redux/actions/reddit';
 import RedditAPI from '../../reddit/redditAPI';
 import MultiRedditsItem from './MultiRedditsItem';
 
-class MultiReddits extends React.Component {
+class MultiReddits extends React.PureComponent {
   accessToken = null;
 
   state = {

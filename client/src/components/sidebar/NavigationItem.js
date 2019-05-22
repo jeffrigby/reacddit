@@ -8,7 +8,7 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 const queryString = require('query-string');
 
-class NavigationItem extends React.Component {
+class NavigationItem extends React.PureComponent {
   static lastUpdatedDiff(lastUpdated) {
     const now = Math.floor(new Date().getTime() / 1000);
     return now - lastUpdated;

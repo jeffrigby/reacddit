@@ -8,7 +8,7 @@ import {
 } from '../../redux/actions/subreddits';
 import NavigationItem from './NavigationItem';
 
-class NavigationSubReddits extends React.Component {
+class NavigationSubReddits extends React.PureComponent {
   checkLastUpdated = null;
 
   componentDidMount() {

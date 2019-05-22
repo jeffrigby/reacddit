@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 
 const queryString = require('query-string');
 
-class Sort extends React.Component {
+class Sort extends React.PureComponent {
   catsSearch = {
     R: 'relevance',
     T: 'top',
