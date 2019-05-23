@@ -15,8 +15,8 @@ const getKeys = url => {
     };
   }
 
-  const parsedDomain = getDomain(url);
-  const suffix = getPublicSuffix(url);
+  const parsedDomain = getDomain(url, { detectIp: false });
+  const suffix = getPublicSuffix(url, { detectIp: false });
   const domain = parsedDomain.replace(regex, '');
   const greedyDomain = parsedDomain.replace(suffix, '').replace(regex, '');
 
