@@ -46,7 +46,7 @@
     "redux-axios-middleware": "^4.0.0",
     "redux-devtools-extension": "^2.13.7",
     "redux-thunk": "^2.3.0",
-    "tldts": "^4.0.5",
+    "tldts": "^5.0.0",
     "url-parse": "^1.4.4"
   },
   "devDependencies": {
