@@ -12,7 +12,7 @@ const PostFooter = ({ entry, debug, visible, renderedContent }) => {
 
   if (!visible) {
     return (
-      <footer className="d-flex clearfix align-middle mt-1">&nbsp;</footer>
+      <footer className="d-flex clearfix align-middle mt-1 offscreen-placeholder" />
     );
   }
 

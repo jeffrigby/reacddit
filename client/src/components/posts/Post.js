@@ -1,11 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import Content from './Content';
-import PostVote from './PostVote';
-import PostSave from './PostSave';
 import RenderContent from './embeds';
 import {
   redditSave,
@@ -13,6 +10,7 @@ import {
   redditVote,
 } from '../../redux/actions/reddit';
 import PostFooter from './PostFooter';
+import PostHeader from './PostHeader';
 
 const classNames = require('classnames');
 
@@ -75,6 +73,8 @@ class Post extends React.PureComponent {
     this.mounted = false;
   }
 
+  // Actions are kept here so I can call them with key commands
+  // @todo figure out how to put them with the actions component.
   toggleViewAction = () => {
     const { expand } = this.state;
     this.setState({ expand: !expand });
@@ -154,110 +154,19 @@ class Post extends React.PureComponent {
       condensed: !expand,
     });
 
-    const linkFlair = data.link_flair_text ? (
-      <Link
-        className="badge badge-dark mx-1"
-        to={`/r/${data.subreddit}/search?q=flair:%22${data.link_flair_text}%22`}
-      >
-        {data.link_flair_text}
-      </Link>
-    ) : null;
-
-    let searchLink = '';
-    if (!data.is_self) {
-      const searchTo = `/duplicates/${data.id}`;
-      searchLink = (
-        <div>
-          <Link
-            to={searchTo}
-            title="Search for other posts linking to this link"
-            className="btn btn-link btn-sm m-0 p-0"
-          >
-            <i className="fas fa-search" />
-          </Link>
-        </div>
-      );
-    }
-
-    const viewIcon = expand
-      ? 'fas fa-compress-arrows-alt'
-      : 'fas fa-expand-arrows-alt';
-
-    const viewTitle = expand ? 'Close this post (x)' : 'Open this post (x)';
-
-    const expandContractButton = (
-      <button
-        onClick={this.toggleView}
-        type="button"
-        className="btn btn-link btn-sm m-0 p-0"
-        title={viewTitle}
-      >
-        <i className={viewIcon} />
-      </button>
-    );
-
-    const title = expand ? (
-      <h6 className="title list-group-item-heading">
-        <a
-          href={data.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="list-group-item-heading"
-        >
-          {data.title}
-        </a>
-        {linkFlair}
-      </h6>
-    ) : (
-      <h6 className="p-0 m-0">
-        <button
-          onClick={this.toggleView}
-          className="btn btn-link m-0 p-0 post-title"
-          type="button"
-        >
-          {data.title}
-        </button>
-        {linkFlair}{' '}
-        <a
-          href={data.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="list-group-item-heading"
-          title="Open link in new tab"
-        >
-          <i className="fas fa-link direct-link" />
-        </a>
-      </h6>
-    );
-
     return (
       <div className={classArray} key={data.name} id={data.name}>
         <div className="entry-interior">
-          <header className="d-flex">
-            {title}
-            <div className="text-nowrap d-flex actions ml-auto">
-              {visible ? (
-                <>
-                  <PostVote
-                    likes={data.likes}
-                    ups={data.ups}
-                    voteDown={this.voteDown}
-                    voteUp={this.voteUp}
-                    bearer={bearer}
-                  />
-                  <PostSave
-                    saved={data.saved}
-                    save={this.save}
-                    bearer={bearer}
-                  />
-                  {searchLink}
-                  <div>{expandContractButton}</div>
-                </>
-              ) : (
-                '&nbsp;'
-              )}
-            </div>
-          </header>
+          <PostHeader
+            entry={entry}
+            save={this.save}
+            visible={visible}
+            voteDown={this.voteDown}
+            expand={expand}
+            toggleView={this.toggleView}
+            voteUp={this.voteUp}
+            bearer={bearer}
+          />
           {expand && (
             <Content
               content={renderedContent}

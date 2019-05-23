@@ -20,6 +20,10 @@ div {
   user-select: none; /* Standard syntax */
 }
 
+.offscreen-placeholder:after {
+  content: "\00A0\00A0\00A0\00A0";
+}
+
 .app-loading {
   height: 100vh;
   width: 100%;
