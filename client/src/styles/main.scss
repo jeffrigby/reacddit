@@ -1,0 +1,39 @@
+body {
+  font-size: .875rem;
+}
+
+.form-control-dark {
+  color: #fff;
+  background-color: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .1);
+}
+
+.form-control-dark:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
+}
+
+div {
+  -webkit-user-select: none; /* Safari 3.1+ */
+  -moz-user-select: none; /* Firefox 2+ */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none; /* Standard syntax */
+}
+
+.offscreen-placeholder:after {
+  content: "\00A0\00A0\00A0\00A0";
+}
+
+.app-loading {
+  height: 100vh;
+  width: 100%;
+  background-color: rgb(52, 58, 64);
+  color: white;
+  .landing-icon {
+    background-image: url(../images/reacddit-loading.svg);
+    background-repeat: no-repeat;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+  }
+}

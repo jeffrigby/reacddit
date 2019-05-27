@@ -1,0 +1,76 @@
+.video-container {
+  position: relative;
+
+  &.unlocked {
+    .video-ctr,
+    &.unmuted .video-audio {
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s 0.25s, opacity 0.25s linear;
+    }
+    &.muted .video-audio,
+    &.paused .video-play {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+
+  &.locked {
+    .video-ctr,
+    &.unmuted .video-audio {
+      visibility: visible;
+      opacity: 1;
+      transition: visibility 0s 0.25s, opacity 0.25s linear;
+    }
+  }
+
+  .video-controls {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    button {
+      color: white;
+      text-shadow: 1px 1px #000;
+      position: relative;
+    }
+
+    .ctrl-hidden {
+      color: lightgrey;
+    }
+
+    .video-audio-cont {
+      .audio-disabled {
+        position: absolute;
+        width: 300px;
+        right: 0;
+        font-size: 0.75rem;
+        visibility: hidden;
+        opacity: 0;
+        color: white;
+        transition: visibility 0s 0.25s, opacity 0.25s linear;
+      }
+      &:hover {
+        .audio-disabled {
+          visibility: visible;
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+.no-touch {
+  .video-container {
+    position: relative;
+
+    &.unlocked:hover {
+      .video-ctr,
+      &.unmuted .video-audio {
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s 0.25s, opacity 0.25s linear;
+      }
+    }
+  }
+}
+

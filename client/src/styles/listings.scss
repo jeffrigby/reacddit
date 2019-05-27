@@ -1,0 +1,185 @@
+div#entries {
+  max-width: 1366px;
+
+  .react {
+    color: #61dafb;
+  }
+
+  .reddit {
+    color: rgb(252, 71, 35);
+  }
+
+  .self-html {
+    max-height: 100px;
+    overflow: hidden;
+    //text-overflow: ellipsis;
+    cursor: pointer;
+    position:relative;
+    margin: 0;
+    padding-bottom: 10px;
+    -webkit-mask-image: linear-gradient(180deg,#000 60%,transparent);
+    mask-image: linear-gradient(180deg,#000 60%,transparent);
+    &.sf-html-show-all {
+      -webkit-mask-image: inherit;
+      mask-image: inherit;
+    }
+  }
+
+  .is-friend {
+    font-weight: bold;
+  }
+
+  .self {
+    position: relative;
+    p {
+      margin-bottom: 0.5rem;
+      :last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .media-cont {
+    margin-left: -21px;
+    margin-right: -21px;
+  }
+
+  .sf-html-show-all {
+    max-height: inherit !important;
+    overflow: auto;
+    text-overflow: inherit;
+  }
+
+  .listings-header button {
+    font-size: 70% !important;
+    white-space: nowrap;
+  }
+
+  .list-title {
+    font-weight: bold;
+    padding: 0.75rem 1.25rem;
+  }
+
+  div.condensed {
+    .post-title {
+      white-space: normal;
+      text-align: left;
+    }
+
+    .direct-link {
+      display: none;
+    }
+
+    header:hover {
+      .direct-link {
+        display: inline !important;
+      }
+    }
+  }
+
+  .black-bg {
+    background-color: #000;
+  }
+
+  div.entry {
+    &:first-child {
+      padding-top: 0.5em;
+    }
+
+    .actions {
+      div {
+        margin-left: 0.25rem;
+      }
+      button {
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    div.ratio-bg {
+      background-color: black;
+
+      div.ratio-container {
+        max-width: 100%;
+        margin: 0 auto;
+
+        .ratio.loading {
+          background-color: #000000;
+        }
+
+        img,
+        iframe,
+        video {
+          max-width: 100%;
+        }
+      }
+    }
+
+    footer {
+      font-size: 0.85em;
+
+      button {
+        line-height: 1 !important;
+        padding: 0;
+        margin: 0;
+        font-size: 1em;
+        border: none !important;
+        background-color: transparent;
+      }
+    }
+  }
+}
+
+.footer-status {
+  margin-bottom: calc(80vh);
+  padding: 0 1.25rem;
+}
+
+#debugInfo {
+  position: fixed;
+  right: 20px;
+  top: 75px;
+  bottom: 75px;
+  z-index: 1000;
+  background-color: white;
+  font-family: monospace;
+  overflow: scroll;
+
+  &.closed {
+    background-color: transparent;
+    bottom: inherit !important;
+    padding: 0 !important;
+  }
+
+  .debug-info-content {
+    width: 250px;
+  }
+}
+
+/** Specific settings for touch devices **/
+.touch {
+  .actions {
+    font-size: 1rem;
+  }
+}
+
+/** Specific settings for Desktop **/
+.no-phone {
+  .actionable {
+    background-color: rgb(245, 245, 245);
+  }
+
+  .actions {
+    opacity: 0.5;
+  }
+
+  .actionable .actions,
+  .actions:hover {
+    opacity: 1;
+  }
+
+  .byline span {
+    white-space: nowrap;
+  }
+}
+/** End Specific settings for Desktop **/

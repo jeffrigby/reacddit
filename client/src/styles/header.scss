@@ -1,0 +1,119 @@
+.navbar-brand {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-size: 1rem;
+  //background-color: rgba(0, 0, 0, .25);
+  //box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+}
+
+.header-main {
+  color: #ffffff;
+}
+
+#search .form-control-clear {
+  top: 10px;
+  z-index: 100000;
+}
+
+.menu-link {
+  i {
+    vertical-align: middle;
+  }
+}
+
+.navbar .form-control {
+  padding: 0.75rem 1rem;
+  border-width: 0;
+  border-radius: 0;
+}
+
+#subreddits .nav-link {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+.filterText {
+  position: relative;
+  padding: 0 0 0 1rem;
+}
+
+.form-group .form-control-clear {
+  z-index: 10;
+  pointer-events: auto;
+  right: 5px;
+  top: 5px;
+  position: absolute;
+  cursor: pointer;
+}
+
+.sort-menu {
+  .sort-active .sort-title:before {
+    content: '> ';
+  }
+}
+
+.header-actions {
+  .header-button {
+    padding-left: 0.5rem !important;
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+body.search-active {
+  .header-actions {
+    display: none !important;
+  }
+  #search {
+    padding-right: 0.5rem !important;
+  }
+}
+
+.touch {
+  body.search-active {
+    .searchToolTip {
+      display: none !important;
+    }
+  }
+
+  .menu-shortcut {
+    display: none;
+  }
+}
+
+#search {
+  position: relative;
+  .searchToolTip {
+    position: absolute;
+    background-color: #343a40;
+    color: white;
+  }
+}
+
+.subInfo {
+  position: absolute;
+  background-color: white;
+  color: #343a40;
+  border: solid 1px #343a40;
+  padding: 5px;
+  margin-top: 15px;
+  width: 50%;
+  min-width: 200px;
+  white-space: normal !important;
+}
+
+@media (max-width: 767.98px) {
+  header {
+    flex-wrap: wrap-reverse;
+  }
+
+  body.search-active {
+    .header-brand-title {
+      display: none !important;
+    }
+    .search-cont {
+      padding-left: 0.5rem;
+    }
+  }
+}

@@ -1,0 +1,258 @@
+.sidebar {
+  transition: 0.3s;
+  width: 14rem;
+  min-width: 14rem;
+  align-items: center;
+  padding: 0;
+}
+
+#navigation {
+  position: fixed;
+  top: 3rem;
+  left: 0;
+  z-index: 5;
+  height: calc(100vh - 3rem);
+  overflow: hidden !important;
+}
+
+#aside-content {
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  font-size: 0.925em;
+  padding: 0.5rem 0 0;
+  margin-bottom: 0.5rem;
+
+  .nav {
+    width: 100%;
+  }
+
+  .nav-item {
+    position: relative;
+    width: 100%;
+    a {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      &.sub-dead {
+        color: #d3d3d3;
+      }
+      &.sub-stale {
+        color: #d3d3d3;
+      }
+      &.sub-new,
+      &.sub-today {
+        font-weight: 600;
+      }
+      &.activeSubreddit,
+      &.mark {
+        &:before {
+          content: '> ';
+        }
+      }
+    }
+  }
+
+  .badge {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+  }
+
+  .sidebar-heading {
+    margin: 0.75rem 0 0 0;
+    padding: 0;
+    font-weight: bold;
+    text-transform: uppercase;
+    vertical-align: middle !important;
+  }
+
+  .faded {
+    opacity: 0.2 !important;
+  }
+
+  .reload {
+    cursor: pointer;
+  }
+}
+
+.form-control-clear {
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+  position: absolute;
+  right: 12px;
+  top: 17px;
+}
+
+.filter-active {
+  .close-menu-link {
+    display: none !important;
+  }
+}
+
+.open-menu-link {
+  display: none;
+}
+
+.hide-menu {
+  .sidebar {
+    transition: margin-left 0.3s;
+    margin-left: -14rem !important;
+    //display: none !important;
+  }
+
+  #main {
+    padding-left: 0 !important;
+  }
+
+  .close-menu-link {
+    display: none;
+  }
+
+  .open-menu-link {
+    display: inherit;
+  }
+
+  .menu-link {
+    display: inline !important;
+    margin: 0 0 0 !important;
+    padding: 0 !important;
+  }
+  //.open-menu-link {
+  //  display: inherit;
+  //}
+}
+
+.show-menu {
+  .sidebar {
+    margin-left: 0 !important;
+    //width: 100%;
+  }
+
+  .close-menu-link {
+    display: inherit;
+  }
+
+  .open-menu-link {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .open-menu-link {
+    display: inherit;
+  }
+
+  #menu-overlay {
+    position: absolute;
+    background-color: black;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: none;
+    z-index: 1000000;
+    opacity: 0;
+    margin-left: 0;
+  }
+
+  .sidebar {
+    transition: margin-left 0.3s;
+    margin-left: -14rem !important;
+    //display: none !important;
+  }
+
+  #main {
+    padding-left: 0 !important;
+  }
+
+  .close-menu-link {
+    display: none;
+  }
+
+  .show-menu {
+    .sidebar {
+      margin-left: 0 !important;
+      //width: 100%;
+    }
+
+    .close-menu-link {
+      display: inherit;
+    }
+
+    .open-menu-link {
+      display: none !important;
+    }
+
+    #menu-overlay {
+      transition: margin-left 0.3s;
+      margin-left: 14rem !important;
+      display: block;
+    }
+
+    #main {
+      //visibility: hidden !important;
+    }
+
+    .navbar-brand,
+    .header-main,
+    .search-cont,
+    .sub-un-sub {
+      //display: none !important;
+    }
+  }
+
+  .menu-link {
+    display: inline !important;
+    margin: 0 0 0 !important;
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .show-menu {
+    .navbar-brand,
+    .header-main,
+    .search-cont,
+    .sub-un-sub {
+      display: none !important;
+    }
+  }
+}
+
+.friend-li {
+  .friend-actions button {
+    line-height: 1 !important;
+    padding: 0;
+    margin: 0;
+    font-size: 1em;
+    border: none !important;
+  }
+}
+
+.no-touch {
+  #aside-content .nav-item:hover {
+    background-color: #fcf8e3;
+  }
+
+  .friend-li {
+    .friend-actions {
+       display: none;
+    }
+    &:hover {
+      .friend-actions {
+        display: block;
+      }
+    }
+  }
+
+  // Override hover for multis
+  #sidebar-multis {
+    .nav-item:hover {
+      background-color: unset;
+    }
+    .subnav .nav-item:hover {
+      background-color: #fcf8e3;
+    }
+  }
+}
