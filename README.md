@@ -1,6 +1,6 @@
 # reacddit
 
-This application consists two parts:
+This application consists of two parts:
 
 ### Server
 
@@ -8,10 +8,10 @@ The server is a simple oauth2 client run via koa2 used only to retrieve or refre
 
 ### Client
 
-The client is a reactjs app that handles all communication with Reddit from the browser. This app requires the oauth server to retrieve the token.
+The client is a React app that handles all communication with Reddit from the browser. This app requires the oauth server to retrieve the token.
 
 ### NGINX proxy setup.
-The easisest way to run both the server and client is to use nginx to proxy /api calls to the server. This is a simple setup to accomplish that:
+The easiest way to run both the server and client is to use NGINX to proxy /api calls to the server. This is a simple setup to accomplish that:
 
 ```
 server {
