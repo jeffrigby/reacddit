@@ -307,7 +307,7 @@ router.get("/api/callback", async (ctx, next) => {
       console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
       const accessToken = addExtraInfo(token);
       setSessAndCookie(accessToken, ctx);
-      ctx.redirect("/?login");
+      ctx.redirect(`${CLIENT_URL}/?login`);
       return;
     }
   } catch (exception) {
@@ -433,7 +433,7 @@ router.get("/api/logout", async (ctx, next) => {
   }
   ctx.session.token = null;
   ctx.cookies.set("token");
-  return ctx.redirect("/?logout");
+  return ctx.redirect(`${CLIENT_URL}/?logout`);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
