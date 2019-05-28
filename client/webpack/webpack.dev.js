@@ -28,7 +28,7 @@ module.exports = {
     watchContentBase: true,
     quiet: true,
     overlay: false,
-    public: commonPaths.publicDevPath,
+    public: commonPaths.publicPath,
     disableHostCheck: true,
     publicPath: '/',
     port: 3000,
