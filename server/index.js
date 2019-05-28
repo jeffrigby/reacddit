@@ -15,7 +15,7 @@ const {
   REDDIT_CLIENT_SECRET,
   REDDIT_CALLBACK_URI,
   REDDIT_SCOPE,
-  ACCESS_CONTROL,
+  CLIENT_URL,
   APP_KEY,
   SALT,
   SESSION_LENGTH_SECS,
@@ -35,8 +35,10 @@ const CONFIG = {
   overwrite: true /** (boolean) can overwrite or not (default true) */,
   httpOnly: true /** (boolean) httpOnly or not (default true) */,
   signed: true /** (boolean) signed or not (default true) */,
-  rolling: true /** (boolean) Force a session identifier cookie to be set on every response. The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
-  renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in. (default is false) */
+  rolling: true /** (boolean) Force a session identifier cookie to be set on every response.
+   The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
+  renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
+   (default is false) */
 };
 
 const oauth2 = require("simple-oauth2").create({
@@ -233,11 +235,7 @@ const app = new Koa();
 app.keys = [APP_KEY];
 app.use(session(CONFIG, app));
 app.use(async (ctx, next) => {
-  if (ACCESS_CONTROL) {
-    ACCESS_CONTROL.split(",").forEach(v => {
-      ctx.set("Access-Control-Allow-Origin", v);
-    });
-  }
+  ctx.set("Access-Control-Allow-Origin", CLIENT_URL);
   ctx.set("Access-Control-Allow-Methods", "GET");
   await next();
 });
