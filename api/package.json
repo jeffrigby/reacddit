@@ -1,7 +1,7 @@
 {
-  "name": "oauth2test",
+  "name": "reacddit_api",
   "version": "1.0.0",
-  "description": "Test for reddit oauth2 flow",
+  "description": "reacddit Oauth2 API",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -13,7 +13,7 @@
     "pm2-restart": "pm2 restart 'reacddit_api'"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "dotenv": "^8.0.0",
     "koa": "^2.6.2",

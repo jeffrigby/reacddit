@@ -1,5 +1,5 @@
 {
-  "name": "reacddit",
+  "name": "reacddit_client",
   "version": "1.0.0",
   "description": "A Reddit client built in reactjs.",
   "main": "index.js",
@@ -14,7 +14,7 @@
     "reddit"
   ],
   "author": "Jeff Rigby",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
     "babel-polyfill": "^6.26.0",
