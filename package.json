@@ -2,8 +2,6 @@
   "name": "reacddit",
   "version": "1.0.0",
   "description": "A Reddit client built in reactjs.",
-  "private": true,
-  "workspaces": ["api", "client"],
   "scripts": {
     "start":  "concurrently \"yarn run start-client\"  \"yarn run start-api\"",
     "start-client": "cd client && yarn start",

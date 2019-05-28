@@ -3,8 +3,6 @@ import cookies from 'js-cookie';
 
 const queryString = require('query-string');
 
-require('dotenv').config();
-
 /* eslint class-methods-use-this: ["error", { "exceptMethods": ["getToken"] }] */
 
 class RedditAPI {

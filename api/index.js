@@ -8,14 +8,14 @@ const rp = require("request-promise");
 const crypto = require("crypto");
 const logger = require("koa-logger");
 
-require("dotenv").config();
+require("dotenv").config({ path: '../.env' });
 
 const {
   REDDIT_CLIENT_ID,
   REDDIT_CLIENT_SECRET,
   REDDIT_CALLBACK_URI,
   REDDIT_SCOPE,
-  CLIENT_URL,
+  CLIENT_PATH,
   APP_KEY,
   SALT,
   SESSION_LENGTH_SECS,
@@ -235,7 +235,7 @@ const app = new Koa();
 app.keys = [APP_KEY];
 app.use(session(CONFIG, app));
 app.use(async (ctx, next) => {
-  ctx.set("Access-Control-Allow-Origin", CLIENT_URL);
+  ctx.set("Access-Control-Allow-Origin", CLIENT_PATH);
   ctx.set("Access-Control-Allow-Methods", "GET");
   await next();
 });
@@ -307,7 +307,7 @@ router.get("/api/callback", async (ctx, next) => {
       console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
       const accessToken = addExtraInfo(token);
       setSessAndCookie(accessToken, ctx);
-      ctx.redirect(`${CLIENT_URL}/?login`);
+      ctx.redirect(`${CLIENT_PATH}/?login`);
       return;
     }
   } catch (exception) {
@@ -433,7 +433,7 @@ router.get("/api/logout", async (ctx, next) => {
   }
   ctx.session.token = null;
   ctx.cookies.set("token");
-  return ctx.redirect(`${CLIENT_URL}/?logout`);
+  return ctx.redirect(`${CLIENT_PATH}/?logout`);
 });
 
 app.use(router.routes()).use(router.allowedMethods());

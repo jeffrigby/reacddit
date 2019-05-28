@@ -6,8 +6,6 @@ import isEmpty from 'lodash/isEmpty';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import Friends from './Friends';
 
-require('dotenv').config();
-
 const { API_PATH } = process.env;
 
 class NavigationPrimaryLinks extends React.PureComponent {
