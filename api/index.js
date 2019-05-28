@@ -8,7 +8,7 @@ const rp = require("request-promise");
 const crypto = require("crypto");
 const logger = require("koa-logger");
 
-require("dotenv").config({ path: '../.env' });
+require("dotenv").config();
 
 const {
   REDDIT_CLIENT_ID,
