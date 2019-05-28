@@ -4,7 +4,13 @@
   "description": "Test for reddit oauth2 flow",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "nodemon": "nodemon index.js",
+    "pm2-start": "pm2 start index.js --name reacddit_api",
+    "pm2-stop": "pm2 stop reacddit_api",
+    "pm2-log": "pm2 log reacddit_api",
+    "pm2-delete": "pm2 delete reacddit_api",
+    "pm2-restart": "pm2 restart 'reacddit_api'"
   },
   "author": "",
   "license": "ISC",
