@@ -176,6 +176,13 @@ class NavigationPrimaryLinks extends React.PureComponent {
             />
           </>
         )}
+        <NavigationGenericNavItem
+          to="https://github.com/jeffrigby/reacddit/issues"
+          text="Report Bug"
+          title="Bugs"
+          isStatic
+          iconClass="fas fa-bug"
+        />
       </ul>
     );
   }
