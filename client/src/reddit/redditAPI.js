@@ -3,6 +3,8 @@ import cookies from 'js-cookie';
 
 const queryString = require('query-string');
 
+require('dotenv').config();
+
 /* eslint class-methods-use-this: ["error", { "exceptMethods": ["getToken"] }] */
 
 class RedditAPI {
@@ -73,7 +75,8 @@ class RedditAPI {
 
     if (token === 'expired' || reset === true || token === null) {
       // token expired or forced refresh. Get a new one.
-      const getToken = await axios.get('/api/bearer');
+      const { API_PATH } = process.env;
+      const getToken = await axios.get(`${API_PATH}/bearer`);
       token = getToken.data.accessToken;
     }
 
