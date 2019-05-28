@@ -73,6 +73,9 @@ module.exports = {
   },
   plugins: [
     new webpack.ProgressPlugin(),
+    new webpack.DefinePlugin({
+      BUILDTIME: Date.now(),
+    }),
     new Dotenv(),
     new CopyPlugin([
       {

@@ -1,6 +1,8 @@
 import React from 'react';
 import * as serviceWorker from '../../../serviceWorker';
 
+/* global BUILDTIME */
+
 // I'm not sure how well this works.
 const reload = () => {
   if (caches) {
@@ -23,6 +25,8 @@ const ForceRefresh = () => {
       >
         <small>Load Newest Version</small>
       </button>
+      <div className="dropdown-divider" />
+      <div className="supersmall">Build: {BUILDTIME}</div>
     </div>
   );
 };
