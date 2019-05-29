@@ -1,31 +1,32 @@
-const http = require('http');
+const http = require("http");
 // const https = require('https');
-const Koa = require('koa');
-const Router = require('koa-router');
-const session = require('koa-session');
-const uuidv4 = require('uuid/v4');
-const rp = require('request-promise');
-const crypto = require('crypto');
-const logger = require('koa-logger');
+const Koa = require("koa");
+const Router = require("koa-router");
+const session = require("koa-session");
+const uuidv4 = require("uuid/v4");
+const rp = require("request-promise");
+const crypto = require("crypto");
+const logger = require("koa-logger");
 
-require('dotenv').config();
+require("dotenv").config();
 
 const {
   REDDIT_CLIENT_ID,
   REDDIT_CLIENT_SECRET,
   REDDIT_CALLBACK_URI,
   REDDIT_SCOPE,
+  CLIENT_PATH,
   APP_KEY,
   SALT,
   SESSION_LENGTH_SECS,
   PORT,
-  DEBUG,
+  DEBUG
 } = process.env;
 
-const debugEnabled = DEBUG === '1' || DEBUG === 'true' || false;
+const debugEnabled = DEBUG === "1" || DEBUG === "true" || false;
 
 const CONFIG = {
-  key: 'redditmedia:sess' /** (string) cookie key (default is koa:sess) */,
+  key: "redditmedia:sess" /** (string) cookie key (default is koa:sess) */,
   /** (number || 'session') maxAge in ms (default is 1 days) */
   /** 'session' will result in a cookie that expires when session/browser is closed */
   /** Warning: If a session cookie is stolen, this cookie will never expire */
@@ -34,22 +35,24 @@ const CONFIG = {
   overwrite: true /** (boolean) can overwrite or not (default true) */,
   httpOnly: true /** (boolean) httpOnly or not (default true) */,
   signed: true /** (boolean) signed or not (default true) */,
-  rolling: true /** (boolean) Force a session identifier cookie to be set on every response. The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
-  renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in. (default is false) */,
+  rolling: true /** (boolean) Force a session identifier cookie to be set on every response.
+   The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
+  renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
+   (default is false) */
 };
 
-const oauth2 = require('simple-oauth2').create({
+const oauth2 = require("simple-oauth2").create({
   client: {
     id: REDDIT_CLIENT_ID,
-    secret: REDDIT_CLIENT_SECRET,
+    secret: REDDIT_CLIENT_SECRET
   },
   auth: {
-    authorizeHost: 'https://www.reddit.com',
-    authorizePath: '/api/v1/authorize',
-    tokenHost: 'https://www.reddit.com',
-    tokenPath: '/api/v1/access_token',
-    revokePath: '/api/v1/revoke_token',
-  },
+    authorizeHost: "https://www.reddit.com",
+    authorizePath: "/api/v1/authorize",
+    tokenHost: "https://www.reddit.com",
+    tokenPath: "/api/v1/access_token",
+    revokePath: "/api/v1/revoke_token"
+  }
 });
 
 /**
@@ -61,10 +64,10 @@ const oauth2 = require('simple-oauth2').create({
 const encryptToken = token => {
   const iv = crypto.randomBytes(16);
   const tokenString = JSON.stringify(token);
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(SALT), iv);
+  const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(SALT), iv);
   let encrypted = cipher.update(tokenString);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return { iv: iv.toString('hex'), token: encrypted.toString('hex') };
+  return { iv: iv.toString("hex"), token: encrypted.toString("hex") };
 };
 
 /**
@@ -80,10 +83,10 @@ const decryptToken = encryptedToken => {
   ) {
     return null;
   }
-  const iv = Buffer.from(encryptedToken.iv, 'hex');
-  const encryptedText = Buffer.from(encryptedToken.token, 'hex');
+  const iv = Buffer.from(encryptedToken.iv, "hex");
+  const encryptedText = Buffer.from(encryptedToken.token, "hex");
   const decipher = crypto.createDecipheriv(
-    'aes-256-cbc',
+    "aes-256-cbc",
     Buffer.from(SALT),
     iv
   );
@@ -103,18 +106,18 @@ const setSessAndCookie = (token, ctx) => {
 
   const cookieStorage = {
     accessToken: token.access_token,
-    expires: token.expires,
+    expires: token.expires
   };
 
   const tokenJson = JSON.stringify(cookieStorage);
   const expireDate = new Date();
-  ctx.cookies.set('token', tokenJson, {
+  ctx.cookies.set("token", tokenJson, {
     maxAge: SESSION_LENGTH_SECS * 1000,
     expires: expireDate.setTime(
       expireDate.getTime() + SESSION_LENGTH_SECS * 1000
     ),
     httpOnly: false,
-    overwrite: true,
+    overwrite: true
   });
 };
 
@@ -132,7 +135,7 @@ const isExpired = token => {
   return token.expires - 300 <= now;
 };
 
-const isAuth = accessCode => accessCode.substring(0, 1) !== '-';
+const isAuth = accessCode => accessCode.substring(0, 1) !== "-";
 
 const addExtraInfo = token => {
   const now = Date.now() / 1000;
@@ -141,7 +144,7 @@ const addExtraInfo = token => {
   return {
     ...token,
     expires,
-    auth,
+    auth
   };
 };
 
@@ -156,32 +159,32 @@ const getAnonToken = async () => {
     const anonTokenParsed = addExtraInfo(anonToken);
     return anonTokenParsed;
   } catch (error) {
-    console.log('Access Token error', error.message);
+    console.log("Access Token error", error.message);
     return false;
   }
 };
 
 /**
- * Refresh an exisiting token with the refresh token
+ * Refresh an existing token with the refresh token
  * @param refreshToken
  * @returns {Promise<*>}
  */
 const getRefreshToken = async refreshToken => {
   const options = {
-    method: 'POST',
-    uri: 'https://www.reddit.com/api/v1/access_token',
+    method: "POST",
+    uri: "https://www.reddit.com/api/v1/access_token",
     form: {
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+      refresh_token: refreshToken
     },
     auth: {
       user: REDDIT_CLIENT_ID,
-      pass: REDDIT_CLIENT_SECRET,
+      pass: REDDIT_CLIENT_SECRET
     },
     headers: {
       /* 'content-type': 'application/x-www-form-urlencoded' */
       // Is set automatically
-    },
+    }
   };
   try {
     const newToken = await rp(options);
@@ -189,7 +192,7 @@ const getRefreshToken = async refreshToken => {
     const tokenParsed = addExtraInfo(tokenJson);
     return tokenParsed;
   } catch (error) {
-    console.log('Access Token error', error.message);
+    console.log("Access Token error", error.message);
     return false;
   }
 };
@@ -204,7 +207,7 @@ const getBearer = (accessToken, params = {}) => ({
   accessToken: accessToken.access_token,
   expires: accessToken.expires,
   auth: accessToken.auth,
-  ...params,
+  ...params
 });
 
 /**
@@ -215,12 +218,14 @@ const getBearer = (accessToken, params = {}) => ({
 const getLoginUrl = ctx => {
   const state = ctx.session.state || uuidv4();
   ctx.session.state = state;
+  const scope =
+    REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save";
   const authorizationUri = oauth2.authorizationCode.authorizeURL({
     redirect_uri: REDDIT_CALLBACK_URI,
-    scope: REDDIT_SCOPE.split(','),
+    scope: scope.split(","),
     state,
-    duration: 'permanent',
-    responseType: 'code',
+    duration: "permanent",
+    responseType: "code"
   });
   return authorizationUri;
 };
@@ -229,23 +234,28 @@ const app = new Koa();
 
 app.keys = [APP_KEY];
 app.use(session(CONFIG, app));
+app.use(async (ctx, next) => {
+  ctx.set("Access-Control-Allow-Origin", CLIENT_PATH);
+  ctx.set("Access-Control-Allow-Methods", "GET");
+  await next();
+});
 app.use(logger());
 
 const router = new Router();
 
 /**
- * Forwared to the reddit login page
+ * Forward to the Reddit login page
  */
-router.get('/api/login', (ctx, next) => {
+router.get("/api/login", (ctx, next) => {
   const authorizationUri = getLoginUrl(ctx);
   ctx.redirect(authorizationUri);
 });
 
 /**
- * Handle the reddit login once authenticated at reddit.com
+ * Handle the Reddit login once authenticated at Reddit.com
  * set the cookie and forward to the front page.
  */
-router.get('/api/callback', async (ctx, next) => {
+router.get("/api/callback", async (ctx, next) => {
   const { code, state, error } = ctx.query;
   const savedState = ctx.session.state;
   ctx.session.state = null;
@@ -255,7 +265,7 @@ router.get('/api/callback', async (ctx, next) => {
     message = `Code and/or state query strings missing.`;
     console.log(message);
     ctx.status = 500;
-    ctx.body = { status: 'error', message };
+    ctx.body = { status: "error", message };
     return;
   }
 
@@ -263,15 +273,15 @@ router.get('/api/callback', async (ctx, next) => {
     message = `ERROR RETRIEVING THE TOKEN. ${error}`;
     console.log(message);
     ctx.status = 500;
-    ctx.body = { status: 'error', message };
+    ctx.body = { status: "error", message };
     return;
   }
 
   if (!savedState) {
-    message = 'ERROR: SAVED STATE NOT FOUND.';
+    message = "ERROR: SAVED STATE NOT FOUND.";
     console.log(message);
     ctx.status = 500;
-    ctx.body = { status: 'error', message };
+    ctx.body = { status: "error", message };
     return;
   }
 
@@ -279,36 +289,36 @@ router.get('/api/callback', async (ctx, next) => {
     message = "ERROR: THE STATE DOESN'T MATCH.";
     console.log(message);
     ctx.status = 500;
-    ctx.body = { status: 'error', message };
+    ctx.body = { status: "error", message };
     return;
   }
 
   // Everything looks great. Let's try to get the code.
   const options = {
-    grant_type: 'authorization_code',
+    grant_type: "authorization_code",
     code,
-    redirect_uri: REDDIT_CALLBACK_URI,
+    redirect_uri: REDDIT_CALLBACK_URI
   };
 
   try {
     const token = await oauth2.authorizationCode.getToken(options);
     if (token.access_token) {
       // we are good.
-      console.log('TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.');
+      console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
       const accessToken = addExtraInfo(token);
       setSessAndCookie(accessToken, ctx);
-      ctx.redirect('/?login');
+      ctx.redirect(`${CLIENT_PATH}/?login`);
       return;
     }
   } catch (exception) {
     message = `ACCESS TOKEN ERROR ${exception.message}`;
     console.log(message);
     ctx.status = 500;
-    ctx.body = { status: 'error', message };
+    ctx.body = { status: "error", message };
     return;
   }
 
-  ctx.body = 'callback';
+  ctx.body = "callback";
 });
 
 /**
@@ -317,18 +327,18 @@ router.get('/api/callback', async (ctx, next) => {
  *  2. The exisitng token in the session is expired or force refresh is set (?refresh)
  *  3. Refresh the toekn if auth or get a new anon token.
  */
-router.get('/api/bearer', async (ctx, next) => {
+router.get("/api/bearer", async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
-  debugEnabled && console.log('SESSION', token);
+  debugEnabled && console.log("SESSION", token);
 
   const loginUrl = getLoginUrl(ctx);
 
   // No existing token. Get an anon token.
   if (!token) {
     const anonToken = await getAnonToken();
-    console.log('ANON TOKEN GRANTED');
+    console.log("ANON TOKEN GRANTED");
     setSessAndCookie(anonToken, ctx);
-    ctx.body = getBearer(anonToken, { type: 'new', loginUrl });
+    ctx.body = getBearer(anonToken, { type: "new", loginUrl });
     return;
   }
 
@@ -337,15 +347,15 @@ router.get('/api/bearer', async (ctx, next) => {
   // Check if it's expired.
   const tokenExpired = isExpired(token);
   if (tokenExpired) {
-    message = `TOKEN EXPIRED ${debugEnabled ? token.access_token : ''} `;
+    message = `TOKEN EXPIRED ${debugEnabled ? token.access_token : ""} `;
     console.log(message);
   }
 
-  // Froce refresh?
+  // Force refresh?
   const forceRefresh = ctx.query.refresh !== undefined;
   if (forceRefresh) {
     message = `FORCED REFRESH IS TRUE ${
-      debugEnabled ? token.access_token : ''
+      debugEnabled ? token.access_token : ""
     }`;
     console.log(message);
   }
@@ -353,12 +363,12 @@ router.get('/api/bearer', async (ctx, next) => {
   // Token is not expired and no forced refresh.
   if (!tokenExpired && !forceRefresh) {
     const returnBearer = token.auth
-      ? getBearer(token, { type: 'cached' })
-      : getBearer(token, { type: 'cached', loginUrl });
+      ? getBearer(token, { type: "cached" })
+      : getBearer(token, { type: "cached", loginUrl });
 
     console.log(
       `TOKEN NOT EXPIRED. RETURN AS IS ${
-        debugEnabled ? token.access_token : ''
+        debugEnabled ? token.access_token : ""
       }`
     );
     ctx.body = returnBearer;
@@ -369,22 +379,22 @@ router.get('/api/bearer', async (ctx, next) => {
     const refreshedTokenResult = await getRefreshToken(refreshToken);
     const newToken = {
       ...refreshedTokenResult,
-      refresh_token: refreshToken,
+      refresh_token: refreshToken
     };
 
     setSessAndCookie(newToken, ctx);
 
-    const returnBody = getBearer(newToken, { type: 'refresh' });
+    const returnBody = getBearer(newToken, { type: "refresh" });
     ctx.body = returnBody;
 
     newToken.refresh_token = token.refresh_token;
 
     if (tokenExpired) {
-      message = 'TOKEN EXPIRED. NEW TOKEN GRANTED';
+      message = "TOKEN EXPIRED. NEW TOKEN GRANTED";
     } else if (forceRefresh) {
-      message = 'FORCED REFRESH. NEW TOKEN GRANTED';
+      message = "FORCED REFRESH. NEW TOKEN GRANTED";
     } else {
-      message = '????';
+      message = "????";
     }
 
     if (debugEnabled) {
@@ -394,10 +404,10 @@ router.get('/api/bearer', async (ctx, next) => {
     }
   } else {
     const anonToken = await getAnonToken();
-    console.log('REFRESH ANON TOKEN GRANTED');
+    console.log("REFRESH ANON TOKEN GRANTED");
     setSessAndCookie(anonToken, ctx);
-    ctx.body = getBearer(anonToken, { type: 'newanon', loginUrl });
-    message = 'ANON EXPIRED or FORCED & REFRESH TOKEN GRANTED';
+    ctx.body = getBearer(anonToken, { type: "newanon", loginUrl });
+    message = "ANON EXPIRED or FORCED & REFRESH TOKEN GRANTED";
     if (debugEnabled) {
       console.log(message, anonToken.access_token);
     } else {
@@ -406,7 +416,7 @@ router.get('/api/bearer', async (ctx, next) => {
   }
 });
 
-router.get('/api/logout', async (ctx, next) => {
+router.get("/api/logout", async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
   if (token) {
     const accessToken = oauth2.accessToken.create(token);
@@ -415,15 +425,15 @@ router.get('/api/logout', async (ctx, next) => {
       // Revokes both tokens, refresh token is only revoked if the access_token is properly revoked
       await accessToken.revokeAll();
     } catch (error) {
-      console.log('ERROR REVOKING TOKEN: ', error.message);
+      console.log("ERROR REVOKING TOKEN: ", error.message);
     }
-    console.log('TOKEN DETROYED');
+    console.log("TOKEN DETROYED");
   } else {
-    console.log('TOKEN NOT FOUND');
+    console.log("TOKEN NOT FOUND");
   }
   ctx.session.token = null;
-  ctx.cookies.set('token');
-  return ctx.redirect('/?logout');
+  ctx.cookies.set("token");
+  return ctx.redirect(`${CLIENT_PATH}/?logout`);
 });
 
 app.use(router.routes()).use(router.allowedMethods());

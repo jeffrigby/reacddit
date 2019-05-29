@@ -6,6 +6,8 @@ import isEmpty from 'lodash/isEmpty';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import Friends from './Friends';
 
+const { API_PATH } = process.env;
+
 class NavigationPrimaryLinks extends React.PureComponent {
   lastKeyPressed = null;
 
@@ -69,7 +71,9 @@ class NavigationPrimaryLinks extends React.PureComponent {
 
       switch (pressedKey) {
         case 'L': // shift-L
-          window.location.href = me.name ? '/api/logout' : '/api/login';
+          window.location.href = me.name
+            ? `${API_PATH}/logout`
+            : `${API_PATH}/login`;
           break;
         default:
           break;
@@ -109,7 +113,7 @@ class NavigationPrimaryLinks extends React.PureComponent {
       <ul className="nav flex-column">
         {!me.name && (
           <NavigationGenericNavItem
-            to="/api/login"
+            to={`${API_PATH}/login`}
             text="Reddit Login"
             title="Login to reddit to see your subreddits. ⇧L"
             isStatic
@@ -164,7 +168,7 @@ class NavigationPrimaryLinks extends React.PureComponent {
               iconClass="far fa-bookmark"
             />
             <NavigationGenericNavItem
-              to="/api/logout"
+              to={`${API_PATH}/logout`}
               text="Logout"
               title="Logout"
               isStatic
@@ -172,6 +176,13 @@ class NavigationPrimaryLinks extends React.PureComponent {
             />
           </>
         )}
+        <NavigationGenericNavItem
+          to="https://github.com/jeffrigby/reacddit/issues"
+          text="Report Bug"
+          title="Bugs"
+          isStatic
+          iconClass="fas fa-bug"
+        />
       </ul>
     );
   }

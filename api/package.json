@@ -1,0 +1,29 @@
+{
+  "name": "reacddit_api",
+  "version": "1.0.0",
+  "description": "reacddit Oauth2 API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "nodemon": "nodemon index.js",
+    "pm2-start": "pm2 start index.js --name reacddit_api",
+    "pm2-stop": "pm2 stop reacddit_api",
+    "pm2-log": "pm2 log reacddit_api",
+    "pm2-delete": "pm2 delete reacddit_api",
+    "pm2-restart": "pm2 restart 'reacddit_api'"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.0.0",
+    "koa": "^2.6.2",
+    "koa-logger": "^3.2.0",
+    "koa-router": "^7.4.0",
+    "koa-session": "^5.10.0",
+    "querystring": "^0.2.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "simple-oauth2": "^2.2.1",
+    "uuid": "^3.3.2"
+  }
+}

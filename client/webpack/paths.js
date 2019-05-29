@@ -2,7 +2,7 @@ const path = require('path');
 
 require('dotenv').config();
 
-const { PROD_PUBLIC_PATH, DEV_PUBLIC_PATH } = process.env;
+const { CLIENT_PATH } = process.env;
 
 function ensureSlash(inputPath, needsSlash) {
   const hasSlash = inputPath.endsWith('/');
@@ -29,6 +29,5 @@ module.exports = {
   cssFolder: 'static/css',
   jsFolder: 'static/js',
   webapp: 'static/webapp',
-  publicProdPath: ensureSlash(PROD_PUBLIC_PATH, true),
-  publicDevPath: ensureSlash(DEV_PUBLIC_PATH, true),
+  publicPath: ensureSlash(CLIENT_PATH, true),
 };

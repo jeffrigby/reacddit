@@ -1,0 +1,22 @@
+{
+  "name": "reacddit",
+  "version": "1.0.0",
+  "description": "A Reddit client built in reactjs.",
+  "scripts": {
+    "start":  "concurrently \"yarn run start-client\"  \"yarn run start-api\"",
+    "start-client": "cd client && yarn start",
+    "build-client": "cd client && yarn run build",
+    "start-api": "cd api && yarn start"
+  },
+  "keywords": [
+    "es6",
+    "react",
+    "redux",
+    "reddit"
+  ],
+  "author": "Jeff Rigby",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^4.1.0"
+  }
+}
