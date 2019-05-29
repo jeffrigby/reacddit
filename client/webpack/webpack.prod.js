@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -8,6 +9,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 const commonPaths = require('./paths');
 const CreateFileWebpack = require('create-file-webpack');
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+
+const buildTime = Date.now();
 
 module.exports = {
   mode: 'production',
@@ -85,6 +88,9 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
+    new webpack.DefinePlugin({
+      BUILDTIME: buildTime,
+    }),
     new WorkboxWebpackPlugin.GenerateSW({
       cacheId: 'reacddit',
       cleanupOutdatedCaches: true,
@@ -114,7 +120,7 @@ module.exports = {
     new CreateFileWebpack({
       path: commonPaths.outputPath,
       fileName: 'build.json',
-      content: JSON.stringify({ version: Date.now() }),
+      content: JSON.stringify({ buildTime }),
     }),
 
     new OptimizeCSSAssetsPlugin({}),
