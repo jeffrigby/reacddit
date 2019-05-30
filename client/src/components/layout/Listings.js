@@ -149,8 +149,11 @@ class Listings extends React.Component {
     if (listType === 'search') listingType = 's';
     // if (listType === 'duplicates') listingType = 'd';
 
+    // Set to best if it's the front page.
+    const getSort = target ? sort || qs.sort || 'hot' : 'best';
+
     const newFilter = {
-      sort: sort || qs.sort || 'hot',
+      sort: getSort,
       target: target || 'mine',
       multi: multi === 'm' || false,
       userType: userType || '',
