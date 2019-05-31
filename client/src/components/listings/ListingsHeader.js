@@ -77,7 +77,6 @@ const ListingsHeader = ({ about, filter, cachedSub }) => {
 
   const description = cachedSub.public_description || about.public_description;
   const subhead = cachedSub.title || about.title;
-  console.log(cachedSub);
 
   return (
     <div className="list-group-item listings-header">
@@ -126,7 +125,9 @@ const filterSub = (subs, filter) => {
 
   const { subreddits } = subs;
   const { target } = filter;
-  return target && subreddits[target] ? subreddits[target] : {};
+  return target && subreddits[target.toLowerCase()]
+    ? subreddits[target.toLowerCase()]
+    : {};
 };
 
 ListingsHeader.propTypes = {
