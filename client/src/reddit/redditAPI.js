@@ -342,6 +342,33 @@ class RedditAPI {
   }
 
   /**
+   * Add a subreddit to a multi
+   * @param multiPath the full path of the multi
+   * @param srName the subreddit name
+   * @returns {Promise<void>}
+   */
+  async multiAddSubreddit(multiPath, srName) {
+    const cleanPath = multiPath.replace(/(^\/|\/$)/g, '');
+    const url = `/api/multi/${cleanPath}/r/${srName}`;
+    const data = { model: JSON.stringify({ name: srName }) };
+    return this.redditAPI.put(url, queryString.stringify(data), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+  }
+
+  /**
+   * Remove a subreddit to a multi
+   * @param multiPath the full path of the multi
+   * @param srName the subreddit name
+   * @returns {Promise<void>}
+   */
+  async multiRemoveSubreddit(multiPath, srName) {
+    const cleanPath = multiPath.replace(/(^\/|\/$)/g, '');
+    const url = `/api/multi/${cleanPath}/r/${srName}`;
+    return this.redditAPI.delete(url);
+  }
+
+  /**
    * Get the users subreddits
    * @param where - the type of subreddits
    *   subscriber|contributer|moderator|streams default to /subreddits/mine

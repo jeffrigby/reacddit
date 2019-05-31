@@ -48,7 +48,7 @@ class MultiRedditsItem extends React.PureComponent {
           </span>
           <span>
             <button
-              className="btn btn-link btn-sm m-0 p-0 border-0"
+              className="btn btn-link btn-sm m-0 p-0 pl-2 border-0"
               onClick={this.hideShowSubs}
               type="button"
             >

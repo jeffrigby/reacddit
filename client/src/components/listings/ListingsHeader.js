@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import SubUnSub from './SubUnSub';
+import MultiToggle from './MultiToggle';
 
 const queryString = require('query-string/index');
 
@@ -74,6 +75,9 @@ const ListingsHeader = ({ about, filter }) => {
         </div>
         <div className="listing-actions">
           {listType === 'r' && target !== 'mine' && <SubUnSub />}
+          {listType === 'r' && target !== 'mine' && (
+            <MultiToggle srName={target} />
+          )}
         </div>
       </div>
       {subInfo && (

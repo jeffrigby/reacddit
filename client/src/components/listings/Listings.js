@@ -478,7 +478,7 @@ class Listings extends React.Component {
             </div>
           )}
           {entries}
-          <div className="footer-status">{footerStatus}</div>
+          <div className="footer-status p-2">{footerStatus}</div>
         </div>
         {settings.debug && (
           <PostsDebug
