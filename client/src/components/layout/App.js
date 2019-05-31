@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Navigation from './Navigation';
 import Header from './Header';
-import Listings from './Listings';
+import Listings from '../listings/Listings';
 import Help from './Help';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import { siteSettings } from '../../redux/actions/misc';

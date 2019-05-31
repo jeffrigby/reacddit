@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import SubUnSub from '../header/SubUnSub';
+import SubUnSub from './SubUnSub';
 
-const queryString = require('query-string');
+const queryString = require('query-string/index');
 
 const ListingsHeader = ({ about, filter }) => {
   const { listType, target, multi, user } = filter;

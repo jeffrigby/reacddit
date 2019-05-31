@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-const queryString = require('query-string');
+const queryString = require('query-string/index');
 
 const PostsDebug = ({
   listingsFilter,
