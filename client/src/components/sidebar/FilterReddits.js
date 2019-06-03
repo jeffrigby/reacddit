@@ -16,7 +16,7 @@ class FilterReddits extends React.Component {
   shouldComponentUpdate(nextProps, nextState, nextContext) {
     // I don't understand why this is needed. But it tries to re-render
     // constantly with a pureComponent. Something with the subredditUrls
-    // but they are idenical.
+    // but they are identical.
 
     const { filter, subredditUrls } = this.props;
 
