@@ -65,7 +65,13 @@ const Content = ({ content, name, link, load }) => {
         break;
     }
   } else {
-    return null;
+    return (
+      <div className="content">
+        <div className="media-cont">
+          <div className="embed-responsive embed-responsive-16by9 black-bg" />
+        </div>
+      </div>
+    );
   }
   return <div className="content">{contentRendered}</div>;
 };

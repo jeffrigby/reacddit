@@ -33,4 +33,4 @@ PostSave.propTypes = {
   bearer: PropTypes.object.isRequired,
 };
 
-export default PostSave;
+export default React.memo(PostSave);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
@@ -6,6 +6,25 @@ import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
 const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
+  const multiRef = React.createRef();
+
+  useEffect(() => {
+    const disableClose = e => {
+      if (!e.target.classList.contains('multi-toggle-input')) {
+        e.stopPropagation();
+      }
+    };
+
+    const multiMenu = multiRef.current;
+    if (multiMenu) {
+      multiMenu.addEventListener('click', disableClose);
+      return () => {
+        multiMenu.removeEventListener('click', disableClose);
+      };
+    }
+    return () => {};
+  });
+
   if (
     isEmpty(about) ||
     redditBearer.status !== 'auth' ||
@@ -51,7 +70,7 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
       <div key={key} className="form-check dropdown-item small">
         <label className="form-check-label" htmlFor={key}>
           <input
-            className="form-check-input"
+            className="form-check-input multi-toggle-input"
             type="checkbox"
             id={key}
             defaultChecked={checked}
@@ -76,7 +95,9 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
       >
         Multis <i className="fas fa-caret-down" />
       </button>
-      <div className="dropdown-menu dropdown-menu-right">{menuItems}</div>
+      <div className="dropdown-menu dropdown-menu-right" ref={multiRef}>
+        {menuItems}
+      </div>
     </div>
   );
 };

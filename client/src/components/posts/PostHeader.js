@@ -127,4 +127,4 @@ PostHeader.propTypes = {
   expand: PropTypes.bool.isRequired,
 };
 
-export default PostHeader;
+export default React.memo(PostHeader);

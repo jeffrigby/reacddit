@@ -25,4 +25,4 @@ setTimeout(() => {
       .getElementById('force-refresh')
       .addEventListener('onclick', refresh);
   } catch (e) {}
-}, 5000);
+}, 10000);
