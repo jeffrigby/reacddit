@@ -242,4 +242,4 @@ const mapStateToProps = state => ({
 export default connect(
   mapStateToProps,
   {}
-)(VideoComp);
+)(React.memo(VideoComp));

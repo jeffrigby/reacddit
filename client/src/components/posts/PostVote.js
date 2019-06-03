@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const PostVote = props => {
-  const { bearer, likes, ups, voteUp, voteDown } = props;
+const PostVote = ({ bearer, likes, ups, voteUp, voteDown }) => {
   const disabled = bearer.status !== 'auth';
   const upClass = likes === true ? 'fas' : 'far';
   const downClass = likes === false ? 'fas' : 'far';
@@ -43,4 +42,4 @@ PostVote.defaultProps = {
   likes: null,
 };
 
-export default PostVote;
+export default React.memo(PostVote);
