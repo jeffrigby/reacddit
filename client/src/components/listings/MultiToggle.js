@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
@@ -6,6 +6,23 @@ import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
 const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
+  const multiRef = React.createRef();
+
+  useEffect(() => {
+    const disableClose = e => {
+      e.stopPropagation();
+    };
+
+    const multiMenu = multiRef.current;
+    if (multiMenu) {
+      multiMenu.addEventListener('click', disableClose);
+      return () => {
+        multiMenu.removeEventListener('click', disableClose);
+      };
+    }
+    return () => {};
+  });
+
   if (
     isEmpty(about) ||
     redditBearer.status !== 'auth' ||
@@ -76,7 +93,9 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
       >
         Multis <i className="fas fa-caret-down" />
       </button>
-      <div className="dropdown-menu dropdown-menu-right">{menuItems}</div>
+      <div className="dropdown-menu dropdown-menu-right" ref={multiRef}>
+        {menuItems}
+      </div>
     </div>
   );
 };
