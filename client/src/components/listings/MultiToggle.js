@@ -10,7 +10,9 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
 
   useEffect(() => {
     const disableClose = e => {
-      e.stopPropagation();
+      if (!e.target.classList.contains('multi-toggle-input')) {
+        e.stopPropagation();
+      }
     };
 
     const multiMenu = multiRef.current;
@@ -68,7 +70,7 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
       <div key={key} className="form-check dropdown-item small">
         <label className="form-check-label" htmlFor={key}>
           <input
-            className="form-check-input"
+            className="form-check-input multi-toggle-input"
             type="checkbox"
             id={key}
             defaultChecked={checked}
