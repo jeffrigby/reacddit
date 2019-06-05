@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import '../../../styles/video.scss';
+import VideoProgreeBar from './VideoProgressBar';
 
 const classNames = require('classnames');
 
@@ -163,6 +164,7 @@ const VideoComp = ({ content, load, link, autoplay }) => {
           </div>
         </div>
       </div>
+      <VideoProgreeBar videoRef={videoRef} />
       {load && (
         <div className="video-controls m-0 p-0">
           <button
