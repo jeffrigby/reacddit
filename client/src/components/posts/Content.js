@@ -65,6 +65,10 @@ const Content = ({ content, name, link, load }) => {
         break;
     }
   } else {
+    if (resolvedContent.js === false) {
+      return null;
+    }
+
     return (
       <div className="content">
         <div className="media-cont">
