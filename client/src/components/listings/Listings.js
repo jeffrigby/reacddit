@@ -17,7 +17,7 @@ import ListingsHeader from './ListingsHeader';
 
 const queryString = require('query-string');
 
-class Listings extends React.PureComponent {
+class Listings extends React.Component {
   static nextEntry(focused) {
     if (isNil(focused)) return;
 
