@@ -151,7 +151,6 @@ class Listings extends React.Component {
 
     // Set to best if it's the front page.
     const getSort = sort || qs.sort || (target ? 'hot' : 'best');
-    console.log(target, getSort, sort, qs.sort);
 
     const newFilter = {
       sort: getSort,
