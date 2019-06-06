@@ -4,9 +4,10 @@ import { connect } from 'react-redux';
 import { redditFetchFriends } from '../../redux/actions/reddit';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
+import { menus } from '../../redux/actions/misc';
 
-const Friends = ({ redditFriends, getFriends }) => {
-  const [showFriends, toggleShowFriends] = useState(false);
+const Friends = ({ redditFriends, getFriends, showMenu, setMenuSettings }) => {
+  const [showFriends, toggleShowFriends] = useState(showMenu);
   useEffect(() => {
     if (showFriends) {
       // Get a fresh listing.
@@ -63,6 +64,11 @@ const Friends = ({ redditFriends, getFriends }) => {
     ? 'fas fa-caret-down menu-caret'
     : 'fas fa-caret-left menu-caret';
 
+  const toggleMenu = () => {
+    toggleShowFriends(!showFriends);
+    setMenuSettings({ friends: !showFriends });
+  };
+
   return (
     <>
       <li className="nav-item">
@@ -80,7 +86,7 @@ const Friends = ({ redditFriends, getFriends }) => {
             <button
               className="btn btn-link btn-sm m-0 p-0 border-0"
               type="button"
-              onClick={() => toggleShowFriends(!showFriends)}
+              onClick={toggleMenu}
             >
               <i className={caretClass} />
             </button>
@@ -99,17 +105,23 @@ const Friends = ({ redditFriends, getFriends }) => {
 Friends.propTypes = {
   redditFriends: PropTypes.object.isRequired,
   getFriends: PropTypes.func.isRequired,
+  showMenu: PropTypes.bool,
+  setMenuSettings: PropTypes.func.isRequired,
 };
 
-Friends.defaultProps = {};
+Friends.defaultProps = {
+  showMenu: false,
+};
 
 const mapStateToProps = state => ({
   redditFriends: state.redditFriends,
+  showMenu: state.menus.friends,
 });
 
 export default connect(
   mapStateToProps,
   {
     getFriends: redditFetchFriends,
+    setMenuSettings: menus,
   }
 )(Friends);

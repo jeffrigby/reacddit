@@ -29,3 +29,16 @@ export function siteSettings(
       return state;
   }
 }
+
+export function menus(state = {}, action) {
+  switch (action.type) {
+    case 'MENUS':
+      return {
+        ...state,
+        ...action.menuToggle,
+      };
+
+    default:
+      return state;
+  }
+}

@@ -6,6 +6,7 @@ import NavigationPrimaryLinks from '../sidebar/NavigationPrimaryLinks';
 import NavigationSubReddits from '../sidebar/NavigationSubreddits';
 import SearchRedditNames from '../sidebar/SearchRedditNames';
 import '../../styles/sidebar.scss';
+import NavigationAccount from '../sidebar/NavigationAccount';
 
 const Navigation = ({ redditBearer, subredditsFilter }) => {
   const closeMenuIfOpen = () => {
@@ -32,6 +33,7 @@ const Navigation = ({ redditBearer, subredditsFilter }) => {
   return (
     <div className="w-100">
       {!hideExtras && <NavigationPrimaryLinks />}
+      {loggedIn && !hideExtras && <NavigationAccount />}
       {!hideExtras && <div className="nav-divider" />}
       {loggedIn && !hideExtras && <MultiReddits />}
       <NavigationSubReddits />

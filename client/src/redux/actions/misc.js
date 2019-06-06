@@ -11,3 +11,10 @@ export function siteSettings(setting) {
     setting,
   };
 }
+
+export function menus(menuToggle) {
+  return {
+    type: 'MENUS',
+    menuToggle,
+  };
+}

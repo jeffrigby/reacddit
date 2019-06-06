@@ -4,7 +4,6 @@ import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import Friends from './Friends';
 
 const { API_PATH } = process.env;
 
@@ -30,30 +29,6 @@ class NavigationPrimaryLinks extends React.PureComponent {
     if (!disableHotkeys) {
       // Navigation key commands
       if (this.lastKeyPressed === 'g') {
-        // Logged in only
-        if (me.name) {
-          const { name } = me;
-          switch (pressedKey) {
-            case 'f':
-              props.push('/r/friends');
-              break;
-            case 'u':
-              props.push(`/user/${name}/upvoted`);
-              break;
-            case 'd':
-              props.push(`/user/${name}/downvoted`);
-              break;
-            case 'b':
-              props.push(`/user/${name}/submitted`);
-              break;
-            case 's':
-              props.push(`/user/${name}/saved`);
-              break;
-            default:
-              break;
-          }
-        }
-
         switch (pressedKey) {
           case 'h':
             props.push('/');
@@ -140,42 +115,6 @@ class NavigationPrimaryLinks extends React.PureComponent {
           onClickAction={this.randomSubPush}
           isStatic
         />
-        {me.name && (
-          <>
-            <Friends />
-            <NavigationGenericNavItem
-              to={`/user/${me.name}/submitted/${currentSort}`}
-              text="Submitted"
-              title="Show My Submitted Posts"
-              iconClass="far fa-file"
-            />
-            <NavigationGenericNavItem
-              to={`/user/${me.name}/upvoted/${currentSort}`}
-              text="Upvoted"
-              title="Show My Upvoted Posts"
-              iconClass="far fa-thumbs-up"
-            />
-            <NavigationGenericNavItem
-              to={`/user/${me.name}/downvoted/${currentSort}`}
-              text="Downvoted"
-              title="Show My Downvoted Posts"
-              iconClass="far fa-thumbs-down"
-            />
-            <NavigationGenericNavItem
-              to={`/user/${me.name}/saved/${currentSort}`}
-              text="Saved"
-              title="Show My Saved Posts"
-              iconClass="far fa-bookmark"
-            />
-            <NavigationGenericNavItem
-              to={`${API_PATH}/logout`}
-              text="Logout"
-              title="Logout"
-              isStatic
-              iconClass="fas fa-sign-out-alt"
-            />
-          </>
-        )}
         <NavigationGenericNavItem
           to="https://github.com/jeffrigby/reacddit/issues"
           text="Report Bug"
