@@ -249,7 +249,8 @@ class Search extends React.PureComponent {
                 onClick={this.searchTarget}
                 disabled={!search}
               >
-                Search in /r/{listingsFilter.target} ⏎
+                Search in /r/{listingsFilter.target}{' '}
+                <span className="no-touch">⏎</span>
               </button>
             )}
             <button
@@ -258,7 +259,7 @@ class Search extends React.PureComponent {
               onClick={this.searchEverywhere}
               disabled={!search}
             >
-              Search Everywhere ⇧⏎
+              Search Everywhere <span className="no-touch">⇧⏎</span>
             </button>
           </div>
         )}
