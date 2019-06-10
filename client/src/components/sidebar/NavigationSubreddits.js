@@ -7,8 +7,13 @@ import {
   subredditsFetchLastUpdated,
 } from '../../redux/actions/subreddits';
 import NavigationItem from './NavigationItem';
+import { setMenuStatus, getMenuStatus } from '../../common';
 
 class NavigationSubReddits extends React.PureComponent {
+  state = {
+    showMenu: getMenuStatus('subreddits', true),
+  };
+
   checkLastUpdated = null;
 
   componentDidMount() {
@@ -61,6 +66,12 @@ class NavigationSubReddits extends React.PureComponent {
     this.reloadSubreddits();
   };
 
+  toggleMenu = () => {
+    const { showMenu } = this.state;
+    setMenuStatus('subreddits', !showMenu);
+    this.setState({ showMenu: !showMenu });
+  };
+
   /**
    * Generate the subreddit nav items.
    * @param subreddits
@@ -68,6 +79,10 @@ class NavigationSubReddits extends React.PureComponent {
    */
   generateNavItems(subreddits) {
     const { filter } = this.props;
+    const { showMenu } = this.state;
+    if (filter.active && !isEmpty(filter.filterText) && !showMenu) {
+      this.setState({ showMenu: true });
+    }
 
     const navigationItems = [];
 
@@ -86,6 +101,11 @@ class NavigationSubReddits extends React.PureComponent {
 
   render() {
     const { subreddits, filteredSubreddits } = this.props;
+    const { showMenu } = this.state;
+
+    const caretClass = showMenu
+      ? 'fas fa-caret-down menu-caret'
+      : 'fas fa-caret-right menu-caret';
 
     let content;
     if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
@@ -136,7 +156,13 @@ class NavigationSubReddits extends React.PureComponent {
     return (
       <div id="sidebar-subreddits">
         <div className="sidebar-heading d-flex text-muted">
-          <span className="mr-auto">Subreddits</span>
+          <span
+            className="mr-auto show-cursor"
+            onClick={this.toggleMenu}
+            role="presentation"
+          >
+            <i className={caretClass} /> Subreddits
+          </span>
           <span>
             <i
               className={spinnerClass}
@@ -148,7 +174,7 @@ class NavigationSubReddits extends React.PureComponent {
             />
           </span>
         </div>
-        {content}
+        {showMenu && content}
       </div>
     );
   }
