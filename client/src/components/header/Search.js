@@ -89,11 +89,11 @@ class Search extends React.PureComponent {
 
   blurSearch = () => {
     const { setDisableHotkeys } = this.props;
-    this.setState({ focused: false });
-    setDisableHotkeys(false);
-    // @TODO I have no idea why this is needed. Doesn't work w/o it.
+    // delayed to allow button onclicks to trigger.
     setTimeout(() => {
       document.body.classList.remove('search-active');
+      this.setState({ focused: false });
+      setDisableHotkeys(false);
     }, 250);
   };
 
@@ -102,75 +102,117 @@ class Search extends React.PureComponent {
     this.searchInput.current.blur();
   };
 
-  processSearch = e => {
-    const { listingsFilter, pushUrl, location } = this.props;
+  getCurrentSearchSort = () => {
+    const { location } = this.props;
+    const currentSearch = queryString.parse(location.search);
+    const qs = {};
+    if (currentSearch.sort !== undefined) {
+      qs.sort = currentSearch.sort.match(/^(relevance|new|top)$/)
+        ? currentSearch.sort
+        : 'relevance';
+
+      qs.t = currentSearch.t || null;
+    } else {
+      qs.sort = 'relevance';
+    }
+    return qs;
+  };
+
+  getMainSearchURL = q => {
+    const currentSearch = this.getCurrentSearchSort();
+    const qs = { ...currentSearch, q };
+    const qsString = queryString.stringify(qs);
+    return `/search?${qsString}`;
+  };
+
+  getTargetUrl = () => {
+    const { listingsFilter } = this.props;
     const { listType, target, user, multi } = listingsFilter;
+    if (
+      (listType === 'r' || (listType === 's' && !multi)) &&
+      target !== 'mine'
+    ) {
+      return `/r/${target}`;
+    }
+
+    if ((listType === 'm' || (listType === 's' && multi)) && user !== 'me') {
+      return `/user/${target}/m/${target}`;
+    }
+    if ((listType === 'm' || (listType === 's' && multi)) && user === 'me') {
+      return `/me/m/${target}`;
+    }
+    return '';
+  };
+
+  searchTarget = () => {
+    const { pushUrl } = this.props;
+
+    const q = this.searchInput.current.value;
+    if (!q) {
+      return;
+    }
+    const url = this.getMainSearchURL(q);
+    const targetUrl = this.getTargetUrl();
+    const finalUrl = `${targetUrl}${url}`;
+    pushUrl(finalUrl);
+    this.searchInput.current.blur();
+  };
+
+  searchEverywhere = () => {
+    const { pushUrl } = this.props;
+    const q = this.searchInput.current.value;
+    if (!q) {
+      return;
+    }
+    const url = this.getMainSearchURL(q);
+    pushUrl(url);
+    this.searchInput.current.blur();
+  };
+
+  processSearch = e => {
     const q = e.target.value;
     if (!q) {
       return;
     }
 
     if (e.keyCode === 13) {
-      const currentSearch = queryString.parse(location.search);
-      const qs = { q };
-
-      if (currentSearch.sort !== undefined) {
-        qs.sort = currentSearch.sort.match(/^(relevance|new|top)$/)
-          ? currentSearch.sort
-          : 'relevance';
-
-        qs.t = currentSearch.t || null;
-      } else {
-        qs.sort = 'relevance';
-      }
-
-      let url = '';
       if (!e.shiftKey) {
-        if (
-          (listType === 'r' || (listType === 's' && !multi)) &&
-          target !== 'mine'
-        ) {
-          url = `/r/${target}`;
-        } else if (
-          (listType === 'm' || (listType === 's' && multi)) &&
-          user !== 'me'
-        ) {
-          url = `/user/${target}/m/${target}`;
-        } else if (
-          (listType === 'm' || (listType === 's' && multi)) &&
-          user === 'me'
-        ) {
-          url = `/me/m/${target}`;
-        }
+        this.searchTarget();
+      } else {
+        this.searchEverywhere();
       }
-
-      const qsString = queryString.stringify(qs);
-      url += `/search?${qsString}`;
-
-      pushUrl(url);
-      this.searchInput.current.blur();
     }
   };
 
   render() {
     const { listingsFilter } = this.props;
     const { focused, search } = this.state;
+    const { target, listType, multi } = listingsFilter;
 
     let placeholder = 'search Reddit';
     let global = true;
 
-    if (listingsFilter.listType === 'r' && listingsFilter.target !== 'mine') {
-      placeholder = `search in /r/${listingsFilter.target}`;
+    if (
+      (listType === 'r' && target !== 'mine') ||
+      (listType === 's' && target !== 'mine' && !multi)
+    ) {
+      placeholder = `search in /r/${target}`;
       global = false;
-    } else if (listingsFilter.listType === 'm') {
-      placeholder = `search in /m/${listingsFilter.target}`;
+    } else if (
+      listType === 'm' ||
+      (listType === 's' && target !== 'mine' && multi)
+    ) {
+      placeholder = `search in /m/${target}`;
       global = false;
     }
 
-    const title =
-      listingsFilter.listType === 'r' || listingsFilter.listType === 'm'
-        ? 'Press shift-return to search all of reddit'
-        : '';
+    const showTargetSearch =
+      listType === 'r' ||
+      listType === 'm' ||
+      (listType === 's' && target !== 'mine');
+    const title = showTargetSearch
+      ? 'Press shift-return to search all of reddit'
+      : '';
 
     const searchClassName = focused ? 'search-focused m-0' : 'm-0';
 
@@ -200,7 +242,24 @@ class Search extends React.PureComponent {
         )}
         {focused && !global && (
           <div className="searchToolTip small p-1 mt-1">
-            <div>shift-return to seach everywhere</div>
+            {showTargetSearch && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm mr-1"
+                onClick={this.searchTarget}
+                disabled={!search}
+              >
+                Search in /r/{listingsFilter.target} ⏎
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={this.searchEverywhere}
+              disabled={!search}
+            >
+              Search Everywhere ⇧⏎
+            </button>
           </div>
         )}
       </div>

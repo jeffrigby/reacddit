@@ -1,36 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { redditFetchMultis } from '../../redux/actions/reddit';
-import RedditAPI from '../../reddit/redditAPI';
 import MultiRedditsItem from './MultiRedditsItem';
+import { setMenuStatus, getMenuStatus } from '../../common';
 
-class MultiReddits extends React.PureComponent {
-  accessToken = null;
+const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
+  const menuId = 'multis';
 
-  state = {
-    loading: true,
-  };
+  const [loading, setLoading] = useState(true);
+  const [showMenu, setShowMenu] = useState(getMenuStatus(menuId, true));
+  useEffect(() => {
+    const getMultis = async () => {
+      if (redditBearer.status === 'auth') {
+        await fetchMultis();
+        setLoading(false);
+      }
+    };
 
-  async componentDidMount() {
-    const { fetchMultis } = this.props;
-    this.accessToken = await RedditAPI.getToken(false);
+    getMultis();
+  }, [redditBearer.status, setLoading, fetchMultis]);
 
-    if (this.accessToken && this.accessToken.substr(0, 1) !== '-') {
-      await fetchMultis();
-      this.setState({ loading: false });
-    }
+  if (redditBearer.status !== 'auth') {
+    return null;
   }
 
-  reloadMultis = async () => {
-    const { fetchMultis } = this.props;
-    this.setState({ loading: true });
+  const reloadMultis = async () => {
+    setLoading(true);
     await fetchMultis(true);
-    this.setState({ loading: false });
+    setLoading(false);
   };
 
-  generateMultiItems() {
-    const { multireddits } = this.props;
+  const generateMultiItems = () => {
     const navigationItems = [];
 
     if (multireddits.multis) {
@@ -41,55 +42,70 @@ class MultiReddits extends React.PureComponent {
     }
 
     return navigationItems;
-  }
+  };
 
-  render() {
-    const { multireddits } = this.props;
-    const { loading } = this.state;
-    if (multireddits) {
-      const multis = this.generateMultiItems();
-      if (multis.length) {
-        let spinnerClass = 'fas fa-sync-alt reload';
-        let multisClass = 'nav flex-column';
+  const toggleMenu = () => {
+    setShowMenu(!showMenu);
+    setMenuStatus(menuId, !showMenu);
+  };
 
-        if (loading) {
-          spinnerClass += ' fa-spin';
-          multisClass += ' faded';
-        }
+  if (multireddits) {
+    const multis = generateMultiItems();
+    if (multis.length) {
+      let spinnerClass = 'fas fa-sync-alt reload';
+      let multisClass = 'nav flex-column';
 
-        return (
-          <div id="sidebar-multis">
-            <div className="sidebar-heading d-flex text-muted">
-              <span className="mr-auto">Multis</span>
+      if (loading) {
+        spinnerClass += ' fa-spin';
+        multisClass += ' faded';
+      }
+
+      const caretClass = showMenu
+        ? 'fas fa-caret-down menu-caret'
+        : 'fas fa-caret-right menu-caret';
+
+      return (
+        <div id="sidebar-multis">
+          <div className="sidebar-heading d-flex text-muted">
+            <span
+              className="mr-auto show-cursor"
+              onClick={toggleMenu}
+              role="presentation"
+            >
+              <i className={caretClass} /> Multis
+            </span>
+            {showMenu && (
               <span>
                 <i
                   className={spinnerClass}
-                  onClick={this.reloadMultis}
+                  onClick={reloadMultis}
                   role="button"
                   tabIndex="0"
-                  onKeyDown={this.reloadMultis}
+                  onKeyDown={reloadMultis}
                 />
               </span>
-            </div>
-            <ul className={multisClass}>{multis}</ul>
+            )}
           </div>
-        );
-      }
-      return null;
+          {showMenu && <ul className={multisClass}>{multis}</ul>}
+        </div>
+      );
     }
     return null;
   }
-}
+  return null;
+};
 
 MultiReddits.propTypes = {
   fetchMultis: PropTypes.func.isRequired,
   multireddits: PropTypes.object.isRequired,
+  redditBearer: PropTypes.object.isRequired,
 };
 
 MultiReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
   multireddits: state.redditMultiReddits,
+  redditBearer: state.redditBearer,
 });
 
 export default connect(
