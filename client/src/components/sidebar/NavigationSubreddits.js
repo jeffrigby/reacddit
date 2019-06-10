@@ -79,11 +79,6 @@ class NavigationSubReddits extends React.PureComponent {
    */
   generateNavItems(subreddits) {
     const { filter } = this.props;
-    const { showMenu } = this.state;
-    if (filter.active && !isEmpty(filter.filterText) && !showMenu) {
-      this.setState({ showMenu: true });
-    }
-
     const navigationItems = [];
 
     Object.values(subreddits).forEach((item, index) => {
