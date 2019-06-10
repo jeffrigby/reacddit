@@ -47,8 +47,6 @@ const NavigationGenericNavItem = props => {
           title={titleNew}
           className={classNames}
           activeClassName="activeSubreddit"
-          data-toggle="tooltip"
-          data-placement="right"
           onClick={closeMenu}
         >
           {iconString} {text}

@@ -95,7 +95,7 @@ class NavigationSubReddits extends React.PureComponent {
   }
 
   render() {
-    const { subreddits, filteredSubreddits } = this.props;
+    const { subreddits, filteredSubreddits, filter } = this.props;
     const { showMenu } = this.state;
 
     const caretClass = showMenu
@@ -169,7 +169,7 @@ class NavigationSubReddits extends React.PureComponent {
             />
           </span>
         </div>
-        {showMenu && content}
+        {(showMenu || filter.filterText) && content}
       </div>
     );
   }
