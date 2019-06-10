@@ -113,7 +113,7 @@ class Sort extends React.PureComponent {
       qs.t = t;
     }
 
-    let link;
+    let link = '';
     if (listType === 'r') {
       link = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
     } else if (listType === 'm' && !me) {
@@ -121,14 +121,8 @@ class Sort extends React.PureComponent {
     } else if (listType === 'm' && me) {
       link = `/me/m/${target}/${sort}`;
     } else if (listType === 's') {
-      // add the sort query string
+      // // no need to
       qs.sort = sort;
-
-      if (target === 'mine') {
-        link = `/search${userType}`;
-      } else {
-        link = `/r/${target}/search${userType}`;
-      }
     }
 
     if (!_isEmpty(qs)) {
@@ -247,10 +241,7 @@ class Sort extends React.PureComponent {
       currentSort = searchParsed.sort || 'relevance';
     }
 
-    const searchParsed = queryString.parse(search);
-    const timeSearch = searchParsed.t ? ` > ${searchParsed.t}` : '';
     const icon = this.getIcon(currentSort);
-
     const links = this.renderLinks();
 
     return (
@@ -263,7 +254,7 @@ class Sort extends React.PureComponent {
           aria-expanded="false"
           aria-label="Sort"
         >
-          {icon} {timeSearch}
+          {icon}
         </button>
         <div className="dropdown-menu dropdown-menu-right">{links}</div>
       </div>
