@@ -36,6 +36,7 @@ export function redditGetBearer() {
       const bearer = await RedditAPI.getToken(false);
       const status =
         bearer === null || bearer.substr(0, 1) === '-' ? 'anon' : 'auth';
+
       const result = {
         bearer,
         status,

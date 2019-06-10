@@ -225,7 +225,6 @@ const getLoginUrl = ctx => {
     scope: scope.split(","),
     state,
     duration: "permanent",
-    responseType: "code"
   });
   return authorizationUri;
 };

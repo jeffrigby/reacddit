@@ -4,19 +4,16 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import { menus } from '../../redux/actions/misc';
+import { setMenuStatus, getMenuStatus } from '../../common';
 
 const { API_PATH } = process.env;
 
-const NavigationAccount = ({
-  me,
-  disableHotkeys,
-  urlPush,
-  showMenu,
-  setMenuSettings,
-}) => {
+const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
   let lastKeyPressed = '';
-  const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(showMenu);
+  const menuID = 'navAccount';
+  const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(
+    getMenuStatus(menuID)
+  );
 
   const hotkeys = event => {
     const pressedKey = event.key;
@@ -61,25 +58,24 @@ const NavigationAccount = ({
   });
 
   const toggleShowMenu = () => {
-    toggleShowNavAccountMenu(!showMenu);
-    setMenuSettings({ navigationAccount: !showMenu });
+    toggleShowNavAccountMenu(!showNavAccountMenu);
+    setMenuStatus(menuID, !showNavAccountMenu);
   };
 
   const caretClass = showNavAccountMenu
-    ? 'fas fa-caret-down menu-caret mr-1'
-    : 'fas fa-caret-right menu-caret mr-1';
+    ? 'fas fa-caret-down menu-caret'
+    : 'fas fa-caret-right menu-caret';
 
   return (
     <div id="sidebar-multis">
       <div
-        className="sidebar-heading d-flex text-muted"
+        className="sidebar-heading d-flex text-muted show-cursor"
         onClick={toggleShowMenu}
         role="presentation"
       >
         <span>
-          <i className={caretClass} />
-        </span>{' '}
-        <span>{me.name}</span>
+          <i className={caretClass} /> {me.name}
+        </span>
       </div>
       {showNavAccountMenu && (
         <ul className="nav flex-column">
@@ -125,21 +121,16 @@ NavigationAccount.propTypes = {
   me: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
   urlPush: PropTypes.func.isRequired,
-  showMenu: PropTypes.bool,
-  setMenuSettings: PropTypes.func.isRequired,
 };
 
-NavigationAccount.defaultProps = {
-  showMenu: true,
-};
+NavigationAccount.defaultProps = {};
 
 const mapStateToProps = state => ({
   me: state.redditMe.me,
   disableHotkeys: state.disableHotKeys,
-  showMenu: state.menus.navigationAccount,
 });
 
 export default connect(
   mapStateToProps,
-  { urlPush: push, setMenuSettings: menus }
+  { urlPush: push }
 )(React.memo(NavigationAccount));

@@ -4,10 +4,11 @@ import { connect } from 'react-redux';
 import { redditFetchFriends } from '../../redux/actions/reddit';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
-import { menus } from '../../redux/actions/misc';
+import { setMenuStatus, getMenuStatus } from '../../common';
 
-const Friends = ({ redditFriends, getFriends, showMenu, setMenuSettings }) => {
-  const [showFriends, toggleShowFriends] = useState(showMenu);
+const Friends = ({ redditFriends, getFriends }) => {
+  const menuID = 'friends';
+  const [showFriends, toggleShowFriends] = useState(getMenuStatus(menuID));
   useEffect(() => {
     if (showFriends) {
       // Get a fresh listing.
@@ -66,7 +67,7 @@ const Friends = ({ redditFriends, getFriends, showMenu, setMenuSettings }) => {
 
   const toggleMenu = () => {
     toggleShowFriends(!showFriends);
-    setMenuSettings({ friends: !showFriends });
+    setMenuStatus(menuID, !showFriends);
   };
 
   return (
@@ -105,23 +106,17 @@ const Friends = ({ redditFriends, getFriends, showMenu, setMenuSettings }) => {
 Friends.propTypes = {
   redditFriends: PropTypes.object.isRequired,
   getFriends: PropTypes.func.isRequired,
-  showMenu: PropTypes.bool,
-  setMenuSettings: PropTypes.func.isRequired,
 };
 
-Friends.defaultProps = {
-  showMenu: false,
-};
+Friends.defaultProps = {};
 
 const mapStateToProps = state => ({
   redditFriends: state.redditFriends,
-  showMenu: state.menus.friends,
 });
 
 export default connect(
   mapStateToProps,
   {
     getFriends: redditFetchFriends,
-    setMenuSettings: menus,
   }
 )(Friends);
