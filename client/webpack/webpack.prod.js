@@ -1,4 +1,4 @@
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const webpack = require('webpack');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -7,7 +7,10 @@ const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const commonPaths = require('./paths');
 const CreateFileWebpack = require('create-file-webpack');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+
+const buildTime = Date.now();
 
 module.exports = {
   mode: 'production',
@@ -85,13 +88,16 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
+    new webpack.DefinePlugin({
+      BUILDTIME: buildTime,
+    }),
     new WorkboxWebpackPlugin.GenerateSW({
       cacheId: 'reacddit',
       cleanupOutdatedCaches: true,
       clientsClaim: true,
       exclude: [/\.map$/, /asset-manifest\.json$/],
       importWorkboxFrom: 'cdn',
-      navigateFallback: `${commonPaths.publicProdPath}index.html`,
+      navigateFallback: `${commonPaths.publicPath}index.html`,
       skipWaiting: true,
       navigateFallbackBlacklist: [
         // Exclude URLs starting with /_, as they're likely an API call
@@ -114,7 +120,7 @@ module.exports = {
     new CreateFileWebpack({
       path: commonPaths.outputPath,
       fileName: 'build.json',
-      content: JSON.stringify({ version: Date.now() }),
+      content: JSON.stringify({ buildTime }),
     }),
 
     new OptimizeCSSAssetsPlugin({}),

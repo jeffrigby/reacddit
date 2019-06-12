@@ -2,17 +2,19 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
-import SubUnSub from '../header/SubUnSub';
+import SubUnSub from './SubUnSub';
+import MultiToggle from './MultiToggle';
 
-const queryString = require('query-string');
+const queryString = require('query-string/index');
 
-const ListingsHeader = ({ about, filter }) => {
+const ListingsHeader = ({ about, filter, cachedSub }) => {
   const { listType, target, multi, user } = filter;
   // if (listType !== 's') return null;
 
   let title = '';
   let subInfo;
   let searchEverywhere;
+  let showSubInfo = false;
   switch (listType) {
     case 'u':
       title = `/u/${user} ${target}`;
@@ -36,6 +38,7 @@ const ListingsHeader = ({ about, filter }) => {
         const online = about.active_user_count
           ? `${about.active_user_count.toLocaleString()} Online`
           : '';
+        showSubInfo = true;
         if (subscribers && online) {
           subInfo = `${subscribers} - ${online}`;
         }
@@ -64,35 +67,73 @@ const ListingsHeader = ({ about, filter }) => {
       break;
   }
 
+  const renderedSubInfo = subInfo ? (
+    <span>{subInfo}</span>
+  ) : (
+    <span className="loading-placeholder">
+      Loading Members - Loading Online
+    </span>
+  );
+
+  const description = cachedSub.public_description || about.public_description;
+  const subhead = cachedSub.title || about.title;
+
   return (
     <div className="list-group-item listings-header">
       <div className="d-flex">
-        <div className="mr-auto">
+        <div className="mr-auto title-contrainer">
           <h5 className="m-0 p-0 w-100">
             {title} {searchEverywhere && <>- {searchEverywhere}</>}
           </h5>
         </div>
-        <div className="listing-actions">
-          {listType === 'r' && target !== 'mine' && <SubUnSub />}
+        <div>
+          <div className="listing-actions pl-2 d-flex flex-nowrap">
+            {listType === 'r' && target !== 'mine' && (
+              <>
+                <SubUnSub />
+                <MultiToggle srName={target} />
+              </>
+            )}
+          </div>
         </div>
       </div>
-      {subInfo && (
+      {showSubInfo && (
         <div>
-          <small>{subInfo}</small>
+          <small>{renderedSubInfo}</small>
         </div>
       )}
-      {about.public_description && (
+      {subhead && (
         <div>
-          <small>{about.public_description}</small>
+          <small>
+            <strong>{subhead}</strong>
+          </small>
+        </div>
+      )}
+      {description && (
+        <div>
+          <small>{description}</small>
         </div>
       )}
     </div>
   );
 };
 
+const filterSub = (subs, filter) => {
+  if (subs.status !== 'loaded') {
+    return {};
+  }
+
+  const { subreddits } = subs;
+  const { target } = filter;
+  return target && subreddits[target.toLowerCase()]
+    ? subreddits[target.toLowerCase()]
+    : {};
+};
+
 ListingsHeader.propTypes = {
   about: PropTypes.object,
   filter: PropTypes.object.isRequired,
+  cachedSub: PropTypes.object.isRequired,
 };
 
 ListingsHeader.defaultProps = {
@@ -102,6 +143,7 @@ ListingsHeader.defaultProps = {
 const mapStateToProps = state => ({
   about: state.currentSubreddit,
   filter: state.listingsFilter,
+  cachedSub: filterSub(state.subreddits, state.listingsFilter),
 });
 
 export default connect(

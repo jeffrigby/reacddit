@@ -43,6 +43,9 @@ module.exports = {
       inject: true,
       template: commonPaths.templatePath,
     }),
+    new webpack.DefinePlugin({
+      BUILDTIME: Date.now(),
+    }),
     new CreateFileWebpack({
       path: commonPaths.outputPath,
       fileName: 'build.json',

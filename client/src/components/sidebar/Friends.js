@@ -4,9 +4,11 @@ import { connect } from 'react-redux';
 import { redditFetchFriends } from '../../redux/actions/reddit';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
+import { setMenuStatus, getMenuStatus } from '../../common';
 
 const Friends = ({ redditFriends, getFriends }) => {
-  const [showFriends, toggleShowFriends] = useState(false);
+  const menuID = 'friends';
+  const [showFriends, toggleShowFriends] = useState(getMenuStatus(menuID));
   useEffect(() => {
     if (showFriends) {
       // Get a fresh listing.
@@ -63,6 +65,11 @@ const Friends = ({ redditFriends, getFriends }) => {
     ? 'fas fa-caret-down menu-caret'
     : 'fas fa-caret-left menu-caret';
 
+  const toggleMenu = () => {
+    toggleShowFriends(!showFriends);
+    setMenuStatus(menuID, !showFriends);
+  };
+
   return (
     <>
       <li className="nav-item">
@@ -80,7 +87,7 @@ const Friends = ({ redditFriends, getFriends }) => {
             <button
               className="btn btn-link btn-sm m-0 p-0 border-0"
               type="button"
-              onClick={() => toggleShowFriends(!showFriends)}
+              onClick={toggleMenu}
             >
               <i className={caretClass} />
             </button>

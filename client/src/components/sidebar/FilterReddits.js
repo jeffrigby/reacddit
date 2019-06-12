@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
-import isEqual from 'lodash/isEqual';
 import { subredditsFilter } from '../../redux/actions/subreddits';
 import { disableHotKeys } from '../../redux/actions/misc';
 
@@ -13,33 +12,16 @@ class FilterReddits extends React.Component {
     document.addEventListener('keydown', this.handleFilterHotkey);
   }
 
-  shouldComponentUpdate(nextProps, nextState, nextContext) {
-    // I don't understand why this is needed. But it tries to re-render
-    // constantly with a pureComponent. Something with the subredditUrls
-    // but they are idenical.
-
-    const { filter, subredditUrls } = this.props;
-
-    return (
-      !isEqual(nextProps.filter, filter) ||
-      !isEqual(nextProps.subredditUrls, subredditUrls)
-    );
-  }
-
   componentWillUnmount() {
     document.removeEventListener('keydown', this.handleFilterHotkey);
   }
 
   handleFilterHotkey = event => {
-    const {
-      disableHotkeys,
-      filter,
-      setFilter,
-      subredditUrls,
-      goto,
-    } = this.props;
+    const { disableHotkeys, filter, setFilter, goto } = this.props;
     const pressedKey = event.key;
-    const subLength = subredditUrls.length;
+    const subLength = document.querySelectorAll(
+      '#sidebar-subreddits .nav-item a'
+    ).length;
 
     if (!disableHotkeys) {
       switch (pressedKey) {
@@ -74,7 +56,12 @@ class FilterReddits extends React.Component {
           break;
         }
         case 'Enter': {
-          goto(subredditUrls[filter.activeIndex]);
+          const trigger = document.querySelector(
+            '#sidebar-subreddits .nav-item a.trigger'
+          );
+          if (trigger && trigger.pathname) {
+            goto(trigger.pathname);
+          }
           document.body.classList.remove('show-menu');
           this.filterInput.current.blur();
           break;
@@ -168,37 +155,12 @@ class FilterReddits extends React.Component {
   }
 }
 
-const getFilteredUrls = (subreddits, filterText, sort, search) => {
-  if (subreddits.status !== 'loaded') {
-    return [];
-  }
-
-  const filterLower = filterText.toLowerCase();
-
-  let currentSort = sort || '';
-  if (search) {
-    currentSort += `?${search}`;
-  }
-
-  const urls = Object.keys(subreddits.subreddits)
-    .filter(key => key.indexOf(filterLower) > -1)
-    .reduce((arr, key) => {
-      const { url } = subreddits.subreddits[key];
-      arr.push(`${url}${currentSort}`);
-      return arr;
-    }, [])
-    .sort();
-
-  return urls;
-};
-
 FilterReddits.propTypes = {
   setFilter: PropTypes.func.isRequired,
   goto: PropTypes.func.isRequired,
   setDisableHotkeys: PropTypes.func.isRequired,
   filter: PropTypes.object.isRequired,
   disableHotkeys: PropTypes.bool.isRequired,
-  subredditUrls: PropTypes.array.isRequired,
 };
 
 FilterReddits.defaultProps = {};
@@ -206,12 +168,6 @@ FilterReddits.defaultProps = {};
 const mapStateToProps = state => ({
   filter: state.subredditsFilter,
   disableHotkeys: state.disableHotKeys,
-  subredditUrls: getFilteredUrls(
-    state.subreddits,
-    state.subredditsFilter.filterText,
-    state.listingsFilter.sort,
-    state.router.location.search
-  ),
 });
 
 export default connect(

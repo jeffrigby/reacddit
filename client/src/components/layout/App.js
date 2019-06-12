@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Navigation from './Navigation';
 import Header from './Header';
-import Listings from './Listings';
+import Listings from '../listings/Listings';
 import Help from './Help';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import { siteSettings } from '../../redux/actions/misc';
@@ -16,6 +16,7 @@ class App extends React.PureComponent {
 
   state = {
     error: false,
+    loading: true,
     message: null,
   };
 
@@ -25,10 +26,12 @@ class App extends React.PureComponent {
 
     // Make sure the token is set before loading the app.
     const token = await getBearer();
+
     if (token !== null) {
       // check for a new token every 10s.
       this.tokenQuery = setInterval(getBearer, 10000);
-      getMe();
+      await getMe();
+      this.setState({ loading: false });
     } else {
       this.setState({
         error: true,
@@ -65,7 +68,7 @@ class App extends React.PureComponent {
   }
 
   render() {
-    const { error, message } = this.state;
+    const { error, message, loading } = this.state;
     const { redditBearer, subredditsFilter } = this.props;
 
     if (error) {
@@ -74,6 +77,11 @@ class App extends React.PureComponent {
           {message}
         </div>
       );
+    }
+
+    // This is to handle am issue where the account or bearer isn't fetched correctly.
+    if (loading) {
+      return <></>;
     }
 
     if (redditBearer.status === 'unloaded') {

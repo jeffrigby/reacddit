@@ -14,11 +14,11 @@ div#entries {
     overflow: hidden;
     //text-overflow: ellipsis;
     cursor: pointer;
-    position:relative;
+    position: relative;
     margin: 0;
     padding-bottom: 10px;
-    -webkit-mask-image: linear-gradient(180deg,#000 60%,transparent);
-    mask-image: linear-gradient(180deg,#000 60%,transparent);
+    -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
+    mask-image: linear-gradient(180deg, #000 60%, transparent);
     &.sf-html-show-all {
       -webkit-mask-image: inherit;
       mask-image: inherit;
@@ -50,9 +50,14 @@ div#entries {
     text-overflow: inherit;
   }
 
-  .listings-header button {
-    font-size: 70% !important;
-    white-space: nowrap;
+  .listings-header {
+    .title-contrainer {
+      padding: 1px 0;
+    }
+    button {
+      font-size: 70% !important;
+      white-space: nowrap;
+    }
   }
 
   .list-title {
@@ -132,7 +137,29 @@ div#entries {
 
 .footer-status {
   margin-bottom: calc(80vh);
-  padding: 0 1.25rem;
+}
+
+@keyframes placeHolderShimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+.loading-placeholder {
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-name: placeHolderShimmer;
+  animation-timing-function: linear;
+  background: #f6f7f8;
+  background: linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%);
+  background-size: 1000px 104px;
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  color: transparent;
 }
 
 #debugInfo {

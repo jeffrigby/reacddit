@@ -36,11 +36,10 @@ class NavigationItem extends React.PureComponent {
     }
 
     if (trigger) {
-      classes.push('mark highlighted');
+      classes.push('mark highlighted trigger');
     }
 
-    const classNameStr = classes.join(' ');
-    return classNameStr;
+    return classes.join(' ');
   }
 
   render() {

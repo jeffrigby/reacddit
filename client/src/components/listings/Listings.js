@@ -105,7 +105,7 @@ class Listings extends React.Component {
     }
     this.setInitFocusedAndVisible();
 
-    this.forceMonitorEntries();
+    // this.forceMonitorEntries();
   }
 
   componentWillUnmount() {
@@ -132,7 +132,7 @@ class Listings extends React.Component {
       const newState = {
         focused: entryKeys[0],
         actionable: entryKeys[0],
-        visible: entryKeys.slice(0, 5),
+        visible: entryKeys.slice(0, 3),
       };
       this.setState(newState);
     }
@@ -149,8 +149,11 @@ class Listings extends React.Component {
     if (listType === 'search') listingType = 's';
     // if (listType === 'duplicates') listingType = 'd';
 
+    // Set to best if it's the front page.
+    const getSort = sort || qs.sort || (target ? 'hot' : 'best');
+
     const newFilter = {
-      sort: sort || qs.sort || 'hot',
+      sort: getSort,
       target: target || 'mine',
       multi: multi === 'm' || false,
       userType: userType || '',
@@ -167,8 +170,8 @@ class Listings extends React.Component {
     // Trigger this after a second/two seconds to load anything missed.
     // Delayed to let component load. Pretty sure I can remove this
     // when I implement Hooks
-    // setTimeout(() => this.monitorEntries(true), 1000);
-    // setTimeout(() => this.monitorEntries(true), 2000);
+    setTimeout(() => this.monitorEntries(true), 1000);
+    setTimeout(() => this.monitorEntries(true), 2000);
   };
 
   setScrollResize = () => {
@@ -282,7 +285,7 @@ class Listings extends React.Component {
         const { top, bottom } = post.getBoundingClientRect();
 
         // If it's not in the visible range skip it.
-        if (bottom >= -780 && top - window.innerHeight <= 800) {
+        if (bottom >= -380 && top - window.innerHeight <= 400) {
           if (!newFocus) {
             const focusTop = bottom - 55;
             if (focusTop > 0) {
@@ -475,7 +478,7 @@ class Listings extends React.Component {
             </div>
           )}
           {entries}
-          <div className="footer-status">{footerStatus}</div>
+          <div className="footer-status p-2">{footerStatus}</div>
         </div>
         {settings.debug && (
           <PostsDebug

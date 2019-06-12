@@ -7,7 +7,7 @@
 }
 
 .supersmall {
-  font-size: 0.1em;
+  font-size: 9px;
 }
 
 .header-main {
@@ -75,12 +75,6 @@ body.search-active {
 }
 
 .touch {
-  body.search-active {
-    .searchToolTip {
-      display: none !important;
-    }
-  }
-
   .menu-shortcut {
     display: none;
   }
@@ -92,6 +86,9 @@ body.search-active {
     position: absolute;
     background-color: #343a40;
     color: white;
+    button {
+      font-size: 90%;
+    }
   }
 }
 
