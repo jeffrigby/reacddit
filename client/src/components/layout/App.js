@@ -3,6 +3,7 @@ import { Route, Switch } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import ReactTooltip from 'react-tooltip';
 import Navigation from './Navigation';
 import Header from './Header';
 import Listings from '../listings/Listings';
@@ -150,6 +151,7 @@ class App extends React.PureComponent {
 
           <Help />
         </React.StrictMode>
+        <ReactTooltip effect="solid" html place="right" />
         <div id="menu-overlay" />
       </>
     );
