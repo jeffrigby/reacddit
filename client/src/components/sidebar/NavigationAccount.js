@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import { distanceInWordsToNow } from 'date-fns';
+import ReactTooltip from 'react-tooltip';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
@@ -14,6 +16,13 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
   const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(
     getMenuStatus(menuID)
   );
+
+  // useEffect(() => {
+  //   jQuery('#nav-user-info').tooltip();
+  //   return () => {
+  //     jQuery('#nav-user-info').tooltip('dispose');
+  //   };
+  // }, []);
 
   const hotkeys = event => {
     const pressedKey = event.key;
@@ -66,15 +75,48 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
     ? 'fas fa-caret-down menu-caret'
     : 'fas fa-caret-right menu-caret';
 
+  const karmaTotal = me.link_karma + me.comment_karma;
+  const joinedDate = distanceInWordsToNow(me.created_utc * 1000);
+  const accountInfo = `
+      ${karmaTotal.toLocaleString()} Karma
+      <br />
+      ${me.link_karma.toLocaleString()} Post Karma
+      <br />
+      ${me.comment_karma.toLocaleString()} Comment Karma
+      <br />
+      Joined ${joinedDate} ago
+  `;
+
   return (
-    <div id="sidebar-multis">
-      <div
-        className="sidebar-heading d-flex text-muted show-cursor"
-        onClick={toggleShowMenu}
-        role="presentation"
-      >
-        <span>
+    <div id="sidebar-nav_account">
+      <div className="sidebar-heading d-flex text-muted show-cursor">
+        <span className="mr-1" onClick={toggleShowMenu} role="presentation">
           <i className={caretClass} /> {me.name}
+        </span>
+        <span>
+          <i
+            className="fas fa-info-circle"
+            data-tip={accountInfo}
+            data-for="accountInfoTooltip"
+            id="nav-user-info"
+          />
+          <ReactTooltip
+            id="accountInfoTooltip"
+            effect="solid"
+            html
+            place="right"
+          />
+        </span>
+        <span className="ml-auto">
+          <NavigationGenericNavItem
+            to={`${API_PATH}/logout`}
+            text=""
+            title="Logout"
+            isStatic
+            noLi
+            iconClass="fas fa-sign-out-alt m-0 p-0"
+            classes="m-0 p-0"
+          />
         </span>
       </div>
       {showNavAccountMenu && (
@@ -103,13 +145,6 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
             text="Saved"
             title="Show My Saved Posts"
             iconClass="far fa-bookmark"
-          />
-          <NavigationGenericNavItem
-            to={`${API_PATH}/logout`}
-            text="Logout"
-            title="Logout"
-            isStatic
-            iconClass="fas fa-sign-out-alt"
           />
         </ul>
       )}

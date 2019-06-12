@@ -72,7 +72,7 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
               onClick={toggleMenu}
               role="presentation"
             >
-              <i className={caretClass} /> Multis
+              <i className={caretClass} /> Custom Feeds
             </span>
             {showMenu && (
               <span>
