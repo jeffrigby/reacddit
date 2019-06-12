@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { distanceInWordsToNow } from 'date-fns';
-import ReactTooltip from 'react-tooltip';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
@@ -97,14 +96,7 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
           <i
             className="fas fa-info-circle"
             data-tip={accountInfo}
-            data-for="accountInfoTooltip"
             id="nav-user-info"
-          />
-          <ReactTooltip
-            id="accountInfoTooltip"
-            effect="solid"
-            html
-            place="right"
           />
         </span>
         <span className="ml-auto">
