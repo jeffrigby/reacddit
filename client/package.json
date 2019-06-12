@@ -41,6 +41,7 @@
     "react-redux": "^7.0.2",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
+    "react-tooltip": "^3.10.0",
     "react-twitter-embed": "^2.0.4",
     "redux": "^4.0.1",
     "redux-axios-middleware": "^4.0.0",

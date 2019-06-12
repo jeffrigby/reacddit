@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { distanceInWordsToNow } from 'date-fns';
+import ReactTooltip from 'react-tooltip';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
@@ -16,12 +17,12 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
     getMenuStatus(menuID)
   );
 
-  useEffect(() => {
-    jQuery('#nav-user-info').tooltip();
-    return () => {
-      jQuery('#nav-user-info').tooltip('dispose');
-    };
-  }, []);
+  // useEffect(() => {
+  //   jQuery('#nav-user-info').tooltip();
+  //   return () => {
+  //     jQuery('#nav-user-info').tooltip('dispose');
+  //   };
+  // }, []);
 
   const hotkeys = event => {
     const pressedKey = event.key;
@@ -76,7 +77,15 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
 
   const karmaTotal = me.link_karma + me.comment_karma;
   const joinedDate = distanceInWordsToNow(me.created_utc * 1000);
-  const infoTooltip = `${karmaTotal.toLocaleString()} Karma<br />Joined ${joinedDate} ago`;
+  const accountInfo = `
+      ${karmaTotal.toLocaleString()} Karma
+      <br />
+      ${me.link_karma.toLocaleString()} Post Karma
+      <br />
+      ${me.comment_karma.toLocaleString()} Comment Karma
+      <br />
+      Joined ${joinedDate} ago
+  `;
 
   return (
     <div id="sidebar-nav_account">
@@ -87,11 +96,15 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
         <span>
           <i
             className="fas fa-info-circle"
-            data-toggle="tooltip"
-            data-placement="top"
-            data-html="true"
-            title={infoTooltip}
+            data-tip={accountInfo}
+            data-for="accountInfoTooltip"
             id="nav-user-info"
+          />
+          <ReactTooltip
+            id="accountInfoTooltip"
+            effect="solid"
+            html
+            place="right"
           />
         </span>
         <span className="ml-auto">
