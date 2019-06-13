@@ -16,13 +16,6 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
     getMenuStatus(menuID)
   );
 
-  // useEffect(() => {
-  //   jQuery('#nav-user-info').tooltip();
-  //   return () => {
-  //     jQuery('#nav-user-info').tooltip('dispose');
-  //   };
-  // }, []);
-
   const hotkeys = event => {
     const pressedKey = event.key;
 
