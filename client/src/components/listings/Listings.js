@@ -67,6 +67,7 @@ class Listings extends React.Component {
   state = {
     focused: '',
     visible: [],
+    minHeights: {},
     actionable: null,
     hasError: false,
   };
@@ -82,7 +83,7 @@ class Listings extends React.Component {
 
     // Events.
     document.addEventListener('keydown', this.handleEntriesHotkey);
-    document.addEventListener('resize', this.setScrollResize, false);
+    window.addEventListener('resize', this.setScrollResize, false);
     document.addEventListener('scroll', this.setScrollResize, false);
 
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 250);
@@ -114,7 +115,7 @@ class Listings extends React.Component {
 
     // Events.
     document.removeEventListener('keydown', this.handleEntriesHotkey);
-    document.removeEventListener('resize', this.setScrollResize, false);
+    window.removeEventListener('resize', this.setScrollResize, false);
     document.removeEventListener('scroll', this.setScrollResize, false);
     clearInterval(this.monitorEntriesInterval);
     clearInterval(this.streamNewPostsInterval);
@@ -271,18 +272,21 @@ class Listings extends React.Component {
   monitorEntries = force => {
     if (!this.mounted) return;
     if ((this.scrollResize && !this.scrollResizeStop) || force) {
+      const { minHeights } = this.state;
+
       const { autoplay } = this.props.settings;
       this.scrollResize = false;
 
       const postsCollection = document.getElementsByClassName('entry');
       const posts = Array.from(postsCollection);
       let newFocus = '';
+      const newMinHeights = { ...minHeights };
       let newActionable = null;
       const newVis = [];
       let prevPostId = null;
 
       posts.forEach(post => {
-        const { top, bottom } = post.getBoundingClientRect();
+        const { top, bottom, height } = post.getBoundingClientRect();
 
         // If it's not in the visible range skip it.
         if (bottom >= -380 && top - window.innerHeight <= 400) {
@@ -300,7 +304,7 @@ class Listings extends React.Component {
               newActionable = inView ? post.id : prevPostId;
             }
           }
-
+          newMinHeights[post.id] = height;
           newVis.push(post.id);
         }
         prevPostId = post.id;
@@ -320,6 +324,7 @@ class Listings extends React.Component {
         focused: newFocus,
         actionable: newActionable,
         visible: newVis,
+        minHeights: newMinHeights,
       });
 
       this.checkLoadMore();
@@ -350,11 +355,12 @@ class Listings extends React.Component {
   }
 
   renderPost = post => {
-    const { focused, visible, actionable } = this.state;
+    const { focused, visible, actionable, minHeights } = this.state;
     const isFocused = focused === post.data.name;
     const isVisible = visible.includes(post.data.name);
     const isActionable = actionable === post.data.name;
     const ref = isActionable ? this.actionPost : null;
+    const minHeight = minHeights[post.data.name] || 0;
     return (
       <Post
         entry={post}
@@ -363,6 +369,7 @@ class Listings extends React.Component {
         focused={isFocused}
         visible={isVisible}
         actionable={isActionable}
+        minHeight={minHeight}
         ref={ref}
       />
     );
