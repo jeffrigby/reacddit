@@ -8,6 +8,7 @@ import Navigation from './Navigation';
 import Header from './Header';
 import Listings from '../listings/Listings';
 import Help from './Help';
+import NotFound404 from '../../NotFound404';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import { siteSettings } from '../../redux/actions/misc';
 import '../../styles/layout.scss';
@@ -129,6 +130,7 @@ class App extends React.PureComponent {
       const key = `route${i}}`;
       routes.push(<Route exact path={value} component={Listings} key={key} />);
     });
+    routes.push(<Route component={NotFound404} key="NotFound404" />);
 
     return (
       <>
