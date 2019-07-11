@@ -144,18 +144,25 @@ class Post extends React.PureComponent {
       siteSettings,
       bearer,
       actionable,
+      minHeight,
     } = this.props;
     const { data } = entry;
     const { renderedContent, expand } = this.state;
 
     const classArray = classNames('entry', 'list-group-item', {
       focused,
+      visible,
       actionable,
       condensed: !expand,
     });
 
+    const styles = {};
+    if (!visible && minHeight) {
+      styles.minHeight = minHeight;
+    }
+
     return (
-      <div className={classArray} key={data.name} id={data.name}>
+      <div className={classArray} key={data.name} id={data.name} style={styles}>
         <div className="entry-interior">
           <PostHeader
             entry={entry}
@@ -199,9 +206,12 @@ Post.propTypes = {
   save: PropTypes.func.isRequired,
   bearer: PropTypes.object.isRequired,
   gotoLink: PropTypes.func.isRequired,
+  minHeight: PropTypes.number,
 };
 
-Post.defaultProps = {};
+Post.defaultProps = {
+  minHeight: 0,
+};
 
 const mapStateToProps = state => ({
   siteSettings: state.siteSettings,
