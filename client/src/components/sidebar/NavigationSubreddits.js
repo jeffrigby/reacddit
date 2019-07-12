@@ -7,7 +7,7 @@ import {
   subredditsFetchLastUpdated,
 } from '../../redux/actions/subreddits';
 import NavigationItem from './NavigationItem';
-import { setMenuStatus, getMenuStatus } from '../../common';
+import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 
 class NavigationSubReddits extends React.PureComponent {
   state = {
@@ -34,10 +34,9 @@ class NavigationSubReddits extends React.PureComponent {
    * @param event
    */
   handleSubredditHotkey = event => {
-    const { disableHotkeys } = this.props;
     const pressedKey = event.key;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       switch (pressedKey) {
         case '®': // alt-r (option)
           this.reloadSubreddits();
@@ -200,7 +199,6 @@ const filterSubs = (subreddits, filterText) => {
 };
 
 NavigationSubReddits.propTypes = {
-  disableHotkeys: PropTypes.bool.isRequired,
   fetchSubreddits: PropTypes.func.isRequired,
   fetchLastUpdated: PropTypes.func.isRequired,
   redditBearer: PropTypes.object.isRequired,
@@ -212,7 +210,6 @@ NavigationSubReddits.propTypes = {
 NavigationSubReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
-  disableHotkeys: state.disableHotKeys,
   redditBearer: state.redditBearer,
   subreddits: state.subreddits,
   filter: state.subredditsFilter,

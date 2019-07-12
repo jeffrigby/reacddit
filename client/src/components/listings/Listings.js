@@ -14,6 +14,7 @@ import Post from '../posts/Post';
 import '../../styles/listings.scss';
 import PostsDebug from './PostsDebug';
 import ListingsHeader from './ListingsHeader';
+import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
 
@@ -196,7 +197,6 @@ class Listings extends React.Component {
 
   handleEntriesHotkey = event => {
     const {
-      disableHotkeys,
       setSiteSetting,
       settings,
       listingsStatus,
@@ -204,7 +204,7 @@ class Listings extends React.Component {
     } = this.props;
     const { focused } = this.state;
     if (
-      !disableHotkeys &&
+      hotkeyStatus() &&
       (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')
     ) {
       const pressedKey = event.key;
@@ -508,7 +508,6 @@ Listings.propTypes = {
   match: PropTypes.object.isRequired,
 
   /* Redux Props */
-  disableHotkeys: PropTypes.bool.isRequired,
   filter: PropTypes.object.isRequired,
   listingsEntries: PropTypes.object.isRequired,
   listingsStatus: PropTypes.string.isRequired,
@@ -527,7 +526,6 @@ Listings.defaultProps = {
 };
 
 const mapStateToProps = (state, ownProps) => ({
-  disableHotkeys: state.disableHotKeys,
   filter: state.listingsFilter,
   listingsEntries: state.listingsRedditEntries,
   listingsStatus: state.listingsRedditStatus,

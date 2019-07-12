@@ -16,3 +16,12 @@ export const getMenuStatus = (menuID, defaultState = false) => {
   // console.log(menus[menuID], menus[menuID] !== undefined);
   return menuID in menus ? menus[menuID] : defaultState;
 };
+
+export const hotkeyStatus = () => {
+  const { activeElement } = document;
+  const { nodeName } = activeElement;
+  return !(
+    nodeName === 'textarea' ||
+    (nodeName === 'input' && activeElement.type === 'text')
+  );
+};

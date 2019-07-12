@@ -12,6 +12,8 @@ import NotFound404 from '../../NotFound404';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import { siteSettings } from '../../redux/actions/misc';
 import '../../styles/layout.scss';
+import { hotkeyStatus } from '../../common';
+
 
 class App extends React.PureComponent {
   tokenQuery = null;
@@ -52,10 +54,10 @@ class App extends React.PureComponent {
   }
 
   handleNGlobalHotkey(event) {
-    const { disableHotkeys, setSiteSetting, settings } = this.props;
+    const { setSiteSetting, settings } = this.props;
     const pressedKey = event.key;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       switch (pressedKey) {
         case 'Î': // opt-shift-d
           setSiteSetting({ debug: !settings.debug });
@@ -138,7 +140,7 @@ class App extends React.PureComponent {
           <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
             <Header />
           </header>
-          <aside className="sidebar bg-light" id="navigation">
+          <aside className="sidebar bg-light pt-2" id="navigation">
             <div id="aside-content" className="h-100 d-flex px-3">
               <Navigation
                 redditBearer={redditBearer}
@@ -161,7 +163,6 @@ class App extends React.PureComponent {
 }
 
 App.propTypes = {
-  disableHotkeys: PropTypes.bool.isRequired,
   getBearer: PropTypes.func.isRequired,
   getMe: PropTypes.func.isRequired,
   setSiteSetting: PropTypes.func.isRequired,
@@ -174,7 +175,6 @@ App.defaultProps = {};
 
 const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
-  disableHotkeys: state.disableHotKeys,
   settings: state.siteSettings,
   subredditsFilter: state.subredditsFilter,
 });

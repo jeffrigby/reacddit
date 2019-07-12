@@ -1,13 +1,3 @@
-export function disableHotKeys(state = false, action) {
-  switch (action.type) {
-    case 'DISABLE_HOTKEYS':
-      return action.disableHotKeys;
-
-    default:
-      return state;
-  }
-}
-
 export function siteSettings(
   state = {
     view: 'expanded',

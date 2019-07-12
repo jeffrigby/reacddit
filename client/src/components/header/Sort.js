@@ -4,6 +4,7 @@ import _isEmpty from 'lodash/isEmpty';
 import { NavLink } from 'react-router-dom';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
+import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
 
@@ -70,8 +71,8 @@ class Sort extends React.PureComponent {
   }
 
   handleSortHotkey = event => {
-    const { disableHotKeys, listingsFilter, gotoLink } = this.props;
-    if (!disableHotKeys && listingsFilter.target !== 'friends') {
+    const { listingsFilter, gotoLink } = this.props;
+    if (hotkeyStatus() && listingsFilter.target !== 'friends') {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
@@ -266,7 +267,6 @@ Sort.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
   subreddits: PropTypes.object.isRequired,
   search: PropTypes.string,
-  disableHotKeys: PropTypes.bool.isRequired,
   gotoLink: PropTypes.func.isRequired,
   me: PropTypes.object.isRequired,
 };
@@ -280,7 +280,6 @@ const mapStateToProps = (state, ownProps) => ({
   search: state.router.location.search,
   listingsFilter: state.listingsFilter,
   subreddits: state.subreddits,
-  disableHotKeys: state.disableHotKeys,
 });
 
 export default connect(

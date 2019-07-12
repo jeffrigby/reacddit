@@ -5,11 +5,11 @@ import { push } from 'connected-react-router';
 import { distanceInWordsToNow } from 'date-fns';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import { setMenuStatus, getMenuStatus } from '../../common';
+import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 
 const { API_PATH } = process.env;
 
-const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
+const NavigationAccount = ({ me, urlPush }) => {
   let lastKeyPressed = '';
   const menuID = 'navAccount';
   const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(
@@ -19,7 +19,7 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
   const hotkeys = event => {
     const pressedKey = event.key;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       // Navigation key commands
       if (lastKeyPressed === 'g') {
         // Logged in only
@@ -139,7 +139,6 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
 
 NavigationAccount.propTypes = {
   me: PropTypes.object.isRequired,
-  disableHotkeys: PropTypes.bool.isRequired,
   urlPush: PropTypes.func.isRequired,
 };
 
@@ -147,7 +146,6 @@ NavigationAccount.defaultProps = {};
 
 const mapStateToProps = state => ({
   me: state.redditMe.me,
-  disableHotkeys: state.disableHotKeys,
 });
 
 export default connect(

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
-import { disableHotKeys } from '../../redux/actions/misc';
+import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
 
@@ -52,11 +52,10 @@ class Search extends React.PureComponent {
   };
 
   handleSearchHotkey = event => {
-    const { disableHotkeys } = this.props;
     const { focused } = this.state;
     const pressedKey = event.key;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       switch (pressedKey) {
         case 'S':
           this.searchInput.current.focus();
@@ -81,19 +80,15 @@ class Search extends React.PureComponent {
   };
 
   focusSearch = () => {
-    const { setDisableHotkeys } = this.props;
     this.setState({ focused: true });
     document.body.classList.add('search-active');
-    setDisableHotkeys(true);
   };
 
   blurSearch = () => {
-    const { setDisableHotkeys } = this.props;
     // delayed to allow button onclicks to trigger.
     setTimeout(() => {
       document.body.classList.remove('search-active');
       this.setState({ focused: false });
-      setDisableHotkeys(false);
     }, 250);
   };
 
@@ -272,8 +267,6 @@ Search.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
   location: PropTypes.object.isRequired,
   pushUrl: PropTypes.func.isRequired,
-  setDisableHotkeys: PropTypes.func.isRequired,
-  disableHotkeys: PropTypes.bool.isRequired,
 };
 
 Search.defaultProps = {};
@@ -281,12 +274,10 @@ Search.defaultProps = {};
 const mapStateToProps = (state, ownProps) => ({
   location: state.router.location,
   listingsFilter: state.listingsFilter,
-  disableHotkeys: state.disableHotKeys,
 });
 
 const mapDispatchToProps = dispatch => ({
   pushUrl: url => dispatch(push(url)),
-  setDisableHotkeys: disable => dispatch(disableHotKeys(disable)),
 });
 
 export default connect(

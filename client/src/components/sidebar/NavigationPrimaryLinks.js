@@ -4,6 +4,7 @@ import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
+import { hotkeyStatus } from '../../common';
 
 const { API_PATH } = process.env;
 
@@ -23,10 +24,10 @@ class NavigationPrimaryLinks extends React.PureComponent {
    * @param event
    */
   handleNavPrimaryHotkey = event => {
-    const { disableHotkeys, me, ...props } = this.props;
+    const { me, ...props } = this.props;
     const pressedKey = event.key;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       // Navigation key commands
       if (this.lastKeyPressed === 'g') {
         switch (pressedKey) {
@@ -132,7 +133,6 @@ NavigationPrimaryLinks.propTypes = {
   sort: PropTypes.string.isRequired,
   t: PropTypes.string,
   subreddits: PropTypes.object.isRequired,
-  disableHotkeys: PropTypes.bool.isRequired,
   push: PropTypes.func.isRequired,
 };
 
@@ -144,7 +144,6 @@ const mapStateToProps = state => ({
   me: state.redditMe.me,
   sort: state.listingsFilter.sort,
   t: state.listingsFilter.t,
-  disableHotkeys: state.disableHotKeys,
   subreddits: state.subreddits,
 });
 
