@@ -44,3 +44,13 @@ export function listingsRedditStatus(state = 'unloaded', action) {
       return state;
   }
 }
+
+export function listingsRedditHistory(state = {}, action) {
+  switch (action.type) {
+    case 'LISTINGS_REDDIT_HISTORY':
+      return action.history;
+
+    default:
+      return state;
+  }
+}
