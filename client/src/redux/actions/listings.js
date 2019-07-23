@@ -1,4 +1,5 @@
 import update from 'immutability-helper';
+import { batch } from 'react-redux';
 import RedditAPI from '../../reddit/redditAPI';
 
 // @todo there's no reason for any of this to be in Redux. Move to hooks.
@@ -32,12 +33,83 @@ export function listingsRedditStatus(status) {
   };
 }
 
+export function listingsRedditHistory(history) {
+  return {
+    type: 'LISTINGS_REDDIT_HISTORY',
+    history,
+  };
+}
+
 export function currentSubreddit(subreddit) {
   return {
     type: 'CURRENT_SUBREDDIT',
     subreddit,
   };
 }
+
+const setListingsHistory = (dispatch, currentState, data, about, status) => {
+  const { router, listingsRedditHistory: history } = currentState;
+  const { key } = router.location;
+
+  const mainKey = key || 'front';
+
+  const newHistory = { ...history };
+  const now = Date.now();
+
+  newHistory[mainKey] = {
+    data,
+    about,
+    status,
+    saved: now,
+  };
+
+  // Only keep five keys
+  const historyKeys = Object.keys(newHistory);
+  const slice = historyKeys.length - 5;
+  if (slice > 0) {
+    const deleteKeys = historyKeys.slice(0, slice);
+    deleteKeys.forEach(deleteKey => {
+      delete newHistory[deleteKey];
+    });
+  }
+
+  // Remove the keys older than an hour
+  Object.keys(newHistory).forEach(newHistoryKey => {
+    const { saved } = newHistory[newHistoryKey];
+    const elapsed = now - saved;
+    if (elapsed > 3600 * 1000) delete newHistory[newHistoryKey];
+  });
+
+  dispatch(listingsRedditHistory(newHistory));
+};
+
+const getListingsHistory = (dispatch, currentState) => {
+  const { key } = currentState.router.location;
+  const { listingsRedditHistory: history } = currentState;
+  const lookupKey = key || 'front';
+
+  if (history[lookupKey]) {
+    const { data, about, status } = history[lookupKey];
+    const currentHistory = { ...history };
+    // place the reloaded history at the end of the object.
+    delete currentHistory[lookupKey];
+    const currentKey = {};
+    currentKey[lookupKey] = { ...history[lookupKey] };
+    const newHistory = { ...currentHistory, ...currentKey };
+    batch(() => {
+      dispatch(listingsRedditEntries(data));
+      dispatch(currentSubreddit(about));
+      dispatch(listingsRedditStatus(status));
+    });
+
+    // No need to batch history
+    dispatch(listingsRedditHistory(newHistory));
+
+    return true;
+  }
+
+  return false;
+};
 
 const keyEntryChildren = entries => {
   const arrayToObject = (arr, keyField) =>
@@ -104,13 +176,19 @@ const subredditAbout = async filter => {
 
 export function listingsFetchEntriesReddit(filters) {
   return async (dispatch, getState) => {
-    dispatch(listingsRedditStatus('loading'));
-    dispatch(currentSubreddit({}));
+    const currentState = getState();
 
-    await dispatch(listingsRedditEntries({}));
     try {
-      const currentState = getState();
-      const { search } = currentState.router.location;
+      const cached = getListingsHistory(dispatch, currentState);
+      if (cached) return;
+
+      const { search } = currentState;
+      batch(() => {
+        dispatch(listingsRedditStatus('loading'));
+        dispatch(currentSubreddit({}));
+        dispatch(listingsRedditEntries({}));
+      });
+
       const qs = queryString.parse(search);
       const params = {
         ...qs,
@@ -130,12 +208,17 @@ export function listingsFetchEntriesReddit(filters) {
         data.originalPost = entries.originalPost.data.children[0];
       }
 
-      await dispatch(listingsRedditEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';
-      dispatch(listingsRedditStatus(loaded));
+      batch(() => {
+        dispatch(listingsRedditEntries(data));
+        dispatch(listingsRedditStatus(loaded));
+      });
       const about = await subredditAbout(filters);
       dispatch(currentSubreddit(about));
+      setListingsHistory(dispatch, currentState, data, about, loaded);
     } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
       dispatch(listingsRedditStatus('error'));
     }
   };
@@ -163,11 +246,22 @@ export function listingsFetchRedditNext() {
         type: { $set: 'more' },
       });
 
-      await dispatch(listingsRedditEntries(newListings));
-
       const loaded = newListings.after ? 'loaded' : 'loadedAll';
-      dispatch(listingsRedditStatus(loaded));
+      batch(() => {
+        dispatch(listingsRedditEntries(newListings));
+        dispatch(listingsRedditStatus(loaded));
+      });
+
+      setListingsHistory(
+        dispatch,
+        currentState,
+        newListings,
+        currentState.currentSubreddit,
+        loaded
+      );
     } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
       dispatch(listingsRedditStatus('error'));
     }
   };
@@ -213,8 +307,10 @@ export function listingsFetchRedditNew(stream = false) {
       // if the returned amount is greater than 100, replace the results with
       // the newest results.
       if (newlyFetchCount === 100) {
-        await dispatch(listingsRedditEntries(entries.data));
-        dispatch(listingsRedditStatus('loaded'));
+        batch(() => {
+          dispatch(listingsRedditEntries(entries.data));
+          dispatch(listingsRedditStatus('loaded'));
+        });
         return newlyFetchCount;
       }
 
@@ -239,9 +335,18 @@ export function listingsFetchRedditNew(stream = false) {
         type: { $set: 'new' },
       });
 
-      await dispatch(listingsRedditEntries(newListings));
+      batch(() => {
+        dispatch(listingsRedditEntries(newListings));
+        dispatch(listingsRedditStatus('loaded'));
+      });
 
-      dispatch(listingsRedditStatus('loaded'));
+      setListingsHistory(
+        dispatch,
+        currentState,
+        newListings,
+        currentState.currentSubreddit,
+        'loaded'
+      );
       return newChildKeys.length;
     } catch (e) {
       dispatch(listingsRedditStatus('error'));

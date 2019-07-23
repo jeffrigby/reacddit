@@ -14,7 +14,6 @@ import { siteSettings } from '../../redux/actions/misc';
 import '../../styles/layout.scss';
 import { hotkeyStatus } from '../../common';
 
-
 class App extends React.PureComponent {
   tokenQuery = null;
 
@@ -73,7 +72,17 @@ class App extends React.PureComponent {
 
   render() {
     const { error, message, loading } = this.state;
-    const { redditBearer, subredditsFilter } = this.props;
+    const { redditBearer, subredditsFilter, redditMe } = this.props;
+
+    if (redditMe.status === 'error') {
+      return (
+        <div className="alert alert-danger m-2" role="alert">
+          {"Can't connect to the reddit API. This is possibly related to your browser blocking connections to " +
+            'oauth.reddit.com. Please check your browser content blocking settings and try again.'}{' '}
+          {redditMe.error}
+        </div>
+      );
+    }
 
     if (error) {
       return (
@@ -169,6 +178,7 @@ App.propTypes = {
   settings: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
+  redditMe: PropTypes.object.isRequired,
 };
 
 App.defaultProps = {};
@@ -177,6 +187,7 @@ const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
   settings: state.siteSettings,
   subredditsFilter: state.subredditsFilter,
+  redditMe: state.redditMe,
 });
 
 export default withRouter(
