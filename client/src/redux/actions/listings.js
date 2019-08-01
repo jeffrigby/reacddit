@@ -182,7 +182,7 @@ export function listingsFetchEntriesReddit(filters) {
       const cached = getListingsHistory(dispatch, currentState);
       if (cached) return;
 
-      const { search } = currentState;
+      const { search } = currentState.router.location;
       batch(() => {
         dispatch(listingsRedditStatus('loading'));
         dispatch(currentSubreddit({}));
