@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
+import { isMobile } from 'react-device-detect';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
 
@@ -84,12 +85,13 @@ class NavigationPrimaryLinks extends React.PureComponent {
   render() {
     const { me, sort } = this.props;
     const currentSort = sort && sort !== 'relevance' ? sort : '';
+    const loginLink = `${API_PATH}/login${isMobile ? '?mobile' : ''}`;
 
     return (
       <ul className="nav flex-column">
         {!me.name && (
           <NavigationGenericNavItem
-            to={`${API_PATH}/login`}
+            to={loginLink}
             text="Reddit Login"
             title="Login to reddit to see your subreddits. ⇧L"
             isStatic
