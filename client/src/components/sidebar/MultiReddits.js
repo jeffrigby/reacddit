@@ -4,12 +4,15 @@ import { connect } from 'react-redux';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 import MultiRedditsItem from './MultiRedditsItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
+import MultiRedditsAdd from './MultiRedditsAdd';
 
 const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
   const menuId = 'multis';
 
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(getMenuStatus(menuId, true));
+  const [showAdd, setShowAdd] = useState(false);
+
   useEffect(() => {
     const getMultis = async () => {
       if (redditBearer.status === 'auth') {
@@ -64,6 +67,8 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
         ? 'fas fa-caret-down menu-caret'
         : 'fas fa-caret-right menu-caret';
 
+      const showAddClass = !showAdd ? 'fas fa-plus mr-1' : 'fas fa-minus mr-1';
+
       return (
         <div id="sidebar-multis">
           <div className="sidebar-heading d-flex text-muted">
@@ -77,6 +82,13 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
             {showMenu && (
               <span>
                 <i
+                  className={showAddClass}
+                  onClick={() => setShowAdd(!showAdd)}
+                  role="button"
+                  tabIndex="0"
+                  onKeyDown={() => setShowAdd(!showAdd)}
+                />
+                <i
                   className={spinnerClass}
                   onClick={reloadMultis}
                   role="button"
@@ -86,6 +98,12 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
               </span>
             )}
           </div>
+          {showAdd && (
+            <MultiRedditsAdd
+              setShowAdd={setShowAdd}
+              reloadMultis={reloadMultis}
+            />
+          )}
           {showMenu && <ul className={multisClass}>{multis}</ul>}
         </div>
       );
