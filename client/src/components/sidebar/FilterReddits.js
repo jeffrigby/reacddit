@@ -110,7 +110,7 @@ class FilterReddits extends React.Component {
     const { setFilter } = this.props;
     const active = true;
     setFilter({ active });
-    document.body.classList.add('filter-active');
+    // document.body.classList.add('filter-active');
   };
 
   /**
@@ -121,7 +121,7 @@ class FilterReddits extends React.Component {
     const active = false;
     const activeIndex = 0;
     setFilter({ active, activeIndex });
-    document.body.classList.remove('filter-active');
+    // document.body.classList.remove('filter-active');
   };
 
   render() {
