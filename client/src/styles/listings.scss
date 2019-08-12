@@ -44,6 +44,12 @@ div#entries {
     margin-right: -21px;
   }
 
+
+  .media-contain-width {
+    margin: 0 auto;
+    max-width: 1120px;
+  }
+
   .sf-html-show-all {
     max-height: inherit !important;
     overflow: auto;
