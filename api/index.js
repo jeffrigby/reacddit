@@ -224,7 +224,7 @@ const getLoginUrl = ctx => {
     redirect_uri: REDDIT_CALLBACK_URI,
     scope: scope.split(","),
     state,
-    duration: "permanent",
+    duration: "permanent"
   });
   return authorizationUri;
 };
@@ -247,7 +247,13 @@ const router = new Router();
  */
 router.get("/api/login", (ctx, next) => {
   const authorizationUri = getLoginUrl(ctx);
-  ctx.redirect(authorizationUri);
+  // @todo seems like a dumb way to do this but ¯\ _(ツ)_/¯.
+  // Also only implementing this because the login form constantly breaks for mobile
+  const newAuthUrl =
+    ctx.request.url === "/api/login?mobile"
+      ? authorizationUri.replace("/authorize", "/authorize.compact")
+      : authorizationUri;
+  ctx.redirect(newAuthUrl);
 });
 
 /**
