@@ -342,6 +342,48 @@ class RedditAPI {
   }
 
   /**
+   * Add a custom feed.
+   * @param name - a string no longer than 50 characters
+   * @param description - raw markdown text to describe the feed.
+   * @param visibility - private, public or hidden
+   * @returns {Promise<*>}
+   */
+  async multiAdd(name, description, visibility) {
+    const url = '/api/multi';
+    const data = {
+      model: JSON.stringify({
+        description_md: description,
+        display_name: name,
+        visibility,
+      }),
+    };
+    return this.redditAPI.post(url, queryString.stringify(data), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+  }
+
+  /**
+   * Delete a custom feed
+   * @param multipath - multireddit url path
+   * @returns {Promise<*>}
+   */
+  async multiDelete(multipath) {
+    const path = multipath.replace(/^\/+/, '');
+    const url = `/api/multi/${path}`;
+    return this.redditAPI.delete(url);
+  }
+
+  /**
+   * Get a multis info.
+   * @param multiPath
+   * @returns {Promise<*>}
+   */
+  async multiInfo(multiPath) {
+    const url = `/api/multi/${multiPath}`;
+    return this.redditAPI.get(url);
+  }
+
+  /**
    * Add a subreddit to a multi
    * @param multiPath the full path of the multi
    * @param srName the subreddit name
