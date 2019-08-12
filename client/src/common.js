@@ -20,8 +20,14 @@ export const getMenuStatus = (menuID, defaultState = false) => {
 export const hotkeyStatus = () => {
   const { activeElement } = document;
   const { nodeName } = activeElement;
-  return !(
-    nodeName === 'textarea' ||
-    (nodeName === 'input' && activeElement.type === 'text')
-  );
+
+  if (nodeName === 'TEXTAREA') {
+    return false;
+  }
+
+  if (nodeName === 'INPUT' && activeElement.type === 'text') {
+    return false;
+  }
+
+  return true;
 };
