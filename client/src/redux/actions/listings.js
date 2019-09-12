@@ -1,4 +1,3 @@
-import update from 'immutability-helper';
 import { batch } from 'react-redux';
 import produce from 'immer';
 import { getLocationKey } from '../../common';
@@ -218,17 +217,18 @@ export function listingsFetchRedditNew(stream = false) {
     const currentState = getState();
     const locationKey = getLocationKey(currentState);
 
-    if (
-      currentState.listingsRedditStatus[locationKey] !== 'loaded' &&
-      currentState.listingsRedditStatus[locationKey] !== 'loadedAll'
-    ) {
+    const { children } = currentState.listingsRedditEntries[locationKey];
+    const { status } = currentState.listingsRedditStatus[locationKey];
+
+    if (status !== 'loaded' && status !== 'loadedAll') {
       return 0;
     }
 
-    const childKeys = Object.keys(currentState.listingsRedditEntries.children);
+    const childKeys = Object.keys(children);
+
     const before = childKeys[0];
-    const status = stream ? 'loadingStream' : 'loadingNew';
-    dispatch(listingsRedditStatus(locationKey, status));
+    const newStatus = stream ? 'loadingStream' : 'loadingNew';
+    dispatch(listingsRedditStatus(locationKey, newStatus));
 
     try {
       const { search } = currentState.router.location;
@@ -243,7 +243,6 @@ export function listingsFetchRedditNew(stream = false) {
       const newlyFetchCount = Object.keys(entries.data.children).length;
 
       if (newlyFetchCount === 0) {
-        // dispatch(listingsRedditStatus('loaded'));
         dispatch(listingsRedditStatus(locationKey, 'loaded'));
         return 0;
       }
@@ -252,7 +251,7 @@ export function listingsFetchRedditNew(stream = false) {
       // the newest results.
       if (newlyFetchCount === 100) {
         batch(() => {
-          dispatch(listingsRedditEntries(entries.data));
+          dispatch(listingsRedditEntries(locationKey, entries.data));
           dispatch(listingsRedditStatus(locationKey, 'loaded'));
         });
         return newlyFetchCount;
@@ -260,7 +259,7 @@ export function listingsFetchRedditNew(stream = false) {
 
       const newChildren = {
         ...entries.data.children,
-        ...currentState.listingsRedditEntries.children,
+        ...children,
       };
 
       // Truncate the posts to 400 to conserve memory.
@@ -273,22 +272,24 @@ export function listingsFetchRedditNew(stream = false) {
         });
       }
 
-      const newListings = update(
-        currentState.listingsRedditHistory[locationKey],
-        {
-          before: { $set: entries.data.before },
-          children: { $set: newChildren },
-          type: { $set: 'new' },
+      const newListings = produce(
+        currentState.listingsRedditEntries[locationKey],
+        draft => {
+          draft.before = entries.data.before;
+          draft.children = newChildren;
+          draft.type = 'new';
         }
       );
 
       batch(() => {
-        dispatch(listingsRedditEntries(newListings));
+        dispatch(listingsRedditEntries(locationKey, newListings));
         dispatch(listingsRedditStatus(locationKey, 'loaded'));
       });
 
       return newChildKeys.length;
     } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
       dispatch(listingsRedditStatus(locationKey, 'error'));
     }
     return false;
