@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 import isNil from 'lodash/isNil';
+import produce from 'immer';
 import {
   listingsFetchEntriesReddit,
   listingsFetchRedditNext,
@@ -62,15 +63,21 @@ class ListingsEntries extends React.Component {
 
   initTriggered = null;
 
-  state = {
-    focused: '',
-    visible: [],
-    minHeights: {},
-    actionable: null,
-    hasError: false,
-  };
-
   actionPost = React.createRef();
+
+  constructor(props) {
+    // Required step: always call the parent class' constructor
+    super(props);
+
+    // Set the state directly. Use props if necessary.
+    this.state = {
+      focused: '',
+      visible: [],
+      minHeights: {},
+      actionable: null,
+      hasError: false,
+    };
+  }
 
   componentDidMount() {
     this.mounted = true;
@@ -130,6 +137,15 @@ class ListingsEntries extends React.Component {
       this.setState(newState);
     }
   };
+
+  getMinHeight(name) {
+    const { minHeights } = this.state;
+    const { locationKey } = this.props;
+
+    return !minHeights[locationKey] || !minHeights[locationKey][name]
+      ? 0
+      : minHeights[locationKey][name];
+  }
 
   forceMonitorEntries = () => {
     // Trigger this after a second/two seconds to load anything missed.
@@ -236,6 +252,7 @@ class ListingsEntries extends React.Component {
     if (!this.mounted) return;
     if ((this.scrollResize && !this.scrollResizeStop) || force) {
       const { minHeights } = this.state;
+      const { locationKey } = this.props;
 
       const { autoplay } = this.props.settings;
       this.scrollResize = false;
@@ -243,7 +260,7 @@ class ListingsEntries extends React.Component {
       const postsCollection = document.getElementsByClassName('entry');
       const posts = Array.from(postsCollection);
       let newFocus = '';
-      const newMinHeights = { ...minHeights };
+      const newMinHeights = {};
       let newActionable = null;
       const newVis = [];
       let prevPostId = null;
@@ -283,12 +300,28 @@ class ListingsEntries extends React.Component {
         }
       });
 
-      this.setState({
+      const newMinHeightsState = produce(minHeights, draft => {
+        const minHeightKeys = Object.keys(minHeights);
+
+        const slice = minHeightKeys.length - 7;
+        if (slice > 0) {
+          const deleteKeys = minHeightKeys.slice(0, slice);
+          deleteKeys.forEach(deleteKey => {
+            delete draft[deleteKey];
+          });
+        }
+
+        draft[locationKey] = newMinHeights;
+      });
+
+      const currentState = {
         focused: newFocus,
         actionable: newActionable,
         visible: newVis,
-        minHeights: newMinHeights,
-      });
+        minHeights: newMinHeightsState,
+      };
+
+      this.setState(currentState);
 
       this.checkLoadMore();
     }
@@ -318,12 +351,12 @@ class ListingsEntries extends React.Component {
   }
 
   renderPost = post => {
-    const { focused, visible, actionable, minHeights } = this.state;
+    const { focused, visible, actionable } = this.state;
     const isFocused = focused === post.data.name;
     const isVisible = visible.includes(post.data.name);
     const isActionable = actionable === post.data.name;
     const ref = isActionable ? this.actionPost : null;
-    const minHeight = minHeights[post.data.name] || 0;
+    const minHeight = this.getMinHeight(post.data.name);
     return (
       <Post
         entry={post}
@@ -475,6 +508,7 @@ ListingsEntries.propTypes = {
   listingsEntries: PropTypes.object.isRequired,
   listingsStatus: PropTypes.string.isRequired,
   settings: PropTypes.object,
+  locationKey: PropTypes.string,
 
   /* Redux actions */
   getEntriesReddit: PropTypes.func.isRequired,
@@ -485,13 +519,12 @@ ListingsEntries.propTypes = {
 
 ListingsEntries.defaultProps = {
   settings: { debug: false, view: 'expanded' },
+  locationKey: 'front',
 };
 
 const mapStateToProps = (state, ownProps) => ({
-  filter: state.listingsFilter,
-  listingsEntries: state.listingsRedditEntries,
-  listingsStatus: state.listingsRedditStatus,
   settings: state.siteSettings,
+  locationKey: state.router.location.key,
 });
 
 export default connect(

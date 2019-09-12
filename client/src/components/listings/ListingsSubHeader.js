@@ -4,12 +4,15 @@ import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import SubUnSub from './SubUnSub';
 import MultiToggle from './MultiToggle';
+import {
+  getCurrentSubreddit,
+  getCachedSub,
+} from '../../redux/selectors/subredditSelectors';
 
 const queryString = require('query-string/index');
 
 const ListingsSubHeader = ({ about, filter, cachedSub }) => {
   const { listType, target, multi, user } = filter;
-  // if (listType !== 's') return null;
 
   let title = '';
   let subInfo;
@@ -118,18 +121,6 @@ const ListingsSubHeader = ({ about, filter, cachedSub }) => {
   );
 };
 
-const filterSub = (subs, filter) => {
-  if (subs.status !== 'loaded') {
-    return {};
-  }
-
-  const { subreddits } = subs;
-  const { target } = filter;
-  return target && subreddits[target.toLowerCase()]
-    ? subreddits[target.toLowerCase()]
-    : {};
-};
-
 ListingsSubHeader.propTypes = {
   about: PropTypes.object,
   filter: PropTypes.object.isRequired,
@@ -141,9 +132,9 @@ ListingsSubHeader.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-  about: state.currentSubreddit,
+  about: getCurrentSubreddit(state),
   filter: state.listingsFilter,
-  cachedSub: filterSub(state.subreddits, state.listingsFilter),
+  cachedSub: getCachedSub(state),
 });
 
 export default connect(

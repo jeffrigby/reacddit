@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { listingsFetchRedditNew } from '../../redux/actions/listings';
+import { listingStatus } from '../../redux/selectors/listingsSelector';
 
 const Reload = ({ getNewRedditEntries, listingsStatus, stream }) => {
   const loading = listingsStatus !== 'loaded' && listingsStatus !== 'loadedAll';
@@ -41,7 +42,7 @@ Reload.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-  listingsStatus: state.listingsRedditStatus,
+  listingsStatus: listingStatus(state),
   stream: state.siteSettings.stream,
 });
 

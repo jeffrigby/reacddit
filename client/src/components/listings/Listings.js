@@ -1,13 +1,17 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import isEqual from 'lodash/isEqual';
 import ListingEntries from './ListingsEntries';
 import { listingsFilter } from '../../redux/actions/listings';
+import {
+  listingData,
+  listingStatus,
+} from '../../redux/selectors/listingsSelector';
 
 const queryString = require('query-string');
 
-const Listings = ({ location, match, filter, setFilter }) => {
+const Listings = ({ location, match, setFilter, data, status, filter }) => {
+  // Set the new filter.
   useEffect(() => {
     const qs = queryString.parse(location.search);
     const { listType, target, sort, user, userType, multi } = match.params;
@@ -30,24 +34,35 @@ const Listings = ({ location, match, filter, setFilter }) => {
       listType: listingType,
     };
 
-    if (!isEqual(filter, newFilter)) {
-      setFilter(newFilter);
-    }
-  }, [match, location, filter, setFilter]);
+    setFilter(newFilter);
+  }, [match, location, setFilter]);
 
-  return <ListingEntries location={location} match={match} />;
+  return (
+    <ListingEntries
+      location={location}
+      match={match}
+      filter={filter}
+      listingsEntries={data}
+      listingsStatus={status}
+    />
+  );
 };
 
 Listings.propTypes = {
   location: PropTypes.object.isRequired,
   match: PropTypes.object.isRequired,
-  filter: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
+  data: PropTypes.object.isRequired,
+  status: PropTypes.string.isRequired,
+  filter: PropTypes.object.isRequired,
 };
 
 Listings.defaultProps = {};
 
 const mapStateToProps = state => ({
+  // filter: state.listingsFilter,
+  data: listingData(state),
+  status: listingStatus(state),
   filter: state.listingsFilter,
 });
 

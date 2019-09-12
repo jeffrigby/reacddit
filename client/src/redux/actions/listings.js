@@ -1,5 +1,6 @@
 import update from 'immutability-helper';
 import { batch } from 'react-redux';
+import produce from 'immer';
 import RedditAPI from '../../reddit/redditAPI';
 
 // @todo there's no reason for any of this to be in Redux. Move to hooks.
@@ -12,9 +13,10 @@ export function listingsFilter(listFilter) {
   };
 }
 
-export function listingsRedditEntries(listSubredditEntries) {
+export function listingsRedditEntries(key, listSubredditEntries) {
   return {
     type: 'LISTINGS_REDDIT_ENTRIES',
+    key,
     listSubredditEntries,
   };
 }
@@ -26,90 +28,21 @@ export function listingsEntryUpdate(entry) {
   };
 }
 
-export function listingsRedditStatus(status) {
+export function listingsRedditStatus(key, status) {
   return {
     type: 'LISTINGS_REDDIT_STATUS',
+    key,
     status,
   };
 }
 
-export function listingsRedditHistory(history) {
-  return {
-    type: 'LISTINGS_REDDIT_HISTORY',
-    history,
-  };
-}
-
-export function currentSubreddit(subreddit) {
+export function currentSubreddit(key, subreddit) {
   return {
     type: 'CURRENT_SUBREDDIT',
+    key,
     subreddit,
   };
 }
-
-const setListingsHistory = (dispatch, currentState, data, about, status) => {
-  const { router, listingsRedditHistory: history } = currentState;
-  const { key } = router.location;
-
-  const mainKey = key || 'front';
-
-  const newHistory = { ...history };
-  const now = Date.now();
-
-  newHistory[mainKey] = {
-    data,
-    about,
-    status,
-    saved: now,
-  };
-
-  // Only keep five keys
-  const historyKeys = Object.keys(newHistory);
-  const slice = historyKeys.length - 5;
-  if (slice > 0) {
-    const deleteKeys = historyKeys.slice(0, slice);
-    deleteKeys.forEach(deleteKey => {
-      delete newHistory[deleteKey];
-    });
-  }
-
-  // Remove the keys older than an hour
-  Object.keys(newHistory).forEach(newHistoryKey => {
-    const { saved } = newHistory[newHistoryKey];
-    const elapsed = now - saved;
-    if (elapsed > 3600 * 1000) delete newHistory[newHistoryKey];
-  });
-
-  dispatch(listingsRedditHistory(newHistory));
-};
-
-const getListingsHistory = (dispatch, currentState) => {
-  const { key } = currentState.router.location;
-  const { listingsRedditHistory: history } = currentState;
-  const lookupKey = key || 'front';
-
-  if (history[lookupKey]) {
-    const { data, about, status } = history[lookupKey];
-    const currentHistory = { ...history };
-    // place the reloaded history at the end of the object.
-    delete currentHistory[lookupKey];
-    const currentKey = {};
-    currentKey[lookupKey] = { ...history[lookupKey] };
-    const newHistory = { ...currentHistory, ...currentKey };
-    batch(() => {
-      dispatch(listingsRedditEntries(data));
-      dispatch(currentSubreddit(about));
-      dispatch(listingsRedditStatus(status));
-    });
-
-    // No need to batch history
-    dispatch(listingsRedditHistory(newHistory));
-
-    return true;
-  }
-
-  return false;
-};
 
 const keyEntryChildren = entries => {
   const arrayToObject = (arr, keyField) =>
@@ -161,6 +94,11 @@ const getContent = async (filters, params) => {
   return entries;
 };
 
+const getLocationKey = currentState => {
+  const { key } = currentState.router.location;
+  return key || 'front';
+};
+
 const subredditAbout = async filter => {
   const { target, listType, multi } = filter;
   const badTarget = !target || target.match(/mine|popular|friends/);
@@ -177,18 +115,29 @@ const subredditAbout = async filter => {
 export function listingsFetchEntriesReddit(filters) {
   return async (dispatch, getState) => {
     const currentState = getState();
+    const locationKey = getLocationKey(currentState);
 
     try {
-      const cached = getListingsHistory(dispatch, currentState);
-      if (cached) return;
+      if (
+        currentState.listingsRedditEntries[locationKey] !== undefined &&
+        currentState.currentSubreddit[locationKey] !== undefined &&
+        currentState.listingsRedditStatus[locationKey] !== undefined
+      ) {
+        // Make sure it's not expired.
+        const elapsed =
+          Date.now() - currentState.listingsRedditEntries[locationKey].saved;
+        if (elapsed <= 3600 * 1000) {
+          return;
+        }
+      }
 
-      const { search } = currentState.router.location;
       batch(() => {
-        dispatch(listingsRedditStatus('loading'));
-        dispatch(currentSubreddit({}));
-        dispatch(listingsRedditEntries({}));
+        dispatch(listingsRedditStatus(locationKey, 'loading'));
+        dispatch(currentSubreddit(locationKey, {}));
+        dispatch(listingsRedditEntries(locationKey, {}));
       });
 
+      const { search } = currentState.router.location;
       const qs = queryString.parse(search);
       const params = {
         ...qs,
@@ -210,16 +159,15 @@ export function listingsFetchEntriesReddit(filters) {
 
       const loaded = data.after ? 'loaded' : 'loadedAll';
       batch(() => {
-        dispatch(listingsRedditEntries(data));
-        dispatch(listingsRedditStatus(loaded));
+        dispatch(listingsRedditEntries(locationKey, data));
+        dispatch(listingsRedditStatus(locationKey, loaded));
       });
       const about = await subredditAbout(filters);
-      dispatch(currentSubreddit(about));
-      setListingsHistory(dispatch, currentState, data, about, loaded);
+      dispatch(currentSubreddit(locationKey, about));
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
-      dispatch(listingsRedditStatus('error'));
+      dispatch(listingsRedditStatus(locationKey, 'error'));
     }
   };
 }
@@ -227,8 +175,12 @@ export function listingsFetchEntriesReddit(filters) {
 export function listingsFetchRedditNext() {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const { after } = currentState.listingsRedditEntries;
-    dispatch(listingsRedditStatus('loadingNext'));
+    const locationKey = getLocationKey(currentState);
+    const currentData = currentState.listingsRedditEntries[locationKey];
+
+    const { after } = currentData;
+    dispatch(listingsRedditStatus(locationKey, 'loadingNext'));
+
     try {
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
@@ -240,29 +192,24 @@ export function listingsFetchRedditNext() {
 
       const entries = await getContent(currentState.listingsFilter, params);
 
-      const newListings = update(currentState.listingsRedditEntries, {
-        after: { $set: entries.data.after },
-        children: { $merge: entries.data.children },
-        type: { $set: 'more' },
+      const newListings = produce(currentData, draft => {
+        draft.after = entries.data.after;
+        draft.children = {
+          ...currentData.children,
+          ...entries.data.children,
+        };
+        draft.type = 'more';
       });
 
       const loaded = newListings.after ? 'loaded' : 'loadedAll';
       batch(() => {
-        dispatch(listingsRedditEntries(newListings));
-        dispatch(listingsRedditStatus(loaded));
+        dispatch(listingsRedditEntries(locationKey, newListings));
+        dispatch(listingsRedditStatus(locationKey, loaded));
       });
-
-      setListingsHistory(
-        dispatch,
-        currentState,
-        newListings,
-        currentState.currentSubreddit,
-        loaded
-      );
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(e);
-      dispatch(listingsRedditStatus('error'));
+      dispatch(listingsRedditStatus(locationKey, 'error'));
     }
   };
 }
@@ -275,10 +222,11 @@ export function listingsFetchRedditNext() {
 export function listingsFetchRedditNew(stream = false) {
   return async (dispatch, getState) => {
     const currentState = getState();
+    const locationKey = getLocationKey(currentState);
 
     if (
-      currentState.listingsRedditStatus !== 'loaded' &&
-      currentState.listingsRedditStatus !== 'loadedAll'
+      currentState.listingsRedditStatus[locationKey] !== 'loaded' &&
+      currentState.listingsRedditStatus[locationKey] !== 'loadedAll'
     ) {
       return 0;
     }
@@ -286,7 +234,8 @@ export function listingsFetchRedditNew(stream = false) {
     const childKeys = Object.keys(currentState.listingsRedditEntries.children);
     const before = childKeys[0];
     const status = stream ? 'loadingStream' : 'loadingNew';
-    dispatch(listingsRedditStatus(status));
+    dispatch(listingsRedditStatus(locationKey, status));
+
     try {
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
@@ -300,7 +249,8 @@ export function listingsFetchRedditNew(stream = false) {
       const newlyFetchCount = Object.keys(entries.data.children).length;
 
       if (newlyFetchCount === 0) {
-        dispatch(listingsRedditStatus('loaded'));
+        // dispatch(listingsRedditStatus('loaded'));
+        dispatch(listingsRedditStatus(locationKey, 'loaded'));
         return 0;
       }
 
@@ -309,7 +259,7 @@ export function listingsFetchRedditNew(stream = false) {
       if (newlyFetchCount === 100) {
         batch(() => {
           dispatch(listingsRedditEntries(entries.data));
-          dispatch(listingsRedditStatus('loaded'));
+          dispatch(listingsRedditStatus(locationKey, 'loaded'));
         });
         return newlyFetchCount;
       }
@@ -329,27 +279,23 @@ export function listingsFetchRedditNew(stream = false) {
         });
       }
 
-      const newListings = update(currentState.listingsRedditEntries, {
-        before: { $set: entries.data.before },
-        children: { $set: newChildren },
-        type: { $set: 'new' },
-      });
+      const newListings = update(
+        currentState.listingsRedditHistory[locationKey],
+        {
+          before: { $set: entries.data.before },
+          children: { $set: newChildren },
+          type: { $set: 'new' },
+        }
+      );
 
       batch(() => {
         dispatch(listingsRedditEntries(newListings));
-        dispatch(listingsRedditStatus('loaded'));
+        dispatch(listingsRedditStatus(locationKey, 'loaded'));
       });
 
-      setListingsHistory(
-        dispatch,
-        currentState,
-        newListings,
-        currentState.currentSubreddit,
-        'loaded'
-      );
       return newChildKeys.length;
     } catch (e) {
-      dispatch(listingsRedditStatus('error'));
+      dispatch(listingsRedditStatus(locationKey, 'error'));
     }
     return false;
   };
