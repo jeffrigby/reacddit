@@ -17,11 +17,17 @@ import { hotkeyStatus } from '../../common';
 class App extends React.PureComponent {
   tokenQuery = null;
 
-  state = {
-    error: false,
-    loading: true,
-    message: null,
-  };
+  constructor(props) {
+    // Required step: always call the parent class' constructor
+    super(props);
+
+    // Set the state directly. Use props if necessary.
+    this.state = {
+      error: false,
+      loading: true,
+      message: null,
+    };
+  }
 
   async componentDidMount() {
     const { getBearer, getMe } = this.props;

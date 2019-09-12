@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { distanceInWordsToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import PostBylineAuthor from './PostBylineAuthor';
 
 const PostByline = ({ data }) => {
-  const timeago = distanceInWordsToNow(data.created_utc * 1000);
+  const timeago = formatDistanceToNow(data.created_utc * 1000);
   // gotta be a better way to do this, but, whatever
   const timeagoshort = timeago
     .replace(/less than a minute?/g, '<1M')

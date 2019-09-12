@@ -85,6 +85,7 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
                   className={showAddClass}
                   onClick={() => setShowAdd(!showAdd)}
                   role="button"
+                  aria-label="Add Custom Feed"
                   tabIndex="0"
                   onKeyDown={() => setShowAdd(!showAdd)}
                 />
@@ -93,6 +94,7 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
                   onClick={reloadMultis}
                   role="button"
                   tabIndex="0"
+                  aria-label="Reload Multis"
                   onKeyDown={reloadMultis}
                 />
               </span>

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import _trim from 'lodash/trim';
 import _trimEnd from 'lodash/trimEnd';
-import { distanceInWordsToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 const queryString = require('query-string');
@@ -70,7 +70,7 @@ class NavigationItem extends React.PureComponent {
 
     let { title } = item;
     if (lastUpdated !== 0) {
-      const timeago = distanceInWordsToNow(lastUpdated * 1000);
+      const timeago = formatDistanceToNow(lastUpdated * 1000);
       title += ` - updated ${timeago} ago`;
     }
 

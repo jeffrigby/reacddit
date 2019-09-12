@@ -10,11 +10,15 @@ import NavigationItem from './NavigationItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 
 class NavigationSubReddits extends React.PureComponent {
-  state = {
-    showMenu: getMenuStatus('subreddits', true),
-  };
-
   checkLastUpdated = null;
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      showMenu: getMenuStatus('subreddits', true),
+    };
+  }
 
   componentDidMount() {
     const { fetchSubreddits, redditBearer, fetchLastUpdated } = this.props;

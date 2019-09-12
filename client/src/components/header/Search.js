@@ -11,12 +11,17 @@ class Search extends React.PureComponent {
 
   searchInputParent = React.createRef();
 
-  state = {
-    focused: false,
-    search: '',
-    qs: this.props.location.search,
-    pathname: this.props.location.pathname,
-  };
+  constructor(props) {
+    // Required step: always call the parent class' constructor
+    super(props);
+
+    this.state = {
+      focused: false,
+      search: '',
+      qs: props.location.search,
+      pathname: props.location.pathname,
+    };
+  }
 
   componentDidMount() {
     // Set the initial state.

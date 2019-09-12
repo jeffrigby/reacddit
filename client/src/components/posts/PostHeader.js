@@ -65,6 +65,7 @@ const PostHeader = ({
         target="_blank"
         rel="noopener noreferrer"
         className="list-group-item-heading"
+        aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
@@ -76,6 +77,7 @@ const PostHeader = ({
         onClick={toggleView}
         className="btn btn-link m-0 p-0 post-title"
         type="button"
+        aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />

@@ -17,11 +17,17 @@ const classNames = require('classnames');
 class Post extends React.PureComponent {
   mounted = false;
 
-  state = {
-    renderedContent: {},
-    viewSetting: this.props.siteSettings.view,
-    expand: this.props.siteSettings.view === 'expanded' || false,
-  };
+  constructor(props) {
+    // Required step: always call the parent class' constructor
+    super(props);
+
+    // Set the state directly. Use props if necessary.
+    this.state = {
+      renderedContent: {},
+      viewSetting: props.siteSettings.view,
+      expand: props.siteSettings.view === 'expanded' || false,
+    };
+  }
 
   componentDidMount() {
     this.mounted = true;

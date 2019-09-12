@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
-import { distanceInWordsToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
@@ -68,7 +68,7 @@ const NavigationAccount = ({ me, urlPush }) => {
     : 'fas fa-caret-right menu-caret';
 
   const karmaTotal = me.link_karma + me.comment_karma;
-  const joinedDate = distanceInWordsToNow(me.created_utc * 1000);
+  const joinedDate = formatDistanceToNow(me.created_utc * 1000);
   const accountInfo = `
       ${karmaTotal.toLocaleString()} Karma
       <br />
