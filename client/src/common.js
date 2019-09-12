@@ -31,3 +31,8 @@ export const hotkeyStatus = () => {
 
   return true;
 };
+
+export const getLocationKey = currentState => {
+  const { key } = currentState.router.location;
+  return key || 'front';
+};

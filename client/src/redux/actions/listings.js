@@ -1,6 +1,7 @@
 import update from 'immutability-helper';
 import { batch } from 'react-redux';
 import produce from 'immer';
+import { getLocationKey } from '../../common';
 import RedditAPI from '../../reddit/redditAPI';
 
 // @todo there's no reason for any of this to be in Redux. Move to hooks.
@@ -49,11 +50,9 @@ const keyEntryChildren = entries => {
     Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
 
   const newChildren = arrayToObject(entries.data.children, 'name');
-  const newEntries = update(entries, {
-    data: { children: { $set: newChildren } },
+  return produce(entries, draft => {
+    draft.data.children = newChildren;
   });
-
-  return newEntries;
 };
 
 const getContent = async (filters, params) => {
@@ -92,11 +91,6 @@ const getContent = async (filters, params) => {
     entries = keyEntryChildren(entries);
   }
   return entries;
-};
-
-const getLocationKey = currentState => {
-  const { key } = currentState.router.location;
-  return key || 'front';
 };
 
 const subredditAbout = async filter => {

@@ -1,4 +1,3 @@
-import update from 'immutability-helper';
 import produce from 'immer';
 
 const MAX_HISTORY_ITEMS = 7;
@@ -58,10 +57,17 @@ export function listingsRedditEntries(state = {}, action) {
       return cleanHistory(newState);
     }
     case 'LISTINGS_REDDIT_ENTRY_UPDATE': {
-      const updateListing = update(state, {
-        children: { [action.entry.name]: { data: { $merge: action.entry } } },
+      const { entry } = action;
+      return produce(state, draft => {
+        Object.entries(entry).forEach(([locationID, posts]) => {
+          Object.entries(posts).forEach(([postID, postUpdates]) => {
+            draft[locationID].children[postID].data = {
+              ...state[locationID].children[postID].data,
+              ...postUpdates,
+            };
+          });
+        });
       });
-      return updateListing;
     }
     default:
       return state;

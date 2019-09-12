@@ -1,5 +1,6 @@
 import { listingsEntryUpdate } from './listings';
 import RedditAPI from '../../reddit/redditAPI';
+import { getLocationKey } from '../../common';
 
 export function redditMultiReddits(multiReddits) {
   return {
@@ -187,24 +188,47 @@ export function redditFetchMultis(reset) {
 // @todo, this is kind of dumb to have in redux. Remove when I convert save to hooks.
 export function redditSave(id) {
   return async (dispatch, getState) => {
-    await RedditAPI.save(id);
-    const updatedEntry = {
-      name: id,
-      saved: true,
-    };
-    dispatch(listingsEntryUpdate(updatedEntry));
+    try {
+      const currentState = getState();
+      const locationKey = getLocationKey(currentState);
+
+      await RedditAPI.save(id);
+      const updatedEntry = {
+        [locationKey]: {
+          [id]: {
+            saved: true,
+          },
+        },
+      };
+      dispatch(listingsEntryUpdate(updatedEntry));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
   };
 }
 
 // @todo, this is kind of dumb to have in redux. Remove when I convert save to hooks.
 export function redditUnsave(id) {
   return async (dispatch, getState) => {
-    await RedditAPI.unsave(id);
-    const updatedEntry = {
-      name: id,
-      saved: false,
-    };
-    dispatch(listingsEntryUpdate(updatedEntry));
+    try {
+      await RedditAPI.unsave(id);
+      const currentState = getState();
+      const locationKey = getLocationKey(currentState);
+
+      const updatedEntry = {
+        [locationKey]: {
+          [id]: {
+            saved: false,
+          },
+        },
+      };
+
+      dispatch(listingsEntryUpdate(updatedEntry));
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+    }
   };
 }
 
@@ -212,8 +236,12 @@ export function redditUnsave(id) {
 export function redditVote(id, dir) {
   return async (dispatch, getState) => {
     const currentState = getState();
+    const locationKey = getLocationKey(currentState);
+
     try {
-      let { likes, ups } = currentState.listingsRedditEntries.children[id].data;
+      let { likes, ups } = currentState.listingsRedditEntries[
+        locationKey
+      ].children[id].data;
       await RedditAPI.vote(id, dir);
 
       switch (dir) {
@@ -261,14 +289,18 @@ export function redditVote(id, dir) {
       }
 
       const updatedEntry = {
-        name: id,
-        ups,
-        likes,
+        [locationKey]: {
+          [id]: {
+            ups,
+            likes,
+          },
+        },
       };
 
       dispatch(listingsEntryUpdate(updatedEntry));
     } catch (e) {
-      // console.log(e);
+      // eslint-disable-next-line no-console
+      console.log(e);
     }
   };
 }
