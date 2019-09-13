@@ -10,14 +10,20 @@ const ListingsMultiHeader = ({ filter, multis, me }) => {
   const name = user === 'me' ? me.me.name : user;
 
   useEffect(() => {
+    let isSubscribed = true;
     const getCurrentMulti = async () => {
       const multiLookup = await RedditAPI.multiInfo(`user/${name}/m/${target}`);
       if (multiLookup.status === 200) {
-        setCurrentMulti(multiLookup.data.data);
+        if (isSubscribed) {
+          setCurrentMulti(multiLookup.data.data);
+        }
       }
     };
 
     getCurrentMulti();
+    return () => {
+      isSubscribed = false;
+    };
   }, [name, target]);
 
   const info = currentMulti ? (
