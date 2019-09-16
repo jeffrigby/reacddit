@@ -1,27 +1,11 @@
 import produce from 'immer';
+import { pruneObject } from '../../common';
 
 const MAX_HISTORY_ITEMS = 7;
 const MAX_HISTORY_TIME = 3600;
-const cleanHistory = history => {
-  return produce(history, draft => {
-    const historyKeys = Object.keys(draft);
-
-    // Remove the keys older than an hour
-    historyKeys.forEach(newHistoryKey => {
-      const { saved } = draft[newHistoryKey];
-      const elapsed = Date.now() - saved;
-      if (elapsed > MAX_HISTORY_TIME * 1000) delete draft[newHistoryKey];
-    });
-
-    const slice = historyKeys.length - MAX_HISTORY_ITEMS;
-    if (slice > 0) {
-      const deleteKeys = historyKeys.slice(0, slice);
-      deleteKeys.forEach(deleteKey => {
-        delete draft[deleteKey];
-      });
-    }
-  });
-};
+// No real need to extract this, but just in case I need to modify it more.
+const cleanHistory = history =>
+  pruneObject(history, MAX_HISTORY_ITEMS, MAX_HISTORY_TIME);
 
 export function listingsFilter(state = { sort: 'hot', t: 'day' }, action) {
   switch (action.type) {

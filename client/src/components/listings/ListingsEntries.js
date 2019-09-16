@@ -6,15 +6,15 @@ import isNil from 'lodash/isNil';
 import produce from 'immer';
 import {
   listingsFetchEntriesReddit,
-  listingsFetchRedditNext,
   listingsFetchRedditNew,
+  listingsFetchRedditNext,
 } from '../../redux/actions/listings';
 import { siteSettings } from '../../redux/actions/misc';
 import Post from '../posts/Post';
 import '../../styles/listings.scss';
 import PostsDebug from './PostsDebug';
 import ListingsHeader from './ListingsHeader';
-import { hotkeyStatus } from '../../common';
+import { hotkeyStatus, pruneObject } from '../../common';
 
 class ListingsEntries extends React.Component {
   static nextEntry(focused) {
@@ -63,6 +63,8 @@ class ListingsEntries extends React.Component {
 
   initTriggered = null;
 
+  history = {};
+
   actionPost = React.createRef();
 
   constructor(props) {
@@ -82,8 +84,6 @@ class ListingsEntries extends React.Component {
   componentDidMount() {
     this.mounted = true;
 
-    this.scrollResizeStop = false;
-
     // Events.
     document.addEventListener('keydown', this.handleEntriesHotkey);
     window.addEventListener('resize', this.setScrollResize, false);
@@ -92,20 +92,29 @@ class ListingsEntries extends React.Component {
     this.monitorEntriesInterval = setInterval(this.monitorEntries, 250);
     this.streamNewPostsInterval = setInterval(this.streamNewPosts, 5000);
 
+    this.scrollResizeStop = false;
     this.forceMonitorEntries();
   }
 
   async componentDidUpdate(prevProps) {
-    const { location, filter, getEntriesReddit } = this.props;
+    const { location, filter, getEntriesReddit, locationKey } = this.props;
     const locationCompare = prevProps.location.search === location.search;
+    const cachedState = this.history[locationKey];
 
     if (!isEqual(prevProps.filter, filter) || !locationCompare) {
-      await getEntriesReddit(filter);
-      this.monitorEntries(true);
+      this.scrollResizeStop = true;
+      if (cachedState) {
+        await this.setStateFromCache();
+        setTimeout(() => {
+          this.scrollResizeStop = false;
+        }, 5000);
+      } else {
+        await getEntriesReddit(filter);
+        this.setInitFocusedAndVisible();
+        this.monitorEntries(true);
+        this.scrollResizeStop = false;
+      }
     }
-    this.setInitFocusedAndVisible();
-
-    // this.forceMonitorEntries();
   }
 
   componentWillUnmount() {
@@ -120,14 +129,39 @@ class ListingsEntries extends React.Component {
     clearInterval(this.streamNewPostsInterval);
   }
 
-  setInitFocusedAndVisible = () => {
+  /**
+   * Pull the state from the cache. This is to support the back button.
+   * @returns {Promise<void>}
+   */
+  setStateFromCache = async () => {
+    const { listingsEntries, locationKey } = this.props;
+
+    // Get the info from history
+    if (
+      this.history[locationKey] &&
+      this.initTriggered !== listingsEntries.requestUrl
+    ) {
+      // Pause the scrolling while the DOM re-renders.
+      this.scrollResizeStop = true;
+      const cachedState = this.history[locationKey];
+      this.initTriggered = listingsEntries.requestUrl;
+      await this.setState(cachedState.state);
+      // reset scroll position if it's off.
+      window.scroll(cachedState.scroll.x, cachedState.scroll.y);
+    }
+  };
+
+  setInitFocusedAndVisible = async () => {
     const { listingsEntries } = this.props;
+
     if (
       listingsEntries.type === 'init' &&
       this.initTriggered !== listingsEntries.requestUrl
     ) {
       this.initTriggered = listingsEntries.requestUrl;
+
       // this.renderedLinks = [];
+
       const entryKeys = Object.keys(listingsEntries.children);
       const newState = {
         focused: entryKeys[0],
@@ -258,6 +292,7 @@ class ListingsEntries extends React.Component {
       this.scrollResize = false;
 
       const postsCollection = document.getElementsByClassName('entry');
+      if (postsCollection.length === 0) return;
       const posts = Array.from(postsCollection);
       let newFocus = '';
       const newMinHeights = {};
@@ -301,27 +336,27 @@ class ListingsEntries extends React.Component {
       });
 
       const newMinHeightsState = produce(minHeights, draft => {
-        const minHeightKeys = Object.keys(minHeights);
-
-        const slice = minHeightKeys.length - 7;
-        if (slice > 0) {
-          const deleteKeys = minHeightKeys.slice(0, slice);
-          deleteKeys.forEach(deleteKey => {
-            delete draft[deleteKey];
-          });
-        }
-
-        draft[locationKey] = newMinHeights;
+        draft[locationKey] = { ...minHeights[locationKey], ...newMinHeights };
       });
 
       const currentState = {
         focused: newFocus,
         actionable: newActionable,
         visible: newVis,
-        minHeights: newMinHeightsState,
+        minHeights: pruneObject(newMinHeightsState, 7),
       };
 
       this.setState(currentState);
+
+      const newHistory = produce(this.history, draft => {
+        draft[locationKey] = {
+          state: currentState,
+          scroll: { x: window.scrollX, y: window.scrollY },
+          saved: Date.now(),
+        };
+      });
+
+      this.history = pruneObject(newHistory, 7, 3600);
 
       this.checkLoadMore();
     }
