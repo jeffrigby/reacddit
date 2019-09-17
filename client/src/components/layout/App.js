@@ -143,7 +143,9 @@ class App extends React.PureComponent {
     ];
 
     const routes = [];
-    routes.push(<Route exact path={combinedPaths} component={Listings} />);
+    routes.push(
+      <Route exact path={combinedPaths} component={Listings} key="Listings" />
+    );
     routes.push(<Route component={NotFound404} key="NotFound404" />);
 
     return (
