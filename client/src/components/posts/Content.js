@@ -14,6 +14,7 @@ const Content = ({ content, name, link, load }) => {
   const [resolvedContent, setResolvedContent] = useState(null);
 
   useEffect(() => {
+    // This is only for inline GFYCAT gifs. @todo find a better way.∏
     if (Promise.resolve(content) === content) {
       Promise.resolve(content).then(resolved => {
         setResolvedContent(resolved);
