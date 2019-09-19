@@ -36,6 +36,12 @@ class Post extends React.PureComponent {
     if (entry.data.stickied) {
       this.setState({ expand: false });
     }
+  }
+
+  async componentDidUpdate(prevProps) {
+    const { entry } = this.props;
+    const { renderedContent } = this.state;
+    if (Object.keys(renderedContent).length !== 0) return;
 
     const getContent = entry.data.crosspost_parent
       ? RenderContent(entry.data.crosspost_parent_list[0])
@@ -183,8 +189,7 @@ class Post extends React.PureComponent {
           {expand && (
             <Content
               content={renderedContent}
-              name={data.name}
-              link={data.url}
+              data={data}
               load={visible}
               key={data.id}
             />

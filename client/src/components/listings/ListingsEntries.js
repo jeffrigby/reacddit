@@ -99,9 +99,14 @@ class ListingsEntries extends React.Component {
   async componentDidUpdate(prevProps) {
     const { location, filter, getEntriesReddit, locationKey } = this.props;
     const locationCompare = prevProps.location.search === location.search;
+    const locationKeyCompare = prevProps.location.key === location.key;
     const cachedState = this.history[locationKey];
 
-    if (!isEqual(prevProps.filter, filter) || !locationCompare) {
+    if (
+      !isEqual(prevProps.filter, filter) ||
+      !locationCompare ||
+      !locationKeyCompare
+    ) {
       this.scrollResizeStop = true;
       if (cachedState) {
         await this.setStateFromCache();
@@ -488,8 +493,6 @@ class ListingsEntries extends React.Component {
       });
     }
 
-    // console.log( listingsEntries.originalPost);
-    // const originalPost = null;
     const originalPost =
       listingsEntries.originalPost && listType === 'duplicates'
         ? this.renderPost(listingsEntries.originalPost)

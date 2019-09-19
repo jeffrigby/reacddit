@@ -23,7 +23,7 @@ const SelfInline = ({ inline, load, name }) => {
 
   const inlineRendered = (
     <div className="inline-render">
-      <Content content={inline[inlineIdx]} load={load} name={name} />
+      <Content content={inline[inlineIdx]} load={load} data={{ name }} />
     </div>
   );
 

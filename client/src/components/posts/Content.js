@@ -9,8 +9,9 @@ import Self from './contentTypes/Self';
 import ImgurAlbum from './contentTypes/ImgurAlbum';
 import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
+import renderSelf from './embeds/domains/self';
 
-const Content = ({ content, name, link, load }) => {
+const Content = ({ content, data, load }) => {
   const [resolvedContent, setResolvedContent] = useState(null);
 
   useEffect(() => {
@@ -28,6 +29,8 @@ const Content = ({ content, name, link, load }) => {
     return null;
   }
 
+  const { name, url } = data;
+
   let contentRendered = '';
   if (resolvedContent.type) {
     switch (resolvedContent.type) {
@@ -36,7 +39,7 @@ const Content = ({ content, name, link, load }) => {
         break;
       case 'video':
         contentRendered = (
-          <VideoComp content={resolvedContent} load={load} link={link} />
+          <VideoComp content={resolvedContent} load={load} link={url} />
         );
         break;
       case 'iframe_4x4':
@@ -66,8 +69,19 @@ const Content = ({ content, name, link, load }) => {
         break;
     }
   } else {
-    if (resolvedContent.js === false) {
+    if (resolvedContent.js === false || (data.is_self && !data.selftext)) {
       return null;
+    }
+
+    // @todo remove the self stuff from the embeds. This is just for smoother
+    // Loading previews
+    if (data.is_self && data.selftext) {
+      const selfContent = renderSelf(data);
+      return (
+        <div className="content">
+          <Self content={selfContent} load={load} name={name} />
+        </div>
+      );
     }
 
     return (
@@ -83,13 +97,8 @@ const Content = ({ content, name, link, load }) => {
 
 Content.propTypes = {
   content: PropTypes.object.isRequired,
-  name: PropTypes.string.isRequired,
-  link: PropTypes.string,
+  data: PropTypes.object.isRequired,
   load: PropTypes.bool.isRequired,
-};
-
-Content.defaultProps = {
-  link: '',
 };
 
 export default Content;
