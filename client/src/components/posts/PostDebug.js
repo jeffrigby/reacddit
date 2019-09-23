@@ -1,9 +1,12 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useContext } from 'react';
 import PropTypes from 'prop-types';
+import { PostsContextData } from '../../contexts';
 
 const ReactJson = React.lazy(() => import('react-json-view'));
 
-const PostDebug = ({ renderedContent, entry }) => {
+const PostDebug = ({ renderedContent }) => {
+  const data = useContext(PostsContextData);
+
   return (
     <div className="debug">
       <Suspense fallback={<div>Loading JSON...</div>}>
@@ -15,7 +18,7 @@ const PostDebug = ({ renderedContent, entry }) => {
           collapsed
         />
         <ReactJson
-          src={entry}
+          src={data}
           name="entry"
           theme="harmonic"
           sortKeys
@@ -28,7 +31,6 @@ const PostDebug = ({ renderedContent, entry }) => {
 
 PostDebug.propTypes = {
   renderedContent: PropTypes.object.isRequired,
-  entry: PropTypes.object.isRequired,
 };
 
 export default PostDebug;

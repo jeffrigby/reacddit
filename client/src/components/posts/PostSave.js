@@ -1,7 +1,47 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { redditSave, redditUnsave } from '../../redux/actions/reddit';
+import { PostsContextActionable, PostsContextData } from '../../contexts';
+import { hotkeyStatus } from '../../common';
 
-const PostSave = ({ saved, save, bearer }) => {
+const PostSave = ({ save, unsave, bearer }) => {
+  const data = useContext(PostsContextData);
+  const actionable = useContext(PostsContextActionable);
+
+  const { saved, name } = data;
+
+  const triggerSave = () => {
+    if (bearer.status !== 'auth') return;
+
+    if (saved) {
+      unsave(name);
+    } else {
+      save(name);
+    }
+  };
+
+  const hotkeys = event => {
+    const pressedKey = event.key;
+
+    if (hotkeyStatus()) {
+      if (pressedKey === 's') {
+        triggerSave();
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (actionable) {
+      document.addEventListener('keydown', hotkeys);
+    } else {
+      document.removeEventListener('keydown', hotkeys);
+    }
+    return () => {
+      return document.removeEventListener('keydown', hotkeys);
+    };
+  });
+
   const saveStr =
     saved === true ? (
       <i className="fas fa-bookmark" />
@@ -28,9 +68,21 @@ const PostSave = ({ saved, save, bearer }) => {
 };
 
 PostSave.propTypes = {
-  saved: PropTypes.bool.isRequired,
   save: PropTypes.func.isRequired,
+  unsave: PropTypes.func.isRequired,
   bearer: PropTypes.object.isRequired,
 };
 
-export default React.memo(PostSave);
+const mapStateToProps = state => ({
+  bearer: state.redditBearer,
+});
+
+export default React.memo(
+  connect(
+    mapStateToProps,
+    {
+      save: redditSave,
+      unsave: redditUnsave,
+    }
+  )(PostSave)
+);

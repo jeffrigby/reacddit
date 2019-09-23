@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import IFrame16x9 from './contentTypes/IFrame16x9';
 import Image from './contentTypes/Image';
@@ -10,66 +10,54 @@ import ImgurAlbum from './contentTypes/ImgurAlbum';
 import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
 import renderSelf from './embeds/domains/self';
+import { PostsContextData } from '../../contexts';
 
-const Content = ({ content, data, load }) => {
-  const [resolvedContent, setResolvedContent] = useState(null);
+const Content = ({ content, load }) => {
+  const data = useContext(PostsContextData);
 
-  useEffect(() => {
-    // This is only for inline GFYCAT gifs. @todo find a better way.∏
-    if (Promise.resolve(content) === content) {
-      Promise.resolve(content).then(resolved => {
-        setResolvedContent(resolved);
-      });
-    } else {
-      setResolvedContent(content);
-    }
-  }, [content]);
-
-  if (!resolvedContent) {
+  if (!content) {
     return null;
   }
 
   const { name, url } = data;
 
   let contentRendered = '';
-  if (resolvedContent.type) {
-    switch (resolvedContent.type) {
+  if (content.type) {
+    switch (content.type) {
       case 'image':
-        contentRendered = <Image content={resolvedContent} load={load} />;
+        contentRendered = <Image content={content} load={load} />;
         break;
       case 'video':
         contentRendered = (
-          <VideoComp content={resolvedContent} load={load} link={url} />
+          <VideoComp content={content} load={load} link={url} />
         );
         break;
       case 'iframe_4x4':
-        contentRendered = <IFrame4x4 content={resolvedContent} load={load} />;
+        contentRendered = <IFrame4x4 content={content} load={load} />;
         break;
       case 'iframe16x9':
-        contentRendered = <IFrame16x9 content={resolvedContent} load={load} />;
+        contentRendered = <IFrame16x9 content={content} load={load} />;
         break;
       case 'imgur_album':
-        contentRendered = <ImgurAlbum content={resolvedContent} load={load} />;
+        contentRendered = <ImgurAlbum content={content} load={load} />;
         break;
       case 'thumb':
-        contentRendered = <Thumb content={resolvedContent} load={load} />;
+        contentRendered = <Thumb content={content} load={load} />;
         break;
       case 'self':
-        contentRendered = (
-          <Self content={resolvedContent} load={load} name={name} />
-        );
+        contentRendered = <Self content={content} load={load} name={name} />;
         break;
       case 'raw_html':
-        contentRendered = <RawHTML content={resolvedContent} load={load} />;
+        contentRendered = <RawHTML content={content} load={load} />;
         break;
       case 'twitter':
-        contentRendered = <Twitter content={resolvedContent} load={load} />;
+        contentRendered = <Twitter content={content} load={load} />;
         break;
       default:
         break;
     }
   } else {
-    if (resolvedContent.js === false || (data.is_self && !data.selftext)) {
+    if (content.js === false || (data.is_self && !data.selftext)) {
       return null;
     }
 
@@ -97,7 +85,6 @@ const Content = ({ content, data, load }) => {
 
 Content.propTypes = {
   content: PropTypes.object.isRequired,
-  data: PropTypes.object.isRequired,
   load: PropTypes.bool.isRequired,
 };
 

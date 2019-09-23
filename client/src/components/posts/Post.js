@@ -4,13 +4,10 @@ import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import Content from './Content';
 import RenderContent from './embeds';
-import {
-  redditSave,
-  redditUnsave,
-  redditVote,
-} from '../../redux/actions/reddit';
 import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
+import { PostsContextData, PostsContextActionable } from '../../contexts';
+import PostDebug from './PostDebug';
 
 const classNames = require('classnames');
 
@@ -23,42 +20,35 @@ class Post extends React.PureComponent {
 
     // Set the state directly. Use props if necessary.
     this.state = {
-      renderedContent: {},
+      renderedContent: null,
       viewSetting: props.siteSettings.view,
       expand: props.siteSettings.view === 'expanded' || false,
+      showDebug: false,
     };
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.mounted = true;
     const { entry } = this.props;
+    const { renderedContent } = this.state;
 
     if (entry.data.stickied) {
       this.setState({ expand: false });
     }
-  }
-
-  async componentDidUpdate(prevProps) {
-    const { entry } = this.props;
-    const { renderedContent } = this.state;
-    if (Object.keys(renderedContent).length !== 0) return;
+    if (renderedContent) return;
 
     const getContent = entry.data.crosspost_parent
-      ? RenderContent(entry.data.crosspost_parent_list[0])
-      : RenderContent(entry.data);
+      ? await RenderContent(entry.data.crosspost_parent_list[0])
+      : await RenderContent(entry.data);
 
-    Promise.resolve(getContent).then(content => {
-      if (this.mounted) {
-        let contentObj = { ...content };
-        contentObj.js = true;
-        if (!contentObj.type) {
-          contentObj = typeof entry.content === 'object' ? entry.content : {};
-          contentObj.js = false;
-        }
-        this.setState({
-          renderedContent: contentObj,
-        });
-      }
+    if (getContent.inline) {
+      await getContent.inline.forEach(async (value, key) => {
+        getContent.inline[key] = await value;
+      });
+    }
+
+    this.setState({
+      renderedContent: getContent,
     });
   }
 
@@ -97,37 +87,6 @@ class Post extends React.PureComponent {
     event.preventDefault();
   };
 
-  voteUp = () => {
-    const { entry, vote, bearer } = this.props;
-    if (bearer.status !== 'auth') return;
-
-    const { data } = entry;
-    const dir = data.likes === true ? 0 : 1;
-    vote(data.name, dir);
-  };
-
-  voteDown = () => {
-    const { entry, vote, bearer } = this.props;
-    if (bearer.status !== 'auth') return;
-
-    const { data } = entry;
-    const dir = data.likes === false ? 0 : -1;
-    vote(data.name, dir);
-  };
-
-  save = () => {
-    const { entry, save, unsave, bearer } = this.props;
-    if (bearer.status !== 'auth') return;
-
-    const { data } = entry;
-    const { saved, name } = data;
-    if (saved) {
-      unsave(name);
-    } else {
-      save(name);
-    }
-  };
-
   gotoDuplicates = () => {
     const { entry, gotoLink } = this.props;
     const { data } = entry;
@@ -148,18 +107,28 @@ class Post extends React.PureComponent {
     window.open(entry.data.url, '_blank');
   };
 
+  toggleShowDebug = () => {
+    const { showDebug } = this.state;
+    this.setState({
+      showDebug: !showDebug,
+    });
+  };
+
   render() {
     const {
       entry,
       focused,
       visible,
       siteSettings,
-      bearer,
       actionable,
       minHeight,
     } = this.props;
     const { data } = entry;
-    const { renderedContent, expand } = this.state;
+    const { renderedContent, expand, showDebug } = this.state;
+
+    // if (!renderedContent) {
+    //   return <></>;
+    // }
 
     const classArray = classNames('entry', 'list-group-item', {
       focused,
@@ -176,30 +145,30 @@ class Post extends React.PureComponent {
     return (
       <div className={classArray} key={data.name} id={data.name} style={styles}>
         <div className="entry-interior">
-          <PostHeader
-            entry={entry}
-            save={this.save}
-            visible={visible}
-            voteDown={this.voteDown}
-            expand={expand}
-            toggleView={this.toggleView}
-            voteUp={this.voteUp}
-            bearer={bearer}
-          />
-          {expand && (
-            <Content
-              content={renderedContent}
-              data={data}
-              load={visible}
-              key={data.id}
-            />
-          )}
-          <PostFooter
-            entry={entry}
-            debug={siteSettings.debug}
-            visible={visible}
-            renderedContent={renderedContent}
-          />
+          <PostsContextData.Provider value={data}>
+            <PostsContextActionable.Provider value={actionable}>
+              <PostHeader
+                visible={visible}
+                expand={expand}
+                toggleView={this.toggleView}
+              />
+              {expand && (
+                <Content
+                  content={renderedContent}
+                  load={visible}
+                  key={data.id}
+                />
+              )}
+              <PostFooter
+                debug={siteSettings.debug}
+                toggleShowDebug={this.toggleShowDebug}
+                visible={visible}
+              />
+              {siteSettings.debug && showDebug && (
+                <PostDebug renderedContent={renderedContent} />
+              )}
+            </PostsContextActionable.Provider>
+          </PostsContextData.Provider>
         </div>
       </div>
     );
@@ -212,10 +181,6 @@ Post.propTypes = {
   actionable: PropTypes.bool.isRequired,
   siteSettings: PropTypes.object.isRequired,
   visible: PropTypes.bool.isRequired,
-  vote: PropTypes.func.isRequired,
-  unsave: PropTypes.func.isRequired,
-  save: PropTypes.func.isRequired,
-  bearer: PropTypes.object.isRequired,
   gotoLink: PropTypes.func.isRequired,
   minHeight: PropTypes.number,
 };
@@ -226,15 +191,11 @@ Post.defaultProps = {
 
 const mapStateToProps = state => ({
   siteSettings: state.siteSettings,
-  bearer: state.redditBearer,
 });
 
 export default connect(
   mapStateToProps,
   {
-    vote: redditVote,
-    save: redditSave,
-    unsave: redditUnsave,
     gotoLink: push,
   },
   null,

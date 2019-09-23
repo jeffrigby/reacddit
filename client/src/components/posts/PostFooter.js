@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import PostByline from './PostByline';
-import PostDebug from './PostDebug';
+import { PostsContextData } from '../../contexts';
 
-const PostFooter = ({ entry, debug, visible, renderedContent }) => {
-  const [showDebug, setShowDebug] = useState(false);
-
-  const { data } = entry;
+const PostFooter = ({ debug, visible, toggleShowDebug }) => {
+  const data = useContext(PostsContextData);
   const sticky = data.stickied || false;
 
   if (!visible) {
@@ -44,7 +42,7 @@ const PostFooter = ({ entry, debug, visible, renderedContent }) => {
               {data.name}{' '}
               <button
                 className="btn btn-link m-0 p-0"
-                onClick={() => setShowDebug(!showDebug)}
+                onClick={() => toggleShowDebug()}
                 title="Show debug"
                 type="button"
               >
@@ -61,19 +59,14 @@ const PostFooter = ({ entry, debug, visible, renderedContent }) => {
           )}
         </div>
       </footer>
-
-      {showDebug && debug && (
-        <PostDebug renderedContent={renderedContent} entry={entry} />
-      )}
     </>
   );
 };
 
 PostFooter.propTypes = {
-  entry: PropTypes.object.isRequired,
   debug: PropTypes.bool.isRequired,
+  toggleShowDebug: PropTypes.func.isRequired,
   visible: PropTypes.bool.isRequired,
-  renderedContent: PropTypes.object.isRequired,
 };
 
 export default PostFooter;

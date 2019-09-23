@@ -97,16 +97,11 @@ class ListingsEntries extends React.Component {
   }
 
   async componentDidUpdate(prevProps) {
-    const { location, filter, getEntriesReddit, locationKey } = this.props;
-    const locationCompare = prevProps.location.search === location.search;
-    const locationKeyCompare = prevProps.location.key === location.key;
+    const { filter, getEntriesReddit, locationKey } = this.props;
+    const filterCompare = isEqual(prevProps.filter, filter);
     const cachedState = this.history[locationKey];
 
-    if (
-      !isEqual(prevProps.filter, filter) ||
-      !locationCompare ||
-      !locationKeyCompare
-    ) {
+    if (!filterCompare) {
       this.scrollResizeStop = true;
       if (cachedState) {
         await this.setStateFromCache();
@@ -234,15 +229,6 @@ class ListingsEntries extends React.Component {
           case 'k':
             ListingsEntries.prevEntry(focused);
             break;
-          case 'a':
-            this.actionPost.current.voteUp();
-            break;
-          case 'z':
-            this.actionPost.current.voteDown();
-            break;
-          case 's':
-            this.actionPost.current.save();
-            break;
           case 'x':
             this.actionPost.current.toggleViewAction();
             break;
@@ -324,7 +310,7 @@ class ListingsEntries extends React.Component {
               newActionable = inView ? post.id : prevPostId;
             }
           }
-          newMinHeights[post.id] = height;
+          newMinHeights[post.id] = height - 26; // 26 = 12px padding. 1px border.
           newVis.push(post.id);
         }
         prevPostId = post.id;

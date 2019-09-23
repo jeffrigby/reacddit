@@ -32,6 +32,7 @@ const Listings = ({ location, match, setFilter, data, status, filter }) => {
       userType: userType || '',
       user: user || '',
       listType: listingType,
+      qs: location.search,
     };
 
     setFilter(newFilter);
