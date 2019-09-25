@@ -9,17 +9,20 @@ import Self from './contentTypes/Self';
 import ImgurAlbum from './contentTypes/ImgurAlbum';
 import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
-import renderSelf from './embeds/domains/self';
+import Placeholder from './Placeholder';
 import { PostsContextData } from '../../contexts';
 
 const Content = ({ content, load }) => {
   const data = useContext(PostsContextData);
+  const { name, url } = data;
 
-  if (!content) {
+  if (data.is_self && !data.selftext) {
     return null;
   }
 
-  const { name, url } = data;
+  if (!content) {
+    return <Placeholder load={load} />;
+  }
 
   let contentRendered = '';
   if (content.type) {
@@ -61,17 +64,6 @@ const Content = ({ content, load }) => {
       return null;
     }
 
-    // @todo remove the self stuff from the embeds. This is just for smoother
-    // Loading previews
-    if (data.is_self && data.selftext) {
-      const selfContent = renderSelf(data);
-      return (
-        <div className="content">
-          <Self content={selfContent} load={load} name={name} />
-        </div>
-      );
-    }
-
     return (
       <div className="content">
         <div className="media-cont">
@@ -84,8 +76,12 @@ const Content = ({ content, load }) => {
 };
 
 Content.propTypes = {
-  content: PropTypes.object.isRequired,
+  content: PropTypes.object,
   load: PropTypes.bool.isRequired,
+};
+
+Content.defaultProps = {
+  content: null,
 };
 
 export default Content;

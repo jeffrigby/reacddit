@@ -78,7 +78,7 @@ const getContent = async (keys, entry) => {
       if (domainContent) {
         return {
           ...domainContent,
-          renderFunction: keys.domain,
+          initRenderFunction: keys.domain,
         };
       }
     } catch (e) {

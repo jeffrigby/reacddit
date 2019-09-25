@@ -10,13 +10,24 @@ const PostDebug = ({ renderedContent }) => {
   return (
     <div className="debug">
       <Suspense fallback={<div>Loading JSON...</div>}>
-        <ReactJson
-          src={renderedContent}
-          name="content"
-          theme="harmonic"
-          sortKeys
-          collapsed
-        />
+        {renderedContent && (
+          <ReactJson
+            src={renderedContent}
+            name="content"
+            theme="harmonic"
+            sortKeys
+            collapsed
+          />
+        )}
+        {data.preview && (
+          <ReactJson
+            src={data.preview}
+            name="preview"
+            theme="harmonic"
+            sortKeys
+            collapsed
+          />
+        )}
         <ReactJson
           src={data}
           name="entry"
@@ -30,7 +41,11 @@ const PostDebug = ({ renderedContent }) => {
 };
 
 PostDebug.propTypes = {
-  renderedContent: PropTypes.object.isRequired,
+  renderedContent: PropTypes.object,
+};
+
+PostDebug.defaultProps = {
+  renderedContent: null,
 };
 
 export default PostDebug;

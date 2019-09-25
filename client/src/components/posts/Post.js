@@ -30,26 +30,31 @@ class Post extends React.PureComponent {
   async componentDidMount() {
     this.mounted = true;
     const { entry } = this.props;
+    const { data } = entry;
     const { renderedContent } = this.state;
 
-    if (entry.data.stickied) {
+    if (data.stickied) {
       this.setState({ expand: false });
     }
     if (renderedContent) return;
 
-    const getContent = entry.data.crosspost_parent
-      ? await RenderContent(entry.data.crosspost_parent_list[0])
-      : await RenderContent(entry.data);
+    if (data.is_self && !data.selftext) {
+      // Maybe do something with this?
+    } else {
+      const getContent = data.crosspost_parent
+        ? await RenderContent(data.crosspost_parent_list[0])
+        : await RenderContent(data);
 
-    if (getContent.inline) {
-      await getContent.inline.forEach(async (value, key) => {
-        getContent.inline[key] = await value;
+      if (getContent.inline) {
+        await getContent.inline.forEach(async (value, key) => {
+          getContent.inline[key] = await value;
+        });
+      }
+
+      this.setState({
+        renderedContent: getContent,
       });
     }
-
-    this.setState({
-      renderedContent: getContent,
-    });
   }
 
   static getDerivedStateFromProps(props, state) {

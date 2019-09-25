@@ -151,7 +151,7 @@ class ListingsEntries extends React.Component {
     }
   };
 
-  setInitFocusedAndVisible = async () => {
+  setInitFocusedAndVisible = () => {
     const { listingsEntries } = this.props;
 
     if (
@@ -159,8 +159,6 @@ class ListingsEntries extends React.Component {
       this.initTriggered !== listingsEntries.requestUrl
     ) {
       this.initTriggered = listingsEntries.requestUrl;
-
-      // this.renderedLinks = [];
 
       const entryKeys = Object.keys(listingsEntries.children);
       const newState = {
