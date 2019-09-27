@@ -65,6 +65,14 @@ class ListingsEntries extends React.Component {
 
   history = {};
 
+  defaultState = {
+    focused: '',
+    visible: [],
+    minHeights: {},
+    actionable: null,
+    hasError: false,
+  };
+
   actionPost = React.createRef();
 
   constructor(props) {
@@ -72,13 +80,7 @@ class ListingsEntries extends React.Component {
     super(props);
 
     // Set the state directly. Use props if necessary.
-    this.state = {
-      focused: '',
-      visible: [],
-      minHeights: {},
-      actionable: null,
-      hasError: false,
-    };
+    this.state = this.defaultState;
   }
 
   componentDidMount() {
@@ -97,9 +99,21 @@ class ListingsEntries extends React.Component {
   }
 
   async componentDidUpdate(prevProps) {
-    const { filter, getEntriesReddit, locationKey } = this.props;
+    const { filter, getEntriesReddit, locationKey, settings } = this.props;
     const filterCompare = isEqual(prevProps.filter, filter);
     const cachedState = this.history[locationKey];
+
+    // Reset the state if the location changes.
+    if (locationKey !== prevProps.locationKey) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState(this.defaultState);
+    }
+
+    if (settings.view !== prevProps.settings.view) {
+      setTimeout(() => {
+        this.monitorEntries(true);
+      }, 100);
+    }
 
     if (!filterCompare) {
       this.scrollResizeStop = true;
@@ -109,10 +123,12 @@ class ListingsEntries extends React.Component {
           this.scrollResizeStop = false;
         }, 5000);
       } else {
+        this.scrollResizeStop = true;
         await getEntriesReddit(filter);
-        this.setInitFocusedAndVisible();
-        this.monitorEntries(true);
-        this.scrollResizeStop = false;
+        setTimeout(() => {
+          this.monitorEntries(true);
+          this.scrollResizeStop = false;
+        }, 1000);
       }
     }
   }
@@ -148,25 +164,6 @@ class ListingsEntries extends React.Component {
       await this.setState(cachedState.state);
       // reset scroll position if it's off.
       window.scroll(cachedState.scroll.x, cachedState.scroll.y);
-    }
-  };
-
-  setInitFocusedAndVisible = () => {
-    const { listingsEntries } = this.props;
-
-    if (
-      listingsEntries.type === 'init' &&
-      this.initTriggered !== listingsEntries.requestUrl
-    ) {
-      this.initTriggered = listingsEntries.requestUrl;
-
-      const entryKeys = Object.keys(listingsEntries.children);
-      const newState = {
-        focused: entryKeys[0],
-        actionable: entryKeys[0],
-        visible: entryKeys.slice(0, 3),
-      };
-      this.setState(newState);
     }
   };
 
@@ -374,18 +371,22 @@ class ListingsEntries extends React.Component {
     }
   }
 
-  renderPost = post => {
+  renderPost = (post, idx) => {
     const { focused, visible, actionable } = this.state;
-    const isFocused = focused === post.data.name;
-    const isVisible = visible.includes(post.data.name);
-    const isActionable = actionable === post.data.name;
+
+    const isFocused = !focused ? idx === 0 : focused === post.data.name;
+    const isVisible =
+      visible.length === 0 ? idx < 5 : visible.includes(post.data.name);
+    const isActionable = !actionable
+      ? idx === 0
+      : actionable === post.data.name;
+
     const ref = isActionable ? this.actionPost : null;
-    const minHeight = this.getMinHeight(post.data.name);
+    const minHeight = isVisible ? 0 : this.getMinHeight(post.data.name);
     return (
       <Post
         entry={post}
         key={post.data.id}
-        loaded={post.data.loaded}
         focused={isFocused}
         visible={isVisible}
         actionable={isActionable}
@@ -472,14 +473,14 @@ class ListingsEntries extends React.Component {
     const { focused, visible, actionable } = this.state;
     const entriesKeys = Object.keys(entriesObject);
     if (entriesKeys.length > 0) {
-      entries = entriesKeys.map(key => {
-        return this.renderPost(entriesObject[key]);
+      entries = entriesKeys.map((key, idx) => {
+        return this.renderPost(entriesObject[key], idx);
       });
     }
 
     const originalPost =
       listingsEntries.originalPost && listType === 'duplicates'
-        ? this.renderPost(listingsEntries.originalPost)
+        ? this.renderPost(listingsEntries.originalPost, 0)
         : null;
 
     return (
@@ -544,7 +545,7 @@ ListingsEntries.defaultProps = {
   locationKey: 'front',
 };
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = state => ({
   settings: state.siteSettings,
   locationKey: state.router.location.key,
 });

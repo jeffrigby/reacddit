@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { useLocation, useParams } from 'react-router';
 import ListingEntries from './ListingsEntries';
 import { listingsFilter } from '../../redux/actions/listings';
 import {
@@ -10,13 +11,16 @@ import {
 
 const queryString = require('query-string');
 
-const Listings = ({ location, match, setFilter, data, status, filter }) => {
+const Listings = ({ setFilter, data, status, filter }) => {
+  const location = useLocation();
+  const match = useParams();
+
   // Set the new filter.
   useEffect(() => {
     const qs = queryString.parse(location.search);
-    const { listType, target, sort, user, userType, multi } = match.params;
+    const { listType, target, sort, user, userType, multi } = match;
 
-    let listingType = match.params.listType || 'r';
+    let listingType = listType || 'r';
     if (listType === 'user') listingType = 'u';
     if (listType === 'multi') listingType = 'm';
     if (listType === 'search') listingType = 's';
@@ -38,6 +42,12 @@ const Listings = ({ location, match, setFilter, data, status, filter }) => {
     setFilter(newFilter);
   }, [match, location, setFilter]);
 
+  // I can't reset ListingEntries on route change because it
+  // Forgets the minheights saved in the history var used for
+  // smooth back button when it unmounts.
+  // @todo find a better way to store the minHeights.
+  // const locationKey = location.key || 'front';
+
   return (
     <ListingEntries
       location={location}
@@ -45,13 +55,12 @@ const Listings = ({ location, match, setFilter, data, status, filter }) => {
       filter={filter}
       listingsEntries={data}
       listingsStatus={status}
+      // key={locationKey}
     />
   );
 };
 
 Listings.propTypes = {
-  location: PropTypes.object.isRequired,
-  match: PropTypes.object.isRequired,
   setFilter: PropTypes.func.isRequired,
   data: PropTypes.object.isRequired,
   status: PropTypes.string.isRequired,

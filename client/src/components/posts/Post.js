@@ -27,7 +27,7 @@ class Post extends React.PureComponent {
     };
   }
 
-  async componentDidMount() {
+  async componentDidMount(prevProps) {
     this.mounted = true;
     const { entry } = this.props;
     const { data } = entry;
@@ -39,6 +39,7 @@ class Post extends React.PureComponent {
     if (renderedContent) return;
 
     if (data.is_self && !data.selftext) {
+      // This is when there is no content.
       // Maybe do something with this?
     } else {
       const getContent = data.crosspost_parent
@@ -56,6 +57,13 @@ class Post extends React.PureComponent {
       });
     }
   }
+
+  // componentDidUpdate(preProps, prevState) {
+  //   const { entry } = this.props;
+  //   const { data } = entry;
+  //   console.count(data.name);
+  //   console.log(data.name, preProps, this.props);
+  // }
 
   static getDerivedStateFromProps(props, state) {
     const { entry, siteSettings } = props;
@@ -80,8 +88,7 @@ class Post extends React.PureComponent {
     this.mounted = false;
   }
 
-  // Actions are kept here so I can call them with key commands
-  // @todo figure out how to put them with the actions component.
+  // Actions are kept here so I can easily call them with key commands
   toggleViewAction = () => {
     const { expand } = this.state;
     this.setState({ expand: !expand });
@@ -131,10 +138,6 @@ class Post extends React.PureComponent {
     const { data } = entry;
     const { renderedContent, expand, showDebug } = this.state;
 
-    // if (!renderedContent) {
-    //   return <></>;
-    // }
-
     const classArray = classNames('entry', 'list-group-item', {
       focused,
       visible,
@@ -143,8 +146,21 @@ class Post extends React.PureComponent {
     });
 
     const styles = {};
+    let hideAll = false;
     if (!visible && minHeight) {
       styles.minHeight = minHeight;
+      hideAll = true;
+    }
+
+    if (hideAll) {
+      return (
+        <div
+          className={classArray}
+          key={data.name}
+          id={data.name}
+          style={styles}
+        />
+      );
     }
 
     return (

@@ -1,15 +1,15 @@
-import React, { Suspense, useContext } from 'react';
+import React, { Suspense, lazy, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { PostsContextData } from '../../contexts';
 
-const ReactJson = React.lazy(() => import('react-json-view'));
+const ReactJson = lazy(() => import('react-json-view'));
 
 const PostDebug = ({ renderedContent }) => {
   const data = useContext(PostsContextData);
 
   return (
     <div className="debug">
-      <Suspense fallback={<div>Loading JSON...</div>}>
+      <Suspense fallback={<div>Loading Debug Info...</div>}>
         {renderedContent && (
           <ReactJson
             src={renderedContent}

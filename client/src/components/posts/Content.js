@@ -60,17 +60,8 @@ const Content = ({ content, load }) => {
         break;
     }
   } else {
-    if (content.js === false || (data.is_self && !data.selftext)) {
-      return null;
-    }
-
-    return (
-      <div className="content">
-        <div className="media-cont">
-          <div className="embed-responsive embed-responsive-16by9 black-bg" />
-        </div>
-      </div>
-    );
+    // couldn't load an embed
+    return null;
   }
   return <div className="content">{contentRendered}</div>;
 };

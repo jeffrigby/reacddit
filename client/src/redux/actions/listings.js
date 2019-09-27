@@ -130,12 +130,12 @@ export function listingsFetchEntriesReddit(filters) {
         dispatch(listingsRedditEntries(locationKey, {}));
       });
 
-      const limit = currentState.siteSettings.view === 'condensed' ? 25 : 10;
+      // const limit = currentState.siteSettings.view === 'condensed' ? 25 : 10;
 
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
       const params = {
-        limit,
+        // limit,
         ...qs,
       };
 
