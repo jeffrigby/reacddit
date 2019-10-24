@@ -1,20 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import PostVote from './PostVote';
-import PostSave from './PostSave';
+import PostVote from '../postActions/PostVote';
+import PostSave from '../postActions/PostSave';
+import { PostsContextData } from '../../../contexts';
 
-const PostHeader = ({
-  entry,
-  voteUp,
-  voteDown,
-  save,
-  toggleView,
-  expand,
-  visible,
-  bearer,
-}) => {
-  const { data } = entry;
+const PostHeader = ({ toggleView, expand, visible }) => {
+  const data = useContext(PostsContextData);
 
   const linkFlair = data.link_flair_text ? (
     <Link
@@ -99,14 +91,8 @@ const PostHeader = ({
       {title}
       {visible ? (
         <div className="text-nowrap d-flex actions ml-auto">
-          <PostVote
-            likes={data.likes}
-            ups={data.ups}
-            voteDown={voteDown}
-            voteUp={voteUp}
-            bearer={bearer}
-          />
-          <PostSave saved={data.saved} save={save} bearer={bearer} />
+          <PostVote />
+          <PostSave />
           {searchLink}
           <div>{expandContractButton}</div>
         </div>
@@ -119,12 +105,7 @@ const PostHeader = ({
 };
 
 PostHeader.propTypes = {
-  voteDown: PropTypes.func.isRequired,
-  voteUp: PropTypes.func.isRequired,
-  save: PropTypes.func.isRequired,
   toggleView: PropTypes.func.isRequired,
-  bearer: PropTypes.object.isRequired,
-  entry: PropTypes.object.isRequired,
   visible: PropTypes.bool.isRequired,
   expand: PropTypes.bool.isRequired,
 };

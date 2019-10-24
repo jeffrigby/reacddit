@@ -2,6 +2,7 @@ import { createSelector } from 'reselect';
 
 const listingsStatusSelector = state => state.listingsRedditStatus;
 const listingsEntriesSelector = state => state.listingsRedditEntries;
+const listingsStateSelector = state => state.listingsState;
 const locationKeySelector = state => state.router.location.key;
 
 export const listingData = createSelector(
@@ -17,5 +18,20 @@ export const listingStatus = createSelector(
   (status, locationKey) => {
     const key = locationKey || 'front';
     return status[key] ? status[key].status : 'unloaded';
+  }
+);
+
+export const listingState = createSelector(
+  [listingsStateSelector, locationKeySelector],
+  (listingCurrentState, locationKey) => {
+    const key = locationKey || 'front';
+    const defaults = {
+      focused: '',
+      visible: [],
+      minHeights: {},
+      actionable: null,
+      hasError: false,
+    };
+    return listingCurrentState[key] || defaults;
   }
 );

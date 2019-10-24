@@ -1,25 +1,45 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { siteSettings } from '../../redux/actions/misc';
+import { hotkeyStatus } from '../../common';
+import { listingState } from '../../redux/selectors/listingsSelector';
 
-const toggleView = async (view, setSiteSetting) => {
-  const currentFocus = document.getElementsByClassName('focused');
-  await setSiteSetting({ view });
-  try {
-    window.scrollTo(0, currentFocus[0].offsetTop);
-  } catch (e) {
-    // continue regardless of error
-  }
-};
-
-const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
+const ViewMode = ({ siteSettingsView, setSiteSetting, actionable }) => {
   const btnClasses = 'btn btn-secondary btn-sm';
+
+  const toggleView = async view => {
+    // const currentFocus = document.getElementById(actionable);
+    window.scrollTo(0, 0);
+    await setSiteSetting({ view });
+  };
+
+  const hotkeys = event => {
+    if (hotkeyStatus()) {
+      const pressedKey = event.key;
+      try {
+        if (pressedKey === 'v') {
+          const action =
+            siteSettingsView === 'expanded' ? 'condensed' : 'expanded';
+          toggleView(action);
+        }
+      } catch (e) {
+        // console.log(e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', hotkeys);
+    return () => {
+      document.removeEventListener('keydown', hotkeys);
+    };
+  });
 
   const button =
     siteSettingsView === 'expanded' ? (
       <button
-        onClick={() => toggleView('condensed', setSiteSetting)}
+        onClick={() => toggleView('condensed')}
         type="button"
         className={btnClasses}
         title="Condensed View (v)"
@@ -28,7 +48,7 @@ const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
       </button>
     ) : (
       <button
-        onClick={() => toggleView('expanded', setSiteSetting)}
+        onClick={() => toggleView('expanded')}
         type="button"
         className={btnClasses}
         title="Full View (v)"
@@ -43,14 +63,17 @@ const ViewMode = ({ siteSettingsView, setSiteSetting }) => {
 ViewMode.propTypes = {
   siteSettingsView: PropTypes.string,
   setSiteSetting: PropTypes.func.isRequired,
+  actionable: PropTypes.string,
 };
 
 ViewMode.defaultProps = {
   siteSettingsView: 'view',
+  actionable: '',
 };
 
 const mapStateToProps = state => ({
   siteSettingsView: state.siteSettings.view,
+  actionable: listingState(state).actionable,
 });
 
 export default connect(

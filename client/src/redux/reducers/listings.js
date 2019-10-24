@@ -31,6 +31,20 @@ export function currentSubreddit(state = {}, action) {
   }
 }
 
+export function listingsState(state = {}, action) {
+  switch (action.type) {
+    case 'LISTINGS_STATE': {
+      const { key, currentListingsState } = action;
+      const newState = produce(state, draft => {
+        draft[key] = { ...currentListingsState, saved: Date.now() };
+      });
+      return cleanHistory(newState);
+    }
+    default:
+      return state;
+  }
+}
+
 export function listingsRedditEntries(state = {}, action) {
   switch (action.type) {
     case 'LISTINGS_REDDIT_ENTRIES': {

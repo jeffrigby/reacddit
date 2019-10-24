@@ -44,6 +44,14 @@ export function currentSubreddit(key, subreddit) {
   };
 }
 
+export function listingsState(key, currentListingsState) {
+  return {
+    type: 'LISTINGS_STATE',
+    key,
+    currentListingsState,
+  };
+}
+
 const keyEntryChildren = entries => {
   const arrayToObject = (arr, keyField) =>
     Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
@@ -130,12 +138,12 @@ export function listingsFetchEntriesReddit(filters) {
         dispatch(listingsRedditEntries(locationKey, {}));
       });
 
-      const limit = currentState.siteSettings.view === 'condensed' ? 25 : 10;
+      // const limit = currentState.siteSettings.view === 'condensed' ? 25 : 10;
 
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
       const params = {
-        limit,
+        // limit,
         ...qs,
       };
 

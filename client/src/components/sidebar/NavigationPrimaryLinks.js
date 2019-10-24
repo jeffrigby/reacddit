@@ -25,18 +25,18 @@ class NavigationPrimaryLinks extends React.PureComponent {
    * @param event
    */
   handleNavPrimaryHotkey = event => {
-    const { me, ...props } = this.props;
-    const pressedKey = event.key;
+    const { me, gotoLink } = this.props;
+    const { key } = event;
 
     if (hotkeyStatus()) {
       // Navigation key commands
       if (this.lastKeyPressed === 'g') {
-        switch (pressedKey) {
+        switch (key) {
           case 'h':
-            props.push('/');
+            gotoLink('/');
             break;
           case 'p':
-            props.push(`/r/popular`);
+            gotoLink(`/r/popular`);
             break;
           case 'r':
             this.randomSubPush();
@@ -46,17 +46,13 @@ class NavigationPrimaryLinks extends React.PureComponent {
         }
       }
 
-      switch (pressedKey) {
-        case 'L': // shift-L
-          window.location.href = me.name
-            ? `${API_PATH}/logout`
-            : `${API_PATH}/login`;
-          break;
-        default:
-          break;
+      if (key === 'L') {
+        window.location.href = me.name
+          ? `${API_PATH}/logout`
+          : `${API_PATH}/login`;
       }
 
-      this.lastKeyPressed = pressedKey;
+      this.lastKeyPressed = key;
     }
   };
 
@@ -66,7 +62,7 @@ class NavigationPrimaryLinks extends React.PureComponent {
    */
   randomSubPush = e => {
     if (e) e.preventDefault();
-    const { subreddits, sort, t, ...props } = this.props;
+    const { subreddits, sort, t, gotoLink } = this.props;
     if (isEmpty(subreddits.subreddits)) {
       return false;
     }
@@ -79,7 +75,7 @@ class NavigationPrimaryLinks extends React.PureComponent {
       sort === 'top' || sort === 'controversial' ? `?t=${t}` : '';
 
     const url = randomSubreddit.url + (sort || 'hot') + sortTopQS;
-    return props.push(url);
+    return gotoLink(url);
   };
 
   render() {
@@ -135,7 +131,7 @@ NavigationPrimaryLinks.propTypes = {
   sort: PropTypes.string.isRequired,
   t: PropTypes.string,
   subreddits: PropTypes.object.isRequired,
-  push: PropTypes.func.isRequired,
+  gotoLink: PropTypes.func.isRequired,
 };
 
 NavigationPrimaryLinks.defaultProps = {
@@ -152,6 +148,6 @@ const mapStateToProps = state => ({
 export default connect(
   mapStateToProps,
   {
-    push,
+    gotoLink: push,
   }
 )(NavigationPrimaryLinks);

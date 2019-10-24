@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import RedditAPI from '../../reddit/redditAPI';
 import MultiDelete from './MultiDelete';
 
-const ListingsMultiHeader = ({ filter, multis, me }) => {
+const ListingsHeaderMulti = ({ filter, multis, me }) => {
   const { target, user } = filter;
   const [currentMulti, setCurrentMulti] = useState(null);
   const name = user === 'me' ? me.me.name : user;
@@ -71,13 +71,13 @@ const ListingsMultiHeader = ({ filter, multis, me }) => {
   );
 };
 
-ListingsMultiHeader.propTypes = {
+ListingsHeaderMulti.propTypes = {
   filter: PropTypes.object.isRequired,
   multis: PropTypes.object.isRequired,
   me: PropTypes.object.isRequired,
 };
 
-ListingsMultiHeader.defaultProps = {};
+ListingsHeaderMulti.defaultProps = {};
 
 const mapStateToProps = state => ({
   filter: state.listingsFilter,
@@ -88,4 +88,4 @@ const mapStateToProps = state => ({
 export default connect(
   mapStateToProps,
   {}
-)(ListingsMultiHeader);
+)(ListingsHeaderMulti);

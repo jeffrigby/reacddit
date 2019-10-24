@@ -138,7 +138,7 @@ class NavigationSubReddits extends React.PureComponent {
         content = (
           <div className="alert alert-info" id="subreddits-end" role="alert">
             <i className="fas fa-info-circle" />
-            {' No subreddits found'}
+            No subreddits found
           </div>
         );
       } else {
