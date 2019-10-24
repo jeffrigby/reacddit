@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { listingData } from '../../redux/selectors/listingsSelector';
-import Post from './Post';
+import { listingData } from '../../../redux/selectors/listingsSelector';
+import Post from '../postDetail/Post';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 

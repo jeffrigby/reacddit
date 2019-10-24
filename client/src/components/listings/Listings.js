@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect, useDispatch } from 'react-redux';
 import { useLocation, useParams } from 'react-router';
 import throttle from 'lodash/throttle';
-import ListingEntries from './ListingsEntries';
+import ListingsLogic from './ListingsLogic';
 import {
   listingsFetchEntriesReddit,
   listingsFetchRedditNew,
@@ -18,6 +18,7 @@ import { hotkeyStatus } from '../../common';
 import ListingsHeader from './ListingsHeader';
 import PostsDebug from './PostsDebug';
 import '../../styles/listings.scss';
+import Posts from '../posts/postsContainer/Posts';
 
 const queryString = require('query-string');
 
@@ -147,12 +148,8 @@ const Listings = ({ data, status, filter, settings }) => {
     <>
       <div className="list-group" id="entries">
         <ListingsHeader />
-        <ListingEntries
-          filter={filter}
-          listingsEntries={data}
-          listingsStatus={status}
-          key={locationKey}
-        />
+        <Posts key={locationKey} />
+        <ListingsLogic />
       </div>
       <PostsDebug />
     </>

@@ -3,17 +3,22 @@ import { useDispatch, useSelector } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
 import { listingsState } from '../../redux/actions/listings';
-import { listingState } from '../../redux/selectors/listingsSelector';
-import Posts from '../posts/Posts';
+import {
+  listingState,
+  listingStatus,
+} from '../../redux/selectors/listingsSelector';
 import {
   getCurrentListingState,
   unfocusIFrame,
   autoPlayVideos,
+  nextEntry,
+  prevEntry,
 } from '../posts/PostsFunctions';
+import { hotkeyStatus } from '../../common';
 
-const ListingsEntries = () => {
+const ListingsLogic = () => {
   // Get Redux Props
-  // const status = useSelector(state => listingStatus(state));
+  const status = useSelector(state => listingStatus(state));
   const settings = useSelector(state => state.siteSettings);
   const locationKey = useSelector(state => state.router.location.key);
   const listingsCurrentState = useSelector(state => listingState(state));
@@ -24,7 +29,34 @@ const ListingsEntries = () => {
   const scrollResize = useRef(true);
 
   const dispatch = useDispatch();
-  // const currentState = usePreviousState(listingsCurrentState);
+
+  // Set some hotkeys
+  const hotkeys = event => {
+    if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
+      const pressedKey = event.key;
+      try {
+        switch (pressedKey) {
+          case 'j':
+            nextEntry(listingsCurrentState.focused);
+            break;
+          case 'k':
+            prevEntry(listingsCurrentState.focused);
+            break;
+          default:
+            break;
+        }
+      } catch (e) {
+        // console.log(e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', hotkeys);
+    return () => {
+      document.removeEventListener('keydown', hotkeys);
+    };
+  });
 
   const monitorEntries = useCallback(() => {
     if (!scrollResize.current) return;
@@ -83,12 +115,10 @@ const ListingsEntries = () => {
     };
   }, [forceDelayedUpdate, monitorEntries]);
 
-  return <Posts />;
+  return <></>;
 };
 
-ListingsEntries.propTypes = {};
-ListingsEntries.defaultProps = {};
+ListingsLogic.propTypes = {};
+ListingsLogic.defaultProps = {};
 
-// const mapStateToProps = state => ({});
-
-export default ListingsEntries;
+export default ListingsLogic;

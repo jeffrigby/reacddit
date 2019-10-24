@@ -2,13 +2,13 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import PostByline from './PostByline';
-import { PostsContextData } from '../../contexts';
+import { PostsContextData } from '../../../contexts';
 
 const PostFooter = ({ debug, visible, toggleShowDebug }) => {
   const data = useContext(PostsContextData);
   const sticky = data.stickied || false;
 
-  if (!visible && false) {
+  if (!visible) {
     return (
       <footer className="d-flex clearfix align-middle mt-1 offscreen-placeholder" />
     );

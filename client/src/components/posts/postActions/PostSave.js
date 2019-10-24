@@ -1,9 +1,9 @@
 import React, { useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { redditSave, redditUnsave } from '../../redux/actions/reddit';
-import { PostsContextActionable, PostsContextData } from '../../contexts';
-import { hotkeyStatus } from '../../common';
+import { redditSave, redditUnsave } from '../../../redux/actions/reddit';
+import { PostsContextActionable, PostsContextData } from '../../../contexts';
+import { hotkeyStatus } from '../../../common';
 
 const PostSave = ({ save, unsave, bearer }) => {
   const data = useContext(PostsContextData);

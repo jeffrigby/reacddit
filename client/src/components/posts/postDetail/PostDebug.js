@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { PostsContextData } from '../../contexts';
+import { PostsContextData } from '../../../contexts';
 
 const ReactJson = lazy(() => import('react-json-view'));
 

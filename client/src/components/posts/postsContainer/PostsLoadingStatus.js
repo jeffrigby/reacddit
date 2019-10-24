@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import {
   listingData,
   listingStatus,
-} from '../../redux/selectors/listingsSelector';
+} from '../../../redux/selectors/listingsSelector';
 
 const PostsLoadingStatus = ({ status, data }) => {
   let message;

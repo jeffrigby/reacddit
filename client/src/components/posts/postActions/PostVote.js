@@ -1,9 +1,9 @@
 import React, { useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { PostsContextData, PostsContextActionable } from '../../contexts';
-import { hotkeyStatus } from '../../common';
-import { redditVote } from '../../redux/actions/reddit';
+import { PostsContextData, PostsContextActionable } from '../../../contexts';
+import { hotkeyStatus } from '../../../common';
+import { redditVote } from '../../../redux/actions/reddit';
 
 const PostVote = ({ bearer, vote }) => {
   const data = useContext(PostsContextData);

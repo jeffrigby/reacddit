@@ -2,21 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
-import Content from './Content';
-import RenderContent from './embeds';
+import Content from '../Content';
+import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
-import { PostsContextData, PostsContextActionable } from '../../contexts';
+import { PostsContextData, PostsContextActionable } from '../../../contexts';
 import {
   postActionable,
   postData,
   postFocused,
   postMinHeight,
   postVisibility,
-} from '../../redux/selectors/postSelectors';
+} from '../../../redux/selectors/postSelectors';
 import PostDebug from './PostDebug';
-import { hotkeyStatus } from '../../common';
-import { listingStatus } from '../../redux/selectors/listingsSelector';
+import { hotkeyStatus } from '../../../common';
+import { listingStatus } from '../../../redux/selectors/listingsSelector';
 
 const classNames = require('classnames');
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { listingStatus } from '../../redux/selectors/listingsSelector';
+import { listingStatus } from '../../../redux/selectors/listingsSelector';
 
 const PostsFooter = ({ status }) => {
   let footerStatus = '';

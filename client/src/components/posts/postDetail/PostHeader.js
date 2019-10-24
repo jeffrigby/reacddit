@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import PostVote from './PostVote';
-import PostSave from './PostSave';
-import { PostsContextData } from '../../contexts';
+import PostVote from '../postActions/PostVote';
+import PostSave from '../postActions/PostSave';
+import { PostsContextData } from '../../../contexts';
 
 const PostHeader = ({ toggleView, expand, visible }) => {
   const data = useContext(PostsContextData);
