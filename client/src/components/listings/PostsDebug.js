@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import { useLocation, useParams } from 'react-router';
+import {
+  listingData,
+  listingState,
+} from '../../redux/selectors/listingsSelector';
 
 const queryString = require('query-string/index');
 
-const PostsDebug = ({
-  listingsFilter,
-  focused,
-  visible,
-  location,
-  match,
-  requestURL,
-  actionable,
-}) => {
+const PostsDebug = () => {
   const [closed, setClosed] = useState(true);
+  const location = useLocation();
+  const match = useParams();
+
+  const debugEnabled = useSelector(state => state.siteSettings.debug);
+  const listingsFilter = useSelector(state => state.listingsFilter);
+  const listingsState = useSelector(state => listingState(state));
+  const data = useSelector(state => listingData(state));
+
+  const { actionable, focused, visible } = listingsState;
+
+  if (!debugEnabled) {
+    return null;
+  }
+
+  const { requestUrl } = data;
+
   const qs = queryString.parse(location.search);
 
   const listingFilterStriing = JSON.stringify(
@@ -51,7 +64,7 @@ const PostsDebug = ({
             </div>
             <div>
               <strong>URL:</strong>
-              <div>{requestURL}</div>
+              <div>{requestUrl}</div>
             </div>
           </div>
         </>
@@ -69,19 +82,7 @@ const PostsDebug = ({
   );
 };
 
-PostsDebug.propTypes = {
-  listingsFilter: PropTypes.object.isRequired,
-  focused: PropTypes.string,
-  actionable: PropTypes.string,
-  visible: PropTypes.array,
-  location: PropTypes.object.isRequired,
-  match: PropTypes.object.isRequired,
-  requestURL: PropTypes.string.isRequired,
-};
+PostsDebug.propTypes = {};
 
-PostsDebug.defaultProps = {
-  focused: '',
-  actionable: '',
-  visible: [],
-};
+PostsDebug.defaultProps = {};
 export default PostsDebug;

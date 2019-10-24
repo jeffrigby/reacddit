@@ -11,7 +11,7 @@ import {
 
 const queryString = require('query-string/index');
 
-const ListingsSubHeader = ({ about, filter, cachedSub }) => {
+const ListingsHeaderSub = ({ about, filter, cachedSub }) => {
   const { listType, target, multi, user } = filter;
 
   let title = '';
@@ -121,13 +121,13 @@ const ListingsSubHeader = ({ about, filter, cachedSub }) => {
   );
 };
 
-ListingsSubHeader.propTypes = {
+ListingsHeaderSub.propTypes = {
   about: PropTypes.object,
   filter: PropTypes.object.isRequired,
   cachedSub: PropTypes.object.isRequired,
 };
 
-ListingsSubHeader.defaultProps = {
+ListingsHeaderSub.defaultProps = {
   about: {},
 };
 
@@ -140,4 +140,4 @@ const mapStateToProps = state => ({
 export default connect(
   mapStateToProps,
   {}
-)(ListingsSubHeader);
+)(ListingsHeaderSub);

@@ -8,7 +8,7 @@ const PostFooter = ({ debug, visible, toggleShowDebug }) => {
   const data = useContext(PostsContextData);
   const sticky = data.stickied || false;
 
-  if (!visible) {
+  if (!visible && false) {
     return (
       <footer className="d-flex clearfix align-middle mt-1 offscreen-placeholder" />
     );
@@ -24,7 +24,6 @@ const PostFooter = ({ debug, visible, toggleShowDebug }) => {
 
   return (
     <footer className="d-flex clearfix align-middle mt-1">
-      {' '}
       <div className="mr-auto byline">
         <PostByline data={data} />
         {crossPost && (

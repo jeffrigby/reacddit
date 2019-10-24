@@ -44,6 +44,14 @@ export function currentSubreddit(key, subreddit) {
   };
 }
 
+export function listingsState(key, currentListingsState) {
+  return {
+    type: 'LISTINGS_STATE',
+    key,
+    currentListingsState,
+  };
+}
+
 const keyEntryChildren = entries => {
   const arrayToObject = (arr, keyField) =>
     Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));

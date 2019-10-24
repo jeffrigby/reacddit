@@ -1,17 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import ListingsSubHeader from './ListingsSubHeader';
-import ListingsMultiHeader from './ListingsMultiHeader';
+import ListingsHeaderSub from './ListingsHeaderSub';
+import ListingsHeaderMulti from './ListingsHeaderMulti';
+import { listingStatus } from '../../redux/selectors/listingsSelector';
+import ListingsHeaderError from './ListingsHeaderError';
 
-const ListingsHeader = ({ filter }) => {
+const ListingsHeader = ({ filter, status }) => {
   const { listType } = filter;
 
   let header;
-  if (listType === 'm') {
-    header = <ListingsMultiHeader />;
+  if (status === 'error') {
+    header = <ListingsHeaderError />;
+  } else if (listType === 'm') {
+    header = <ListingsHeaderMulti />;
   } else {
-    header = <ListingsSubHeader />;
+    header = <ListingsHeaderSub />;
   }
 
   return <div className="list-group-item listings-header">{header}</div>;
@@ -19,12 +23,14 @@ const ListingsHeader = ({ filter }) => {
 
 ListingsHeader.propTypes = {
   filter: PropTypes.object.isRequired,
+  status: PropTypes.string.isRequired,
 };
 
 ListingsHeader.defaultProps = {};
 
 const mapStateToProps = state => ({
   filter: state.listingsFilter,
+  status: listingStatus(state),
 });
 
 export default connect(
