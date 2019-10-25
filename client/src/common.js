@@ -15,7 +15,6 @@ export const setMenuStatus = (menuID, status) => {
 
 export const getMenuStatus = (menuID, defaultState = false) => {
   const menus = getAllMenus();
-  // console.log(menus[menuID], menus[menuID] !== undefined);
   return menuID in menus ? menus[menuID] : defaultState;
 };
 
@@ -27,11 +26,7 @@ export const hotkeyStatus = () => {
     return false;
   }
 
-  if (nodeName === 'INPUT' && activeElement.type === 'text') {
-    return false;
-  }
-
-  return true;
+  return !(nodeName === 'INPUT' && activeElement.type === 'text');
 };
 
 export const getLocationKey = currentState => {
