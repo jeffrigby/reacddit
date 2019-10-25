@@ -57,7 +57,7 @@ const PostSave = ({ save, unsave, bearer }) => {
     <div id="entry-save">
       <button
         className="btn btn-link btn-sm m-0 p-0"
-        onClick={save}
+        onClick={triggerSave}
         type="button"
         title={title}
       >
