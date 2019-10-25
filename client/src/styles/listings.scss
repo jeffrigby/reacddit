@@ -42,6 +42,11 @@ div#entries {
   .media-cont {
     margin-left: -21px;
     margin-right: -21px;
+    iframe {
+      background-image: url(../images/loading_black.gif);
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
   }
 
 

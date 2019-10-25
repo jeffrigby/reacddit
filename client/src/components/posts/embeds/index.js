@@ -5,6 +5,7 @@ import Embeds from './embeds';
 import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
 import redditMediaEmbed from './defaults/redditMediaEmbed';
+import parse from 'url-parse';
 
 const getKeys = url => {
   const regex = /[^a-zA-Z\d\s:]/g;
@@ -54,6 +55,29 @@ const inlineLinks = entry => {
   });
 
   return inline;
+};
+
+const nonSSLFallback = (content, entry) => {
+  const isSSL = window.location.protocol;
+  if (isSSL === 'https:' && content.src) {
+    const { protocol } = parse(content.src);
+    if (protocol === 'http:') {
+      // Check for preview image:
+      try {
+        const image = redditImagePreview(entry);
+        if (image) {
+          return {
+            ...image,
+            renderFunction: 'redditImagePreview',
+          };
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
+    }
+  }
+  return content;
 };
 
 const getContent = async (keys, entry) => {
@@ -134,6 +158,8 @@ const getContent = async (keys, entry) => {
   return {};
 };
 
+
+
 const RenderContent = async entry => {
   try {
     const keys = getKeys(entry.domain);
@@ -145,8 +171,8 @@ const RenderContent = async entry => {
         content.inline = inline;
       }
     }
-
-    return content;
+    
+    return nonSSLFallback(content, entry);
   } catch (e) {
     // console.log(e);
   }
