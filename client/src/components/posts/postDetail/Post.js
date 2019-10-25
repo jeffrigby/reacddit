@@ -52,11 +52,19 @@ const Post = ({
     let isMounted = true;
     const renderContent = async () => {
       if (data.is_self && !data.selftext) {
+        isRendered.current = true;
         return;
       }
-      const getContent = data.crosspost_parent
-        ? await RenderContent(data.crosspost_parent_list[0])
-        : await RenderContent(data);
+
+      const getContent =
+        data.crosspost_parent && data.crosspost_parent_list[0]
+          ? await RenderContent(data.crosspost_parent_list[0])
+          : await RenderContent(data);
+
+      if (!getContent) {
+        isRendered.current = true;
+        return;
+      }
 
       if (getContent.inline) {
         await getContent.inline.forEach(async (value, key) => {
