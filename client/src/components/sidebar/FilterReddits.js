@@ -109,6 +109,7 @@ class FilterReddits extends React.Component {
   setFocus = () => {
     const { setFilter } = this.props;
     const active = true;
+    this.filterInput.current.select();
     setFilter({ active });
     // document.body.classList.add('filter-active');
   };

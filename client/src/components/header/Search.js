@@ -86,6 +86,7 @@ class Search extends React.PureComponent {
 
   focusSearch = () => {
     this.setState({ focused: true });
+    this.searchInput.current.select();
     document.body.classList.add('search-active');
   };
 
