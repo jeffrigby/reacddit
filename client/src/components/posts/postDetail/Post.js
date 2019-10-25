@@ -31,21 +31,18 @@ const Post = ({
   gotoLink,
 }) => {
   const [renderedContent, setRenderedContent] = useState(null);
-  const [expand, setExpand] = useState(
-    siteSettings.view === 'expanded' || false
-  );
+
+  const initView = () => {
+    if (data.stickied && siteSettings.condenseSticky) {
+      return false;
+    }
+    return siteSettings.view === 'expanded' || false;
+  };
+
+  const [expand, setExpand] = useState(initView());
   const [showDebug, setShowDebug] = useState(false);
 
   const isRendered = useRef(false);
-
-  // Se the initial expanded setting.
-  useEffect(() => {
-    if (data.stickied) {
-      setExpand(!siteSettings.condenseSticky);
-    } else {
-      setExpand(siteSettings.view === 'expanded' || false);
-    }
-  }, [siteSettings.view, siteSettings.condenseSticky, data.stickied]);
 
   // Set the rendered content
   useEffect(() => {
