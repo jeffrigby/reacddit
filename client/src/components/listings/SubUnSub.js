@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import { subredditsFetchDataSuccess } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
+import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
+import { useLocation } from 'react-router';
 
 const SubUnSub = ({
   about,
@@ -13,6 +15,9 @@ const SubUnSub = ({
   setSubreddits,
   redditBearer,
 }) => {
+  const location = useLocation();
+  const locationKey = location.key || 'front';
+
   if (isEmpty(about) || redditBearer.status !== 'auth') {
     return null;
   }
@@ -20,7 +25,7 @@ const SubUnSub = ({
   const unsubAction = async () => {
     await RedditAPI.subscribe(about.name, 'unsub');
     const newAbout = { ...about, user_is_subscriber: false };
-    setCurrentSubreddit(newAbout);
+    setCurrentSubreddit(locationKey, newAbout);
     const newSubreddits = { ...subreddits };
     delete newSubreddits.subreddits[about.display_name];
     setSubreddits(newSubreddits);
@@ -29,7 +34,7 @@ const SubUnSub = ({
   const subAction = async () => {
     await RedditAPI.subscribe(about.name, 'sub');
     const newAbout = { ...about, user_is_subscriber: true };
-    setCurrentSubreddit(newAbout);
+    setCurrentSubreddit(locationKey, newAbout);
     const newSubreddits = { ...subreddits };
     newSubreddits.subreddits[about.display_name] = newAbout;
     setSubreddits(newSubreddits);
@@ -72,7 +77,7 @@ SubUnSub.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-  about: state.currentSubreddit,
+  about: getCurrentSubreddit(state),
   subreddits: state.subreddits,
   redditBearer: state.redditBearer,
 });
