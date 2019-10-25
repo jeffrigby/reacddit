@@ -159,7 +159,7 @@ const VideoComp = ({ content, load, link, autoplay }) => {
     <div className={videoContainerClass.join(' ')}>
       <div className="ratio-bg">
         <div style={contStyle} className="ratio-container">
-          <div style={ratioStyle} className="ratio embed-responsive">
+          <div style={ratioStyle} className="ratio embed-responsive loading-icon">
             {video}
           </div>
         </div>

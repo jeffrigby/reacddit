@@ -28,7 +28,7 @@ const Image = ({ content, load }) => {
   return (
     <div className="ratio-bg media-cont">
       <div style={contStyle} className="ratio-container">
-        <div style={ratioStyle} className="ratio embed-responsive">
+        <div style={ratioStyle} className="ratio embed-responsive loading-icon">
           {load && (
             <img src={contentRender.src} alt={title} className={imgClass} />
           )}
