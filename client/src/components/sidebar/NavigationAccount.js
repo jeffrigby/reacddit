@@ -13,7 +13,7 @@ const NavigationAccount = ({ me, urlPush }) => {
   let lastKeyPressed = '';
   const menuID = 'navAccount';
   const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(
-    getMenuStatus(menuID)
+    getMenuStatus(menuID, true)
   );
 
   const hotkeys = event => {
