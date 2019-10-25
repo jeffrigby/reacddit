@@ -174,9 +174,9 @@ class App extends React.PureComponent {
           </main>
 
           <Help />
+          <ReactTooltip effect="solid" html place="right" />
+          <div id="menu-overlay" />
         </React.StrictMode>
-        <ReactTooltip effect="solid" html place="right" />
-        <div id="menu-overlay" />
       </>
     );
   }
