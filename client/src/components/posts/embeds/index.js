@@ -1,11 +1,11 @@
 import { getPublicSuffix, getDomain } from 'tldts';
 import getUrls from 'get-urls';
 import stripTags from 'locutus/php/strings/strip_tags';
+import parse from 'url-parse';
 import Embeds from './embeds';
 import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
 import redditMediaEmbed from './defaults/redditMediaEmbed';
-import parse from 'url-parse';
 
 const getKeys = url => {
   const regex = /[^a-zA-Z\d\s:]/g;
@@ -158,8 +158,6 @@ const getContent = async (keys, entry) => {
   return {};
 };
 
-
-
 const RenderContent = async entry => {
   try {
     const keys = getKeys(entry.domain);
@@ -171,7 +169,7 @@ const RenderContent = async entry => {
         content.inline = inline;
       }
     }
-    
+
     return nonSSLFallback(content, entry);
   } catch (e) {
     // console.log(e);
