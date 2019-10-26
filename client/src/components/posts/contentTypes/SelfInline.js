@@ -21,9 +21,16 @@ const SelfInline = ({ inline, load, name }) => {
     return null;
   }
 
+  const inlineKey = `${name}-${inlineIdx}`;
+
   const inlineRendered = (
     <div className="inline-render">
-      <Content content={inline[inlineIdx]} load={load} data={{ name }} />
+      <Content
+        content={inline[inlineIdx]}
+        load={load}
+        data={{ name }} // Just pass the name.
+        key={inlineKey}
+      />
     </div>
   );
 
