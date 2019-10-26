@@ -10,11 +10,20 @@ import Listings from '../listings/Listings';
 import Help from './Help';
 import NotFound404 from '../../NotFound404';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
-import { siteSettings } from '../../redux/actions/misc';
 import '../../styles/layout.scss';
 import { hotkeyStatus } from '../../common';
 
 class App extends React.PureComponent {
+  static handleNGlobalHotkey(event) {
+    const pressedKey = event.key;
+
+    if (hotkeyStatus()) {
+      if (pressedKey === '?') {
+        jQuery('#hotkeys').modal();
+      }
+    }
+  }
+
   tokenQuery = null;
 
   constructor(props) {
@@ -31,7 +40,7 @@ class App extends React.PureComponent {
 
   async componentDidMount() {
     const { getBearer, getMe } = this.props;
-    document.addEventListener('keydown', this.handleNGlobalHotkey.bind(this));
+    document.addEventListener('keydown', App.handleNGlobalHotkey.bind(this));
 
     // Make sure the token is set before loading the app.
     const token = await getBearer();
@@ -52,28 +61,7 @@ class App extends React.PureComponent {
 
   componentWillUnmount() {
     clearInterval(this.tokenQuery);
-    document.removeEventListener(
-      'keydown',
-      this.handleNGlobalHotkey.bind(this)
-    );
-  }
-
-  handleNGlobalHotkey(event) {
-    const { setSiteSetting, settings } = this.props;
-    const pressedKey = event.key;
-
-    if (hotkeyStatus()) {
-      switch (pressedKey) {
-        case 'Î': // opt-shift-d
-          setSiteSetting({ debug: !settings.debug });
-          break;
-        case '?':
-          jQuery('#hotkeys').modal();
-          break;
-        default:
-          break;
-      }
-    }
+    document.removeEventListener('keydown', App.handleNGlobalHotkey.bind(this));
   }
 
   render() {
@@ -185,8 +173,6 @@ class App extends React.PureComponent {
 App.propTypes = {
   getBearer: PropTypes.func.isRequired,
   getMe: PropTypes.func.isRequired,
-  setSiteSetting: PropTypes.func.isRequired,
-  settings: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
   redditMe: PropTypes.object.isRequired,
@@ -207,7 +193,6 @@ export default withRouter(
     {
       getBearer: redditGetBearer,
       getMe: redditFetchMe,
-      setSiteSetting: siteSettings,
     }
   )(App)
 );

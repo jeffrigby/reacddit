@@ -2,6 +2,7 @@ import React from 'react';
 import AutoRefresh from './AutoRefresh';
 import ForceRefresh from './ForceRefresh';
 import AutoPlay from './AutoPlay';
+import DebugMode from './DebugMode';
 
 const Settings = () => {
   return (
@@ -28,6 +29,9 @@ const Settings = () => {
         </div>
         <div className="small">
           <AutoPlay />
+        </div>
+        <div className="small">
+          <DebugMode />
         </div>
         <div className="dropdown-divider" />
         <ForceRefresh />
