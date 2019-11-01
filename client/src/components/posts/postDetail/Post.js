@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
@@ -32,17 +32,21 @@ const Post = ({
 }) => {
   const [renderedContent, setRenderedContent] = useState(null);
 
-  const initView = () => {
+  const initView = useCallback(() => {
     if (data.stickied && siteSettings.condenseSticky) {
       return false;
     }
     return siteSettings.view === 'expanded' || false;
-  };
+  }, [siteSettings.condenseSticky, siteSettings.view, data.stickied]);
 
   const [expand, setExpand] = useState(initView());
   const [showDebug, setShowDebug] = useState(false);
 
   const isRendered = useRef(false);
+
+  useEffect(() => {
+    setExpand(initView());
+  }, [initView, siteSettings.view, siteSettings.condenseSticky]);
 
   // Set the rendered content
   useEffect(() => {
