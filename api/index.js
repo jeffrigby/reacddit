@@ -26,7 +26,7 @@ const {
 const debugEnabled = DEBUG === "1" || DEBUG === "true" || false;
 
 const CONFIG = {
-  key: "redditmedia:sess" /** (string) cookie key (default is koa:sess) */,
+  key: "reacddit:sess" /** (string) cookie key (default is koa:sess) */,
   /** (number || 'session') maxAge in ms (default is 1 days) */
   /** 'session' will result in a cookie that expires when session/browser is closed */
   /** Warning: If a session cookie is stolen, this cookie will never expire */
