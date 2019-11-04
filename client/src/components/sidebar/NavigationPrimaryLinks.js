@@ -78,6 +78,11 @@ class NavigationPrimaryLinks extends React.PureComponent {
     return gotoLink(url);
   };
 
+  openHotkeys = e => {
+    if (e) e.preventDefault();
+    jQuery('#hotkeys').modal();
+  };
+
   render() {
     const { me, sort } = this.props;
     const currentSort = sort && sort !== 'relevance' ? sort : '';
@@ -120,6 +125,15 @@ class NavigationPrimaryLinks extends React.PureComponent {
           title="Bugs"
           isStatic
           iconClass="fas fa-bug"
+        />
+        <NavigationGenericNavItem
+          to="/hotkeys"
+          text="Hotkeys"
+          title="Show Hotkeys"
+          iconClass="fas fa-keyboard"
+          liClass="no-touch"
+          onClickAction={this.openHotkeys}
+          isStatic
         />
       </ul>
     );

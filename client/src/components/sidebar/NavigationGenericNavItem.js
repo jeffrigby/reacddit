@@ -19,6 +19,7 @@ const NavigationGenericNavItem = props => {
     badge,
     noLi,
     iconClass,
+    liClass,
   } = props;
   const titleNew = title || text;
   let classNames = 'nav-link';
@@ -73,7 +74,8 @@ const NavigationGenericNavItem = props => {
   if (noLi) {
     return navItem;
   }
-  return <li className="nav-item">{navItem}</li>;
+  const liClassStr = `nav-item${liClass ? ` ${liClass}` : ''}`;
+  return <li className={liClassStr}>{navItem}</li>;
 };
 
 NavigationGenericNavItem.propTypes = {
@@ -84,6 +86,7 @@ NavigationGenericNavItem.propTypes = {
   id: PropTypes.string,
   badge: PropTypes.string,
   iconClass: PropTypes.string,
+  liClass: PropTypes.string,
   isStatic: PropTypes.bool,
   noLi: PropTypes.bool,
   onClickAction: PropTypes.func,
@@ -98,6 +101,7 @@ NavigationGenericNavItem.defaultProps = {
   id: '',
   badge: '',
   iconClass: '',
+  liClass: '',
 };
 
 export default NavigationGenericNavItem;
