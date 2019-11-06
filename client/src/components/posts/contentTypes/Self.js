@@ -49,9 +49,14 @@ const Self = ({ content, load, name }) => {
 
   // eslint-disable-next-line react/no-danger
   const renderedHTML = <div dangerouslySetInnerHTML={{ __html: rawhtml }} />;
-  const inlineRendered = (
-    <SelfInline inline={content.inline} name={name} load={load} />
-  );
+  const inlineRendered = content.inline.length ? (
+    <SelfInline
+      inline={content.inline}
+      inlineLinks={content.inlineLinks}
+      name={name}
+      load={load}
+    />
+  ) : null;
 
   return (
     <div className="self">

@@ -37,11 +37,12 @@ const redditImagePreview = entry => {
   }
 
   const parsed = parse(entry.url);
+
   if (parsed.pathname.match(/\.(jpg|png|gif|jpeg)$/)) {
     return {
       type: 'image',
-      width: 650,
-      height: 650,
+      // width: 650,
+      // height: 650,
       src: entry.url,
       renderFunction: 'redditImagePreview',
     };

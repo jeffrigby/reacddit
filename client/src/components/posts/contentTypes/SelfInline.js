@@ -1,11 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Content from '../Content';
 
-const SelfInline = ({ inline, load, name }) => {
+const SelfInline = ({ inline, inlineLinks, load, name }) => {
   const [inlineIdx, setInlineIdx] = useState(0);
+  const [resolvedContent, setResolvedContent] = useState([]);
 
-  const totalLinks = inline.length;
+  useEffect(() => {
+    Promise.all(inline).then(content => {
+      const resolved = [];
+      content.forEach((value, key) => {
+        if (value) {
+          resolved.push({
+            content: value,
+            link: inlineLinks[key],
+          });
+        }
+      });
+      setResolvedContent(resolved);
+    });
+  }, [inline, inlineLinks]);
+
+  const totalLinks = resolvedContent.length;
+  if (!totalLinks) return '';
 
   const prevEntry = async () => {
     const prevIdx = inlineIdx === 0 ? totalLinks - 1 : inlineIdx - 1;
@@ -17,21 +34,24 @@ const SelfInline = ({ inline, load, name }) => {
     setInlineIdx(nextIdx);
   };
 
-  if (inline.length === 0) {
+  if (resolvedContent.length === 0) {
     return null;
   }
 
   const inlineKey = `${name}-${inlineIdx}`;
+  const inlineLink = resolvedContent[inlineIdx].link;
 
-  const inlineRendered = (
+  const inlineRendered = resolvedContent[inlineIdx].content ? (
     <div className="inline-render">
       <Content
-        content={inline[inlineIdx]}
+        content={resolvedContent[inlineIdx].content}
         load={load}
         data={{ name }} // Just pass the name.
         key={inlineKey}
       />
     </div>
+  ) : (
+    'Embed Failed'
   );
 
   let inlineNav;
@@ -75,12 +95,14 @@ const SelfInline = ({ inline, load, name }) => {
     <div className="inlineLinks">
       {inlineNav}
       {inlineRendered}
+      <div className="small">Source: {inlineLink}</div>
     </div>
   );
 };
 
 SelfInline.propTypes = {
   inline: PropTypes.array.isRequired,
+  inlineLinks: PropTypes.array.isRequired,
   load: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
 };

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import IFrame16x9 from './contentTypes/IFrame16x9';
-import Image from './contentTypes/Image';
+import ImageComp from './contentTypes/ImageComp';
 import VideoComp from './contentTypes/VideoComp';
 import IFrame4x4 from './contentTypes/IFrame4x4';
 import Thumb from './contentTypes/Thumb';
@@ -28,7 +28,7 @@ const Content = ({ content, load }) => {
   if (content.type) {
     switch (content.type) {
       case 'image':
-        contentRendered = <Image content={content} load={load} />;
+        contentRendered = <ImageComp content={content} load={load} />;
         break;
       case 'video':
         contentRendered = (
