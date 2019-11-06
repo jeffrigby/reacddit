@@ -6,6 +6,7 @@ export function siteSettings(
     condenseSticky: true,
     stream: false,
     autoplay: true,
+    pinMenu: true,
   },
   action
 ) {

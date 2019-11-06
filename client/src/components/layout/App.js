@@ -66,7 +66,7 @@ class App extends React.PureComponent {
 
   render() {
     const { error, message, loading } = this.state;
-    const { redditBearer, subredditsFilter, redditMe } = this.props;
+    const { redditBearer, subredditsFilter, redditMe, pinMenu } = this.props;
 
     if (redditMe.status === 'error') {
       return (
@@ -142,8 +142,10 @@ class App extends React.PureComponent {
       </Route>
     );
 
+    const menuStatus = pinMenu ? '' : 'hide-menu';
+
     return (
-      <>
+      <div className={menuStatus}>
         <React.StrictMode>
           <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
             <Header />
@@ -165,7 +167,7 @@ class App extends React.PureComponent {
           <ReactTooltip effect="solid" html place="right" />
           <div id="menu-overlay" />
         </React.StrictMode>
-      </>
+      </div>
     );
   }
 }
@@ -176,13 +178,16 @@ App.propTypes = {
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
   redditMe: PropTypes.object.isRequired,
+  pinMenu: PropTypes.bool,
 };
 
-App.defaultProps = {};
+App.defaultProps = {
+  pinMenu: true,
+};
 
 const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
-  settings: state.siteSettings,
+  pinMenu: state.siteSettings.pinMenu,
   subredditsFilter: state.subredditsFilter,
   redditMe: state.redditMe,
 });

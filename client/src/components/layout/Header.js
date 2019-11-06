@@ -9,6 +9,7 @@ import ViewMode from '../header/ViewMode';
 import Logo from '../../images/reacddit-menu.png';
 import Settings from '../header/settings/Settings';
 import '../../styles/header.scss';
+import PinMenu from '../header/settings/PinMenu';
 
 const Header = () => {
   const showMenu = () => {
@@ -53,6 +54,9 @@ const Header = () => {
     <>
       <div className="d-flex flex-nowrap align-middle m-0 sidebar sidebar-navbar navbar-group filter-cont">
         <div className="ml-2 close-menu-link">{closeMenuButton}</div>
+        <div className="ml-2 pin-menu-link">
+          <PinMenu />
+        </div>
         <FilterReddits />
       </div>
 

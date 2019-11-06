@@ -218,6 +218,10 @@
       display: none !important;
     }
   }
+
+  .pin-menu-link {
+    display: none;
+  }
 }
 
 .friend-li {
@@ -237,7 +241,7 @@
 
   .friend-li {
     .friend-actions {
-       display: none;
+      display: none;
     }
     &:hover {
       .friend-actions {
