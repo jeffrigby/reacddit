@@ -115,6 +115,14 @@ const ListingsLogic = () => {
     };
   }, [forceDelayedUpdate, monitorEntries]);
 
+  useEffect(() => {
+    // Check if iframe is focused. If it is, unfocus it so hotkeys work.
+    const monitorIframeFocus = setInterval(unfocusIFrame, 1000);
+    return () => {
+      clearInterval(monitorIframeFocus);
+    };
+  });
+
   return <></>;
 };
 

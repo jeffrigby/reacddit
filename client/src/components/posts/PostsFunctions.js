@@ -77,10 +77,10 @@ export const getCurrentListingState = currentState => {
 export const unfocusIFrame = () => {
   // Check if iframe is focused. If it is, unfocus it so hotkeys work.
   if (document.activeElement.tagName === 'IFRAME') {
-    setTimeout(() => {
-      window.focus();
-      document.activeElement.blur();
-    }, 1000);
+    // setTimeout(() => {
+    window.focus();
+    document.activeElement.blur();
+    // }, 1000);
   }
 };
 
