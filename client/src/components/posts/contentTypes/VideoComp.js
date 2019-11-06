@@ -48,12 +48,21 @@ const VideoComp = ({ content, load, link, autoplay }) => {
   const ratioStyle = { paddingBottom: `${ratio}%` };
   const videoId = `video-${content.id}`;
 
-  const toggleLock = () => {
-    if (ctrLock) {
-      setCtrLock(false);
+  const playStop = () => {
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setPlaying(true);
+      setManualStop(false);
     } else {
-      setCtrLock(true);
+      videoRef.current.pause();
+      setPlaying(false);
+      setManualStop(true);
     }
+  };
+
+  const toggleLock = () => {
+    playStop();
+    setCtrLock(!ctrLock);
   };
 
   const toggleSound = () => {
@@ -75,18 +84,6 @@ const VideoComp = ({ content, load, link, autoplay }) => {
       videoRef.current.mozRequestFullScreen();
     } else if (videoRef.current.webkitEnterFullscreen) {
       videoRef.current.webkitEnterFullscreen();
-    }
-  };
-
-  const playStop = () => {
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-      setPlaying(true);
-      setManualStop(false);
-    } else {
-      videoRef.current.pause();
-      setPlaying(false);
-      setManualStop(true);
     }
   };
 
