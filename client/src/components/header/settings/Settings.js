@@ -3,6 +3,7 @@ import AutoRefresh from './AutoRefresh';
 import ForceRefresh from './ForceRefresh';
 import AutoPlay from './AutoPlay';
 import DebugMode from './DebugMode';
+import CondensePrefs from './CondensePrefs';
 
 const Settings = () => {
   return (
@@ -26,12 +27,9 @@ const Settings = () => {
       <div className="dropdown-menu dropdown-menu-right p-2">
         <div className="small">
           <AutoRefresh />
-        </div>
-        <div className="small">
           <AutoPlay />
-        </div>
-        <div className="small">
           <DebugMode />
+          <CondensePrefs />
         </div>
         <div className="dropdown-divider" />
         <ForceRefresh />

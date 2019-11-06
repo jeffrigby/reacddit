@@ -4,6 +4,7 @@ export function siteSettings(
     view: 'expanded',
     debug: false,
     condenseSticky: true,
+    condenseDuplicate: true,
     stream: false,
     autoplay: true,
     pinMenu: true,

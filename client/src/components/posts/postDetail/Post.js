@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { push } from 'connected-react-router';
 import Content from '../Content';
 import RenderContent from '../embeds';
@@ -29,15 +29,29 @@ const Post = ({
   minHeight,
   listingsStatus,
   gotoLink,
+  duplicate,
 }) => {
   const [renderedContent, setRenderedContent] = useState(null);
+  const condenseDuplicatesSetting = useSelector(
+    state => state.siteSettings.condenseDuplicate
+  );
 
   const initView = useCallback(() => {
     if (data.stickied && siteSettings.condenseSticky) {
       return false;
     }
+
+    if (duplicate && condenseDuplicatesSetting) {
+      return false;
+    }
     return siteSettings.view === 'expanded' || false;
-  }, [siteSettings.condenseSticky, siteSettings.view, data.stickied]);
+  }, [
+    data.stickied,
+    siteSettings.condenseSticky,
+    siteSettings.view,
+    duplicate,
+    condenseDuplicatesSetting,
+  ]);
 
   const [expand, setExpand] = useState(initView());
   const [showDebug, setShowDebug] = useState(false);
@@ -46,7 +60,13 @@ const Post = ({
 
   useEffect(() => {
     setExpand(initView());
-  }, [initView, siteSettings.view, siteSettings.condenseSticky]);
+  }, [
+    initView,
+    siteSettings.view,
+    siteSettings.condenseSticky,
+    condenseDuplicatesSetting,
+    duplicate,
+  ]);
 
   // Set the rendered content
   useEffect(() => {
@@ -160,6 +180,7 @@ const Post = ({
     visible,
     actionable,
     condensed: !expand,
+    duplicate,
   });
 
   const styles = {};
@@ -189,6 +210,7 @@ const Post = ({
               visible={visible}
               expand={expand}
               toggleView={toggleView}
+              duplicate={duplicate}
             />
             {expand && (
               <Content content={renderedContent} load={visible} key={data.id} />
@@ -221,11 +243,13 @@ Post.propTypes = {
   gotoLink: PropTypes.func.isRequired,
   minHeight: PropTypes.number,
   listingsStatus: PropTypes.string,
+  duplicate: PropTypes.bool,
 };
 
 Post.defaultProps = {
   minHeight: 0,
   listingsStatus: 'unloaded',
+  duplicate: false,
 };
 
 const mapStateToProps = (state, props) => ({

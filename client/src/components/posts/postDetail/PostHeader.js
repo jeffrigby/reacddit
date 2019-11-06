@@ -5,7 +5,7 @@ import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 import { PostsContextData } from '../../../contexts';
 
-const PostHeader = ({ toggleView, expand, visible }) => {
+const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
   const data = useContext(PostsContextData);
 
   const linkFlair = data.link_flair_text ? (
@@ -15,6 +15,15 @@ const PostHeader = ({ toggleView, expand, visible }) => {
     >
       {data.link_flair_text}
     </Link>
+  ) : null;
+
+  const dupeFlair = duplicate ? (
+    <div
+      className="badge badge-dark mx-1"
+      title="This post appears in the list above."
+    >
+      Duplicate Post
+    </div>
   ) : null;
 
   let searchLink = '';
@@ -62,6 +71,7 @@ const PostHeader = ({ toggleView, expand, visible }) => {
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
       {linkFlair}
+      {dupeFlair}
     </h6>
   ) : (
     <h6 className="p-0 m-0">
@@ -73,7 +83,7 @@ const PostHeader = ({ toggleView, expand, visible }) => {
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
-      {linkFlair}{' '}
+      {linkFlair} {dupeFlair}{' '}
       <a
         href={data.url}
         target="_blank"
@@ -108,6 +118,7 @@ PostHeader.propTypes = {
   toggleView: PropTypes.func.isRequired,
   visible: PropTypes.bool.isRequired,
   expand: PropTypes.bool.isRequired,
+  duplicate: PropTypes.bool.isRequired,
 };
 
 export default React.memo(PostHeader);

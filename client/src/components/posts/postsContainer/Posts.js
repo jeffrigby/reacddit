@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { listingData } from '../../../redux/selectors/listingsSelector';
@@ -7,24 +7,53 @@ import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 
 const Posts = ({ data, listType }) => {
-  const renderPost = (post, idx) => {
-    return <Post postName={post.data.name} key={post.data.id} idx={idx} />;
-  };
+  const [renderedPosts, setRenderedPosts] = useState([]);
+
+  useEffect(() => {
+    const links = [];
+    const renderPost = (post, idx) => {
+      let duplicate = false;
+      if (!links.includes(post.data.url) && listType !== 'duplicates') {
+        links.push(post.data.url);
+      } else {
+        // This is a dupe
+        duplicate = true;
+      }
+      return (
+        <Post
+          postName={post.data.name}
+          key={post.data.id}
+          duplicate={duplicate}
+          idx={idx}
+        />
+      );
+    };
+
+    const entriesObject = data.children;
+    if (entriesObject) {
+      let entries;
+      const entriesKeys = Object.keys(entriesObject);
+      if (entriesKeys.length > 0) {
+        entries = entriesKeys.map((key, idx) => {
+          return renderPost(entriesObject[key], idx);
+        });
+      }
+      setRenderedPosts(entries);
+    }
+  }, [data.children, listType]);
 
   const entriesObject = data.children;
   if (!entriesObject) return <PostsLoadingStatus />;
-  let entries;
-  const entriesKeys = Object.keys(entriesObject);
-  if (entriesKeys.length > 0) {
-    entries = entriesKeys.map((key, idx) => {
-      return renderPost(entriesObject[key], idx);
-    });
-  }
 
   const originalPost =
-    data.originalPost && listType === 'duplicates'
-      ? renderPost(data.originalPost, 0)
-      : null;
+    data.originalPost && listType === 'duplicates' ? (
+      <Post
+        postName={data.originalPost.data.name}
+        key={data.originalPost.data.id}
+        duplicate={false}
+        idx={0}
+      />
+    ) : null;
 
   return (
     <>
@@ -35,7 +64,7 @@ const Posts = ({ data, listType }) => {
         </>
       )}
       <PostsLoadingStatus />
-      {entries}
+      {renderedPosts}
       <PostsFooter />
     </>
   );
