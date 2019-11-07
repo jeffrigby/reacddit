@@ -20,6 +20,7 @@
     "babel-polyfill": "^6.26.0",
     "classnames": "^2.2.6",
     "connected-react-router": "^6.1.0",
+    "copy-to-clipboard": "^3.2.0",
     "date-fns": "^2.0.1",
     "detect-browser": "^4.5.0",
     "dotenv": "^8.0.0",
