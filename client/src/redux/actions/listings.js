@@ -128,15 +128,23 @@ export function listingsFetchEntriesReddit(filters) {
         const elapsed =
           Date.now() - currentState.listingsRedditEntries[locationKey].saved;
         if (elapsed <= 3600 * 1000) {
+          // Everything is cool. Return Cache
           return;
         }
-      }
 
-      batch(() => {
-        dispatch(listingsRedditStatus(locationKey, 'loading'));
-        dispatch(currentSubreddit(locationKey, {}));
-        dispatch(listingsRedditEntries(locationKey, {}));
-      });
+        // Expired content so reset it, and fetch again.
+        batch(() => {
+          dispatch(currentSubreddit(locationKey, {}));
+          dispatch(listingsRedditEntries(locationKey, {}));
+        });
+      }
+      // End  cache Check
+
+      // batch(() => {
+      dispatch(listingsRedditStatus(locationKey, 'loading'));
+      // dispatch(currentSubreddit(locationKey, {}));
+      // dispatch(listingsRedditEntries(locationKey, {}));
+      // });
 
       // const limit = currentState.siteSettings.view === 'condensed' ? 25 : 10;
 
