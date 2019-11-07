@@ -8,7 +8,9 @@ import { redditVote } from '../../../redux/actions/reddit';
 const PostVote = ({ bearer, vote }) => {
   const data = useContext(PostsContextData);
   const actionable = useContext(PostsContextActionable);
-  const disabled = bearer.status !== 'auth';
+  const expired = Date.now() / 1000 - data.created_utc;
+  const sixmonthSeconds = 182.5 * 86400; // I don't know when reddit exactly cuts it off.
+  const disabled = bearer.status !== 'auth' || expired > sixmonthSeconds;
 
   const { ups, likes } = data;
 
