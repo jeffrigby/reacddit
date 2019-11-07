@@ -36,7 +36,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
           title="Search for other posts linking to this link"
           className="btn btn-link btn-sm m-0 p-0"
         >
-          <i className="fas fa-search" />
+          <i className="far fa-copy" />
         </Link>
       </div>
     );
