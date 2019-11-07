@@ -12,7 +12,7 @@ const PostDebug = ({ renderedContent }) => {
       <Suspense fallback={<div>Loading Debug Info...</div>}>
         {renderedContent && (
           <ReactJson
-            src={renderedContent}
+            src={{ ...renderedContent, url: data.url }}
             name="content"
             theme="harmonic"
             sortKeys
