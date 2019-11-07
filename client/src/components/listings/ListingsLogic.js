@@ -15,8 +15,9 @@ import {
   prevEntry,
 } from '../posts/PostsFunctions';
 import { hotkeyStatus } from '../../common';
+import PropTypes from 'prop-types';
 
-const ListingsLogic = () => {
+const ListingsLogic = ({ saved }) => {
   // Get Redux Props
   const status = useSelector(state => listingStatus(state));
   const settings = useSelector(state => state.siteSettings);
@@ -123,10 +124,20 @@ const ListingsLogic = () => {
     };
   });
 
+  // Effect to trigger monitor if the saved arg changes.
+  // This is to make sure newly fetched entries render.
+  useEffect(() => {
+    forceDelayedUpdate();
+  }, [forceDelayedUpdate, saved]);
+
   return <></>;
 };
 
-ListingsLogic.propTypes = {};
-ListingsLogic.defaultProps = {};
+ListingsLogic.propTypes = {
+  saved: PropTypes.number,
+};
+ListingsLogic.defaultProps = {
+  saved: 0,
+};
 
 export default ListingsLogic;

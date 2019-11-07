@@ -149,7 +149,7 @@ const Listings = ({ data, status, filter, settings }) => {
       <div className="list-group" id="entries">
         <ListingsHeader />
         <Posts key={locationKey} />
-        <ListingsLogic />
+        <ListingsLogic saved={data.saved} />
       </div>
       <PostsDebug />
     </>
