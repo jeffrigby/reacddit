@@ -90,7 +90,14 @@ export const autoPlayVideos = () => {
     const videos = Array.from(videoCollection);
     videos.forEach(video => {
       if (video.paused) {
-        video.play();
+        const playPromise = video.play();
+        playPromise
+          .then(_ => {
+            // auto play worked
+          })
+          .catch(error => {
+            // Auto-play was prevented. Ignore the error.
+          });
       }
     });
   }
