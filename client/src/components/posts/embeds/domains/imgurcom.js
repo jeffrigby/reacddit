@@ -46,7 +46,7 @@ function getEmbedId(entry) {
     const embedSrcClean = cleanPath(embedSrc.pathname);
     return embedSrcClean.split('.')[0];
   } catch (e) {
-    console.log(e);
+    // Ignore warning and continue
   }
   return false;
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
+import PropTypes from 'prop-types';
 import { listingsState } from '../../redux/actions/listings';
 import {
   listingState,
@@ -15,7 +16,6 @@ import {
   prevEntry,
 } from '../posts/PostsFunctions';
 import { hotkeyStatus } from '../../common';
-import PropTypes from 'prop-types';
 
 const ListingsLogic = ({ saved }) => {
   // Get Redux Props
