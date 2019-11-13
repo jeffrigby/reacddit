@@ -26,7 +26,4 @@ const mapStateToProps = state => ({
   filter: state.listingsFilter,
 });
 
-export default connect(
-  mapStateToProps,
-  {}
-)(ListingsHeaderError);
+export default connect(mapStateToProps, {})(ListingsHeaderError);

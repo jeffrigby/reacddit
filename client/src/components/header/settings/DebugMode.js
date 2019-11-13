@@ -63,9 +63,6 @@ const mapStateToProps = state => ({
   debug: state.siteSettings.debug,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    setSiteSetting: siteSettings,
-  }
-)(DebugMode);
+export default connect(mapStateToProps, {
+  setSiteSetting: siteSettings,
+})(DebugMode);

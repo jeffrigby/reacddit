@@ -94,10 +94,7 @@ const mapStateToProps = state => ({
 });
 
 export default React.memo(
-  connect(
-    mapStateToProps,
-    {
-      vote: redditVote,
-    }
-  )(PostVote)
+  connect(mapStateToProps, {
+    vote: redditVote,
+  })(PostVote)
 );

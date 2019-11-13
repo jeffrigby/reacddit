@@ -116,7 +116,4 @@ const mapStateToProps = (state, ownProps) => ({
   lastUpdated: getLastUpdated(state.lastUpdated, ownProps.item),
 });
 
-export default connect(
-  mapStateToProps,
-  null
-)(NavigationItem);
+export default connect(mapStateToProps, null)(NavigationItem);

@@ -30,9 +30,4 @@ const mapStateToProps = state => ({
   status: listingStatus(state),
 });
 
-export default React.memo(
-  connect(
-    mapStateToProps,
-    {}
-  )(PostsFooter)
-);
+export default React.memo(connect(mapStateToProps, {})(PostsFooter));

@@ -159,9 +159,6 @@ const mapStateToProps = state => ({
   subreddits: state.subreddits,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    gotoLink: push,
-  }
-)(NavigationPrimaryLinks);
+export default connect(mapStateToProps, {
+  gotoLink: push,
+})(NavigationPrimaryLinks);

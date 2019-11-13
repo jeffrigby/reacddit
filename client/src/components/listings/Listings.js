@@ -174,7 +174,4 @@ const mapStateToProps = state => ({
   filter: state.listingsFilter,
 });
 
-export default connect(
-  mapStateToProps,
-  null
-)(Listings);
+export default connect(mapStateToProps, null)(Listings);

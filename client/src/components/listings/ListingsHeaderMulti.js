@@ -85,7 +85,4 @@ const mapStateToProps = state => ({
   me: state.redditMe,
 });
 
-export default connect(
-  mapStateToProps,
-  {}
-)(ListingsHeaderMulti);
+export default connect(mapStateToProps, {})(ListingsHeaderMulti);

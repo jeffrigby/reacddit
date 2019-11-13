@@ -223,10 +223,7 @@ const mapStateToProps = state => ({
   ),
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    fetchSubreddits: subredditsFetchData,
-    fetchLastUpdated: subredditsFetchLastUpdated,
-  }
-)(NavigationSubReddits);
+export default connect(mapStateToProps, {
+  fetchSubreddits: subredditsFetchData,
+  fetchLastUpdated: subredditsFetchLastUpdated,
+})(NavigationSubReddits);

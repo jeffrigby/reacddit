@@ -56,9 +56,4 @@ const mapStateToProps = state => ({
   status: listingStatus(state),
 });
 
-export default React.memo(
-  connect(
-    mapStateToProps,
-    {}
-  )(PostsLoadingStatus)
-);
+export default React.memo(connect(mapStateToProps, {})(PostsLoadingStatus));

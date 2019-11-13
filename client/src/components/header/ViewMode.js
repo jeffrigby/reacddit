@@ -76,9 +76,6 @@ const mapStateToProps = state => ({
   actionable: listingState(state).actionable,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    setSiteSetting: siteSettings,
-  }
-)(ViewMode);
+export default connect(mapStateToProps, {
+  setSiteSetting: siteSettings,
+})(ViewMode);

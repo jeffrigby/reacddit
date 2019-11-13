@@ -241,7 +241,4 @@ const mapStateToProps = state => ({
   autoplay: state.siteSettings.autoplay,
 });
 
-export default connect(
-  mapStateToProps,
-  {}
-)(React.memo(VideoComp));
+export default connect(mapStateToProps, {})(React.memo(VideoComp));

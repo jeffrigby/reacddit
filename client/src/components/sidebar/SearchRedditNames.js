@@ -128,7 +128,4 @@ const mapStateToProps = state => ({
   auth: state.redditBearer.status === 'auth' || false,
 });
 
-export default connect(
-  mapStateToProps,
-  {}
-)(SearchRedditNames);
+export default connect(mapStateToProps, {})(SearchRedditNames);

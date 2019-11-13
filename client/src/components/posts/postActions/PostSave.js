@@ -78,11 +78,8 @@ const mapStateToProps = state => ({
 });
 
 export default React.memo(
-  connect(
-    mapStateToProps,
-    {
-      save: redditSave,
-      unsave: redditUnsave,
-    }
-  )(PostSave)
+  connect(mapStateToProps, {
+    save: redditSave,
+    unsave: redditUnsave,
+  })(PostSave)
 );

@@ -33,7 +33,4 @@ const mapStateToProps = state => ({
   status: listingStatus(state),
 });
 
-export default connect(
-  mapStateToProps,
-  {}
-)(ListingsHeader);
+export default connect(mapStateToProps, {})(ListingsHeader);

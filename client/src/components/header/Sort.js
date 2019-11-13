@@ -282,7 +282,4 @@ const mapStateToProps = (state, ownProps) => ({
   subreddits: state.subreddits,
 });
 
-export default connect(
-  mapStateToProps,
-  { gotoLink: push }
-)(Sort);
+export default connect(mapStateToProps, { gotoLink: push })(Sort);

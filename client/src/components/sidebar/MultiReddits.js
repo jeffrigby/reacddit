@@ -128,9 +128,6 @@ const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    fetchMultis: redditFetchMultis,
-  }
-)(MultiReddits);
+export default connect(mapStateToProps, {
+  fetchMultis: redditFetchMultis,
+})(MultiReddits);

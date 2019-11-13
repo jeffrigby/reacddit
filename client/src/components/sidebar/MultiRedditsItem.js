@@ -70,7 +70,4 @@ const mapStateToProps = state => ({
   location: state.router.location,
 });
 
-export default connect(
-  mapStateToProps,
-  null
-)(React.memo(MultiRedditsItem));
+export default connect(mapStateToProps, null)(React.memo(MultiRedditsItem));

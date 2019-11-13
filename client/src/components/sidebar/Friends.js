@@ -114,9 +114,6 @@ const mapStateToProps = state => ({
   redditFriends: state.redditFriends,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    getFriends: redditFetchFriends,
-  }
-)(Friends);
+export default connect(mapStateToProps, {
+  getFriends: redditFetchFriends,
+})(Friends);

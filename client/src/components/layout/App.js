@@ -193,11 +193,8 @@ const mapStateToProps = state => ({
 });
 
 export default withRouter(
-  connect(
-    mapStateToProps,
-    {
-      getBearer: redditGetBearer,
-      getMe: redditFetchMe,
-    }
-  )(App)
+  connect(mapStateToProps, {
+    getBearer: redditGetBearer,
+    getMe: redditFetchMe,
+  })(App)
 );

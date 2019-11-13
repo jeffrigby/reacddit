@@ -137,7 +137,4 @@ const mapStateToProps = state => ({
   cachedSub: getCachedSub(state),
 });
 
-export default connect(
-  mapStateToProps,
-  {}
-)(ListingsHeaderSub);
+export default connect(mapStateToProps, {})(ListingsHeaderSub);

@@ -286,7 +286,4 @@ const mapDispatchToProps = dispatch => ({
   pushUrl: url => dispatch(push(url)),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Search);
+export default connect(mapStateToProps, mapDispatchToProps)(Search);

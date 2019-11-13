@@ -82,10 +82,7 @@ const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    setCurrentSubreddit: currentSubreddit,
-    setSubreddits: subredditsFetchDataSuccess,
-  }
-)(SubUnSub);
+export default connect(mapStateToProps, {
+  setCurrentSubreddit: currentSubreddit,
+  setSubreddits: subredditsFetchDataSuccess,
+})(SubUnSub);

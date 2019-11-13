@@ -148,7 +148,6 @@ const mapStateToProps = state => ({
   me: state.redditMe.me,
 });
 
-export default connect(
-  mapStateToProps,
-  { urlPush: push }
-)(React.memo(NavigationAccount));
+export default connect(mapStateToProps, { urlPush: push })(
+  React.memo(NavigationAccount)
+);

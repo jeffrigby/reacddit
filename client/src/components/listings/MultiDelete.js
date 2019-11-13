@@ -41,7 +41,7 @@ MultiDelete.defaultProps = {};
 
 const mapStateToProps = state => ({});
 
-export default connect(
-  mapStateToProps,
-  { fetchMultis: redditFetchMultis, urlPush: push }
-)(React.memo(MultiDelete));
+export default connect(mapStateToProps, {
+  fetchMultis: redditFetchMultis,
+  urlPush: push,
+})(React.memo(MultiDelete));

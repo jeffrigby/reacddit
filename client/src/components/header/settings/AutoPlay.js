@@ -41,9 +41,6 @@ const mapStateToProps = state => ({
   autoplay: state.siteSettings.autoplay,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    setSiteSetting: siteSettings,
-  }
-)(AutoPlay);
+export default connect(mapStateToProps, {
+  setSiteSetting: siteSettings,
+})(AutoPlay);

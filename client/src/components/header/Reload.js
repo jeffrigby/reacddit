@@ -46,9 +46,6 @@ const mapStateToProps = state => ({
   stream: state.siteSettings.stream,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    getNewRedditEntries: listingsFetchRedditNew,
-  }
-)(Reload);
+export default connect(mapStateToProps, {
+  getNewRedditEntries: listingsFetchRedditNew,
+})(Reload);

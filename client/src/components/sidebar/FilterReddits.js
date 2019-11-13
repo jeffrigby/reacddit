@@ -166,10 +166,7 @@ const mapStateToProps = state => ({
   filter: state.subredditsFilter,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    setFilter: subredditsFilter,
-    goto: push,
-  }
-)(FilterReddits);
+export default connect(mapStateToProps, {
+  setFilter: subredditsFilter,
+  goto: push,
+})(FilterReddits);

@@ -60,10 +60,7 @@ const postMinHeightSelector = (state, props) => {
   return minHeights[postName] ? minHeights[postName] : 0;
 };
 
-export const postData = createSelector(
-  [postSelector],
-  post => post
-);
+export const postData = createSelector([postSelector], post => post);
 
 export const postVisibility = createSelector(
   [postVisibilitySelector],

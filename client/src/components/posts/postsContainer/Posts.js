@@ -77,8 +77,4 @@ const mapStateToProps = state => ({
   listType: state.listingsFilter.listType,
 });
 
-export default connect(
-  mapStateToProps,
-  {},
-  null
-)(Posts);
+export default connect(mapStateToProps, {}, null)(Posts);

@@ -71,9 +71,6 @@ const mapStateToProps = state => ({
   stream: state.siteSettings.stream,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    setSiteSetting: siteSettings,
-  }
-)(AutoRefresh);
+export default connect(mapStateToProps, {
+  setSiteSetting: siteSettings,
+})(AutoRefresh);
