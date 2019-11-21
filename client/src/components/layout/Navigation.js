@@ -26,8 +26,8 @@ const Navigation = ({ redditBearer, subredditsFilter }) => {
     };
   });
 
-  const { filterText } = subredditsFilter;
-  const hideExtras = !isEmpty(filterText);
+  const { filterText, active } = subredditsFilter;
+  const hideExtras = !isEmpty(filterText) || active;
   const loggedIn = redditBearer.status === 'auth' || false;
 
   return (

@@ -8,6 +8,7 @@ import {
 } from '../../redux/actions/subreddits';
 import NavigationItem from './NavigationItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
+import { filterSubs } from '../../redux/selectors/subredditSelectors';
 
 class NavigationSubReddits extends React.PureComponent {
   checkLastUpdated = null;
@@ -203,30 +204,6 @@ class NavigationSubReddits extends React.PureComponent {
   }
 }
 
-const filterSubs = (subreddits, filterText) => {
-  if (isEmpty(subreddits)) {
-    return {};
-  }
-
-  if (filterText === '') {
-    return subreddits;
-  }
-
-  return Object.keys(subreddits)
-    .filter(
-      subreddit =>
-        subreddits[subreddit].display_name
-          .toLowerCase()
-          .indexOf(filterText.toLowerCase()) > -1
-    )
-    .reduce((obj, key) => {
-      return {
-        ...obj,
-        [key]: subreddits[key],
-      };
-    }, {});
-};
-
 NavigationSubReddits.propTypes = {
   fetchSubreddits: PropTypes.func.isRequired,
   fetchLastUpdated: PropTypes.func.isRequired,
@@ -242,10 +219,7 @@ const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
   subreddits: state.subreddits,
   filter: state.subredditsFilter,
-  filteredSubreddits: filterSubs(
-    state.subreddits.subreddits,
-    state.subredditsFilter.filterText
-  ),
+  filteredSubreddits: filterSubs(state),
 });
 
 export default connect(mapStateToProps, {
