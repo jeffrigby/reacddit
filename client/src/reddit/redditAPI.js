@@ -410,6 +410,17 @@ class RedditAPI {
     return this.redditAPI.delete(url);
   }
 
+  async favorite(makeFavorite, srName) {
+    const fav = makeFavorite ? 'true' : 'false';
+    const data = {
+      make_favorite: fav,
+      sr_name: srName,
+    };
+    return this.redditAPI.post('/api/favorite', queryString.stringify(data), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+  }
+
   /**
    * Get the users subreddits
    * @param where - the type of subreddits

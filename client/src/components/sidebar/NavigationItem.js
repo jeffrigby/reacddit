@@ -5,6 +5,7 @@ import _trim from 'lodash/trim';
 import _trimEnd from 'lodash/trimEnd';
 import { formatDistanceToNow } from 'date-fns';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
+import SubFavorite from './SubFavorite';
 
 const queryString = require('query-string');
 
@@ -75,14 +76,23 @@ class NavigationItem extends React.PureComponent {
     }
 
     return (
-      <NavigationGenericNavItem
-        to={_trimEnd(href, '/')}
-        text={item.display_name}
-        id={item.id}
-        classes={classNameStr}
-        title={title}
-        badge={subLabel}
-      />
+      <li className="nav-item d-flex align-items-center">
+        {item.user_has_favorited !== undefined && (
+          <SubFavorite
+            isFavorite={item.user_has_favorited}
+            srName={item.display_name}
+          />
+        )}
+        <NavigationGenericNavItem
+          to={_trimEnd(href, '/')}
+          text={item.display_name}
+          id={item.id}
+          classes={classNameStr}
+          title={title}
+          badge={subLabel}
+          noLi
+        />
+      </li>
     );
   }
 }

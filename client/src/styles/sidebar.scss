@@ -43,7 +43,10 @@
       &.sub-today {
         font-weight: 600;
       }
-      &.activeSubreddit,
+      &.activeSubreddit {
+        color: #dc3545 !important;
+        font-weight: bold;
+      }
       &.mark {
         &:before {
           content: '> ';
@@ -55,7 +58,7 @@
   .badge {
     position: absolute;
     right: 2px;
-    top: 2px;
+    top: 4px;
   }
 
   .sidebar-heading {

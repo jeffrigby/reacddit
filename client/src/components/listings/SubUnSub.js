@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
 import { useLocation } from 'react-router';
-import { subredditsFetchDataSuccess } from '../../redux/actions/subreddits';
+import { subredditsData } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
 import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
@@ -84,5 +84,5 @@ const mapStateToProps = state => ({
 
 export default connect(mapStateToProps, {
   setCurrentSubreddit: currentSubreddit,
-  setSubreddits: subredditsFetchDataSuccess,
+  setSubreddits: subredditsData,
 })(SubUnSub);

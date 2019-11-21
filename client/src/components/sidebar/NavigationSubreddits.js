@@ -82,19 +82,44 @@ class NavigationSubReddits extends React.PureComponent {
    */
   generateNavItems(subreddits) {
     const { filter } = this.props;
-    const navigationItems = [];
+    const favoritesArray = [];
+    const itemsArray = [];
 
-    Object.values(subreddits).forEach((item, index) => {
-      const trigger =
-        filter.activeIndex === index &&
-        filter.active &&
-        !isEmpty(filter.filterText);
-      navigationItems.push(
-        <NavigationItem item={item} key={item.name} trigger={trigger} />
-      );
+    Object.values(subreddits).forEach(item => {
+      if (item.user_has_favorited) {
+        favoritesArray.push(item);
+      } else {
+        itemsArray.push(item);
+      }
     });
 
-    return navigationItems;
+    let pos = 0;
+    const navItems = [];
+    const filterActive = filter.active && !isEmpty(filter.filterText);
+    if (favoritesArray.length) {
+      favoritesArray.forEach(sub => {
+        const trigger = filter.activeIndex === pos && filterActive;
+        navItems.push(
+          <NavigationItem item={sub} key={sub.name} trigger={trigger} />
+        );
+        pos += 1;
+      });
+      navItems.push(
+        <li key="divider">
+          <hr />
+        </li>
+      );
+    }
+
+    itemsArray.forEach(sub => {
+      const trigger = filter.activeIndex === pos && filterActive;
+      navItems.push(
+        <NavigationItem item={sub} key={sub.name} trigger={trigger} />
+      );
+      pos += 1;
+    });
+
+    return navItems;
   }
 
   render() {

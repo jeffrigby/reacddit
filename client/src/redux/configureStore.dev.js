@@ -8,6 +8,7 @@ const configureStore = (initialState, history) => {
   // Build the middleware for intercepting and dispatching navigation actions
   // Apply Middlewares
   const middleware = [];
+  middleware.push(require('redux-immutable-state-invariant').default(), thunk);
   middleware.push(thunk);
   middleware.push(routerMiddleware(history));
 

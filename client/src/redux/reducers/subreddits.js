@@ -8,7 +8,7 @@ export function subreddits(
         status: action.status,
         message: action.message,
       };
-    case 'SUBREDDITS_FETCH_DATA_SUCCESS': {
+    case 'SUBREDDITS_DATA': {
       // sort subs before storing them.
       const subredditsOrdered = {};
       Object.keys(action.subreddits.subreddits)

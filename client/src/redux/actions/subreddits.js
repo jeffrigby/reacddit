@@ -16,9 +16,9 @@ export function subredditsFilter(filter) {
   };
 }
 
-export function subredditsFetchDataSuccess(subreddits) {
+export function subredditsData(subreddits) {
   return {
-    type: 'SUBREDDITS_FETCH_DATA_SUCCESS',
+    type: 'SUBREDDITS_DATA',
     subreddits,
   };
 }
@@ -76,6 +76,7 @@ export function subredditsFetchLastUpdated() {
     const createdToGet = [];
     Object.entries(subreddits).forEach(([key, value]) => {
       // @todo convert to API? Concerned about rate limit.
+      // Limit is 2 because it occasionally returns nothing when the limit is 1. No idea why.
       const url = `https://www.reddit.com${value.url}new.json?limit=2`;
 
       // look for cache
@@ -213,7 +214,7 @@ export function subredditsFetchData(reset, where = 'subscriber') {
         subreddits,
         lastUpdated,
       };
-      await dispatch(subredditsFetchDataSuccess(storeSubs));
+      await dispatch(subredditsData(storeSubs));
       dispatch(subredditsFetchLastUpdated());
     } catch (e) {
       dispatch(subredditsStatus('error', e.toString()));
