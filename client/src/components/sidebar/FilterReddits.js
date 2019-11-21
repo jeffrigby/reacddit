@@ -83,7 +83,6 @@ class FilterReddits extends React.Component {
    * @returns {void|*}
    */
   filterReddits = item => {
-    document.getElementById('aside-content').scrollTop = 0;
     const { setFilter } = this.props;
     const filterText = item.target.value;
     // Always reset the index.
@@ -108,6 +107,7 @@ class FilterReddits extends React.Component {
    * Disable the hotkeys when using the filter.
    */
   setFocus = () => {
+    document.getElementById('aside-content').scrollTop = 0;
     const { setFilter } = this.props;
     const active = true;
     this.filterInput.current.select();
