@@ -138,7 +138,13 @@ const render = async entry => {
 
   // Check for preview image:
   try {
-    const image = redditImagePreview(entry);
+    const { url } = entry;
+    const urlParsed = parse(url);
+    const secureEntry = { ...entry };
+    if (urlParsed.protocol === 'http:') {
+      secureEntry.url = secureEntry.url.replace(/^http:/, 'https:');
+    }
+    const image = redditImagePreview(secureEntry);
     if (image) {
       return {
         ...image,
