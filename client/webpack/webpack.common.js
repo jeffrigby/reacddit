@@ -73,7 +73,7 @@ module.exports = {
   },
   plugins: [
     new webpack.ProgressPlugin(),
-    new Dotenv(),
+    new Dotenv({ defaults: true }),
     new CopyPlugin([
       {
         from: `${commonPaths.root}/src/PWA`,
