@@ -6,8 +6,12 @@ import { subredditsData } from '../../redux/actions/subreddits';
 import RedditAPI from '../../reddit/redditAPI';
 
 const SubFavorite = ({ isFavorite, srName }) => {
+  const me = useSelector(state => state.redditMe.me);
   const subreddits = useSelector(state => state.subreddits);
   const dispatch = useDispatch();
+
+  if (!me.name) return null;
+
   const favButton = isFavorite ? 'fas fa-heart' : 'far fa-heart';
 
   const toggleFavorite = async () => {
