@@ -101,7 +101,7 @@
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "prettier": "^1.16.4",
     "prettier-eslint": "^9.0.0",
-    "react-dev-utils": "^9.0.0",
+    "react-dev-utils": "^10.0.0",
     "sass-loader": "^8.0.0",
     "style-loader": "^1.0.0",
     "terser-webpack-plugin": "^2.0.1",
