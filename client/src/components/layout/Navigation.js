@@ -30,12 +30,16 @@ const Navigation = ({ redditBearer, subredditsFilter }) => {
   const hideExtras = !isEmpty(filterText) || active;
   const loggedIn = redditBearer.status === 'auth' || false;
 
+  // Hiding the components with CSS is way faster than destroying and re-rendering.
   return (
     <div className="w-100">
-      {!hideExtras && <NavigationPrimaryLinks />}
-      {loggedIn && !hideExtras && <NavigationAccount />}
-      {!hideExtras && <div className="nav-divider" />}
-      {loggedIn && !hideExtras && <MultiReddits />}
+      <div style={hideExtras ? { display: 'none' } : {}}>
+        <NavigationPrimaryLinks />
+        {loggedIn && <NavigationAccount />}
+        <div className="nav-divider" />
+        {loggedIn && <MultiReddits />}
+        <div className="nav-divider" />
+      </div>
       <NavigationSubReddits />
       <SearchRedditNames filterText={filterText} />
       <div className="my-5 py-3 bottom-spacer" />
