@@ -30,7 +30,7 @@ const Navigation = ({ redditBearer, subredditsFilter }) => {
   const hideExtras = !isEmpty(filterText) || active;
   const loggedIn = redditBearer.status === 'auth' || false;
 
-  // Hiding the components with CSS is way faster than destroying and re-rendering.
+  // Hiding the components with CSS is significantly faster than destroying and re-rendering.
   return (
     <div className="w-100">
       <div style={hideExtras ? { display: 'none' } : {}}>
