@@ -77,21 +77,25 @@ class NavigationItem extends React.PureComponent {
 
     return (
       <li className="nav-item d-flex align-items-center">
-        {item.user_has_favorited !== undefined && (
-          <SubFavorite
-            isFavorite={item.user_has_favorited}
-            srName={item.display_name}
+        <div className="d-flex w-100">
+          <div>
+            {item.user_has_favorited !== undefined && (
+              <SubFavorite
+                isFavorite={item.user_has_favorited}
+                srName={item.display_name}
+              />
+            )}
+          </div>
+          <NavigationGenericNavItem
+            to={_trimEnd(href, '/')}
+            text={item.display_name}
+            id={item.id}
+            classes={classNameStr}
+            title={title}
+            badge={subLabel}
+            noLi
           />
-        )}
-        <NavigationGenericNavItem
-          to={_trimEnd(href, '/')}
-          text={item.display_name}
-          id={item.id}
-          classes={classNameStr}
-          title={title}
-          badge={subLabel}
-          noLi
-        />
+        </div>
       </li>
     );
   }

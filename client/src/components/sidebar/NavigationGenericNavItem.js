@@ -42,17 +42,19 @@ const NavigationGenericNavItem = props => {
   if (!isStatic) {
     navItem = (
       <>
-        <NavLink
-          id={id}
-          to={trimmedTo}
-          title={titleNew}
-          className={classNames}
-          activeClassName="activeSubreddit"
-          onClick={closeMenu}
-        >
-          {iconString} {text}
-        </NavLink>
-        {badgeRender}{' '}
+        <div className="flex-grow-1 nav-link-cont mr-2">
+          <NavLink
+            id={id}
+            to={trimmedTo}
+            title={titleNew}
+            className={classNames}
+            activeClassName="activeSubreddit"
+            onClick={closeMenu}
+          >
+            {iconString} {text}
+          </NavLink>
+        </div>
+        <div>{badgeRender}</div>
       </>
     );
   } else {
