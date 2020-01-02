@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
 import { useLocation } from 'react-router';
+import produce from 'immer';
 import { subredditsData } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
@@ -26,8 +27,9 @@ const SubUnSub = ({
     await RedditAPI.subscribe(about.name, 'unsub');
     const newAbout = { ...about, user_is_subscriber: false };
     setCurrentSubreddit(locationKey, newAbout);
-    const newSubreddits = { ...subreddits };
-    delete newSubreddits.subreddits[about.display_name];
+    const newSubreddits = produce(subreddits, draft => {
+      delete draft.subreddits[about.display_name];
+    });
     setSubreddits(newSubreddits);
   };
 
@@ -35,8 +37,9 @@ const SubUnSub = ({
     await RedditAPI.subscribe(about.name, 'sub');
     const newAbout = { ...about, user_is_subscriber: true };
     setCurrentSubreddit(locationKey, newAbout);
-    const newSubreddits = { ...subreddits };
-    newSubreddits.subreddits[about.display_name] = newAbout;
+    const newSubreddits = produce(subreddits, draft => {
+      draft.subreddits[about.display_name] = newAbout;
+    });
     setSubreddits(newSubreddits);
   };
 

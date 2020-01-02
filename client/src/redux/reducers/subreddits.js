@@ -10,15 +10,16 @@ export function subreddits(
       };
     case 'SUBREDDITS_DATA': {
       // sort subs before storing them.
+      const oldSubs = { ...action.subreddits };
       const subredditsOrdered = {};
-      Object.keys(action.subreddits.subreddits)
+      Object.keys(oldSubs.subreddits)
         .sort()
         .forEach(key => {
-          subredditsOrdered[key] = action.subreddits.subreddits[key];
+          subredditsOrdered[key] = oldSubs.subreddits[key];
         });
 
       const sortedList = {
-        ...action.subreddits,
+        ...oldSubs,
         subreddits: subredditsOrdered,
       };
 
