@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import '../../../styles/video.scss';
 import VideoProgreeBar from './VideoProgressBar';
+import { PostsContextVideoPlay } from '../../../contexts';
 
 const classNames = require('classnames');
 
 const VideoComp = ({ content, load, link, autoplay }) => {
   const videoRef = React.createRef();
+  const videoPlay = useContext(PostsContextVideoPlay);
   const [muted, setMuted] = useState(true);
-  const [playing, setPlaying] = useState(autoplay);
+  const [playing, setPlaying] = useState(autoplay && videoPlay);
   const [autoplayState, setAutoplayState] = useState(autoplay);
   const [ctrLock, setCtrLock] = useState(false);
   const [controls, setControls] = useState(false);
@@ -21,14 +23,30 @@ const VideoComp = ({ content, load, link, autoplay }) => {
       return;
     }
 
-    if (autoplay) {
+    if (autoplay && videoPlay) {
       setAutoplayState(true);
       videoRef.current.play();
-    } else {
+    } else if (!videoRef.current.paused) {
       setAutoplayState(false);
       videoRef.current.pause();
     }
-  }, [videoRef, autoplay, autoplayState]);
+  }, [videoRef, autoplay, autoplayState, videoPlay]);
+
+  // useEffect(() => {
+  //   if (videoRef.current === null) {
+  //     return;
+  //   }
+  //
+  //   if (videoPlay === !videoRef.current.paused) {
+  //     return;
+  //   }
+  //
+  //   if (autoplay && videoPlay) {
+  //     videoRef.current.play();
+  //   } else if (!videoRef.current.paused) {
+  //     videoRef.current.pause();
+  //   }
+  // }, [videoRef, autoplay, videoPlay]);
 
   const { width, height, sources } = content;
   let videoWidth = width;
@@ -123,7 +141,7 @@ const VideoComp = ({ content, load, link, autoplay }) => {
 
     video = (
       <video
-        autoPlay={autoplay}
+        autoPlay={autoplay && videoPlay}
         loop
         muted
         playsInline

@@ -7,3 +7,4 @@ export const UserBearer = React.createContext({});
 export const PostsContextData = React.createContext({});
 export const PostsContextActionable = React.createContext({});
 export const PostsContextVisible = React.createContext({});
+export const PostsContextVideoPlay = React.createContext(false);

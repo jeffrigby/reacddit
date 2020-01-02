@@ -48,6 +48,17 @@ const postActionableSelector = (state, props) => {
   return !actionable ? idx === 0 : actionable === postName;
 };
 
+const postVideoPlaySelector = (state, props) => {
+  const { postName, idx } = props;
+  const key = state.router.location.key || 'front';
+  const listingState = state.listingsState[key];
+  if (!listingState) {
+    return idx < 5;
+  }
+  const { videoPlay } = listingState;
+  return videoPlay.length === 0 ? idx < 5 : videoPlay.includes(postName);
+};
+
 const postMinHeightSelector = (state, props) => {
   const { postName } = props;
   const key = state.router.location.key || 'front';
@@ -82,4 +93,9 @@ export const postMinHeight = createSelector(
   (visible, minHeight) => {
     return !visible ? minHeight : 0;
   }
+);
+
+export const postVideoPlay = createSelector(
+  [postVideoPlaySelector],
+  videoPlay => videoPlay
 );
