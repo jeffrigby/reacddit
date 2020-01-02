@@ -43,19 +43,18 @@ const videoPreview = {  width: media.width,
   height: media.height,  
   mp4: media.fallback_url, (optional)  
   webm: apiInfo.webmUrl, (optional)  
-  m3u8: media.hls_url, (optional) id: entry.name,  
-  type: 'video',  sources, (optional)  
-  thumb: entry.thumbnail, (optional)};
-};
-```  
+  m3u8: media.hls_url, (optional) entry.name,  
+  type;: 'video',  sources, (optional);  
+  entry.thumbnail, (optional);}
+}```  
 **Image Structure**  
 ```javascript
 const imagePreview = {  
   type: 'image',  
-  width: 650, (optional)  
-  height: 650, (optional)  
-  src: entry.url,  
-};  
+  width: 650, (optional);  
+  650, (optional);  
+  entry.url,  
+}  
   ```
 **iFrame Structure**  
 ```javascript

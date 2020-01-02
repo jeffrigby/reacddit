@@ -6,13 +6,18 @@ import Content from '../Content';
 import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
-import { PostsContextData, PostsContextActionable } from '../../../contexts';
+import {
+  PostsContextData,
+  PostsContextActionable,
+  PostsContextVideoPlay,
+} from '../../../contexts';
 import {
   postActionable,
   postData,
   postFocused,
   postMinHeight,
   postVisibility,
+  postVideoPlay,
 } from '../../../redux/selectors/postSelectors';
 import PostDebug from './PostDebug';
 import { hotkeyStatus } from '../../../common';
@@ -26,6 +31,7 @@ const Post = ({
   focused,
   visible,
   actionable,
+  videoPlay,
   minHeight,
   listingsStatus,
   gotoLink,
@@ -206,23 +212,29 @@ const Post = ({
       <div className="entry-interior">
         <PostsContextData.Provider value={data}>
           <PostsContextActionable.Provider value={actionable}>
-            <PostHeader
-              visible={visible}
-              expand={expand}
-              toggleView={toggleView}
-              duplicate={duplicate}
-            />
-            {expand && (
-              <Content content={renderedContent} load={visible} key={data.id} />
-            )}
-            <PostFooter
-              debug={siteSettings.debug}
-              toggleShowDebug={toggleShowDebug}
-              visible={visible}
-            />
-            {siteSettings.debug && showDebug && (
-              <PostDebug renderedContent={renderedContent} />
-            )}
+            <PostsContextVideoPlay.Provider value={videoPlay}>
+              <PostHeader
+                visible={visible}
+                expand={expand}
+                toggleView={toggleView}
+                duplicate={duplicate}
+              />
+              {expand && (
+                <Content
+                  content={renderedContent}
+                  load={visible}
+                  key={data.id}
+                />
+              )}
+              <PostFooter
+                debug={siteSettings.debug}
+                toggleShowDebug={toggleShowDebug}
+                visible={visible}
+              />
+              {siteSettings.debug && showDebug && (
+                <PostDebug renderedContent={renderedContent} />
+              )}
+            </PostsContextVideoPlay.Provider>
           </PostsContextActionable.Provider>
         </PostsContextData.Provider>
       </div>
@@ -238,6 +250,7 @@ Post.propTypes = {
   data: PropTypes.object.isRequired,
   focused: PropTypes.bool.isRequired,
   actionable: PropTypes.bool.isRequired,
+  videoPlay: PropTypes.bool.isRequired,
   siteSettings: PropTypes.object.isRequired,
   visible: PropTypes.bool.isRequired,
   gotoLink: PropTypes.func.isRequired,
@@ -258,6 +271,7 @@ const mapStateToProps = (state, props) => ({
   visible: postVisibility(state, props),
   focused: postFocused(state, props),
   actionable: postActionable(state, props),
+  videoPlay: postVideoPlay(state, props),
   minHeight: postMinHeight(state, props),
   listingsStatus: listingStatus(state),
 });

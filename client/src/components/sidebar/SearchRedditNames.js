@@ -12,9 +12,9 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
 
   useEffect(() => {
-    const getResults = async search => {
-      if (search) {
-        const results = await RedditAPI.searchRedditNames(search, {
+    const getResults = async () => {
+      if (filterText) {
+        const results = await RedditAPI.searchRedditNames(filterText, {
           include_over_18: showNSFW,
         });
         const { names } = results;
@@ -28,7 +28,7 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
       }
     };
 
-    getResults(filterText);
+    getResults();
   }, [filterText, showNSFW]);
 
   if (!filterText || searchResults.length === 0) {
