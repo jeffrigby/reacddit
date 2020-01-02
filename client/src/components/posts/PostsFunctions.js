@@ -37,14 +37,19 @@ export const getCurrentListingState = currentState => {
   let focused = '';
   let actionable = null;
   const minHeights = {};
+  const videoPlay = [];
   const visible = [];
   let prevPostId = null;
 
   posts.forEach(post => {
     const { top, bottom, height } = post.getBoundingClientRect();
 
+    if (bottom >= -100 && top - window.innerHeight <= 100) {
+      videoPlay.push(post.id);
+    }
+
     // If it's not in the visible range skip it.
-    if (bottom >= -750 && top - window.innerHeight <= 750) {
+    if (bottom >= -250 && top - window.innerHeight <= 500) {
       if (!focused) {
         const focusTop = bottom - 55;
         if (focusTop > 0) {
@@ -68,6 +73,7 @@ export const getCurrentListingState = currentState => {
   return {
     focused,
     visible,
+    videoPlay,
     actionable,
     minHeights: { ...currentState.minHeights, ...minHeights },
     // scroll: { x: window.scrollX, y: window.scrollY },
