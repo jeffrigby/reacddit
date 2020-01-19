@@ -44,7 +44,7 @@ module.exports = {
       template: commonPaths.templatePath,
     }),
     new webpack.DefinePlugin({
-      BUILDTIME: Date.now(),
+      BUILDTIME: JSON.stringify(new Date().toISOString()),
     }),
     new CreateFileWebpack({
       path: commonPaths.outputPath,

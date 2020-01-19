@@ -10,7 +10,8 @@ const CreateFileWebpack = require('create-file-webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
-const buildTime = Date.now();
+const buildTimeDate = new Date();
+const buildTime = buildTimeDate.toISOString();
 
 module.exports = {
   mode: 'production',
@@ -89,7 +90,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new webpack.DefinePlugin({
-      BUILDTIME: buildTime,
+      BUILDTIME: JSON.stringify(buildTime),
     }),
     new WorkboxWebpackPlugin.GenerateSW({
       cacheId: 'reacddit',
