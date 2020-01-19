@@ -37,14 +37,14 @@ class NavigationItem extends React.PureComponent {
     }
 
     if (trigger) {
-      classes.push('mark highlighted trigger');
+      classes.push('mark trigger');
     }
 
     return classes.join(' ');
   }
 
   render() {
-    const { sort, location, item, lastUpdated } = this.props;
+    const { sort, location, item, lastUpdated, me } = this.props;
     const query = queryString.parse(location.search);
     const { t } = query;
     let currentSort = sort || '';
@@ -78,14 +78,16 @@ class NavigationItem extends React.PureComponent {
     return (
       <li className="nav-item d-flex align-items-center">
         <div className="d-flex w-100">
-          <div>
-            {item.user_has_favorited !== undefined && (
-              <SubFavorite
-                isFavorite={item.user_has_favorited}
-                srName={item.display_name}
-              />
-            )}
-          </div>
+          {me.name && (
+            <div>
+              {item.user_has_favorited !== undefined && (
+                <SubFavorite
+                  isFavorite={item.user_has_favorited}
+                  srName={item.display_name}
+                />
+              )}
+            </div>
+          )}
           <NavigationGenericNavItem
             to={_trimEnd(href, '/')}
             text={item.display_name}
@@ -106,12 +108,14 @@ NavigationItem.propTypes = {
   sort: PropTypes.string.isRequired,
   location: PropTypes.object,
   trigger: PropTypes.bool.isRequired,
+  me: PropTypes.object,
   lastUpdated: PropTypes.number,
 };
 
 NavigationItem.defaultProps = {
   lastUpdated: 0,
   location: {},
+  me: {},
 };
 
 const getLastUpdated = (lastUpdated, subreddit) => {
@@ -127,6 +131,7 @@ const getLastUpdated = (lastUpdated, subreddit) => {
 const mapStateToProps = (state, ownProps) => ({
   sort: state.listingsFilter.sort,
   location: state.router.location,
+  me: state.redditMe.me,
   lastUpdated: getLastUpdated(state.lastUpdated, ownProps.item),
 });
 
