@@ -165,7 +165,7 @@ class Sort extends React.PureComponent {
           activeClassName="sort-active"
           isActive={active}
         >
-          <span className="sort-title pl-3">{linkString}</span>
+          <span className="sort-title pl-3 small">{linkString}</span>
         </NavLink>
       );
     });
@@ -198,20 +198,22 @@ class Sort extends React.PureComponent {
       if (Object.prototype.hasOwnProperty.call(links2render, key)) {
         const sortName = links2render[key];
         const subLinks = this.renderTimeSubLinks(sortName);
+        const active = () => listingsFilter.sort === sortName;
+
         const subLinksRendered = !_isEmpty(subLinks) ? (
           <div className="subsortlinks">{subLinks}</div>
         ) : null;
 
         links.push(
-          <div key={sortName} className="small">
+          <div key={sortName}>
             <NavLink
               to={this.genLink(sortName)}
-              className="dropdown-item d-flex"
-              activeClassName="sort-active"
+              className="dropdown-item d-flex small"
+              activeClassName="active"
+              isActive={active}
             >
-              <div className="mr-auto pr-2 sort-title">
-                {this.getIcon(sortName)} {sortName}
-              </div>{' '}
+              <div className="pr-2">{this.getIcon(sortName)}</div>
+              <div className="mr-auto pr-2 sort-title">{sortName}</div>{' '}
               <span className="menu-shortcut">&#x21E7;{key}</span>
             </NavLink>
             {subLinksRendered}
