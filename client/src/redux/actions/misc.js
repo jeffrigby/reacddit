@@ -1,10 +1,4 @@
-export function disableHotKeys(bool) {
-  return {
-    type: 'DISABLE_HOTKEYS',
-    disableHotKeys: bool,
-  };
-}
-
+// eslint-disable-next-line import/prefer-default-export
 export function siteSettings(setting) {
   return {
     type: 'SITE_SETTINGS',

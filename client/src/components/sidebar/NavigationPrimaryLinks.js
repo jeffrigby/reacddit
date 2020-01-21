@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
+import { isMobile } from 'react-device-detect';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
+import { hotkeyStatus } from '../../common';
 
 const { API_PATH } = process.env;
 
@@ -23,18 +25,18 @@ class NavigationPrimaryLinks extends React.PureComponent {
    * @param event
    */
   handleNavPrimaryHotkey = event => {
-    const { disableHotkeys, me, ...props } = this.props;
-    const pressedKey = event.key;
+    const { me, gotoLink } = this.props;
+    const { key } = event;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       // Navigation key commands
       if (this.lastKeyPressed === 'g') {
-        switch (pressedKey) {
+        switch (key) {
           case 'h':
-            props.push('/');
+            gotoLink('/');
             break;
           case 'p':
-            props.push(`/r/popular`);
+            gotoLink(`/r/popular`);
             break;
           case 'r':
             this.randomSubPush();
@@ -44,17 +46,13 @@ class NavigationPrimaryLinks extends React.PureComponent {
         }
       }
 
-      switch (pressedKey) {
-        case 'L': // shift-L
-          window.location.href = me.name
-            ? `${API_PATH}/logout`
-            : `${API_PATH}/login`;
-          break;
-        default:
-          break;
+      if (key === 'L') {
+        window.location.href = me.name
+          ? `${API_PATH}/logout`
+          : `${API_PATH}/login`;
       }
 
-      this.lastKeyPressed = pressedKey;
+      this.lastKeyPressed = key;
     }
   };
 
@@ -64,7 +62,7 @@ class NavigationPrimaryLinks extends React.PureComponent {
    */
   randomSubPush = e => {
     if (e) e.preventDefault();
-    const { subreddits, sort, t, ...props } = this.props;
+    const { subreddits, sort, t, gotoLink } = this.props;
     if (isEmpty(subreddits.subreddits)) {
       return false;
     }
@@ -77,18 +75,24 @@ class NavigationPrimaryLinks extends React.PureComponent {
       sort === 'top' || sort === 'controversial' ? `?t=${t}` : '';
 
     const url = randomSubreddit.url + (sort || 'hot') + sortTopQS;
-    return props.push(url);
+    return gotoLink(url);
+  };
+
+  openHotkeys = e => {
+    if (e) e.preventDefault();
+    jQuery('#hotkeys').modal();
   };
 
   render() {
     const { me, sort } = this.props;
     const currentSort = sort && sort !== 'relevance' ? sort : '';
+    const loginLink = `${API_PATH}/login${isMobile ? '?mobile' : ''}`;
 
     return (
       <ul className="nav flex-column">
         {!me.name && (
           <NavigationGenericNavItem
-            to={`${API_PATH}/login`}
+            to={loginLink}
             text="Reddit Login"
             title="Login to reddit to see your subreddits. ⇧L"
             isStatic
@@ -122,6 +126,15 @@ class NavigationPrimaryLinks extends React.PureComponent {
           isStatic
           iconClass="fas fa-bug"
         />
+        <NavigationGenericNavItem
+          to="/hotkeys"
+          text="Hotkeys"
+          title="Show Hotkeys"
+          iconClass="fas fa-keyboard"
+          liClass="no-touch"
+          onClickAction={this.openHotkeys}
+          isStatic
+        />
       </ul>
     );
   }
@@ -132,8 +145,7 @@ NavigationPrimaryLinks.propTypes = {
   sort: PropTypes.string.isRequired,
   t: PropTypes.string,
   subreddits: PropTypes.object.isRequired,
-  disableHotkeys: PropTypes.bool.isRequired,
-  push: PropTypes.func.isRequired,
+  gotoLink: PropTypes.func.isRequired,
 };
 
 NavigationPrimaryLinks.defaultProps = {
@@ -144,13 +156,9 @@ const mapStateToProps = state => ({
   me: state.redditMe.me,
   sort: state.listingsFilter.sort,
   t: state.listingsFilter.t,
-  disableHotkeys: state.disableHotKeys,
   subreddits: state.subreddits,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    push,
-  }
-)(NavigationPrimaryLinks);
+export default connect(mapStateToProps, {
+  gotoLink: push,
+})(NavigationPrimaryLinks);

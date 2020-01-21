@@ -10,7 +10,8 @@ const CreateFileWebpack = require('create-file-webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
-const buildTime = Date.now();
+const buildTimeDate = new Date();
+const buildTime = buildTimeDate.toISOString();
 
 module.exports = {
   mode: 'production',
@@ -18,7 +19,7 @@ module.exports = {
   output: {
     filename: `${commonPaths.jsFolder}/[name].[contenthash:8].js`,
     path: commonPaths.outputPath,
-    publicPath: commonPaths.publicPath,
+    publicPath: '/',
     chunkFilename: `${commonPaths.jsFolder}/[name].[contenthash:8].chunk.js`,
   },
   module: {
@@ -89,7 +90,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new webpack.DefinePlugin({
-      BUILDTIME: buildTime,
+      BUILDTIME: JSON.stringify(buildTime),
     }),
     new WorkboxWebpackPlugin.GenerateSW({
       cacheId: 'reacddit',
@@ -97,7 +98,7 @@ module.exports = {
       clientsClaim: true,
       exclude: [/\.map$/, /asset-manifest\.json$/],
       importWorkboxFrom: 'cdn',
-      navigateFallback: `${commonPaths.publicPath}index.html`,
+      navigateFallback: `/index.html`,
       skipWaiting: true,
       navigateFallbackBlacklist: [
         // Exclude URLs starting with /_, as they're likely an API call

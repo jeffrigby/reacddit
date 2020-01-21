@@ -10,21 +10,37 @@ import Listings from '../listings/Listings';
 import Help from './Help';
 import NotFound404 from '../../NotFound404';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
-import { siteSettings } from '../../redux/actions/misc';
 import '../../styles/layout.scss';
+import { hotkeyStatus } from '../../common';
 
 class App extends React.PureComponent {
+  static handleNGlobalHotkey(event) {
+    const pressedKey = event.key;
+
+    if (hotkeyStatus()) {
+      if (pressedKey === '?') {
+        jQuery('#hotkeys').modal();
+      }
+    }
+  }
+
   tokenQuery = null;
 
-  state = {
-    error: false,
-    loading: true,
-    message: null,
-  };
+  constructor(props) {
+    // Required step: always call the parent class' constructor
+    super(props);
+
+    // Set the state directly. Use props if necessary.
+    this.state = {
+      error: false,
+      loading: true,
+      message: null,
+    };
+  }
 
   async componentDidMount() {
     const { getBearer, getMe } = this.props;
-    document.addEventListener('keydown', this.handleNGlobalHotkey.bind(this));
+    document.addEventListener('keydown', App.handleNGlobalHotkey.bind(this));
 
     // Make sure the token is set before loading the app.
     const token = await getBearer();
@@ -45,33 +61,22 @@ class App extends React.PureComponent {
 
   componentWillUnmount() {
     clearInterval(this.tokenQuery);
-    document.removeEventListener(
-      'keydown',
-      this.handleNGlobalHotkey.bind(this)
-    );
-  }
-
-  handleNGlobalHotkey(event) {
-    const { disableHotkeys, setSiteSetting, settings } = this.props;
-    const pressedKey = event.key;
-
-    if (!disableHotkeys) {
-      switch (pressedKey) {
-        case 'Î': // opt-shift-d
-          setSiteSetting({ debug: !settings.debug });
-          break;
-        case '?':
-          jQuery('#hotkeys').modal();
-          break;
-        default:
-          break;
-      }
-    }
+    document.removeEventListener('keydown', App.handleNGlobalHotkey.bind(this));
   }
 
   render() {
     const { error, message, loading } = this.state;
-    const { redditBearer, subredditsFilter } = this.props;
+    const { redditBearer, subredditsFilter, redditMe, pinMenu } = this.props;
+
+    if (redditMe.status === 'error') {
+      return (
+        <div className="alert alert-danger m-2" role="alert">
+          {"Can't connect to the reddit API. This is possibly related to your browser blocking connections to " +
+            'oauth.reddit.com. Please check your browser content blocking settings and try again.'}{' '}
+          {redditMe.error}
+        </div>
+      );
+    }
 
     if (error) {
       return (
@@ -126,19 +131,26 @@ class App extends React.PureComponent {
     ];
 
     const routes = [];
-    combinedPaths.forEach((value, i) => {
-      const key = `route${i}}`;
-      routes.push(<Route exact path={value} component={Listings} key={key} />);
-    });
-    routes.push(<Route component={NotFound404} key="NotFound404" />);
+    routes.push(
+      <Route exact path={combinedPaths} key="Listings">
+        <Listings />
+      </Route>
+    );
+    routes.push(
+      <Route key="NotFound404">
+        <NotFound404 />
+      </Route>
+    );
+
+    const menuStatus = pinMenu ? '' : 'hide-menu';
 
     return (
-      <>
+      <div className={menuStatus}>
         <React.StrictMode>
           <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
             <Header />
           </header>
-          <aside className="sidebar bg-light" id="navigation">
+          <aside className="sidebar bg-light pt-2" id="navigation">
             <div id="aside-content" className="h-100 d-flex px-3">
               <Navigation
                 redditBearer={redditBearer}
@@ -152,40 +164,37 @@ class App extends React.PureComponent {
           </main>
 
           <Help />
+          <ReactTooltip effect="solid" html place="right" />
+          <div id="menu-overlay" />
         </React.StrictMode>
-        <ReactTooltip effect="solid" html place="right" />
-        <div id="menu-overlay" />
-      </>
+      </div>
     );
   }
 }
 
 App.propTypes = {
-  disableHotkeys: PropTypes.bool.isRequired,
   getBearer: PropTypes.func.isRequired,
   getMe: PropTypes.func.isRequired,
-  setSiteSetting: PropTypes.func.isRequired,
-  settings: PropTypes.object.isRequired,
   redditBearer: PropTypes.object.isRequired,
   subredditsFilter: PropTypes.object.isRequired,
+  redditMe: PropTypes.object.isRequired,
+  pinMenu: PropTypes.bool,
 };
 
-App.defaultProps = {};
+App.defaultProps = {
+  pinMenu: true,
+};
 
 const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
-  disableHotkeys: state.disableHotKeys,
-  settings: state.siteSettings,
+  pinMenu: state.siteSettings.pinMenu,
   subredditsFilter: state.subredditsFilter,
+  redditMe: state.redditMe,
 });
 
 export default withRouter(
-  connect(
-    mapStateToProps,
-    {
-      getBearer: redditGetBearer,
-      getMe: redditFetchMe,
-      setSiteSetting: siteSettings,
-    }
-  )(App)
+  connect(mapStateToProps, {
+    getBearer: redditGetBearer,
+    getMe: redditFetchMe,
+  })(App)
 );

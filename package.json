@@ -17,6 +17,7 @@
   "author": "Jeff Rigby",
   "license": "MIT",
   "devDependencies": {
-    "concurrently": "^4.1.0"
-  }
+    "concurrently": "^5.0.0"
+  },
+  "dependencies": {}
 }

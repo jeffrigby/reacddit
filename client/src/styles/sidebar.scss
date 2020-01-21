@@ -43,7 +43,10 @@
       &.sub-today {
         font-weight: 600;
       }
-      &.activeSubreddit,
+      &.activeSubreddit {
+        color: #dc3545 !important;
+        font-weight: bold;
+      }
       &.mark {
         &:before {
           content: '> ';
@@ -52,10 +55,14 @@
     }
   }
 
+  .nav-link-cont {
+    overflow: hidden;
+  }
+
   .badge {
-    position: absolute;
-    right: 2px;
-    top: 2px;
+    //position: absolute;
+    //right: 2px;
+    //top: 4px;
   }
 
   .sidebar-heading {
@@ -218,6 +225,10 @@
       display: none !important;
     }
   }
+
+  .pin-menu-link {
+    display: none;
+  }
 }
 
 .friend-li {
@@ -237,7 +248,7 @@
 
   .friend-li {
     .friend-actions {
-       display: none;
+      display: none;
     }
     &:hover {
       .friend-actions {

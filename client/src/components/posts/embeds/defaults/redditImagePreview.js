@@ -5,18 +5,26 @@ const redditImagePreview = entry => {
     const { resolutions } = entry.preview.images[0];
     const { source } = entry.preview.images[0];
 
-    // Get the highest resolution source.
-    if (resolutions[5]) {
+    // Loop through the resolutions and find the first one above 625px
+    let bestRes;
+    resolutions.forEach((res, key) => {
+      if (res.height > 625 && !bestRes) {
+        bestRes = res;
+      }
+    });
+
+    if (bestRes) {
       return {
         type: 'image',
-        width: resolutions[5].width,
-        height: resolutions[5].height,
-        src: resolutions[5].url,
+        width: bestRes.width,
+        height: bestRes.height,
+        src: bestRes.url,
         renderFunction: 'redditImagePreview',
         source,
       };
     }
 
+    // Fallback on the source if a suitable resolution doesn't exist.
     if (source) {
       return {
         type: 'image',
@@ -29,11 +37,12 @@ const redditImagePreview = entry => {
   }
 
   const parsed = parse(entry.url);
+
   if (parsed.pathname.match(/\.(jpg|png|gif|jpeg)$/)) {
     return {
       type: 'image',
-      width: 650,
-      height: 650,
+      // width: 650,
+      // height: 650,
       src: entry.url,
       renderFunction: 'redditImagePreview',
     };

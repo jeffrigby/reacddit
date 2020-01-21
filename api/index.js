@@ -7,8 +7,9 @@ const uuidv4 = require("uuid/v4");
 const rp = require("request-promise");
 const crypto = require("crypto");
 const logger = require("koa-logger");
+const chalk = require("chalk");
 
-require("dotenv").config();
+require("dotenv-defaults").config();
 
 const {
   REDDIT_CLIENT_ID,
@@ -16,7 +17,6 @@ const {
   REDDIT_CALLBACK_URI,
   REDDIT_SCOPE,
   CLIENT_PATH,
-  APP_KEY,
   SALT,
   SESSION_LENGTH_SECS,
   PORT,
@@ -25,8 +25,47 @@ const {
 
 const debugEnabled = DEBUG === "1" || DEBUG === "true" || false;
 
+function checkEnvErrors() {
+  const env_errors = [];
+  if (SALT.length !== 32) {
+    env_errors.push("The SALT must be exactly 32 characters.");
+  }
+
+  if (!REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET || !REDDIT_CALLBACK_URI) {
+    env_errors.push(
+      "You must enter the REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_CALLBACK_URI from https://www.reddit.com/prefs/apps"
+    );
+  }
+
+  if (!Number.isInteger(Number(PORT)) || !(parseInt(PORT) > 0)) {
+    env_errors.push("PORT must be a valid positive integer.");
+  }
+
+  if (
+    !Number.isInteger(Number(SESSION_LENGTH_SECS)) ||
+    !(parseInt(SESSION_LENGTH_SECS) > 0)
+  ) {
+    env_errors.push("SESSION_LENGTH_SECS must be a valid positive integer.");
+  }
+
+  if (!CLIENT_PATH) {
+    env_errors.push(
+      "You must set your client path. This is the path to the client app in ../client This is to handle redirects."
+    );
+  }
+
+  if (env_errors.length > 0) {
+    env_errors.forEach(value => {
+      console.log(chalk.red(`.env ERROR: ${value}`));
+    });
+    process.exit(1);
+  }
+}
+
+checkEnvErrors();
+
 const CONFIG = {
-  key: "redditmedia:sess" /** (string) cookie key (default is koa:sess) */,
+  key: "reacddit:sess" /** (string) cookie key (default is koa:sess) */,
   /** (number || 'session') maxAge in ms (default is 1 days) */
   /** 'session' will result in a cookie that expires when session/browser is closed */
   /** Warning: If a session cookie is stolen, this cookie will never expire */
@@ -224,14 +263,14 @@ const getLoginUrl = ctx => {
     redirect_uri: REDDIT_CALLBACK_URI,
     scope: scope.split(","),
     state,
-    duration: "permanent",
+    duration: "permanent"
   });
   return authorizationUri;
 };
 
 const app = new Koa();
 
-app.keys = [APP_KEY];
+app.keys = [SALT];
 app.use(session(CONFIG, app));
 app.use(async (ctx, next) => {
   ctx.set("Access-Control-Allow-Origin", CLIENT_PATH);
@@ -247,7 +286,13 @@ const router = new Router();
  */
 router.get("/api/login", (ctx, next) => {
   const authorizationUri = getLoginUrl(ctx);
-  ctx.redirect(authorizationUri);
+  // @todo seems like a dumb way to do this but ¯\ _(ツ)_/¯.
+  // Also only implementing this because the login form constantly breaks for mobile
+  const newAuthUrl =
+    ctx.request.url === "/api/login?mobile"
+      ? authorizationUri.replace("/authorize", "/authorize.compact")
+      : authorizationUri;
+  ctx.redirect(newAuthUrl);
 });
 
 /**

@@ -4,6 +4,7 @@ import _isEmpty from 'lodash/isEmpty';
 import { NavLink } from 'react-router-dom';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
+import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
 
@@ -70,8 +71,8 @@ class Sort extends React.PureComponent {
   }
 
   handleSortHotkey = event => {
-    const { disableHotKeys, listingsFilter, gotoLink } = this.props;
-    if (!disableHotKeys && listingsFilter.target !== 'friends') {
+    const { listingsFilter, gotoLink } = this.props;
+    if (hotkeyStatus() && listingsFilter.target !== 'friends') {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
@@ -164,7 +165,7 @@ class Sort extends React.PureComponent {
           activeClassName="sort-active"
           isActive={active}
         >
-          <span className="sort-title pl-3">{linkString}</span>
+          <span className="sort-title pl-3 small">{linkString}</span>
         </NavLink>
       );
     });
@@ -197,20 +198,22 @@ class Sort extends React.PureComponent {
       if (Object.prototype.hasOwnProperty.call(links2render, key)) {
         const sortName = links2render[key];
         const subLinks = this.renderTimeSubLinks(sortName);
+        const active = () => listingsFilter.sort === sortName;
+
         const subLinksRendered = !_isEmpty(subLinks) ? (
           <div className="subsortlinks">{subLinks}</div>
         ) : null;
 
         links.push(
-          <div key={sortName} className="small">
+          <div key={sortName}>
             <NavLink
               to={this.genLink(sortName)}
-              className="dropdown-item d-flex"
-              activeClassName="sort-active"
+              className="dropdown-item d-flex small"
+              activeClassName="active"
+              isActive={active}
             >
-              <div className="mr-auto pr-2 sort-title">
-                {this.getIcon(sortName)} {sortName}
-              </div>{' '}
+              <div className="pr-2">{this.getIcon(sortName)}</div>
+              <div className="mr-auto pr-2 sort-title">{sortName}</div>{' '}
               <span className="menu-shortcut">&#x21E7;{key}</span>
             </NavLink>
             {subLinksRendered}
@@ -266,7 +269,6 @@ Sort.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
   subreddits: PropTypes.object.isRequired,
   search: PropTypes.string,
-  disableHotKeys: PropTypes.bool.isRequired,
   gotoLink: PropTypes.func.isRequired,
   me: PropTypes.object.isRequired,
 };
@@ -280,10 +282,6 @@ const mapStateToProps = (state, ownProps) => ({
   search: state.router.location.search,
   listingsFilter: state.listingsFilter,
   subreddits: state.subreddits,
-  disableHotKeys: state.disableHotKeys,
 });
 
-export default connect(
-  mapStateToProps,
-  { gotoLink: push }
-)(Sort);
+export default connect(mapStateToProps, { gotoLink: push })(Sort);

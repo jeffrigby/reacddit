@@ -2,24 +2,24 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
-import { distanceInWordsToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import { setMenuStatus, getMenuStatus } from '../../common';
+import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 
 const { API_PATH } = process.env;
 
-const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
+const NavigationAccount = ({ me, urlPush }) => {
   let lastKeyPressed = '';
   const menuID = 'navAccount';
   const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(
-    getMenuStatus(menuID)
+    getMenuStatus(menuID, true)
   );
 
   const hotkeys = event => {
     const pressedKey = event.key;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       // Navigation key commands
       if (lastKeyPressed === 'g') {
         // Logged in only
@@ -68,7 +68,7 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
     : 'fas fa-caret-right menu-caret';
 
   const karmaTotal = me.link_karma + me.comment_karma;
-  const joinedDate = distanceInWordsToNow(me.created_utc * 1000);
+  const joinedDate = formatDistanceToNow(me.created_utc * 1000);
   const accountInfo = `
       ${karmaTotal.toLocaleString()} Karma
       <br />
@@ -139,7 +139,6 @@ const NavigationAccount = ({ me, disableHotkeys, urlPush }) => {
 
 NavigationAccount.propTypes = {
   me: PropTypes.object.isRequired,
-  disableHotkeys: PropTypes.bool.isRequired,
   urlPush: PropTypes.func.isRequired,
 };
 
@@ -147,10 +146,8 @@ NavigationAccount.defaultProps = {};
 
 const mapStateToProps = state => ({
   me: state.redditMe.me,
-  disableHotkeys: state.disableHotKeys,
 });
 
-export default connect(
-  mapStateToProps,
-  { urlPush: push }
-)(React.memo(NavigationAccount));
+export default connect(mapStateToProps, { urlPush: push })(
+  React.memo(NavigationAccount)
+);

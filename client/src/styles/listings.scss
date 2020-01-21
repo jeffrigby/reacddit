@@ -1,5 +1,5 @@
 div#entries {
-  max-width: 1366px;
+  max-width: 1440px;
 
   .react {
     color: #61dafb;
@@ -42,6 +42,17 @@ div#entries {
   .media-cont {
     margin-left: -21px;
     margin-right: -21px;
+    .loading-icon {
+      background-image: url(../images/loading_black.gif);
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
+  }
+
+
+  .media-contain-width {
+    margin: 0 auto;
+    max-width: 1120px;
   }
 
   .sf-html-show-all {

@@ -31,6 +31,10 @@
     "prettier/prettier": "error",
     //    "max-len": ["error", 200],
     //    "no-console": "off",
+    "no-param-reassign": [
+      "error",
+      { "props": true, "ignorePropertyModificationsFor": ["draft"] }
+    ],
     "strict": ["error", "global"],
     "curly": "warn",
     "react/destructuring-assignment": [

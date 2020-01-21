@@ -1,6 +1,7 @@
 import { getPublicSuffix, getDomain } from 'tldts';
 import getUrls from 'get-urls';
 import stripTags from 'locutus/php/strings/strip_tags';
+import parse from 'url-parse';
 import Embeds from './embeds';
 import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
@@ -27,33 +28,68 @@ const inlineLinks = entry => {
   // Remove the end </a> to fix a bug with the regex
   const text = stripTags(entry.selftext_html, '<a>').replace(/<\/a>/g, ' ');
   const links = getUrls(text);
+  const dupes = [];
   const inline = [];
+  const renderedLinks = [];
   links.forEach(url => {
     const cleanUrl = url.replace(/^\(|\)$/g, '');
     const keys = getKeys(cleanUrl);
     if (!keys) return;
 
+    if (dupes.includes(url)) return;
+    dupes.push(url);
+
     const fakeEntry = {
       ...entry,
       url: cleanUrl,
     };
+    delete fakeEntry.preview;
 
+    let embedContent;
     if (typeof Embeds[keys.greedyDomain] === 'function') {
       const greedyContent = Embeds[keys.greedyDomain](fakeEntry);
       if (greedyContent) {
-        inline.push(Embeds[keys.greedyDomain](fakeEntry));
+        embedContent = Embeds[keys.greedyDomain](fakeEntry);
+        if (embedContent) {
+          renderedLinks.push(url);
+          inline.push(embedContent);
+        }
       }
     }
 
     if (typeof Embeds[keys.domain] === 'function') {
-      const content = Embeds[keys.domain](fakeEntry);
-      if (content) {
-        inline.push(Embeds[keys.domain](fakeEntry));
+      embedContent = Embeds[keys.domain](fakeEntry);
+      if (embedContent) {
+        renderedLinks.push(url);
+        inline.push(embedContent);
       }
     }
   });
 
-  return inline;
+  return { renderedLinks, inline };
+};
+
+const nonSSLFallback = (content, entry) => {
+  const isSSL = window.location.protocol;
+  if (isSSL === 'https:' && content.src) {
+    const { protocol } = parse(content.src);
+    if (protocol === 'http:') {
+      // Check for preview image:
+      try {
+        const image = redditImagePreview(entry);
+        if (image) {
+          return {
+            ...image,
+            renderFunction: 'redditImagePreview',
+          };
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e);
+      }
+    }
+  }
+  return content;
 };
 
 const getContent = async (keys, entry) => {
@@ -78,7 +114,7 @@ const getContent = async (keys, entry) => {
       if (domainContent) {
         return {
           ...domainContent,
-          renderFunction: keys.domain,
+          initRenderFunction: keys.domain,
         };
       }
     } catch (e) {
@@ -140,13 +176,14 @@ const RenderContent = async entry => {
     const content = await getContent(keys, entry);
 
     if (keys.greedyDomain === 'self' && entry.selftext_html) {
-      const inline = inlineLinks(entry);
-      if (inline.length > 0) {
-        content.inline = inline;
+      const getInline = inlineLinks(entry);
+      if (getInline.inline.length > 0) {
+        content.inline = getInline.inline;
+        content.inlineLinks = getInline.renderedLinks;
       }
     }
 
-    return content;
+    return nonSSLFallback(content, entry);
   } catch (e) {
     // console.log(e);
   }

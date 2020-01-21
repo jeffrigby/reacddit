@@ -3,13 +3,59 @@ import axios from 'axios';
 import redditImagePreview from '../defaults/redditImagePreview';
 import redditVideoPreview from '../defaults/redditVideoPreview';
 
-const render = async entry => {
-  const parsedUrl = parse(entry.url, true);
-  const { pathname } = parsedUrl;
-  const cleanedPath = pathname
+async function getMP4(id, name, width, height) {
+  try {
+    const videoUrl = `https://i.imgur.com/${id}.mp4`;
+    const checkType = await axios.head(videoUrl);
+
+    if (checkType.status === 200) {
+      const header = checkType.headers['content-type'];
+      if (header === 'video/mp4') {
+        const sources = [{ type: 'video/mp4', src: videoUrl }];
+        return {
+          width,
+          height,
+          sources,
+          id: `video-${name}`,
+          type: 'video',
+          thumb: `https://i.imgur.com/${id}.jpg`,
+          hasAudio: false,
+        };
+      }
+    }
+  } catch (e) {
+    return false;
+  }
+  return false;
+}
+
+function cleanPath(pathname) {
+  return pathname
     .substring(1)
     .replace(/\/new$/, '')
     .replace(/^\/|\/$/g, '');
+}
+
+function getEmbedId(entry) {
+  try {
+    if (!entry.secure_media_embed.content) return false;
+    const embeddlySrs = entry.secure_media_embed.content.match(/src="(\S+)" /);
+    if (!embeddlySrs[1]) return false;
+    const embeddlySrsParsed = parse(embeddlySrs[1], true);
+    const embedSrc = parse(embeddlySrsParsed.query.image);
+    const embedSrcClean = cleanPath(embedSrc.pathname);
+    return embedSrcClean.split('.')[0];
+  } catch (e) {
+    // Ignore warning and continue
+  }
+  return false;
+}
+
+const render = async entry => {
+  const parsedUrl = parse(entry.url, true);
+  const { pathname } = parsedUrl;
+
+  const cleanedPath = cleanPath(pathname);
 
   const id = cleanedPath.split('.')[0];
 
@@ -47,6 +93,7 @@ const render = async entry => {
       width,
       height,
       sources,
+      imgurRenderType: 'imgurGifVPath',
     };
   }
 
@@ -59,6 +106,7 @@ const render = async entry => {
       width,
       height,
       sources,
+      imgurRenderType: 'imgurMP4Path',
     };
   }
 
@@ -71,34 +119,32 @@ const render = async entry => {
     cleanedPath.substr(0, 2) !== 'a/' &&
     cleanedPath.substr(0, 2) !== 'gallery/'
   ) {
-    try {
-      const videoUrl = `https://i.imgur.com/${id}.mp4`;
-      const checkType = await axios.head(videoUrl);
+    const mp4 = await getMP4(id, entry.name, width, height);
+    if (mp4) {
+      return { ...mp4, imgurRenderType: 'imgurMP4' };
+    }
+  }
 
-      if (checkType.status === 200) {
-        const header = checkType.headers['content-type'];
-        if (header === 'video/mp4') {
-          const sources = [{ type: 'video/mp4', src: videoUrl }];
-          return {
-            width,
-            height,
-            sources,
-            id: `video-${entry.name}`,
-            type: 'video',
-            thumb: `https://i.imgur.com/${id}.jpg`,
-            hasAudio: false,
-          };
-        }
+  // Look for album MP4. This works sometimes. Last ditch effort.
+  if (cleanedPath.substr(0, 2) === 'a/') {
+    const embedID = getEmbedId(entry);
+    if (embedID) {
+      const embedMp4 = await getMP4(embedID, entry.name, width, height);
+      if (embedMp4) {
+        return { ...embedMp4, imgurRenderType: 'albumMP4' };
       }
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      // console.error(e);
     }
   }
 
   // Check for preview image:
   try {
-    const image = redditImagePreview(entry);
+    const { url } = entry;
+    const urlParsed = parse(url);
+    const secureEntry = { ...entry };
+    if (urlParsed.protocol === 'http:') {
+      secureEntry.url = secureEntry.url.replace(/^http:/, 'https:');
+    }
+    const image = redditImagePreview(secureEntry);
     if (image) {
       return {
         ...image,
@@ -116,14 +162,13 @@ const render = async entry => {
 
   const src = `https://i.imgur.com/${id}h.jpg`;
 
-  const imageRender = {
+  return {
     type: 'image',
     width,
     height,
     src,
+    imgurRenderType: 'imgurImagePath',
   };
-
-  return imageRender;
 };
 
 export default render;

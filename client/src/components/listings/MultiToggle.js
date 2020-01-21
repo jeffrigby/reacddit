@@ -121,7 +121,6 @@ const mapStateToProps = state => ({
   redditBearer: state.redditBearer,
 });
 
-export default connect(
-  mapStateToProps,
-  { fetchMultis: redditFetchMultis }
-)(MultiToggle);
+export default connect(mapStateToProps, { fetchMultis: redditFetchMultis })(
+  MultiToggle
+);

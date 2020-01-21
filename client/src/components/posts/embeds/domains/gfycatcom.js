@@ -1,5 +1,4 @@
 import parse from 'url-parse';
-import axios from 'axios';
 
 // This seemed like a good idea but it actually seemed slower.
 // const enableCache = false;
@@ -23,9 +22,13 @@ const getInfo = async id => {
   //   return cache;
   // }
   const url = `https://api.gfycat.com/v1/gfycats/${id}`;
-  const apiInfo = await axios.get(url);
-  // setCache(apiInfo.data.gfyItem);
-  return apiInfo.data.gfyItem;
+  const response = await fetch(url);
+  const json = await response.json();
+
+  if (response.status !== 200) {
+    return false;
+  }
+  return json.gfyItem;
 };
 
 const render = async entry => {
@@ -39,6 +42,13 @@ const render = async entry => {
 
   // Get info directly from gfycat
   const apiInfo = await getInfo(cleanID);
+  if (!apiInfo) {
+    return {
+      type: 'self',
+      html: '<p>Error: GFYCat link not found.</p>',
+      inline: [],
+    };
+  }
 
   const sources = [
     { type: 'video/mp4', src: apiInfo.mp4Url },

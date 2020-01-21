@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { subredditsFilter } from '../../redux/actions/subreddits';
-import { disableHotKeys } from '../../redux/actions/misc';
+import { hotkeyStatus } from '../../common';
 
 class FilterReddits extends React.Component {
   filterInput = React.createRef();
@@ -17,13 +17,13 @@ class FilterReddits extends React.Component {
   }
 
   handleFilterHotkey = event => {
-    const { disableHotkeys, filter, setFilter, goto } = this.props;
+    const { filter, setFilter, goto } = this.props;
     const pressedKey = event.key;
     const subLength = document.querySelectorAll(
       '#sidebar-subreddits .nav-item a'
     ).length;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       switch (pressedKey) {
         case 'F':
         case 'q':
@@ -106,24 +106,24 @@ class FilterReddits extends React.Component {
   /**
    * Disable the hotkeys when using the filter.
    */
-  disableHotkeys = () => {
-    const { setDisableHotkeys, setFilter } = this.props;
+  setFocus = () => {
+    document.getElementById('aside-content').scrollTop = 0;
+    const { setFilter } = this.props;
     const active = true;
+    this.filterInput.current.select();
     setFilter({ active });
-    setDisableHotkeys(true);
-    document.body.classList.add('filter-active');
+    // document.body.classList.add('filter-active');
   };
 
   /**
    * Enable the hotkeys when not in a textbox.
    */
-  enableHotkeys = () => {
-    const { setDisableHotkeys, setFilter } = this.props;
+  setBlur = () => {
+    const { setFilter } = this.props;
     const active = false;
     const activeIndex = 0;
     setFilter({ active, activeIndex });
-    setDisableHotkeys(false);
-    document.body.classList.remove('filter-active');
+    // document.body.classList.remove('filter-active');
   };
 
   render() {
@@ -134,8 +134,8 @@ class FilterReddits extends React.Component {
           type="text"
           className="form-control form-control-dark form-control-sm w-100"
           onChange={this.filterReddits}
-          onFocus={this.disableHotkeys}
-          onBlur={this.enableHotkeys}
+          onFocus={this.setFocus}
+          onBlur={this.setBlur}
           placeholder="Filter"
           id="subreddit-filter"
           value={filter.filterText}
@@ -158,23 +158,16 @@ class FilterReddits extends React.Component {
 FilterReddits.propTypes = {
   setFilter: PropTypes.func.isRequired,
   goto: PropTypes.func.isRequired,
-  setDisableHotkeys: PropTypes.func.isRequired,
   filter: PropTypes.object.isRequired,
-  disableHotkeys: PropTypes.bool.isRequired,
 };
 
 FilterReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
   filter: state.subredditsFilter,
-  disableHotkeys: state.disableHotKeys,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    setDisableHotkeys: disableHotKeys,
-    setFilter: subredditsFilter,
-    goto: push,
-  }
-)(FilterReddits);
+export default connect(mapStateToProps, {
+  setFilter: subredditsFilter,
+  goto: push,
+})(FilterReddits);

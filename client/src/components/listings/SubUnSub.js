@@ -2,9 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
-import { subredditsFetchDataSuccess } from '../../redux/actions/subreddits';
+import { useLocation } from 'react-router';
+import produce from 'immer';
+import { subredditsData } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
+import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
 
 const SubUnSub = ({
   about,
@@ -13,6 +16,9 @@ const SubUnSub = ({
   setSubreddits,
   redditBearer,
 }) => {
+  const location = useLocation();
+  const locationKey = location.key || 'front';
+
   if (isEmpty(about) || redditBearer.status !== 'auth') {
     return null;
   }
@@ -20,18 +26,20 @@ const SubUnSub = ({
   const unsubAction = async () => {
     await RedditAPI.subscribe(about.name, 'unsub');
     const newAbout = { ...about, user_is_subscriber: false };
-    setCurrentSubreddit(newAbout);
-    const newSubreddits = { ...subreddits };
-    delete newSubreddits.subreddits[about.display_name];
+    setCurrentSubreddit(locationKey, newAbout);
+    const newSubreddits = produce(subreddits, draft => {
+      delete draft.subreddits[about.display_name];
+    });
     setSubreddits(newSubreddits);
   };
 
   const subAction = async () => {
     await RedditAPI.subscribe(about.name, 'sub');
     const newAbout = { ...about, user_is_subscriber: true };
-    setCurrentSubreddit(newAbout);
-    const newSubreddits = { ...subreddits };
-    newSubreddits.subreddits[about.display_name] = newAbout;
+    setCurrentSubreddit(locationKey, newAbout);
+    const newSubreddits = produce(subreddits, draft => {
+      draft.subreddits[about.display_name] = newAbout;
+    });
     setSubreddits(newSubreddits);
   };
 
@@ -72,15 +80,12 @@ SubUnSub.defaultProps = {
 };
 
 const mapStateToProps = state => ({
-  about: state.currentSubreddit,
+  about: getCurrentSubreddit(state),
   subreddits: state.subreddits,
   redditBearer: state.redditBearer,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    setCurrentSubreddit: currentSubreddit,
-    setSubreddits: subredditsFetchDataSuccess,
-  }
-)(SubUnSub);
+export default connect(mapStateToProps, {
+  setCurrentSubreddit: currentSubreddit,
+  setSubreddits: subredditsData,
+})(SubUnSub);

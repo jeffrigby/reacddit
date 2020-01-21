@@ -1,20 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import PostVote from './PostVote';
-import PostSave from './PostSave';
+import PostVote from '../postActions/PostVote';
+import PostSave from '../postActions/PostSave';
+import { PostsContextData } from '../../../contexts';
 
-const PostHeader = ({
-  entry,
-  voteUp,
-  voteDown,
-  save,
-  toggleView,
-  expand,
-  visible,
-  bearer,
-}) => {
-  const { data } = entry;
+const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
+  const data = useContext(PostsContextData);
 
   const linkFlair = data.link_flair_text ? (
     <Link
@@ -23,6 +15,15 @@ const PostHeader = ({
     >
       {data.link_flair_text}
     </Link>
+  ) : null;
+
+  const dupeFlair = duplicate ? (
+    <div
+      className="badge badge-dark mx-1"
+      title="This post appears in the list above."
+    >
+      Duplicate Post
+    </div>
   ) : null;
 
   let searchLink = '';
@@ -35,7 +36,7 @@ const PostHeader = ({
           title="Search for other posts linking to this link"
           className="btn btn-link btn-sm m-0 p-0"
         >
-          <i className="fas fa-search" />
+          <i className="far fa-copy" />
         </Link>
       </div>
     );
@@ -65,10 +66,12 @@ const PostHeader = ({
         target="_blank"
         rel="noopener noreferrer"
         className="list-group-item-heading"
+        aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
       {linkFlair}
+      {dupeFlair}
     </h6>
   ) : (
     <h6 className="p-0 m-0">
@@ -76,10 +79,11 @@ const PostHeader = ({
         onClick={toggleView}
         className="btn btn-link m-0 p-0 post-title"
         type="button"
+        aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
-      {linkFlair}{' '}
+      {linkFlair} {dupeFlair}{' '}
       <a
         href={data.url}
         target="_blank"
@@ -97,14 +101,8 @@ const PostHeader = ({
       {title}
       {visible ? (
         <div className="text-nowrap d-flex actions ml-auto">
-          <PostVote
-            likes={data.likes}
-            ups={data.ups}
-            voteDown={voteDown}
-            voteUp={voteUp}
-            bearer={bearer}
-          />
-          <PostSave saved={data.saved} save={save} bearer={bearer} />
+          <PostVote />
+          <PostSave />
           {searchLink}
           <div>{expandContractButton}</div>
         </div>
@@ -117,14 +115,10 @@ const PostHeader = ({
 };
 
 PostHeader.propTypes = {
-  voteDown: PropTypes.func.isRequired,
-  voteUp: PropTypes.func.isRequired,
-  save: PropTypes.func.isRequired,
   toggleView: PropTypes.func.isRequired,
-  bearer: PropTypes.object.isRequired,
-  entry: PropTypes.object.isRequired,
   visible: PropTypes.bool.isRequired,
   expand: PropTypes.bool.isRequired,
+  duplicate: PropTypes.bool.isRequired,
 };
 
 export default React.memo(PostHeader);

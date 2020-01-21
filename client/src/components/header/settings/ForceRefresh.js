@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import * as serviceWorker from '../../../serviceWorker';
 
 /* global BUILDTIME */
@@ -16,6 +17,8 @@ const reload = () => {
 };
 
 const ForceRefresh = () => {
+  const settings = useSelector(state => state.siteSettings);
+
   return (
     <div>
       <button
@@ -25,8 +28,16 @@ const ForceRefresh = () => {
       >
         <small>Load Newest Version</small>
       </button>
-      <div className="dropdown-divider" />
-      <div className="supersmall">Build: {BUILDTIME}</div>
+      {settings.debug && (
+        <>
+          <div className="dropdown-divider" />
+          <div className="supersmall">
+            Build Date:
+            <br />
+            {BUILDTIME}
+          </div>
+        </>
+      )}
     </div>
   );
 };

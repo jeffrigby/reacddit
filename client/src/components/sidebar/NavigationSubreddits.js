@@ -7,14 +7,19 @@ import {
   subredditsFetchLastUpdated,
 } from '../../redux/actions/subreddits';
 import NavigationItem from './NavigationItem';
-import { setMenuStatus, getMenuStatus } from '../../common';
+import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
+import { filterSubs } from '../../redux/selectors/subredditSelectors';
 
 class NavigationSubReddits extends React.PureComponent {
-  state = {
-    showMenu: getMenuStatus('subreddits', true),
-  };
-
   checkLastUpdated = null;
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      showMenu: getMenuStatus('subreddits', true),
+    };
+  }
 
   componentDidMount() {
     const { fetchSubreddits, redditBearer, fetchLastUpdated } = this.props;
@@ -34,10 +39,9 @@ class NavigationSubReddits extends React.PureComponent {
    * @param event
    */
   handleSubredditHotkey = event => {
-    const { disableHotkeys } = this.props;
     const pressedKey = event.key;
 
-    if (!disableHotkeys) {
+    if (hotkeyStatus()) {
       switch (pressedKey) {
         case '®': // alt-r (option)
           this.reloadSubreddits();
@@ -79,19 +83,44 @@ class NavigationSubReddits extends React.PureComponent {
    */
   generateNavItems(subreddits) {
     const { filter } = this.props;
-    const navigationItems = [];
+    const favoritesArray = [];
+    const itemsArray = [];
 
-    Object.values(subreddits).forEach((item, index) => {
-      const trigger =
-        filter.activeIndex === index &&
-        filter.active &&
-        !isEmpty(filter.filterText);
-      navigationItems.push(
-        <NavigationItem item={item} key={item.name} trigger={trigger} />
-      );
+    Object.values(subreddits).forEach(item => {
+      if (item.user_has_favorited) {
+        favoritesArray.push(item);
+      } else {
+        itemsArray.push(item);
+      }
     });
 
-    return navigationItems;
+    let pos = 0;
+    const navItems = [];
+    const filterActive = filter.active && !isEmpty(filter.filterText);
+    if (favoritesArray.length) {
+      favoritesArray.forEach(sub => {
+        const trigger = filter.activeIndex === pos && filterActive;
+        navItems.push(
+          <NavigationItem item={sub} key={sub.name} trigger={trigger} />
+        );
+        pos += 1;
+      });
+      navItems.push(
+        <li key="divider">
+          <hr />
+        </li>
+      );
+    }
+
+    itemsArray.forEach(sub => {
+      const trigger = filter.activeIndex === pos && filterActive;
+      navItems.push(
+        <NavigationItem item={sub} key={sub.name} trigger={trigger} />
+      );
+      pos += 1;
+    });
+
+    return navItems;
   }
 
   render() {
@@ -134,8 +163,7 @@ class NavigationSubReddits extends React.PureComponent {
       if (noItems) {
         content = (
           <div className="alert alert-info" id="subreddits-end" role="alert">
-            <i className="fas fa-info-circle" />
-            {' No subreddits found'}
+            <i className="fas fa-info-circle" /> No subreddits found
           </div>
         );
       } else {
@@ -175,32 +203,7 @@ class NavigationSubReddits extends React.PureComponent {
   }
 }
 
-const filterSubs = (subreddits, filterText) => {
-  if (isEmpty(subreddits)) {
-    return {};
-  }
-
-  if (filterText === '') {
-    return subreddits;
-  }
-
-  return Object.keys(subreddits)
-    .filter(
-      subreddit =>
-        subreddits[subreddit].display_name
-          .toLowerCase()
-          .indexOf(filterText.toLowerCase()) > -1
-    )
-    .reduce((obj, key) => {
-      return {
-        ...obj,
-        [key]: subreddits[key],
-      };
-    }, {});
-};
-
 NavigationSubReddits.propTypes = {
-  disableHotkeys: PropTypes.bool.isRequired,
   fetchSubreddits: PropTypes.func.isRequired,
   fetchLastUpdated: PropTypes.func.isRequired,
   redditBearer: PropTypes.object.isRequired,
@@ -212,20 +215,13 @@ NavigationSubReddits.propTypes = {
 NavigationSubReddits.defaultProps = {};
 
 const mapStateToProps = state => ({
-  disableHotkeys: state.disableHotKeys,
   redditBearer: state.redditBearer,
   subreddits: state.subreddits,
   filter: state.subredditsFilter,
-  filteredSubreddits: filterSubs(
-    state.subreddits.subreddits,
-    state.subredditsFilter.filterText
-  ),
+  filteredSubreddits: filterSubs(state),
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    fetchSubreddits: subredditsFetchData,
-    fetchLastUpdated: subredditsFetchLastUpdated,
-  }
-)(NavigationSubReddits);
+export default connect(mapStateToProps, {
+  fetchSubreddits: subredditsFetchData,
+  fetchLastUpdated: subredditsFetchLastUpdated,
+})(NavigationSubReddits);

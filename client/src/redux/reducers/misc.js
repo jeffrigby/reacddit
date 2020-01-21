@@ -1,20 +1,13 @@
-export function disableHotKeys(state = false, action) {
-  switch (action.type) {
-    case 'DISABLE_HOTKEYS':
-      return action.disableHotKeys;
-
-    default:
-      return state;
-  }
-}
-
+// eslint-disable-next-line import/prefer-default-export
 export function siteSettings(
   state = {
     view: 'expanded',
     debug: false,
     condenseSticky: true,
+    condenseDuplicate: true,
     stream: false,
     autoplay: true,
+    pinMenu: true,
   },
   action
 ) {

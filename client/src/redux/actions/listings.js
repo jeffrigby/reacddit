@@ -1,4 +1,6 @@
-import update from 'immutability-helper';
+import { batch } from 'react-redux';
+import produce from 'immer';
+import { getLocationKey } from '../../common';
 import RedditAPI from '../../reddit/redditAPI';
 
 // @todo there's no reason for any of this to be in Redux. Move to hooks.
@@ -11,9 +13,10 @@ export function listingsFilter(listFilter) {
   };
 }
 
-export function listingsRedditEntries(listSubredditEntries) {
+export function listingsRedditEntries(key, listSubredditEntries) {
   return {
     type: 'LISTINGS_REDDIT_ENTRIES',
+    key,
     listSubredditEntries,
   };
 }
@@ -25,17 +28,27 @@ export function listingsEntryUpdate(entry) {
   };
 }
 
-export function listingsRedditStatus(status) {
+export function listingsRedditStatus(key, status) {
   return {
     type: 'LISTINGS_REDDIT_STATUS',
+    key,
     status,
   };
 }
 
-export function currentSubreddit(subreddit) {
+export function currentSubreddit(key, subreddit) {
   return {
     type: 'CURRENT_SUBREDDIT',
+    key,
     subreddit,
+  };
+}
+
+export function listingsState(key, currentListingsState) {
+  return {
+    type: 'LISTINGS_STATE',
+    key,
+    currentListingsState,
   };
 }
 
@@ -44,11 +57,9 @@ const keyEntryChildren = entries => {
     Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
 
   const newChildren = arrayToObject(entries.data.children, 'name');
-  const newEntries = update(entries, {
-    data: { children: { $set: newChildren } },
+  return produce(entries, draft => {
+    draft.data.children = newChildren;
   });
-
-  return newEntries;
 };
 
 const getContent = async (filters, params) => {
@@ -104,15 +115,43 @@ const subredditAbout = async filter => {
 
 export function listingsFetchEntriesReddit(filters) {
   return async (dispatch, getState) => {
-    dispatch(listingsRedditStatus('loading'));
-    dispatch(currentSubreddit({}));
+    const currentState = getState();
+    const locationKey = getLocationKey(currentState);
 
-    await dispatch(listingsRedditEntries({}));
     try {
-      const currentState = getState();
+      if (
+        currentState.listingsRedditEntries[locationKey] !== undefined &&
+        currentState.currentSubreddit[locationKey] !== undefined &&
+        currentState.listingsRedditStatus[locationKey] !== undefined
+      ) {
+        // Make sure it's not expired.
+        const elapsed =
+          Date.now() - currentState.listingsRedditEntries[locationKey].saved;
+        if (elapsed <= 3600 * 1000) {
+          // Everything is cool. Return Cache
+          return;
+        }
+
+        // Expired content so reset it, and fetch again.
+        batch(() => {
+          dispatch(currentSubreddit(locationKey, {}));
+          dispatch(listingsRedditEntries(locationKey, {}));
+        });
+      }
+      // End  cache Check
+
+      // batch(() => {
+      dispatch(listingsRedditStatus(locationKey, 'loading'));
+      // dispatch(currentSubreddit(locationKey, {}));
+      // dispatch(listingsRedditEntries(locationKey, {}));
+      // });
+
+      // const limit = currentState.siteSettings.view === 'condensed' ? 25 : 10;
+
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
       const params = {
+        // limit,
         ...qs,
       };
 
@@ -130,13 +169,17 @@ export function listingsFetchEntriesReddit(filters) {
         data.originalPost = entries.originalPost.data.children[0];
       }
 
-      await dispatch(listingsRedditEntries(data));
       const loaded = data.after ? 'loaded' : 'loadedAll';
-      dispatch(listingsRedditStatus(loaded));
+      batch(() => {
+        dispatch(listingsRedditEntries(locationKey, data));
+        dispatch(listingsRedditStatus(locationKey, loaded));
+      });
       const about = await subredditAbout(filters);
-      dispatch(currentSubreddit(about));
+      dispatch(currentSubreddit(locationKey, about));
     } catch (e) {
-      dispatch(listingsRedditStatus('error'));
+      // eslint-disable-next-line no-console
+      console.error(e);
+      dispatch(listingsRedditStatus(locationKey, 'error'));
     }
   };
 }
@@ -144,8 +187,12 @@ export function listingsFetchEntriesReddit(filters) {
 export function listingsFetchRedditNext() {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const { after } = currentState.listingsRedditEntries;
-    dispatch(listingsRedditStatus('loadingNext'));
+    const locationKey = getLocationKey(currentState);
+    const currentData = currentState.listingsRedditEntries[locationKey];
+
+    const { after } = currentData;
+    dispatch(listingsRedditStatus(locationKey, 'loadingNext'));
+
     try {
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
@@ -157,18 +204,24 @@ export function listingsFetchRedditNext() {
 
       const entries = await getContent(currentState.listingsFilter, params);
 
-      const newListings = update(currentState.listingsRedditEntries, {
-        after: { $set: entries.data.after },
-        children: { $merge: entries.data.children },
-        type: { $set: 'more' },
+      const newListings = produce(currentData, draft => {
+        draft.after = entries.data.after;
+        draft.children = {
+          ...currentData.children,
+          ...entries.data.children,
+        };
+        draft.type = 'more';
       });
 
-      await dispatch(listingsRedditEntries(newListings));
-
       const loaded = newListings.after ? 'loaded' : 'loadedAll';
-      dispatch(listingsRedditStatus(loaded));
+      batch(() => {
+        dispatch(listingsRedditEntries(locationKey, newListings));
+        dispatch(listingsRedditStatus(locationKey, loaded));
+      });
     } catch (e) {
-      dispatch(listingsRedditStatus('error'));
+      // eslint-disable-next-line no-console
+      console.error(e);
+      dispatch(listingsRedditStatus(locationKey, 'error'));
     }
   };
 }
@@ -181,18 +234,21 @@ export function listingsFetchRedditNext() {
 export function listingsFetchRedditNew(stream = false) {
   return async (dispatch, getState) => {
     const currentState = getState();
+    const locationKey = getLocationKey(currentState);
 
-    if (
-      currentState.listingsRedditStatus !== 'loaded' &&
-      currentState.listingsRedditStatus !== 'loadedAll'
-    ) {
+    const { children } = currentState.listingsRedditEntries[locationKey];
+    const { status } = currentState.listingsRedditStatus[locationKey];
+
+    if (status !== 'loaded' && status !== 'loadedAll') {
       return 0;
     }
 
-    const childKeys = Object.keys(currentState.listingsRedditEntries.children);
+    const childKeys = Object.keys(children);
+
     const before = childKeys[0];
-    const status = stream ? 'loadingStream' : 'loadingNew';
-    dispatch(listingsRedditStatus(status));
+    const newStatus = stream ? 'loadingStream' : 'loadingNew';
+    dispatch(listingsRedditStatus(locationKey, newStatus));
+
     try {
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
@@ -206,21 +262,23 @@ export function listingsFetchRedditNew(stream = false) {
       const newlyFetchCount = Object.keys(entries.data.children).length;
 
       if (newlyFetchCount === 0) {
-        dispatch(listingsRedditStatus('loaded'));
+        dispatch(listingsRedditStatus(locationKey, 'loaded'));
         return 0;
       }
 
       // if the returned amount is greater than 100, replace the results with
       // the newest results.
       if (newlyFetchCount === 100) {
-        await dispatch(listingsRedditEntries(entries.data));
-        dispatch(listingsRedditStatus('loaded'));
+        batch(() => {
+          dispatch(listingsRedditEntries(locationKey, entries.data));
+          dispatch(listingsRedditStatus(locationKey, 'loaded'));
+        });
         return newlyFetchCount;
       }
 
       const newChildren = {
         ...entries.data.children,
-        ...currentState.listingsRedditEntries.children,
+        ...children,
       };
 
       // Truncate the posts to 400 to conserve memory.
@@ -233,18 +291,25 @@ export function listingsFetchRedditNew(stream = false) {
         });
       }
 
-      const newListings = update(currentState.listingsRedditEntries, {
-        before: { $set: entries.data.before },
-        children: { $set: newChildren },
-        type: { $set: 'new' },
+      const newListings = produce(
+        currentState.listingsRedditEntries[locationKey],
+        draft => {
+          draft.before = entries.data.before;
+          draft.children = newChildren;
+          draft.type = 'new';
+        }
+      );
+
+      batch(() => {
+        dispatch(listingsRedditEntries(locationKey, newListings));
+        dispatch(listingsRedditStatus(locationKey, 'loaded'));
       });
 
-      await dispatch(listingsRedditEntries(newListings));
-
-      dispatch(listingsRedditStatus('loaded'));
       return newChildKeys.length;
     } catch (e) {
-      dispatch(listingsRedditStatus('error'));
+      // eslint-disable-next-line no-console
+      console.log(e);
+      dispatch(listingsRedditStatus(locationKey, 'error'));
     }
     return false;
   };

@@ -2,8 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { redditFetchFriends } from '../../redux/actions/reddit';
-import RedditAPI from '../../reddit/redditAPI';
+import { redditFetchFriends } from '../../../redux/actions/reddit';
+import RedditAPI from '../../../reddit/redditAPI';
 
 const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
   const removeFriend = async name => {
@@ -74,9 +74,6 @@ const mapStateToProps = state => ({
   redditFriends: state.redditFriends,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    getFriends: redditFetchFriends,
-  }
-)(PostBylineAuthor);
+export default connect(mapStateToProps, {
+  getFriends: redditFetchFriends,
+})(PostBylineAuthor);

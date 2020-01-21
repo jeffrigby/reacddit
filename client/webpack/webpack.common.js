@@ -73,7 +73,7 @@ module.exports = {
   },
   plugins: [
     new webpack.ProgressPlugin(),
-    new Dotenv(),
+    new Dotenv({ defaults: true }),
     new CopyPlugin([
       {
         from: `${commonPaths.root}/src/PWA`,
@@ -85,9 +85,7 @@ module.exports = {
 
     new MiniCssExtractPlugin({
       filename: `${commonPaths.cssFolder}/[name].[contenthash:8].css`,
-      chunkFilename: `${
-        commonPaths.cssFolder
-      }/[name].[contenthash:8].chunk.css`,
+      chunkFilename: `${commonPaths.cssFolder}/[name].[contenthash:8].chunk.css`,
     }),
     // Generate a manifest file which contains a mapping of all asset filenames
     // to their corresponding output file so that tools can pick it up without

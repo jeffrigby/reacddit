@@ -10,7 +10,7 @@ const IFrame4x4 = ({ content, load }) => {
             src={content.src}
             scrolling="no"
             title={content.name}
-            className="iframe_4x4"
+            className="iframe_4x4 loading-icon"
             allowFullScreen
           />
         )}
