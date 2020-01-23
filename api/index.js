@@ -86,9 +86,9 @@ const oauth2 = require("simple-oauth2").create({
     secret: REDDIT_CLIENT_SECRET
   },
   auth: {
-    authorizeHost: "https://www.reddit.com",
+    authorizeHost: "https://ssl.reddit.com",
     authorizePath: "/api/v1/authorize",
-    tokenHost: "https://www.reddit.com",
+    tokenHost: "https://ssl.reddit.com",
     tokenPath: "/api/v1/access_token",
     revokePath: "/api/v1/revoke_token"
   }
