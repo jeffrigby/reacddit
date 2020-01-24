@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import { createBrowserHistory } from 'history';
 import throttle from 'lodash/throttle';
+import cookies from 'js-cookie';
 import configureStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
@@ -41,8 +42,10 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     document.getElementById('root')
   );
 } else {
-  // Clear the local/session cache. Mostly for debugging.
-  if (parsed.cb !== undefined) {
+  // Clear the local/session cache. Mostly for debugging or a weird cookie mismatch.
+  const cookieToken = cookies.getJSON('token');
+
+  if (parsed.cb !== undefined || cookieToken !== undefined) {
     localStorage.clear();
     sessionStorage.clear();
   }

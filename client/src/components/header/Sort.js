@@ -52,14 +52,14 @@ class Sort extends React.PureComponent {
   };
 
   iconClasses = {
-    relevance: 'fas fa-bullseye',
-    hot: 'fas fa-fire-alt',
-    best: 'fas fa-award',
-    rising: 'fas fa-chart-line',
-    new: 'fas fa-clock',
-    controversial: 'fas fa-bolt',
-    top: 'fas fa-sort-amount-up',
-    comments: 'fas fa-comment',
+    relevance: 'fas fa-bullseye fa-fw',
+    hot: 'fas fa-fire-alt fa-fw',
+    best: 'fas fa-award fa-fw',
+    rising: 'fas fa-chart-line fa-fw',
+    new: 'fas fa-clock fa-fw',
+    controversial: 'fas fa-bolt fa-fw',
+    top: 'fas fa-sort-amount-up fa-fw',
+    comments: 'fas fa-comment fa-fw',
   };
 
   componentDidMount() {
@@ -212,8 +212,9 @@ class Sort extends React.PureComponent {
               activeClassName="active"
               isActive={active}
             >
-              <div className="pr-2">{this.getIcon(sortName)}</div>
-              <div className="mr-auto pr-2 sort-title">{sortName}</div>{' '}
+              <div className="mr-auto pr-2 sort-title">
+                {this.getIcon(sortName)} {sortName}
+              </div>{' '}
               <span className="menu-shortcut">&#x21E7;{key}</span>
             </NavLink>
             {subLinksRendered}
@@ -226,14 +227,9 @@ class Sort extends React.PureComponent {
   };
 
   render() {
-    const { listingsFilter, subreddits, search } = this.props;
+    const { listingsFilter, search } = this.props;
     const { listType, sort, target } = listingsFilter;
-    if (
-      target === 'friends' ||
-      listType === 'u' ||
-      listType === 'duplicates' ||
-      subreddits.status !== 'loaded'
-    ) {
+    if (target === 'friends' || listType === 'u' || listType === 'duplicates') {
       return false;
     }
     let currentSort;
@@ -251,13 +247,13 @@ class Sort extends React.PureComponent {
       <div className="btn-group sort-menu header-button">
         <button
           type="button"
-          className="btn btn-secondary btn-sm form-control-sm"
+          className="btn btn-secondary btn-sm form-control-sm dropdown-toggle sort-button"
           data-toggle="dropdown"
           aria-haspopup="true"
           aria-expanded="false"
           aria-label="Sort"
         >
-          {icon}
+          {icon} {currentSort}
         </button>
         <div className="dropdown-menu dropdown-menu-right">{links}</div>
       </div>
@@ -267,7 +263,6 @@ class Sort extends React.PureComponent {
 
 Sort.propTypes = {
   listingsFilter: PropTypes.object.isRequired,
-  subreddits: PropTypes.object.isRequired,
   search: PropTypes.string,
   gotoLink: PropTypes.func.isRequired,
   me: PropTypes.object.isRequired,
@@ -281,7 +276,6 @@ const mapStateToProps = (state, ownProps) => ({
   me: state.redditMe.me,
   search: state.router.location.search,
   listingsFilter: state.listingsFilter,
-  subreddits: state.subreddits,
 });
 
 export default connect(mapStateToProps, { gotoLink: push })(Sort);
