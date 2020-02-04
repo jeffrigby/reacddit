@@ -97,10 +97,9 @@ module.exports = {
       cleanupOutdatedCaches: true,
       clientsClaim: true,
       exclude: [/\.map$/, /asset-manifest\.json$/],
-      importWorkboxFrom: 'cdn',
       navigateFallback: `/index.html`,
       skipWaiting: true,
-      navigateFallbackBlacklist: [
+      navigateFallbackDenylist: [
         // Exclude URLs starting with /_, as they're likely an API call
         new RegExp('^/_'),
         // Ignore the API
