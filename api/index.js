@@ -145,7 +145,8 @@ const setSessAndCookie = (token, ctx) => {
 
   const cookieStorage = {
     accessToken: token.access_token,
-    expires: token.expires
+    expires: token.expires,
+    loginURL: getLoginUrl(ctx)
   };
 
   const tokenJson = JSON.stringify(cookieStorage);
