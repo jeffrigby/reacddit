@@ -1,6 +1,6 @@
 import parse from 'url-parse';
 
-const render = entry => {
+const render = (entry) => {
   const parsedUrl = parse(entry.url, true);
   if (parsedUrl.query.v) {
     const youtubeid = parsedUrl.query.v;

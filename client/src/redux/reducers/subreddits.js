@@ -14,7 +14,7 @@ export function subreddits(
       const subredditsOrdered = {};
       Object.keys(oldSubs.subreddits)
         .sort()
-        .forEach(key => {
+        .forEach((key) => {
           subredditsOrdered[key] = oldSubs.subreddits[key];
         });
 

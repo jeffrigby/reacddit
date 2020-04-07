@@ -81,7 +81,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     }, 1000)
   );
 
-  const render = Component => {
+  const render = (Component) => {
     ReactDOM.render(
       <Provider store={store}>
         <ConnectedRouter history={history}>

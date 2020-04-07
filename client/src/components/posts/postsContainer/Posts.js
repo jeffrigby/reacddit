@@ -37,7 +37,7 @@ Posts.defaultProps = {
   listType: '',
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   data: listingData(state),
   listType: state.listingsFilter.listType,
 });

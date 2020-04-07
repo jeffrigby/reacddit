@@ -29,7 +29,7 @@ const PostSave = ({ bearer }) => {
   }, [bearer.status, name, saved]);
 
   useEffect(() => {
-    const hotkeys = event => {
+    const hotkeys = (event) => {
       const pressedKey = event.key;
 
       if (hotkeyStatus()) {
@@ -78,7 +78,7 @@ PostSave.propTypes = {
   bearer: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   bearer: state.redditBearer,
 });
 

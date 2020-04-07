@@ -73,7 +73,7 @@ const PostVote = ({ bearer }) => {
   const downClass = likes === false ? 'fas' : 'far';
 
   const vote = useCallback(
-    dir => {
+    (dir) => {
       if (bearer.status !== 'auth') return;
 
       // Check if this has already been voted on
@@ -88,7 +88,7 @@ const PostVote = ({ bearer }) => {
   );
 
   useEffect(() => {
-    const hotkeys = event => {
+    const hotkeys = (event) => {
       const pressedKey = event.key;
 
       if (hotkeyStatus()) {
@@ -145,7 +145,7 @@ PostVote.propTypes = {
   bearer: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   bearer: state.redditBearer,
 });
 

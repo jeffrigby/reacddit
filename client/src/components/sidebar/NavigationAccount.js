@@ -16,7 +16,7 @@ const NavigationAccount = ({ me, urlPush }) => {
     getMenuStatus(menuID, true)
   );
 
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     const pressedKey = event.key;
 
     if (hotkeyStatus()) {
@@ -144,7 +144,7 @@ NavigationAccount.propTypes = {
 
 NavigationAccount.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   me: state.redditMe.me,
 });
 

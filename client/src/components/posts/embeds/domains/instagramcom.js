@@ -11,7 +11,7 @@ const includeIGScripts = () => {
   }
 };
 
-const render = async entry => {
+const render = async (entry) => {
   includeIGScripts();
   const getEmbed = await axios.get(`https://api.instagram.com/oembed/`, {
     params: { url: entry.url, omitscript: true },

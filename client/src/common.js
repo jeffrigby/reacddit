@@ -29,17 +29,17 @@ export const hotkeyStatus = () => {
   return !(nodeName === 'INPUT' && activeElement.type === 'text');
 };
 
-export const getLocationKey = currentState => {
+export const getLocationKey = (currentState) => {
   const { key } = currentState.router.location;
   return key || 'front';
 };
 
 export const pruneObject = (obj, maxKeys, maxAge) => {
-  return produce(obj, draft => {
+  return produce(obj, (draft) => {
     const keys = Object.keys(draft);
 
     // Remove the keys older than an hour
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const { saved } = draft[key];
       if (saved > 0) {
         const elapsed = Date.now() - saved;
@@ -51,7 +51,7 @@ export const pruneObject = (obj, maxKeys, maxAge) => {
 
     if (slice >= 0) {
       const deleteKeys = keys.slice(0, slice);
-      deleteKeys.forEach(deleteKey => {
+      deleteKeys.forEach((deleteKey) => {
         delete draft[deleteKey];
       });
     }
@@ -62,12 +62,12 @@ export const pruneObject = (obj, maxKeys, maxAge) => {
  * Key the entry children to the name key
  * @param entries - entries from a listing
  */
-export const keyEntryChildren = entries => {
+export const keyEntryChildren = (entries) => {
   const arrayToObject = (arr, keyField) =>
-    Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
+    Object.assign({}, ...arr.map((item) => ({ [item.data[keyField]]: item })));
 
   const newChildren = arrayToObject(entries.data.children, 'name');
-  return produce(entries, draft => {
+  return produce(entries, (draft) => {
     draft.data.children = newChildren;
   });
 };

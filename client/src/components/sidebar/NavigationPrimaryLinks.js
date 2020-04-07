@@ -24,7 +24,7 @@ function NavigationPrimaryLinks({
    * @returns {*}
    */
   const randomSubPush = useCallback(
-    e => {
+    (e) => {
       if (e) e.preventDefault();
       if (isEmpty(subreddits.subreddits)) {
         return false;
@@ -58,13 +58,13 @@ function NavigationPrimaryLinks({
     return loginURL;
   }, [redditBearer]);
 
-  const openHotkeys = e => {
+  const openHotkeys = (e) => {
     if (e) e.preventDefault();
     jQuery('#hotkeys').modal();
   };
 
   useEffect(() => {
-    const handleNavPrimaryHotkey = event => {
+    const handleNavPrimaryHotkey = (event) => {
       const { key } = event;
 
       if (hotkeyStatus()) {
@@ -166,7 +166,7 @@ NavigationPrimaryLinks.defaultProps = {
   t: '',
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   me: state.redditMe.me,
   redditBearer: state.redditBearer,
   sort: state.listingsFilter.sort,

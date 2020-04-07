@@ -65,7 +65,7 @@ MultiRedditsItem.propTypes = {
 
 MultiRedditsItem.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   sort: state.listingsFilter.sort,
   location: state.router.location,
 });

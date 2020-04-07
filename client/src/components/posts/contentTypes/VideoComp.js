@@ -253,7 +253,7 @@ VideoComp.defaultProps = {
   autoplay: true,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   autoplay: state.siteSettings.autoplay,
 });
 

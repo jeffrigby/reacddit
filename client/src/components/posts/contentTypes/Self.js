@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import SelfInline from './SelfInline';
 
-const cleanLinks = html => {
+const cleanLinks = (html) => {
   let rawhtml = html;
   rawhtml = rawhtml
     .replace(
@@ -22,7 +22,7 @@ const cleanLinks = html => {
   }
 
   if (matches.length > 0) {
-    matches.forEach(link => {
+    matches.forEach((link) => {
       if (link.length >= 20) {
         const newLink = `${link
           .replace(/https?:\/\//, '')

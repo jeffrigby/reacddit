@@ -28,7 +28,7 @@ const VideoProgreeBar = ({ videoRef }) => {
     };
   }, [videoRef]);
 
-  const seek = e => {
+  const seek = (e) => {
     // where is this progress bar on the page:
     const percent =
       (e.pageX - e.target.getBoundingClientRect().left) / e.target.offsetWidth;

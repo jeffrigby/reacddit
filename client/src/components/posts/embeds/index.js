@@ -7,7 +7,7 @@ import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
 import redditMediaEmbed from './defaults/redditMediaEmbed';
 
-const getKeys = url => {
+const getKeys = (url) => {
   const regex = /[^a-zA-Z\d\s:]/g;
   if (url.substr(0, 5) === 'self.') {
     return {
@@ -33,7 +33,7 @@ const inlineLinks = (entry, kind) => {
   const dupes = [];
   const inline = [];
   const renderedLinks = [];
-  links.forEach(url => {
+  links.forEach((url) => {
     const cleanUrl = url.replace(/^\(|\)$/g, '');
     const keys = getKeys(cleanUrl);
     if (!keys) return;

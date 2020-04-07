@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Post from '../postDetail/Post';
 
 const PostsParent = ({ post }) => {
-  const listingsFilter = useSelector(state => state.listingsFilter);
+  const listingsFilter = useSelector((state) => state.listingsFilter);
   const { listType, comment } = listingsFilter;
 
   if (post && listType.match(/duplicates|comments/)) {

@@ -22,7 +22,7 @@ ListingsHeaderError.propTypes = {
 
 ListingsHeaderError.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   filter: state.listingsFilter,
 });
 

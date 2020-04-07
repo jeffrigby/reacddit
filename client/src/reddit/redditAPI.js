@@ -15,7 +15,7 @@ class RedditAPI {
     });
 
     this.redditAPI.interceptors.request.use(
-      async config => {
+      async (config) => {
         const newConfig = config;
         const token = await this.getToken(false);
 
@@ -25,7 +25,7 @@ class RedditAPI {
 
         return newConfig;
       },
-      error => Promise.reject(error)
+      (error) => Promise.reject(error)
     );
   }
 
@@ -33,7 +33,7 @@ class RedditAPI {
     // @todo this can be modernized
     const params = Object.assign(defaults, options);
     Object.keys(params).forEach(
-      key => (params[key] == null || params[key] === '') && delete params[key]
+      (key) => (params[key] == null || params[key] === '') && delete params[key]
     );
 
     return params;

@@ -9,7 +9,7 @@ const Settings = () => {
   return (
     <div
       className="btn-group settings-menu header-button"
-      onClick={e => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
       onKeyDown={null}
       role="button"
       tabIndex="0"

@@ -8,8 +8,8 @@ import * as serviceWorker from '../../../serviceWorker';
 const reload = () => {
   if (caches) {
     // Service worker cache should be cleared with caches.delete()
-    caches.keys().then(names => {
-      names.forEach(name => caches.delete(name));
+    caches.keys().then((names) => {
+      names.forEach((name) => caches.delete(name));
     });
   }
   serviceWorker.unregister();
@@ -17,7 +17,7 @@ const reload = () => {
 };
 
 const ForceRefresh = () => {
-  const settings = useSelector(state => state.siteSettings);
+  const settings = useSelector((state) => state.siteSettings);
 
   return (
     <div>

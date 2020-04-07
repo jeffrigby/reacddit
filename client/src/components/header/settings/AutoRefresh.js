@@ -10,7 +10,7 @@ const AutoRefresh = ({ setSiteSetting, stream }) => {
     setSiteSetting({ stream: !stream });
   };
 
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     if (hotkeyStatus()) {
       const pressedKey = event.key;
       try {
@@ -67,7 +67,7 @@ AutoRefresh.defaultProps = {
   stream: false,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   stream: state.siteSettings.stream,
 });
 

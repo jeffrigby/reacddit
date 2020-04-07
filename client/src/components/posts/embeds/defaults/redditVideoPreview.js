@@ -2,7 +2,7 @@ const { detect } = require('detect-browser');
 
 const browser = detect();
 
-const redditVideoPreview = entry => {
+const redditVideoPreview = (entry) => {
   const rvp =
     entry.preview && entry.preview.reddit_video_preview
       ? entry.preview.reddit_video_preview

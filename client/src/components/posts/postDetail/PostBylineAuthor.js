@@ -6,12 +6,12 @@ import { redditFetchFriends } from '../../../redux/actions/reddit';
 import RedditAPI from '../../../reddit/redditAPI';
 
 const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
-  const removeFriend = async name => {
+  const removeFriend = async (name) => {
     await RedditAPI.removeFriend(name);
     getFriends(true);
   };
 
-  const addFriend = async name => {
+  const addFriend = async (name) => {
     await RedditAPI.addFriend(name);
     getFriends(true);
   };
@@ -74,7 +74,7 @@ PostBylineAuthor.defaultProps = {
   flair: null,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   redditFriends: state.redditFriends,
 });
 

@@ -12,7 +12,7 @@ const PostFooter = ({ debug, visible, renderedContent }) => {
   const [copied, setCopied] = useState(false);
   const { data, kind } = post;
 
-  const copyID = comp => {
+  const copyID = (comp) => {
     const id = comp.target.textContent;
     copy(id);
     setCopied(true);

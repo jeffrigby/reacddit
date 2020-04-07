@@ -137,7 +137,7 @@ const Listings = ({ data, status, filter, settings }) => {
   }, [status, dispatch]);
 
   // Set some hotkeys
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
       const pressedKey = event.key;
       try {
@@ -189,7 +189,7 @@ Listings.defaultProps = {
   settings: { debug: false, view: 'expanded' },
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   data: listingData(state),
   status: listingStatus(state),
   settings: state.siteSettings,

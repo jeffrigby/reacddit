@@ -28,7 +28,7 @@ ListingsHeader.propTypes = {
 
 ListingsHeader.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   filter: state.listingsFilter,
   status: listingStatus(state),
 });

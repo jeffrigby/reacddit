@@ -51,7 +51,7 @@ function getEmbedId(entry) {
   return false;
 }
 
-const render = async entry => {
+const render = async (entry) => {
   const parsedUrl = parse(entry.url, true);
   const { pathname } = parsedUrl;
 

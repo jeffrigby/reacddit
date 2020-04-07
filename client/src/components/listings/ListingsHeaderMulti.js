@@ -79,7 +79,7 @@ ListingsHeaderMulti.propTypes = {
 
 ListingsHeaderMulti.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   filter: state.listingsFilter,
   multis: state.redditMultiReddits,
   me: state.redditMe,

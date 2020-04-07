@@ -16,7 +16,7 @@ class FilterReddits extends React.Component {
     document.removeEventListener('keydown', this.handleFilterHotkey);
   }
 
-  handleFilterHotkey = event => {
+  handleFilterHotkey = (event) => {
     const { filter, setFilter, goto } = this.props;
     const pressedKey = event.key;
     const subLength = document.querySelectorAll(
@@ -82,7 +82,7 @@ class FilterReddits extends React.Component {
    * @param item
    * @returns {void|*}
    */
-  filterReddits = item => {
+  filterReddits = (item) => {
     const { setFilter } = this.props;
     const filterText = item.target.value;
     // Always reset the index.
@@ -163,7 +163,7 @@ FilterReddits.propTypes = {
 
 FilterReddits.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   filter: state.subredditsFilter,
 });
 

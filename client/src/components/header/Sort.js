@@ -70,7 +70,7 @@ class Sort extends React.PureComponent {
     document.removeEventListener('keydown', this.handleSortHotkey);
   }
 
-  handleSortHotkey = event => {
+  handleSortHotkey = (event) => {
     const { listingsFilter, gotoLink } = this.props;
     if (hotkeyStatus() && listingsFilter.target !== 'friends') {
       const pressedKey = event.key;
@@ -137,7 +137,7 @@ class Sort extends React.PureComponent {
     return link;
   };
 
-  renderTimeSubLinks = sort => {
+  renderTimeSubLinks = (sort) => {
     const { listingsFilter, search } = this.props;
     const { listType, target } = listingsFilter;
 
@@ -173,7 +173,7 @@ class Sort extends React.PureComponent {
     return links;
   };
 
-  getIcon = sort => {
+  getIcon = (sort) => {
     return <i className={this.iconClasses[sort]} />;
   };
 

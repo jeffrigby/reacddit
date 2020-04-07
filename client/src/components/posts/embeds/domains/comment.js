@@ -1,4 +1,4 @@
-const render = entry => {
+const render = (entry) => {
   const html = entry.body_html ? entry.body_html : '';
 
   const content = {

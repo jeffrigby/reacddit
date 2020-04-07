@@ -7,7 +7,7 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
   const [resolvedContent, setResolvedContent] = useState([]);
 
   useEffect(() => {
-    Promise.all(inline).then(content => {
+    Promise.all(inline).then((content) => {
       const resolved = [];
       content.forEach((value, key) => {
         if (value) {

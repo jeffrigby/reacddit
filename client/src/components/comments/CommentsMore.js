@@ -5,7 +5,7 @@ import CommentsRender from './CommentsRender';
 import { Link } from 'react-router-dom';
 
 const arrayToObject = (arr, keyField) =>
-  Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
+  Object.assign({}, ...arr.map((item) => ({ [item.data[keyField]]: item })));
 
 function CommentsMore({ moreList, linkId }) {
   const { count, children } = moreList.data;

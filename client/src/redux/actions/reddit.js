@@ -145,7 +145,7 @@ export function redditFetchFriends(reset) {
     const childrenSorted = children.sort((a, b) => {
       return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
     });
-    childrenSorted.forEach(friend => {
+    childrenSorted.forEach((friend) => {
       friendsKeyed[friend.name.toLowerCase()] = friend;
     });
 

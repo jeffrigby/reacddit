@@ -111,7 +111,7 @@ const getContent = async (filters, params) => {
   return entries;
 };
 
-const subredditAbout = async filter => {
+const subredditAbout = async (filter) => {
   const { target, listType, multi } = filter;
   const badTarget = !target || target.match(/mine|popular|friends/);
 
@@ -221,7 +221,7 @@ export function listingsFetchRedditNext() {
 
       const entries = await getContent(currentState.listingsFilter, params);
 
-      const newListings = produce(currentData, draft => {
+      const newListings = produce(currentData, (draft) => {
         draft.after = entries.data.after;
         draft.children = {
           ...currentData.children,
@@ -303,14 +303,14 @@ export function listingsFetchRedditNew(stream = false) {
 
       if (newChildKeys.length > 500) {
         const sliced = newChildKeys.slice(500);
-        sliced.forEach(key => {
+        sliced.forEach((key) => {
           delete newChildren[key];
         });
       }
 
       const newListings = produce(
         currentState.listingsRedditEntries[locationKey],
-        draft => {
+        (draft) => {
           draft.before = entries.data.before;
           draft.children = newChildren;
           draft.type = 'new';

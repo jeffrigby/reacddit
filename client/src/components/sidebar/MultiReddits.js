@@ -38,7 +38,7 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
     const navigationItems = [];
 
     if (multireddits.multis) {
-      multireddits.multis.forEach(item => {
+      multireddits.multis.forEach((item) => {
         const key = `${item.data.display_name}-${item.data.created}`;
         navigationItems.push(<MultiRedditsItem item={item} key={key} />);
       });
@@ -123,7 +123,7 @@ MultiReddits.propTypes = {
 
 MultiReddits.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   multireddits: state.redditMultiReddits,
   redditBearer: state.redditBearer,
 });

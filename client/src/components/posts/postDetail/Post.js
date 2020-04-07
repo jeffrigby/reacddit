@@ -108,7 +108,7 @@ const Post = ({
   }, [expand]);
 
   const toggleView = useCallback(
-    event => {
+    (event) => {
       toggleViewAction();
       event.preventDefault();
     },
@@ -132,7 +132,7 @@ const Post = ({
   }, [data.url]);
 
   useEffect(() => {
-    const hotkeys = event => {
+    const hotkeys = (event) => {
       if (
         hotkeyStatus() &&
         (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')

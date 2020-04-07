@@ -190,7 +190,7 @@ App.defaultProps = {
   pinMenu: true,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   redditBearer: state.redditBearer,
   pinMenu: state.siteSettings.pinMenu,
   subredditsFilter: state.subredditsFilter,

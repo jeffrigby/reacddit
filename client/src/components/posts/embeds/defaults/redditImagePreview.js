@@ -1,6 +1,6 @@
 import parse from 'url-parse';
 
-const redditImagePreview = entry => {
+const redditImagePreview = (entry) => {
   if (entry.preview !== undefined) {
     const { resolutions } = entry.preview.images[0];
     const { source } = entry.preview.images[0];

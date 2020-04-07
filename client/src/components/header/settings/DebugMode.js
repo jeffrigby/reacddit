@@ -9,7 +9,7 @@ const DebugMode = ({ setSiteSetting, debug }) => {
     setSiteSetting({ debug: !debug });
   };
 
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     if (hotkeyStatus()) {
       const pressedKey = event.key;
       try {
@@ -59,7 +59,7 @@ DebugMode.defaultProps = {
   debug: false,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   debug: state.siteSettings.debug,
 });
 

@@ -55,7 +55,7 @@ const Placeholder = ({ load }) => {
   const getRatioRounded = (width, height) =>
     Math.round((width / height) * 100) / 100;
 
-  const fixedRatio = r => {
+  const fixedRatio = (r) => {
     return (
       <div className="content">
         <div className="media-cont black-bg">
