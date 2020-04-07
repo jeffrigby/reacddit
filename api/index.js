@@ -3,11 +3,11 @@ const http = require("http");
 const Koa = require("koa");
 const Router = require("koa-router");
 const session = require("koa-session");
-const uuidv4 = require("uuid/v4");
 const rp = require("request-promise");
 const crypto = require("crypto");
 const logger = require("koa-logger");
 const chalk = require("chalk");
+const { v4: uuidv4 } = require('uuid');
 
 require("dotenv-defaults").config();
 
