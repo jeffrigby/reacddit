@@ -122,12 +122,17 @@ class App extends React.PureComponent {
 
     const duplicatesPaths = [`/:listType(duplicates)/:target`];
 
+    const commentPaths = [
+      `/r/:target/:listType(comments)/:postName/:postTitle/:comment?`,
+    ];
+
     const combinedPaths = [
       ...redditPaths,
       ...searchPaths,
       ...multiPaths,
       ...userPaths,
       ...duplicatesPaths,
+      ...commentPaths,
     ];
 
     const routes = [];

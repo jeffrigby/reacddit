@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import '../../../styles/video.scss';
 import VideoProgreeBar from './VideoProgressBar';
-import { PostsContextVideoPlay } from '../../../contexts';
 
 const classNames = require('classnames');
 
 const VideoComp = ({ content, load, link, autoplay }) => {
   const videoRef = React.createRef();
-  const videoPlay = useContext(PostsContextVideoPlay);
   const [muted, setMuted] = useState(true);
-  const [playing, setPlaying] = useState(autoplay && videoPlay);
+  const [playing, setPlaying] = useState(autoplay);
   const [autoplayState, setAutoplayState] = useState(autoplay);
   const [ctrLock, setCtrLock] = useState(false);
   const [controls, setControls] = useState(false);
@@ -23,14 +21,14 @@ const VideoComp = ({ content, load, link, autoplay }) => {
       return;
     }
 
-    if (autoplay && videoPlay) {
+    if (autoplay) {
       setAutoplayState(true);
       videoRef.current.play();
     } else if (!videoRef.current.paused) {
       setAutoplayState(false);
       videoRef.current.pause();
     }
-  }, [videoRef, autoplay, autoplayState, videoPlay]);
+  }, [videoRef, autoplay, autoplayState]);
 
   // useEffect(() => {
   //   if (videoRef.current === null) {
@@ -141,7 +139,7 @@ const VideoComp = ({ content, load, link, autoplay }) => {
 
     video = (
       <video
-        autoPlay={autoplay && videoPlay}
+        autoPlay={autoplay}
         loop
         muted
         playsInline

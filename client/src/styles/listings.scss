@@ -23,6 +23,9 @@ div#entries {
       -webkit-mask-image: inherit;
       mask-image: inherit;
     }
+    * {
+      font-size: 1em !important;
+    }
   }
 
   .is-friend {
@@ -48,7 +51,6 @@ div#entries {
       background-repeat: no-repeat;
     }
   }
-
 
   .media-contain-width {
     margin: 0 auto;
@@ -97,18 +99,42 @@ div#entries {
     background-color: #000;
   }
 
+  .listings-header {
+    border-left: 0;
+  }
+
   div.entry {
+    border-left: 0;
+
+    &.comment-child,
+    .comments-more {
+      border-width: 0 0 0 1px;
+      padding-right: 0;
+      padding-bottom: 0;
+      padding-top: 0;
+      border-left: 1px solid rgba(0, 0, 0, 0.125) !important;
+    }
+
+    &.kind-t1 {
+      border-bottom: 0;
+    }
+
     &:first-child {
       padding-top: 0.5em;
     }
 
     .actions {
+      font-size: 0.85em;
       div {
         margin-left: 0.25rem;
       }
       button {
         margin: 0;
         padding: 0;
+        font-size: 1em;
+      }
+      span {
+        vertical-align: middle !important;
       }
     }
 
@@ -131,7 +157,15 @@ div#entries {
       }
     }
 
-    footer {
+    .meta {
+      span,
+      a {
+        vertical-align: middle !important;
+      }
+    }
+
+    footer,
+    .comment-meta {
       font-size: 0.85em;
 
       button {
@@ -204,7 +238,7 @@ div#entries {
 /** Specific settings for Desktop **/
 .no-phone {
   .actionable {
-    background-color: rgb(245, 245, 245);
+    // background-color: rgb(245, 245, 245);
   }
 
   .actions {

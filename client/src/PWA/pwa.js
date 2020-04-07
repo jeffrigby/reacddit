@@ -1,4 +1,3 @@
-// this is a file
 const refresh = () => {
   if ('serviceWorker' in navigator) {
     if (caches) {

@@ -1,92 +1,42 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { connect, useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import Content from '../Content';
 import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
-import {
-  PostsContextData,
-  PostsContextActionable,
-  PostsContextVideoPlay,
-} from '../../../contexts';
-import {
-  postActionable,
-  postData,
-  postFocused,
-  postMinHeight,
-  postVisibility,
-  postVideoPlay,
-} from '../../../redux/selectors/postSelectors';
-import PostDebug from './PostDebug';
+import { PostsContextData, PostsContextActionable } from '../../../contexts';
 import { hotkeyStatus } from '../../../common';
 import { listingStatus } from '../../../redux/selectors/listingsSelector';
+import {
+  postActionable,
+  postFocused,
+  // postMinHeight,
+  postVisibility,
+} from '../../../redux/selectors/postSelectors';
+import CommentReplyList from '../../comments/CommentReplyList';
 
 const classNames = require('classnames');
 
-const Post = ({
-  siteSettings,
-  data,
-  focused,
-  visible,
-  actionable,
-  videoPlay,
-  minHeight,
-  listingsStatus,
-  gotoLink,
-  duplicate,
-}) => {
+function useRenderedContent(data, kind, expand) {
   const [renderedContent, setRenderedContent] = useState(null);
-  const condenseDuplicatesSetting = useSelector(
-    state => state.siteSettings.condenseDuplicate
-  );
-
-  const initView = useCallback(() => {
-    if (data.stickied && siteSettings.condenseSticky) {
-      return false;
-    }
-
-    if (duplicate && condenseDuplicatesSetting) {
-      return false;
-    }
-    return siteSettings.view === 'expanded' || false;
-  }, [
-    data.stickied,
-    siteSettings.condenseSticky,
-    siteSettings.view,
-    duplicate,
-    condenseDuplicatesSetting,
-  ]);
-
-  const [expand, setExpand] = useState(initView());
-  const [showDebug, setShowDebug] = useState(false);
-
   const isRendered = useRef(false);
 
   useEffect(() => {
-    setExpand(initView());
-  }, [
-    initView,
-    siteSettings.view,
-    siteSettings.condenseSticky,
-    condenseDuplicatesSetting,
-    duplicate,
-  ]);
-
-  // Set the rendered content
-  useEffect(() => {
     let isMounted = true;
-    const renderContent = async () => {
+    const getRenderedContent = async () => {
+      // This is when there is no body.
       if (data.is_self && !data.selftext) {
         isRendered.current = true;
         return;
       }
 
+      // Get the content from the crosspost
       const getContent =
         data.crosspost_parent && data.crosspost_parent_list[0]
-          ? await RenderContent(data.crosspost_parent_list[0])
-          : await RenderContent(data);
+          ? await RenderContent(data.crosspost_parent_list[0], 't3')
+          : await RenderContent(data, kind);
 
       if (!getContent) {
         isRendered.current = true;
@@ -103,74 +53,115 @@ const Post = ({
       }
     };
     if (isMounted && expand && !isRendered.current) {
-      renderContent();
+      getRenderedContent();
       isRendered.current = true;
     }
     return () => {
       isMounted = false;
     };
-  }, [data, expand]);
+  }, [data, expand, kind]);
 
-  const toggleViewAction = () => {
+  return { renderedContent };
+}
+
+const Post = ({
+  siteSettings,
+  post,
+  focused,
+  visible,
+  actionable,
+  // minHeight,
+  listingsStatus,
+  gotoLink,
+  duplicate,
+}) => {
+  const { data, kind } = post;
+
+  const initView = useCallback(() => {
+    if (data.stickied && siteSettings.condenseSticky) {
+      return false;
+    }
+
+    if (duplicate && siteSettings.condenseDuplicate) {
+      return false;
+    }
+    return siteSettings.view === 'expanded' || false;
+  }, [
+    data.stickied,
+    siteSettings.condenseSticky,
+    siteSettings.view,
+    siteSettings.condenseDuplicate,
+    duplicate,
+  ]);
+
+  const [expand, setExpand] = useState(initView());
+
+  useEffect(() => {
+    const view = initView();
+    setExpand(view);
+  }, [initView]);
+
+  const { renderedContent } = useRenderedContent(data, kind, expand);
+
+  const toggleViewAction = useCallback(() => {
     setExpand(!expand);
-  };
+  }, [expand]);
 
-  const toggleView = event => {
-    toggleViewAction();
-    event.preventDefault();
-  };
+  const toggleView = useCallback(
+    event => {
+      toggleViewAction();
+      event.preventDefault();
+    },
+    [toggleViewAction]
+  );
 
-  const gotoDuplicates = () => {
+  const gotoDuplicates = useCallback(() => {
     if (!data.is_self) {
       const searchTo = `/duplicates/${data.id}`;
       gotoLink(searchTo);
     }
-  };
+  }, [data.id, data.is_self, gotoLink]);
 
   // @todo is there a way around pop up blockers?
-  const openReddit = () => {
+  const openReddit = useCallback(() => {
     window.open(`https://www.reddit.com${data.permalink}`, '_blank');
-  };
+  }, [data.permalink]);
 
-  const openLink = () => {
+  const openLink = useCallback(() => {
     window.open(data.url, '_blank');
-  };
-
-  const toggleShowDebug = () => {
-    setShowDebug(!showDebug);
-  };
-
-  const hotkeys = event => {
-    if (
-      hotkeyStatus() &&
-      (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')
-    ) {
-      const pressedKey = event.key;
-      try {
-        switch (pressedKey) {
-          case 'x':
-            toggleViewAction();
-            break;
-          case 'o':
-          case 'Enter':
-            openReddit();
-            break;
-          case 'l':
-            openLink();
-            break;
-          case 'd':
-            gotoDuplicates();
-            break;
-          default:
-            break;
-        }
-      } catch (e) {
-        // console.log(e);
-      }
-    }
-  };
+  }, [data.url]);
 
   useEffect(() => {
+    const hotkeys = event => {
+      if (
+        hotkeyStatus() &&
+        (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')
+      ) {
+        const pressedKey = event.key;
+        try {
+          switch (pressedKey) {
+            case 'x':
+              toggleViewAction();
+              break;
+            case 'o':
+            case 'Enter':
+              openReddit();
+              break;
+            case 'l':
+              openLink();
+              break;
+            case 'd':
+              gotoDuplicates();
+              break;
+            default:
+              break;
+          }
+        } catch (e) {
+          // console.log(e);
+        }
+      }
+    };
+
     if (actionable) {
       document.addEventListener('keydown', hotkeys);
     } else {
@@ -179,64 +170,76 @@ const Post = ({
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  });
+  }, [
+    actionable,
+    gotoDuplicates,
+    listingsStatus,
+    openLink,
+    openReddit,
+    toggleViewAction,
+  ]);
 
-  const classArray = classNames('entry', 'list-group-item', {
+  // Always visible if it's a comment
+  // const isVisible = postType === 'comments' ? true : visible;
+  const isVisible = visible;
+
+  const classArray = classNames('entry', 'list-group-item', `kind-${kind}`, {
     focused,
-    visible,
+    visible: isVisible,
     actionable,
     condensed: !expand,
     duplicate,
+    'comment-child': kind === 't1' && data.depth > 0,
   });
 
   const styles = {};
-  let hideAll = false;
-  if (!visible && minHeight) {
-    styles.minHeight = minHeight;
-    hideAll = true;
-  }
+  // let hideAll = false;
+  // if (!isVisible && minHeight) {
+  //   styles.minHeight = minHeight;
+  //   hideAll = true;
+  // }
 
-  if (hideAll) {
-    return (
-      <div
-        className={classArray}
-        key={data.name}
-        id={data.name}
-        style={styles}
-      />
-    );
-  }
+  // if (hideAll) {
+  //   return (
+  //     <div
+  //       className={classArray}
+  //       key={data.name}
+  //       id={data.name}
+  //       style={styles}
+  //     />
+  //   );
+  // }
+
+  const isReplies = kind === 't1' && data.replies;
 
   return (
     <div className={classArray} key={data.name} id={data.name} style={styles}>
       <div className="entry-interior">
-        <PostsContextData.Provider value={data}>
+        <PostsContextData.Provider value={post}>
           <PostsContextActionable.Provider value={actionable}>
-            <PostsContextVideoPlay.Provider value={videoPlay}>
-              <PostHeader
-                visible={visible}
-                expand={expand}
-                toggleView={toggleView}
-                duplicate={duplicate}
+            <PostHeader
+              visible={isVisible}
+              expand={expand}
+              toggleView={toggleView}
+              duplicate={duplicate}
+            />
+            {expand && (
+              <Content
+                content={renderedContent}
+                load={isVisible}
+                key={data.id}
               />
-              {expand && (
-                <Content
-                  content={renderedContent}
-                  load={visible}
-                  key={data.id}
-                />
-              )}
-              <PostFooter
-                debug={siteSettings.debug}
-                toggleShowDebug={toggleShowDebug}
-                visible={visible}
-              />
-              {siteSettings.debug && showDebug && (
-                <PostDebug renderedContent={renderedContent} />
-              )}
-            </PostsContextVideoPlay.Provider>
+            )}
+            <PostFooter
+              debug={siteSettings.debug}
+              renderedContent={renderedContent}
+              visible={isVisible}
+            />
           </PostsContextActionable.Provider>
         </PostsContextData.Provider>
+        {isReplies && expand && (
+          <CommentReplyList replies={data.replies} linkId={data.link_id} />
+        )}
       </div>
     </div>
   );
@@ -247,39 +250,38 @@ Post.propTypes = {
   postName: PropTypes.string.isRequired,
   // eslint-disable-next-line react/no-unused-prop-types
   idx: PropTypes.number.isRequired,
-  data: PropTypes.object.isRequired,
+  post: PropTypes.object.isRequired,
   focused: PropTypes.bool.isRequired,
   actionable: PropTypes.bool.isRequired,
-  videoPlay: PropTypes.bool.isRequired,
   siteSettings: PropTypes.object.isRequired,
   visible: PropTypes.bool.isRequired,
   gotoLink: PropTypes.func.isRequired,
-  minHeight: PropTypes.number,
+  // minHeight: PropTypes.number,
   listingsStatus: PropTypes.string,
   duplicate: PropTypes.bool,
 };
 
 Post.defaultProps = {
-  minHeight: 0,
+  // minHeight: 0,
   listingsStatus: 'unloaded',
   duplicate: false,
 };
 
 const mapStateToProps = (state, props) => ({
   siteSettings: state.siteSettings,
-  data: postData(state, props),
+  listingsStatus: listingStatus(state),
+  // minHeight: postMinHeight(state, props),
   visible: postVisibility(state, props),
   focused: postFocused(state, props),
   actionable: postActionable(state, props),
-  videoPlay: postVideoPlay(state, props),
-  minHeight: postMinHeight(state, props),
-  listingsStatus: listingStatus(state),
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    gotoLink: push,
-  },
-  null
-)(Post);
+export default React.memo(
+  connect(
+    mapStateToProps,
+    {
+      gotoLink: push,
+    },
+    null
+  )(Post)
+);

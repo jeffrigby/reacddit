@@ -6,13 +6,13 @@ const postSelector = (state, props) => {
   const entries = state.listingsRedditEntries[key];
   const { listType } = state.listingsFilter;
   if (
-    listType === 'duplicates' &&
+    listType.match(/duplicates|comments/) &&
     entries.originalPost.data.name === postName
   ) {
-    return entries.originalPost.data;
+    return entries.originalPost;
   }
   const post = entries.children[postName];
-  return post.data || {};
+  return post || {};
 };
 
 const postVisibilitySelector = (state, props) => {
@@ -48,17 +48,6 @@ const postActionableSelector = (state, props) => {
   return !actionable ? idx === 0 : actionable === postName;
 };
 
-const postVideoPlaySelector = (state, props) => {
-  const { postName, idx } = props;
-  const key = state.router.location.key || 'front';
-  const listingState = state.listingsState[key];
-  if (!listingState) {
-    return idx < 5;
-  }
-  const { videoPlay } = listingState;
-  return videoPlay.length === 0 ? idx < 5 : videoPlay.includes(postName);
-};
-
 const postMinHeightSelector = (state, props) => {
   const { postName } = props;
   const key = state.router.location.key || 'front';
@@ -71,21 +60,21 @@ const postMinHeightSelector = (state, props) => {
   return minHeights[postName] ? minHeights[postName] : 0;
 };
 
-export const postData = createSelector([postSelector], post => post);
+export const postData = createSelector([postSelector], (post) => post);
 
 export const postVisibility = createSelector(
   [postVisibilitySelector],
-  visible => visible
+  (visible) => visible
 );
 
 export const postFocused = createSelector(
   [postFocusedSelector],
-  focused => focused
+  (focused) => focused
 );
 
 export const postActionable = createSelector(
   [postActionableSelector],
-  actionable => actionable
+  (actionable) => actionable
 );
 
 export const postMinHeight = createSelector(
@@ -93,9 +82,4 @@ export const postMinHeight = createSelector(
   (visible, minHeight) => {
     return !visible ? minHeight : 0;
   }
-);
-
-export const postVideoPlay = createSelector(
-  [postVideoPlaySelector],
-  videoPlay => videoPlay
 );

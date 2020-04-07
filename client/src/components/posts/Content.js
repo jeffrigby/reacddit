@@ -13,7 +13,9 @@ import Placeholder from './Placeholder';
 import { PostsContextData } from '../../contexts';
 
 const Content = ({ content, load }) => {
-  const data = useContext(PostsContextData);
+  const post = useContext(PostsContextData);
+  const { data } = post;
+
   const { name, url } = data;
 
   if (data.is_self && !data.selftext) {

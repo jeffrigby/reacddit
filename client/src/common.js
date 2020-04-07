@@ -57,3 +57,17 @@ export const pruneObject = (obj, maxKeys, maxAge) => {
     }
   });
 };
+
+/**
+ * Key the entry children to the name key
+ * @param entries - entries from a listing
+ */
+export const keyEntryChildren = entries => {
+  const arrayToObject = (arr, keyField) =>
+    Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
+
+  const newChildren = arrayToObject(entries.data.children, 'name');
+  return produce(entries, draft => {
+    draft.data.children = newChildren;
+  });
+};

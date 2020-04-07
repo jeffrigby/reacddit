@@ -24,9 +24,11 @@ const getKeys = url => {
   return { domain, greedyDomain };
 };
 
-const inlineLinks = entry => {
+const inlineLinks = (entry, kind) => {
   // Remove the end </a> to fix a bug with the regex
-  const text = stripTags(entry.selftext_html, '<a>').replace(/<\/a>/g, ' ');
+  const textContent = kind === 't1' ? entry.body_html : entry.selftext_html;
+  const text = stripTags(textContent, '<a>').replace(/<\/a>/g, ' ');
+
   const links = getUrls(text);
   const dupes = [];
   const inline = [];
@@ -170,13 +172,24 @@ const getContent = async (keys, entry) => {
   return {};
 };
 
-const RenderContent = async entry => {
+const RenderContent = async (entry, kind) => {
   try {
+    if (kind === 't1') {
+      // const getInline = inlineLinks(entry);
+      const content = await getContent({ greedyDomain: 'comment' }, entry);
+      const commentInlineLinks = inlineLinks(entry, kind);
+      if (commentInlineLinks.inline.length > 0) {
+        content.inline = commentInlineLinks.inline;
+        content.inlineLinks = commentInlineLinks.renderedLinks;
+      }
+      return content;
+    }
+
     const keys = getKeys(entry.domain);
     const content = await getContent(keys, entry);
 
     if (keys.greedyDomain === 'self' && entry.selftext_html) {
-      const getInline = inlineLinks(entry);
+      const getInline = inlineLinks(entry, kind);
       if (getInline.inline.length > 0) {
         content.inline = getInline.inline;
         content.inlineLinks = getInline.renderedLinks;

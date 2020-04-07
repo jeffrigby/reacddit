@@ -27,7 +27,16 @@ const Listings = ({ data, status, filter, settings }) => {
   const match = useParams();
   const dispatch = useDispatch();
 
-  const { listType, target, sort, user, userType, multi } = match;
+  const {
+    listType,
+    target,
+    sort,
+    user,
+    userType,
+    multi,
+    postName,
+    comment,
+  } = match;
 
   // Set the new filter.
   useEffect(() => {
@@ -49,10 +58,23 @@ const Listings = ({ data, status, filter, settings }) => {
       user: user || '',
       listType: listingType,
       qs: location.search,
+      postName: postName || '',
+      comment: comment || '',
     };
 
     dispatch(listingsFilter(newFilter));
-  }, [listType, target, sort, user, userType, multi, location, dispatch]);
+  }, [
+    listType,
+    target,
+    sort,
+    user,
+    userType,
+    multi,
+    location,
+    dispatch,
+    postName,
+    comment,
+  ]);
 
   // Get new posts if the filter changes.
   useEffect(() => {

@@ -1,37 +1,44 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { redditSave, redditUnsave } from '../../../redux/actions/reddit';
 import { PostsContextActionable, PostsContextData } from '../../../contexts';
 import { hotkeyStatus } from '../../../common';
+import redditAPI from '../../../reddit/redditAPI';
 
-const PostSave = ({ save, unsave, bearer }) => {
-  const data = useContext(PostsContextData);
+const PostSave = ({ bearer }) => {
+  const post = useContext(PostsContextData);
+  const { data } = post;
   const actionable = useContext(PostsContextActionable);
 
-  const { saved, name } = data;
+  const [saved, setSaved] = useState(data.saved);
 
-  const triggerSave = () => {
+  const { name } = data;
+
+  const triggerSave = useCallback(() => {
     if (bearer.status !== 'auth') return;
 
     if (saved) {
-      unsave(name);
+      redditAPI.unsave(name);
+      setSaved(false);
+      // @todo Update redux
     } else {
-      save(name);
+      redditAPI.save(name);
+      setSaved(true);
+      // @todo Update redux
     }
-  };
-
-  const hotkeys = event => {
-    const pressedKey = event.key;
-
-    if (hotkeyStatus()) {
-      if (pressedKey === 's') {
-        triggerSave();
-      }
-    }
-  };
+  }, [bearer.status, name, saved]);
 
   useEffect(() => {
+    const hotkeys = event => {
+      const pressedKey = event.key;
+
+      if (hotkeyStatus()) {
+        if (pressedKey === 's') {
+          triggerSave();
+        }
+      }
+    };
+
     if (actionable) {
       document.addEventListener('keydown', hotkeys);
     } else {
@@ -40,7 +47,7 @@ const PostSave = ({ save, unsave, bearer }) => {
     return () => {
       return document.removeEventListener('keydown', hotkeys);
     };
-  });
+  }, [actionable, triggerSave]);
 
   const saveStr =
     saved === true ? (
@@ -68,8 +75,6 @@ const PostSave = ({ save, unsave, bearer }) => {
 };
 
 PostSave.propTypes = {
-  save: PropTypes.func.isRequired,
-  unsave: PropTypes.func.isRequired,
   bearer: PropTypes.object.isRequired,
 };
 
@@ -77,9 +82,4 @@ const mapStateToProps = state => ({
   bearer: state.redditBearer,
 });
 
-export default React.memo(
-  connect(mapStateToProps, {
-    save: redditSave,
-    unsave: redditUnsave,
-  })(PostSave)
-);
+export default React.memo(connect(mapStateToProps, {})(PostSave));

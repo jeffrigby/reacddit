@@ -38,10 +38,14 @@ export function redditGetBearer() {
       const status =
         bearer === null || bearer.substr(0, 1) === '-' ? 'anon' : 'auth';
 
+      const loginURL = RedditAPI.getLoginUrl();
+
       const result = {
         bearer,
         status,
+        loginURL,
       };
+
       const currentRedditBearer = currentState.redditBearer;
       if (currentRedditBearer.bearer !== bearer) {
         dispatch(redditBearer(result));

@@ -4,9 +4,43 @@ import { Link } from 'react-router-dom';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 import { PostsContextData } from '../../../contexts';
+import PostMeta from './PostMeta';
 
 const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
-  const data = useContext(PostsContextData);
+  const post = useContext(PostsContextData);
+  const { data, kind } = post;
+
+  const viewIcon = expand
+    ? 'fas fa-compress-arrows-alt'
+    : 'fas fa-expand-arrows-alt';
+
+  const viewTitle = expand ? 'Close this post (x)' : 'Open this post (x)';
+
+  const expandContractButton = (
+    <button
+      onClick={toggleView}
+      type="button"
+      className="btn btn-link btn-sm m-0 p-0"
+      title={viewTitle}
+    >
+      <i className={viewIcon} />
+    </button>
+  );
+
+  if (kind === 't1') {
+    return (
+      <header className="d-flex">
+        <div className="mr-auto comment-meta meta">
+          <PostMeta />
+        </div>
+        <div className="text-nowrap align-middle d-flex actions">
+          <PostVote />
+          <PostSave />
+          <div>{expandContractButton}</div>
+        </div>
+      </header>
+    );
+  }
 
   const linkFlair = data.link_flair_text ? (
     <Link
@@ -41,23 +75,6 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
       </div>
     );
   }
-
-  const viewIcon = expand
-    ? 'fas fa-compress-arrows-alt'
-    : 'fas fa-expand-arrows-alt';
-
-  const viewTitle = expand ? 'Close this post (x)' : 'Open this post (x)';
-
-  const expandContractButton = (
-    <button
-      onClick={toggleView}
-      type="button"
-      className="btn btn-link btn-sm m-0 p-0"
-      title={viewTitle}
-    >
-      <i className={viewIcon} />
-    </button>
-  );
 
   const title = expand ? (
     <h6 className="title list-group-item-heading">

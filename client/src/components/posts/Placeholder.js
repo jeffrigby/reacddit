@@ -5,7 +5,8 @@ import renderSelf from './embeds/domains/self';
 import Self from './contentTypes/Self';
 
 const Placeholder = ({ load }) => {
-  const data = useContext(PostsContextData);
+  const post = useContext(PostsContextData);
+  const { data } = post;
 
   const getRatio = (width, height) => {
     const maxHeight = 625;

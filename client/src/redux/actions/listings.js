@@ -1,9 +1,9 @@
 import { batch } from 'react-redux';
 import produce from 'immer';
-import { getLocationKey } from '../../common';
+import { getLocationKey, keyEntryChildren } from '../../common';
 import RedditAPI from '../../reddit/redditAPI';
 
-// @todo there's no reason for any of this to be in Redux. Move to hooks.
+// @todo there's no reason for any of this logic to be in Redux. Move to hooks.
 const queryString = require('query-string');
 
 export function listingsFilter(listFilter) {
@@ -52,19 +52,16 @@ export function listingsState(key, currentListingsState) {
   };
 }
 
-const keyEntryChildren = entries => {
-  const arrayToObject = (arr, keyField) =>
-    Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
-
-  const newChildren = arrayToObject(entries.data.children, 'name');
-  return produce(entries, draft => {
-    draft.data.children = newChildren;
-  });
-};
-
+/**
+ * @TODO move to lisitngs componenet.
+ * @param filters
+ * @param params
+ * @returns {Promise<{[p: string]: *}>}
+ */
 const getContent = async (filters, params) => {
   const target = filters.target !== 'mine' ? filters.target : null;
-  const { user, sort, multi, listType } = filters;
+  const { user, sort, multi, listType, postName, comment } = filters;
+  // console.log(filters);
   let entries;
   switch (listType) {
     case 'r':
@@ -87,6 +84,20 @@ const getContent = async (filters, params) => {
         ...dupes[1],
         originalPost: dupes[0],
         requestUrl: dupes.requestUrl,
+      };
+      break;
+    }
+    case 'comments': {
+      const comments = await RedditAPI.getComments(
+        target,
+        postName,
+        comment,
+        params
+      );
+      entries = {
+        ...comments[1],
+        originalPost: comments[0],
+        requestUrl: comments.requestUrl,
       };
       break;
     }
@@ -129,6 +140,7 @@ export function listingsFetchEntriesReddit(filters) {
           Date.now() - currentState.listingsRedditEntries[locationKey].saved;
         if (elapsed <= 3600 * 1000) {
           // Everything is cool. Return Cache
+          // console.log(locationKey, 'cached');
           return;
         }
 
@@ -139,6 +151,7 @@ export function listingsFetchEntriesReddit(filters) {
         });
       }
       // End  cache Check
+      // console.log(locationKey, 'uncached');
 
       // batch(() => {
       dispatch(listingsRedditStatus(locationKey, 'loading'));
@@ -156,6 +169,7 @@ export function listingsFetchEntriesReddit(filters) {
       };
 
       const entries = await getContent(filters, params);
+
       const { listType } = filters;
 
       const data = {
@@ -164,7 +178,10 @@ export function listingsFetchEntriesReddit(filters) {
         type: 'init',
       };
 
-      if (entries.originalPost && listType === 'duplicates') {
+      if (
+        entries.originalPost &&
+        (listType === 'duplicates' || listType === 'comments')
+      ) {
         // eslint-disable-next-line
         data.originalPost = entries.originalPost.data.children[0];
       }

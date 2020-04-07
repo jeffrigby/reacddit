@@ -87,6 +87,16 @@ class RedditAPI {
   }
 
   /**
+   * Helper funtion to grab the loginURL from the cookie to avoid
+   * @returns string the full URL to login
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getLoginUrl() {
+    const { loginURL } = cookies.getJSON('token');
+    return loginURL;
+  }
+
+  /**
    *
    * @param subreddit
    * @param sort
@@ -599,6 +609,42 @@ class RedditAPI {
   async me() {
     const me = await this.redditAPI.get('/api/v1/me');
     return me.data;
+  }
+
+  async getComments(target, postName, comment, options) {
+    const defaults = {
+      raw_json: 1,
+      comment: comment || null,
+    };
+    const params = RedditAPI.setParams(defaults, options);
+    const data = {
+      params,
+    };
+
+    const comments = await this.redditAPI.get(
+      `r/${target}/comments/${postName}/`,
+      data
+    );
+
+    return comments.data;
+  }
+
+  async getMoreComments(linkID, children, options) {
+    const defaults = {
+      link_id: linkID,
+      children: children.join(','),
+      raw_json: 1,
+      api_type: 'json',
+      depth: null,
+      id: null,
+      limit_children: false,
+    };
+    const params = RedditAPI.setParams(defaults, options);
+    const data = {
+      params,
+    };
+    const moreComments = await this.redditAPI.get(`api/morechildren`, data);
+    return moreComments;
   }
 }
 
