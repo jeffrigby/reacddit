@@ -46,7 +46,6 @@ const render = async (entry) => {
   if (!apiInfo) {
     // Try redgif
     apiInfo = await getInfo(cleanID, 'api.redgifs.com');
-    console.log(apiInfo);
     if (!apiInfo) {
       return {
         type: 'self',
