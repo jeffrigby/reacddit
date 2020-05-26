@@ -45,7 +45,8 @@ const render = async (entry) => {
   let apiInfo = await getInfo(cleanID, 'api.gfycat.com');
   if (!apiInfo) {
     // Try redgif
-    apiInfo = await getInfo(cleanID, 'api.redgif.com');
+    apiInfo = await getInfo(cleanID, 'api.redgifs.com');
+    console.log(apiInfo);
     if (!apiInfo) {
       return {
         type: 'self',
@@ -53,7 +54,7 @@ const render = async (entry) => {
         inline: [],
       };
     }
-    domain = 'redgif.com';
+    domain = 'redgifs.com';
   }
 
   const sources = [
