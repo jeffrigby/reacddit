@@ -16,12 +16,12 @@ import parse from 'url-parse';
 //   return cachedItem ? JSON.parse(cachedItem) : null;
 // };
 
-const getInfo = async (id) => {
+const getInfo = async (id, domain) => {
   // const cache = getCache(id);
   // if (cache) {
   //   return cache;
   // }
-  const url = `https://api.gfycat.com/v1/gfycats/${id}`;
+  const url = `https://${domain}/v1/gfycats/${id}`;
   const response = await fetch(url);
   const json = await response.json();
 
@@ -32,6 +32,7 @@ const getInfo = async (id) => {
 };
 
 const render = async (entry) => {
+  let domain = 'gfycat.com';
   const parsedUrl = parse(entry.url, true);
   const cleanID = parsedUrl.pathname
     .replace(/^\/|\/$/g, '')
@@ -41,13 +42,18 @@ const render = async (entry) => {
     .split('-')[0];
 
   // Get info directly from gfycat
-  const apiInfo = await getInfo(cleanID);
+  let apiInfo = await getInfo(cleanID, 'api.gfycat.com');
   if (!apiInfo) {
-    return {
-      type: 'self',
-      html: '<p>Error: GFYCat link not found.</p>',
-      inline: [],
-    };
+    // Try redgif
+    apiInfo = await getInfo(cleanID, 'api.redgif.com');
+    if (!apiInfo) {
+      return {
+        type: 'self',
+        html: '<p>Error: GFYCat link not found.</p>',
+        inline: [],
+      };
+    }
+    domain = 'redgif.com';
   }
 
   const sources = [
@@ -66,7 +72,7 @@ const render = async (entry) => {
     hasAudio: apiInfo.hasAudio,
   };
 
-  const iframe = `https://gfycat.com/ifr${parsedUrl.pathname}`;
+  const iframe = `https://${domain}/ifr${parsedUrl.pathname}`;
 
   const content = {
     ...videoContent,
