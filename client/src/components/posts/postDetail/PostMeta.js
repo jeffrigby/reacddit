@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
 import PostByline from './PostByline';
 import { PostsContextData } from '../../../contexts';
 
@@ -29,9 +28,5 @@ const PostMeta = () => {
     </>
   );
 };
-
-PostMeta.propTypes = {};
-
-PostMeta.defaultProps = {};
 
 export default PostMeta;
