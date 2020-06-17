@@ -74,12 +74,12 @@ module.exports = {
   plugins: [
     new webpack.ProgressPlugin(),
     new Dotenv({ defaults: true }),
-    new CopyPlugin([
-      {
-        from: `${commonPaths.root}/src/PWA`,
-        to: commonPaths.pwaFolder,
-      },
-    ]),
+
+    new CopyPlugin({
+      patterns: [
+        { from: `${commonPaths.root}/src/PWA`, to: commonPaths.pwaFolder },
+      ],
+    }),
 
     new WatchMissingNodeModulesPlugin(commonPaths.modules),
 

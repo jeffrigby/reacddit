@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import redditAPI from '../../reddit/redditAPI';
 import CommentsRender from './CommentsRender';
-import { Link } from 'react-router-dom';
 
 const arrayToObject = (arr, keyField) =>
   Object.assign({}, ...arr.map((item) => ({ [item.data[keyField]]: item })));

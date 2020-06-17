@@ -97,11 +97,13 @@ const ListingsLogic = ({ saved }) => {
     setTimeout(monitorEntries, 2000);
   }, [monitorEntries]);
 
+  const { view } = settings;
+
   useEffect(() => {
-    if (prevView.current === settings.view) return;
+    if (prevView.current === view) return;
     forceDelayedUpdate();
-    prevView.current = settings.view;
-  }, [forceDelayedUpdate, settings.view]);
+    prevView.current = view;
+  }, [forceDelayedUpdate, view]);
 
   // Monitor Entries
   useEffect(() => {
