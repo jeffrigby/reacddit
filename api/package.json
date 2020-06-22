@@ -20,12 +20,12 @@
     "dotenv-defaults": "^1.0.2",
     "koa": "^2.6.2",
     "koa-logger": "^3.2.0",
-    "koa-router": "^8.0.6",
-    "koa-session": "^5.10.0",
+    "koa-router": "^9.0.1",
+    "koa-session": "^6.0.0",
     "querystring": "^0.2.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "simple-oauth2": "^3.0.0",
-    "uuid": "^7.0.2"
+    "simple-oauth2": "^4.0.0",
+    "uuid": "^8.0.0"
   }
 }

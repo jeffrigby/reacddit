@@ -198,7 +198,6 @@ const addExtraInfo = (AccessToken) => {
   const auth = isAuth(token.access_token);
   return {
     ...token,
-    AccessToken,
     expires,
     auth,
   };
@@ -219,6 +218,28 @@ const getAnonToken = async () => {
     return anonTokenParsed;
   } catch (error) {
     console.error("Error: Access Token error", error.message, error.get);
+    return false;
+  }
+};
+
+const revokeToken = async (token, tokenType) => {
+  const options = {
+    method: "POST",
+    uri: "https://www.reddit.com/api/v1/revoke_token",
+    form: {
+      token,
+      token_type_hint: tokenType,
+    },
+    auth: {
+      user: REDDIT_CLIENT_ID,
+      pass: REDDIT_CLIENT_SECRET,
+    },
+  };
+  try {
+    await rp(options);
+    return true;
+  } catch (error) {
+    console.log("Revoke Token error", error.message);
     return false;
   }
 };
@@ -485,25 +506,42 @@ router.get("/api/bearer", async (ctx, next) => {
 
 router.get("/api/logout", async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
-
   if (token) {
-    // const AccessTokenClass = new AccessToken(oauth2Config, client, token);
-    const newClient = new Client(oauth2Config);
-    const accessToken = new AccessToken(oauth2Config, newClient, token);
-    // Revoke both access and refresh tokens
     try {
-      // Revokes both tokens, refresh token is only revoked if the access_token is properly revoked
-      await accessToken.revokeAll();
-    } catch (error) {
+      const accessTokenRevoke = await revokeToken(token.access_token, 'access_token');
+      const refreshTokenRevoke = await revokeToken(token.refresh_token, 'refresh_token');
+    }
+    catch (error) {
       console.log("ERROR REVOKING TOKEN: ", error.message, error);
     }
-    console.log("TOKEN DETROYED");
-  } else {
-    console.log("TOKEN NOT FOUND");
+    ctx.session.token = null;
+    ctx.cookies.set("token");
+    return ctx.redirect(`${CLIENT_PATH}/?logout`);
   }
-  ctx.session.token = null;
-  ctx.cookies.set("token");
-  return ctx.redirect(`${CLIENT_PATH}/?logout`);
+  console.log(token);
+  return;
+
+  // if (token) {
+  //   revokeToken(token, access_token);
+  //
+  //   return;
+  //   // const AccessTokenClass = new AccessToken(oauth2Config, client, token);
+  //   const newClient = new Client(oauth2Config);
+  //   const accessToken = new AccessToken(oauth2Config, newClient, token);
+  //   // Revoke both access and refresh tokens
+  //   try {
+  //     // Revokes both tokens, refresh token is only revoked if the access_token is properly revoked
+  //     await accessToken.revokeAll();
+  //   } catch (error) {
+  //     console.log("ERROR REVOKING TOKEN: ", error.message, error);
+  //   }
+  //   console.log("TOKEN DETROYED");
+  // } else {
+  //   console.log("TOKEN NOT FOUND");
+  // }
+  // ctx.session.token = null;
+  // ctx.cookies.set("token");
+  // return ctx.redirect(`${CLIENT_PATH}/?logout`);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
