@@ -24,7 +24,7 @@
     "date-fns": "^2.9.0",
     "detect-browser": "^5.0.0",
     "dotenv": "^8.2.0",
-    "dotenv-webpack": "^1.7.0",
+    "dotenv-webpack": "^2.0.0",
     "enzyme": "^3.11.0",
     "file-loader": "^6.0.0",
     "get-urls": "^9.2.0",
