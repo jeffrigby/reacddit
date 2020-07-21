@@ -11,6 +11,7 @@ import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
 import Placeholder from './Placeholder';
 import { PostsContextData } from '../../contexts';
+import HTTPSError from "./contentTypes/HTTPSError";
 
 const Content = ({ content, load }) => {
   const post = useContext(PostsContextData);
@@ -57,6 +58,9 @@ const Content = ({ content, load }) => {
         break;
       case 'twitter':
         contentRendered = <Twitter content={content} load={load} />;
+        break;
+      case 'httpserror':
+        contentRendered = <HTTPSError content={content} load={load} />;
         break;
       default:
         break;

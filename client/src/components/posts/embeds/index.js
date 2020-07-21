@@ -77,18 +77,26 @@ const nonSSLFallback = (content, entry) => {
     const { protocol } = parse(content.src);
     if (protocol === 'http:') {
       // Check for preview image:
-      try {
-        const image = redditImagePreview(entry);
-        if (image) {
-          return {
-            ...image,
-            renderFunction: 'redditImagePreview',
-          };
+      if (content.renderFunction !== 'redditImagePreview') {
+        try {
+          const image = redditImagePreview(entry);
+          if (image) {
+            return {
+              ...image,
+              renderFunction: 'redditImagePreview',
+            };
+          }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.error(e);
         }
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
       }
+
+      // Return error.
+      return {
+        ...content,
+        type: 'httpserror',
+      };
     }
   }
   return content;
