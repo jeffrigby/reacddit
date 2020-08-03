@@ -11,7 +11,7 @@ import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
 import Placeholder from './Placeholder';
 import { PostsContextData } from '../../contexts';
-import HTTPSError from "./contentTypes/HTTPSError";
+import HTTPSError from './contentTypes/HTTPSError';
 
 const Content = ({ content, load }) => {
   const post = useContext(PostsContextData);
