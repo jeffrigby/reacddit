@@ -25,6 +25,7 @@
   }
 
   .video-progress-bar {
+    position: relative;
     display: flex;
     width: 100%;
     height: 4px !important;
@@ -38,12 +39,17 @@
     border-radius: 0;
     -webkit-appearance: none;
 
+    &:hover {
+      height: 20px !important;
+      margin-top: -16px !important;
+    }
+
     &::-webkit-progress-bar {
       background-color: lightgrey;
     }
 
     &::-webkit-progress-value {
-      background-color: darkgray;
+      background-color: #007bff;
     }
   }
 
