@@ -39,6 +39,11 @@
 .filterText {
   position: relative;
   padding: 0 0 0 1rem;
+  &.filter-unfocused {
+    .filter-clear {
+      color: white;
+    }
+  }
 }
 
 .form-group .form-control-clear {
