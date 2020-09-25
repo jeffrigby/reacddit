@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { Link, useParams } from 'react-router-dom';
 import redditAPI from '../../reddit/redditAPI';
+// eslint-disable-next-line import/no-cycle
 import CommentsRender from './CommentsRender';
 
 const arrayToObject = (arr, keyField) =>
@@ -10,6 +12,10 @@ function CommentsMore({ moreList, linkId }) {
   const { count, children } = moreList.data;
   const [replies, setReplies] = useState(null);
   const [loading, setLoading] = useState(false);
+  // Object { target: "pics", listType: "comments", postName: "iz5fis", postTitle: "ginsburgs_clerks_standing_on_guard_on_the_steps", comment: undefined }
+  // CommentsMore.js:16
+  const { target, postName, postTitle } = useParams();
+  // console.log(params);
 
   const getMoreComments = async () => {
     setLoading(true);
@@ -26,19 +32,31 @@ function CommentsMore({ moreList, linkId }) {
   };
 
   if (moreList.data.id === '_') {
-    return <div className="comments-more">Continue This Thread.</div>;
+    const parantID = moreList.data.parent_id.split('_')[1];
+
+    return (
+      <div className="comments-more">
+        <Link
+          className="btn btn-outline-secondary btn-sm mb-2"
+          to={`/r/${target}/comments/${postName}/${postTitle}/${parantID}`}
+          role="button"
+        >
+          Continue This Thread
+        </Link>
+      </div>
+    );
   }
 
   if (replies) {
     return <CommentsRender listType="reply" posts={replies} linkId={linkId} />;
   }
 
-  console.log(moreList.data.id, moreList);
+  // console.log(moreList.data.id, moreList);
 
   return (
     <div className="comments-more">
       <button
-        className="btn btn-sm btn-link"
+        className="btn btn-outline-secondary btn-sm mb-2"
         onClick={getMoreComments}
         type="button"
         disabled={loading}
