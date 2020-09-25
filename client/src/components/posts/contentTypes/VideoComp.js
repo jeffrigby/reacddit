@@ -147,7 +147,7 @@ const VideoComp = ({ content, load, link, autoplay }) => {
         id={videoId}
         key={videoId}
         onClick={toggleLock}
-        poster={content.thumb}
+        // poster={content.thumb}
         className={videoClasses}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
@@ -165,6 +165,7 @@ const VideoComp = ({ content, load, link, autoplay }) => {
     muted ? 'muted' : 'unmuted',
     playing ? 'playing' : 'paused',
     ctrLock ? 'locked' : 'unlocked',
+    load ? 'video-loaded' : 'video-unloaded',
   ];
 
   const btnClasses = 'btn btn-link m-0 py-0 px-1 btn-md video-ctr';
@@ -180,62 +181,64 @@ const VideoComp = ({ content, load, link, autoplay }) => {
           </div>
         </div>
       </div>
-      <VideoProgreeBar videoRef={videoRef} />
       {load && (
-        <div className="video-controls m-0 p-0">
-          <button
-            type="button"
-            className={`${btnClasses} ${
-              controls ? 'ctrl-visible' : 'ctrl-hidden'
-            } video-controls-toggle`}
-            onClick={() => setControls(!controls)}
-            title="Toggle Browser Video Controls"
-          >
-            <i className="fas fa-sliders-h" />
-          </button>
-          <button
-            type="button"
-            className={`${btnClasses} video-fullscreen`}
-            onClick={toggleFullscreen}
-            title="Full Screen"
-          >
-            <i className="fas fa-expand" />
-          </button>
-          <button
-            type="button"
-            className={`${btnClasses} video-play`}
-            onClick={playStop}
-            title={playTitle}
-          >
-            <i className={playIconClass} />
-          </button>
-          {content.hasAudio && (
-            <span className="video-audio-cont">
-              <button
-                type="button"
-                className={`${btnClasses} video-audio`}
-                onClick={toggleSound}
-                title={muteTitle}
-                // disabled={content.audioWarning}
-              >
-                <i className={mutedIconClass} />
-              </button>
-              {content.audioWarning && link && (
-                <div
-                  className="audio-disabled bg-dark border border-light p-1"
-                  role="tooltip"
+        <>
+          <VideoProgreeBar videoRef={videoRef} />
+          <div className="video-controls m-0 p-0">
+            <button
+              type="button"
+              className={`${btnClasses} ${
+                controls ? 'ctrl-visible' : 'ctrl-hidden'
+              } video-controls-toggle`}
+              onClick={() => setControls(!controls)}
+              title="Toggle Browser Video Controls"
+            >
+              <i className="fas fa-sliders-h" />
+            </button>
+            <button
+              type="button"
+              className={`${btnClasses} video-fullscreen`}
+              onClick={toggleFullscreen}
+              title="Full Screen"
+            >
+              <i className="fas fa-expand" />
+            </button>
+            <button
+              type="button"
+              className={`${btnClasses} video-play`}
+              onClick={playStop}
+              title={playTitle}
+            >
+              <i className={playIconClass} />
+            </button>
+            {content.hasAudio && (
+              <span className="video-audio-cont">
+                <button
+                  type="button"
+                  className={`${btnClasses} video-audio`}
+                  onClick={toggleSound}
+                  title={muteTitle}
+                  // disabled={content.audioWarning}
                 >
-                  This video probably has audio but Reddit disables it on
-                  third-party sites though Safari still works (for now). Click{' '}
-                  <a href={link} target="_blank" rel="noopener noreferrer">
-                    here
-                  </a>{' '}
-                  load the video on reddit.
-                </div>
-              )}
-            </span>
-          )}
-        </div>
+                  <i className={mutedIconClass} />
+                </button>
+                {content.audioWarning && link && (
+                  <div
+                    className="audio-disabled bg-dark border border-light p-1"
+                    role="tooltip"
+                  >
+                    This video probably has audio but Reddit disables it on
+                    third-party sites though Safari still works (for now). Click{' '}
+                    <a href={link} target="_blank" rel="noopener noreferrer">
+                      here
+                    </a>{' '}
+                    load the video on reddit.
+                  </div>
+                )}
+              </span>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
