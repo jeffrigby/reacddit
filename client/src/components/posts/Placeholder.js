@@ -113,7 +113,7 @@ const Placeholder = ({ load }) => {
     );
   }
 
-  return <>THIS IS A PLACEHOLDER</>;
+  return <div className="content" />;
 };
 
 Placeholder.propTypes = {
