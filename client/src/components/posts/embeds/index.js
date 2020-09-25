@@ -6,6 +6,7 @@ import Embeds from './embeds';
 import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
 import redditMediaEmbed from './defaults/redditMediaEmbed';
+import redditGallery from './defaults/redditGallery';
 
 const getKeys = (url) => {
   const regex = /[^a-zA-Z\d\s:]/g;
@@ -103,6 +104,22 @@ const nonSSLFallback = (content, entry) => {
 };
 
 const getContent = async (keys, entry) => {
+  // is this a gallery?
+  if (entry.is_gallery) {
+    try {
+      const gallery = redditGallery(entry);
+      if (gallery) {
+        return {
+          ...gallery,
+          renderFunction: 'redditGallery',
+        };
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  }
+
   if (typeof Embeds[keys.greedyDomain] === 'function') {
     try {
       const greedyDomainContent = await Embeds[keys.greedyDomain](entry);

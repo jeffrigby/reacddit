@@ -12,6 +12,7 @@ import Twitter from './contentTypes/Twitter';
 import Placeholder from './Placeholder';
 import { PostsContextData } from '../../contexts';
 import HTTPSError from './contentTypes/HTTPSError';
+import RedditGallery from './contentTypes/RedditGallery';
 
 const Content = ({ content, load }) => {
   const post = useContext(PostsContextData);
@@ -61,6 +62,9 @@ const Content = ({ content, load }) => {
         break;
       case 'httpserror':
         contentRendered = <HTTPSError content={content} load={load} />;
+        break;
+      case 'redditGallery':
+        contentRendered = <RedditGallery content={content} load={load} />;
         break;
       default:
         break;
