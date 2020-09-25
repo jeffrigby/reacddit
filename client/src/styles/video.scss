@@ -1,6 +1,10 @@
 .video-container {
   position: relative;
 
+  &.video-unloaded {
+    margin-bottom: 4px;
+  }
+
   &.unlocked {
     .video-ctr,
     &.unmuted .video-audio {
