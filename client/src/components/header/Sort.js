@@ -109,7 +109,8 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
   };
 
   const handleSortHotkey = (event) => {
-    if (hotkeyStatus() && listingsFilter.target !== 'friends') {
+    const { target, listType } = listingsFilter;
+    if (hotkeyStatus() && target !== 'friends') {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
@@ -136,6 +137,18 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
           gotoLink(genLink('top'));
           break;
         }
+        case 'Q': {
+          if (listType === 'comments') {
+            gotoLink(genLink('qa'));
+          }
+          break;
+        }
+        case 'O': {
+          if (listType === 'comments') {
+            gotoLink(genLink('old'));
+          }
+          break;
+        }
         default:
           break;
       }
@@ -157,7 +170,8 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
     if (
       !sort.match(/^(top|controversial|relevance)$/) ||
       target === 'friends' ||
-      listType === 'u'
+      listType === 'u' ||
+      listType === 'comments'
     ) {
       return null;
     }
