@@ -69,20 +69,6 @@ const render = async (entry) => {
     height = h;
   }
 
-  // Fallback video content
-  try {
-    const video = redditVideoPreview(entry);
-    if (video) {
-      return {
-        ...video,
-        renderFunction: 'redditVideoPreview',
-      };
-    }
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error(e);
-  }
-
   // Check for gifv content;
   if (cleanedPath.match(/gifv$/)) {
     const mp4Filename = cleanedPath.replace(/gifv$/, 'mp4');
@@ -134,6 +120,20 @@ const render = async (entry) => {
         return { ...embedMp4, imgurRenderType: 'albumMP4' };
       }
     }
+  }
+
+  // Fallback video content
+  try {
+    const video = redditVideoPreview(entry);
+    if (video) {
+      return {
+        ...video,
+        renderFunction: 'redditVideoPreview',
+      };
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error(e);
   }
 
   // Check for preview image:
