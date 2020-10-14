@@ -62,7 +62,7 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
 
   const menuItems = [];
   multis.multis.forEach((item) => {
-    const key = `${item.data.display_name}-${item.data.created}`;
+    const key = `${item.data.display_name}-${item.data.created}-${srName}`;
     const subNames = getSubreddits(item.data.subreddits);
     const checked = subNames.includes(srName);
 
