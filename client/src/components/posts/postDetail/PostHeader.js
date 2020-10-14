@@ -5,38 +5,28 @@ import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
+import PostExpandContract from '../postActions/PostExpandContract';
 
 const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
   const post = useContext(PostsContextData);
   const { data, kind } = post;
 
-  const viewIcon = expand
-    ? 'fas fa-compress-arrows-alt'
-    : 'fas fa-expand-arrows-alt';
-
-  const viewTitle = expand ? 'Close this post (x)' : 'Open this post (x)';
-
-  const expandContractButton = (
-    <button
-      onClick={toggleView}
-      type="button"
-      className="btn btn-link btn-sm m-0 p-0"
-      title={viewTitle}
-    >
-      <i className={viewIcon} />
-    </button>
-  );
-
   if (kind === 't1') {
     return (
       <header className="d-flex">
+        <div className="mr-2 post-action-expand">
+          <PostExpandContract
+            expand={expand}
+            toggleView={toggleView}
+            kind={kind}
+          />
+        </div>
         <div className="mr-auto comment-meta meta">
           <PostMeta />
         </div>
         <div className="text-nowrap align-middle d-flex actions">
           <PostVote />
           <PostSave />
-          <div>{expandContractButton}</div>
         </div>
       </header>
     );
@@ -116,7 +106,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
-      {linkFlair} {dupeFlair}{' '}
+      {flairs}{' '}
       <a
         href={data.url}
         target="_blank"
@@ -137,7 +127,13 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
           <PostVote />
           <PostSave />
           {searchLink}
-          <div>{expandContractButton}</div>
+          <div>
+            <PostExpandContract
+              expand={expand}
+              toggleView={toggleView}
+              kind={kind}
+            />
+          </div>
         </div>
       ) : (
         // eslint-disable-next-line

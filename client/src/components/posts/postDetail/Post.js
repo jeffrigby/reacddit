@@ -213,35 +213,46 @@ const Post = ({
   const isReplies = kind === 't1' && data.replies;
 
   return (
-    <div className={classArray} key={data.name} id={data.name} style={styles}>
-      <div className="entry-interior">
-        <PostsContextData.Provider value={post}>
-          <PostsContextActionable.Provider value={actionable}>
+    <PostsContextData.Provider value={post}>
+      <PostsContextActionable.Provider value={actionable}>
+        <div
+          className={classArray}
+          key={data.name}
+          id={data.name}
+          style={styles}
+        >
+          <div className={`entry-interior entry-interior-${kind}`}>
             <PostHeader
               visible={isVisible}
               expand={expand}
               toggleView={toggleView}
               duplicate={duplicate}
             />
-            {expand && (
-              <Content
-                content={renderedContent}
-                load={isVisible}
-                key={data.id}
+            <div className="entry-after-header">
+              {expand && (
+                <Content
+                  content={renderedContent}
+                  load={isVisible}
+                  key={data.id}
+                />
+              )}
+              <PostFooter
+                debug={siteSettings.debug}
+                renderedContent={renderedContent}
+                visible={isVisible}
               />
-            )}
-            <PostFooter
-              debug={siteSettings.debug}
-              renderedContent={renderedContent}
-              visible={isVisible}
-            />
-          </PostsContextActionable.Provider>
-        </PostsContextData.Provider>
-        {isReplies && expand && (
-          <CommentReplyList replies={data.replies} linkId={data.link_id} />
-        )}
-      </div>
-    </div>
+
+              {isReplies && expand && (
+                <CommentReplyList
+                  replies={data.replies}
+                  linkId={data.link_id}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </PostsContextActionable.Provider>
+    </PostsContextData.Provider>
   );
 };
 

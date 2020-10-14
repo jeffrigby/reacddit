@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import SelfInline from './SelfInline';
+import { PostsContextData } from '../../../contexts';
 
 const cleanLinks = (html) => {
   let rawhtml = html;
@@ -37,6 +38,7 @@ const cleanLinks = (html) => {
 
 const Self = ({ content, load, name }) => {
   const [showAll, setShowAll] = useState(content.expand || false);
+  const post = useContext(PostsContextData);
 
   const toggleShow = () => {
     if (content.expand) return;
@@ -59,7 +61,7 @@ const Self = ({ content, load, name }) => {
   ) : null;
 
   return (
-    <div className="self">
+    <div className={`self self-${post.kind}`}>
       <div
         className={`self-html ${showAll ? ' sf-html-show-all' : ''}`}
         onClick={toggleShow}
