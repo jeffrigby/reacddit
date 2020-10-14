@@ -60,6 +60,23 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     </div>
   ) : null;
 
+  const nsfwFlair = data.over_18 ? (
+    <div
+      className="badge badge-danger mx-1"
+      title="This post Contains NSFW content."
+    >
+      NSFW
+    </div>
+  ) : null;
+
+  const flairs = (
+    <>
+      {nsfwFlair}
+      {linkFlair}
+      {dupeFlair}
+    </>
+  );
+
   let searchLink = '';
   if (!data.is_self) {
     const searchTo = `/duplicates/${data.id}`;
@@ -87,8 +104,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
-      {linkFlair}
-      {dupeFlair}
+      {flairs}
     </h6>
   ) : (
     <h6 className="p-0 m-0">
