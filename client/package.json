@@ -4,7 +4,7 @@
   "description": "A Reddit client built in reactjs.",
   "main": "index.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=development webpack-dev-server --mode development --progress",
+    "start": "cross-env NODE_ENV=development webpack serve --mode development --progress",
     "build": "cross-env NODE_ENV=production webpack --mode production"
   },
   "keywords": [
@@ -24,7 +24,7 @@
     "date-fns": "^2.9.0",
     "detect-browser": "^5.0.0",
     "dotenv": "^8.2.0",
-    "dotenv-webpack": "^3.0.0",
+    "dotenv-webpack": "^4.0.0",
     "enzyme": "^3.11.0",
     "file-loader": "^6.0.0",
     "get-urls": "^10.0.0",
@@ -99,7 +99,7 @@
     "sass-loader": "^10.0.1",
     "url-loader": "^4.0.0",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10",
+    "webpack-cli": "^4.1.0",
     "webpack-dev-server": "^3.10.1",
     "webpack-manifest-plugin": "^2.2.0",
     "webpack-merge": "^5.0.7",
