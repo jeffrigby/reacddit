@@ -1,7 +1,12 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import throttle from 'lodash/throttle';
 import SelfInline from './SelfInline';
+import '../../../styles/self.scss';
 import { PostsContextData } from '../../../contexts';
+
+const classNames = require('classnames');
 
 const cleanLinks = (html) => {
   let rawhtml = html;
@@ -38,7 +43,32 @@ const cleanLinks = (html) => {
 
 const Self = ({ content, load, name }) => {
   const [showAll, setShowAll] = useState(content.expand || false);
+  const [specs, setSpecs] = useState(null);
   const post = useContext(PostsContextData);
+  const listType = useSelector((state) => state.listingsFilter.listType);
+  const selfRef = useRef();
+  const selfHTMLRef = useRef();
+
+  const getHeights = () => {
+    const dimensions = {};
+    if (selfRef.current) {
+      dimensions.self = selfRef.current.getBoundingClientRect().height;
+    }
+
+    if (selfHTMLRef.current) {
+      dimensions.selfHTML = selfHTMLRef.current.scrollHeight;
+    }
+    setSpecs(dimensions);
+  };
+
+  useEffect(() => {
+    getHeights();
+    const throttledGetHeights = throttle(getHeights, 500);
+    window.addEventListener('resize', throttledGetHeights, false);
+    return () => {
+      window.removeEventListener('resize', throttledGetHeights, false);
+    };
+  }, []);
 
   const toggleShow = () => {
     if (content.expand) return;
@@ -60,17 +90,46 @@ const Self = ({ content, load, name }) => {
     />
   ) : null;
 
+  const showMore = specs && specs.selfHTML - specs.self > 10;
+  const selfHTMLClasses = classNames('self-html', {
+    'self-fade': showMore && !showAll,
+    'sf-html-show-all': showAll,
+  });
+
+  const buttonText = !showAll ? (
+    <>
+      <i className="fas fa-angle-double-down" /> Read More
+    </>
+  ) : (
+    <>
+      <i className="fas fa-angle-double-up" /> Collapse
+    </>
+  );
+
   return (
-    <div className={`self self-${post.kind}`}>
+    <>
       <div
-        className={`self-html ${showAll ? ' sf-html-show-all' : ''}`}
-        onClick={toggleShow}
-        role="presentation"
+        className={`self self-${post.kind} self-${post.kind}-${listType}`}
+        ref={selfRef}
       >
-        {renderedHTML}
+        <div className={selfHTMLClasses} ref={selfHTMLRef}>
+          {renderedHTML}
+        </div>
+        {showMore && (
+          <div className="self-show-more text-right">
+            <button
+              type="button"
+              className="btn btn-link btn-sm p-0"
+              title="Load More"
+              onClick={toggleShow}
+            >
+              {buttonText}
+            </button>
+          </div>
+        )}
+        {inlineRendered}
       </div>
-      {inlineRendered}
-    </div>
+    </>
   );
 };
 
