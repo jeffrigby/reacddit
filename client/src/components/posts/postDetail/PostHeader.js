@@ -53,14 +53,28 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
   const nsfwFlair = data.over_18 ? (
     <div
       className="badge badge-danger mx-1"
-      title="This post Contains NSFW content."
+      title="This post Contains NSFW content"
     >
       NSFW
     </div>
   ) : null;
 
+  const pinned = data.pinned ? (
+    <div className="badge badge-darl mx-1" title="Pinned Post">
+      <i className="fas fa-thumbtack" />
+    </div>
+  ) : null;
+
+  const sticky = data.stickied ? (
+    <div className="badge badge-darl mx-1" title="Sticky Post">
+      <i className="fas fa-sticky-note" />
+    </div>
+  ) : null;
+
   const flairs = (
     <>
+      {pinned}
+      {sticky}
       {nsfwFlair}
       {linkFlair}
       {dupeFlair}
