@@ -14,6 +14,8 @@ const ListingsHeader = ({ filter, status }) => {
     header = <ListingsHeaderError />;
   } else if (listType === 'm') {
     header = <ListingsHeaderMulti />;
+  } else if (listType === 'comments' || listType === 'duplicates') {
+    return null;
   } else {
     header = <ListingsHeaderSub />;
   }
