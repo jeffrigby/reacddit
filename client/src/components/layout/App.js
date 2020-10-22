@@ -59,7 +59,7 @@ const App = () => {
 
   useEffect(() => {
     const tokenQuery = token
-      ? setInterval(dispatch(redditGetBearer()), 1000)
+      ? setInterval(() => dispatch(redditGetBearer()), 1000)
       : null;
     return () => {
       if (tokenQuery) {
