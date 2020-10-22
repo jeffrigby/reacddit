@@ -12,10 +12,7 @@ function CommentsMore({ moreList, linkId }) {
   const { count, children } = moreList.data;
   const [replies, setReplies] = useState(null);
   const [loading, setLoading] = useState(false);
-  // Object { target: "pics", listType: "comments", postName: "iz5fis", postTitle: "ginsburgs_clerks_standing_on_guard_on_the_steps", comment: undefined }
-  // CommentsMore.js:16
   const { target, postName, postTitle } = useParams();
-  // console.log(params);
 
   const getMoreComments = async () => {
     setLoading(true);
