@@ -1,5 +1,5 @@
 import { getPublicSuffix, getDomain } from 'tldts';
-import getUrls from 'get-urls';
+// import getUrls from 'get-urls';
 import stripTags from 'locutus/php/strings/strip_tags';
 import parse from 'url-parse';
 import Embeds from './embeds';
@@ -7,6 +7,8 @@ import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
 import redditMediaEmbed from './defaults/redditMediaEmbed';
 import redditGallery from './defaults/redditGallery';
+
+const urlRegex = require('url-regex-safe');
 
 const getKeys = (url) => {
   const regex = /[^a-zA-Z\d\s:]/g;
@@ -30,7 +32,9 @@ const inlineLinks = (entry, kind) => {
   const textContent = kind === 't1' ? entry.body_html : entry.selftext_html;
   const text = stripTags(textContent, '<a>').replace(/<\/a>/g, ' ');
 
-  const links = getUrls(text);
+  // const links = getUrls(text);
+  const links = text.match(urlRegex()) || [];
+
   const dupes = [];
   const inline = [];
   const renderedLinks = [];

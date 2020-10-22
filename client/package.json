@@ -52,7 +52,8 @@
     "regenerator-runtime": "^0.13.3",
     "reselect": "^4.0.0",
     "tldts": "^5.6.3",
-    "url-parse": "^1.4.7"
+    "url-parse": "^1.4.7",
+    "url-regex-safe": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.8.0",
