@@ -15,6 +15,7 @@ const PostsParent = ({ post }) => {
         post={post}
         key={post.data.id}
         duplicate={false}
+        parent
         idx={0}
       />
     );

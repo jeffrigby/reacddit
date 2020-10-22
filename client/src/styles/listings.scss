@@ -17,7 +17,10 @@ div#entries {
     border-left: 1px solid rgba(0, 0, 0, 0.125) !important;
   }
 
-
+  .post-parent {
+    margin-top: .5rem !important;
+    border-top: none;
+  }
 
   .is-friend {
     font-weight: bold;

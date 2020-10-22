@@ -74,6 +74,7 @@ const Post = ({
   listingsStatus,
   gotoLink,
   duplicate,
+  parent,
 }) => {
   const { data, kind } = post;
 
@@ -187,28 +188,13 @@ const Post = ({
     focused,
     visible: isVisible,
     actionable,
+    'post-parent': parent,
     condensed: !expand,
     duplicate,
     'comment-child': kind === 't1' && data.depth > 0,
   });
 
   const styles = {};
-  // let hideAll = false;
-  // if (!isVisible && minHeight) {
-  //   styles.minHeight = minHeight;
-  //   hideAll = true;
-  // }
-
-  // if (hideAll) {
-  //   return (
-  //     <div
-  //       className={classArray}
-  //       key={data.name}
-  //       id={data.name}
-  //       style={styles}
-  //     />
-  //   );
-  // }
 
   const isReplies = kind === 't1' && data.replies;
 
@@ -270,12 +256,14 @@ Post.propTypes = {
   // minHeight: PropTypes.number,
   listingsStatus: PropTypes.string,
   duplicate: PropTypes.bool,
+  parent: PropTypes.bool,
 };
 
 Post.defaultProps = {
   // minHeight: 0,
   listingsStatus: 'unloaded',
   duplicate: false,
+  parent: false,
 };
 
 const mapStateToProps = (state, props) => ({
