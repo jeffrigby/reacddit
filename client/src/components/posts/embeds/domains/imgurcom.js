@@ -76,6 +76,7 @@ const render = async (entry) => {
     const sources = [{ type: 'video/mp4', src: mp4 }];
     return {
       type: 'video',
+      id: `imgur-${id}`,
       width,
       height,
       sources,
@@ -89,6 +90,7 @@ const render = async (entry) => {
     const sources = [{ type: 'video/mp4', src: mp4 }];
     return {
       type: 'video',
+      id: `imgur-${id}`,
       width,
       height,
       sources,
