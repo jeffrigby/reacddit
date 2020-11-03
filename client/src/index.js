@@ -93,6 +93,11 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   };
 
   render(Root);
+  if (module.hot) {
+    module.hot.accept('./components/layout/Root', () => {
+      render(Root);
+    });
+  }
 }
 
 serviceWorker.register();
