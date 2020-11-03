@@ -1,23 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
+import throttle from 'lodash/throttle';
 import '../../../styles/video.scss';
-import VideoProgreeBar from './VideoProgressBar';
+import VideoDebug from './videoComponents/VideoDebug';
+import VideoAudioButton from './videoComponents/VideoAudioButton';
+import VideoControlBar from './videoComponents/VideoControlBar';
 
 const classNames = require('classnames');
 
-const VideoComp = ({ content, load, link, autoplay }) => {
+function extractBuffer(videoRef, idx) {
+  const start = videoRef.current.buffered.start(idx);
+  const end = videoRef.current.buffered.end(idx);
+  const marginLeft = (start * 100) / videoRef.current.duration;
+  const marginRight = 100 - (end * 100) / videoRef.current.duration;
+  return {
+    start,
+    end,
+    duration: videoRef.current.duration,
+    marginLeft,
+    marginRight,
+    range: idx,
+  };
+}
+
+function getBuffers(videoRef) {
+  if (videoRef.current && videoRef.current.readyState > 2) {
+    const bufferLength = videoRef.current.buffered.length;
+    let range = 0;
+    let status = 'loading';
+    const buffers = [];
+    while (range < bufferLength) {
+      const bufferedRange = extractBuffer(videoRef, range);
+      if (
+        bufferedRange.start === 0 &&
+        bufferedRange.end === videoRef.current.duration
+      ) {
+        status = 'full';
+      }
+      buffers.push(extractBuffer(videoRef, range));
+      range += 1;
+    }
+    return { status, buffers };
+  }
+  return {};
+}
+
+const VideoComp = ({ content, load, link }) => {
   const videoRef = React.createRef();
+  const isPlaying = useRef(false);
+  const isPlayingTimeout = useRef(null);
+
+  const debug = useSelector((state) => state.siteSettings.debug);
+  const autoplay = useSelector((state) => state.siteSettings.autoplay);
+
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(autoplay);
   const [autoplayState, setAutoplayState] = useState(autoplay);
   const [ctrLock, setCtrLock] = useState(false);
   const [controls, setControls] = useState(false);
-  const [manualStop, setManualStop] = useState(false);
+  const [stalled, setStalled] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+  const [canPlay, setCanPlay] = useState(false);
+  const [canPlayThrough, setCanPlayThrough] = useState(false);
+  const [showLoadError, setLoadError] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [buffer, setBuffer] = useState({ status: 'unloaded', buffers: [] });
+
+  const isMounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     // @todo this seems like a dumb way to handle not firing.
-    if (videoRef.current === null || autoplay === autoplayState) {
+    if (!videoRef.current || autoplay === autoplayState) {
       return;
     }
 
@@ -30,21 +90,31 @@ const VideoComp = ({ content, load, link, autoplay }) => {
     }
   }, [videoRef, autoplay, autoplayState]);
 
-  // useEffect(() => {
-  //   if (videoRef.current === null) {
-  //     return;
-  //   }
-  //
-  //   if (videoPlay === !videoRef.current.paused) {
-  //     return;
-  //   }
-  //
-  //   if (autoplay && videoPlay) {
-  //     videoRef.current.play();
-  //   } else if (!videoRef.current.paused) {
-  //     videoRef.current.pause();
-  //   }
-  // }, [videoRef, autoplay, videoPlay]);
+  useEffect(() => {
+    setTimeout(() => {
+      if (!canPlay && load && isMounted.current) {
+        setLoadError(true);
+      }
+    }, 5000);
+  }, [canPlay, load]);
+
+  const getSetBuffer = useMemo(
+    () =>
+      throttle(() => {
+        if (buffer.status === 'full') {
+          return;
+        }
+        const currentBuffers = getBuffers(videoRef);
+        if (currentBuffers.status) {
+          setBuffer(currentBuffers);
+        }
+      }, 500),
+    [buffer.status]
+  );
+
+  useEffect(() => {
+    getSetBuffer();
+  }, [getSetBuffer, playing, currentTime, duration, canPlay, canPlayThrough]);
 
   const { width, height, sources } = content;
   let videoWidth = width;
@@ -64,46 +134,21 @@ const VideoComp = ({ content, load, link, autoplay }) => {
   const ratioStyle = { paddingBottom: `${ratio}%` };
   const videoId = `video-${content.id}`;
 
-  const playStop = () => {
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-      setPlaying(true);
-      setManualStop(false);
-    } else {
-      videoRef.current.pause();
-      setPlaying(false);
-      setManualStop(true);
-    }
-  };
-
+  /**
+   * Toggle lock to set the controls
+   */
   const toggleLock = () => {
-    playStop();
+    // eslint-disable-next-line no-unused-expressions
+    videoRef.current.paused
+      ? videoRef.current.play()
+      : videoRef.current.pause();
     setCtrLock(!ctrLock);
   };
 
-  const toggleSound = () => {
-    if (videoRef.current.muted) {
-      videoRef.current.muted = false;
-      setMuted(false);
-    } else {
-      videoRef.current.muted = true;
-      setMuted(true);
-    }
-  };
-
-  const toggleFullscreen = () => {
-    if (videoRef.current.requestFullScreen) {
-      videoRef.current.requestFullScreen();
-    } else if (videoRef.current.webkitRequestFullScreen) {
-      videoRef.current.webkitRequestFullScreen();
-    } else if (videoRef.current.mozRequestFullScreen) {
-      videoRef.current.mozRequestFullScreen();
-    } else if (videoRef.current.webkitEnterFullscreen) {
-      videoRef.current.webkitEnterFullscreen();
-    }
-  };
-
-  const changeAudio = () => {
+  /**
+   * Set the muted state if the volume is manually changed.
+   */
+  const eventVolumeChange = () => {
     if (videoRef.current.muted) {
       setMuted(true);
     } else {
@@ -111,11 +156,79 @@ const VideoComp = ({ content, load, link, autoplay }) => {
     }
   };
 
-  const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
-  const mutedIconClass = `fas ${muted ? 'fa-volume-mute' : 'fa-volume-up'}`;
+  const eventCanPlayThrough = (e) => {
+    setCanPlayThrough(true);
+    setStalled(false);
+  };
 
-  const muteTitle = muted ? 'Play Sound' : 'Mute';
-  const playTitle = playing ? 'Pause' : 'Play';
+  const eventWaiting = (e) => {
+    setTimeout(() => {
+      if (load && canPlay && isPlaying.current === false && isMounted.current) {
+        setWaiting(true);
+      }
+    }, 1000);
+  };
+
+  const eventStalled = (e) => {
+    setTimeout(() => {
+      if (isMounted.current) {
+        setStalled(true);
+      }
+    }, 250);
+  };
+
+  const eventCanPlay = (e) => {
+    setCanPlay(true);
+    setStalled(false);
+  };
+
+  const eventProgress = () => {
+    getSetBuffer();
+  };
+
+  const throttledTime = useMemo(
+    () =>
+      throttle((time) => {
+        setCurrentTime(time);
+      }, 250),
+    []
+  );
+
+  const trackPlaying = () => {
+    if (videoRef.current) {
+      clearTimeout(isPlayingTimeout.current);
+      isPlaying.current = true;
+      isPlayingTimeout.current = setTimeout(() => {
+        if (isMounted.current) {
+          isPlaying.current = false;
+        }
+      }, 500);
+    }
+  };
+
+  const eventTimeUpdate = (e) => {
+    trackPlaying();
+    throttledTime(videoRef.current.currentTime);
+    if (stalled) {
+      setStalled(false);
+    }
+
+    if (waiting) {
+      setWaiting(false);
+    }
+  };
+
+  const eventPlay = (e) => {
+    setPlaying(true);
+  };
+
+  const eventPause = (e) => {
+    setPlaying(false);
+  };
+
+  const eventDurationChange = (e) => {
+    setDuration(videoRef.current.duration);
+  };
 
   const videoClasses = classNames(
     'loaded',
@@ -126,7 +239,6 @@ const VideoComp = ({ content, load, link, autoplay }) => {
       'video-paused': !playing,
       'audio-muted': muted,
       'audio-on': !muted,
-      'manual-stop': manualStop,
     }
   );
 
@@ -140,6 +252,7 @@ const VideoComp = ({ content, load, link, autoplay }) => {
     video = (
       <video
         autoPlay={autoplay}
+        // preload="auto"
         loop
         muted
         playsInline
@@ -149,9 +262,16 @@ const VideoComp = ({ content, load, link, autoplay }) => {
         onClick={toggleLock}
         // poster={content.thumb}
         className={videoClasses}
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-        onVolumeChange={changeAudio}
+        onPlay={eventPlay}
+        onPause={eventPause}
+        onStalled={eventStalled}
+        onCanPlay={eventCanPlay}
+        onCanPlayThrough={eventCanPlayThrough}
+        onWaiting={eventWaiting}
+        onVolumeChange={eventVolumeChange}
+        onTimeUpdate={eventTimeUpdate}
+        onDurationChange={eventDurationChange}
+        onProgress={eventProgress}
         ref={videoRef}
       >
         {videoSources}
@@ -168,79 +288,107 @@ const VideoComp = ({ content, load, link, autoplay }) => {
     load ? 'video-loaded' : 'video-unloaded',
   ];
 
+  let loadingError;
+  if (stalled && canPlay) {
+    loadingError = (
+      <>
+        Video Loading Stalled
+        <br />
+        <a href={link} target="_blank" rel="noopener noreferrer">
+          Open in new tab.
+        </a>
+      </>
+    );
+  } else if (waiting && canPlay) {
+    loadingError = 'Loading Video';
+  }
+
+  const directLink = (
+    <a href={link} target="_blank" rel="noopener noreferrer">
+      Open in new tab.
+    </a>
+  );
+
+  const loadError = showLoadError && (
+    <div className="slow-loading">
+      This is taking longer than it should. You can try to load the video
+      directly.
+      <br />
+      {directLink}
+    </div>
+  );
+
   const btnClasses = 'btn btn-link m-0 py-0 px-1 btn-md video-ctr';
+
   return (
-    <div className={videoContainerClass.join(' ')}>
-      <div className="ratio-bg">
-        <div style={contStyle} className="ratio-container">
-          <div
-            style={ratioStyle}
-            className="ratio embed-responsive loading-icon"
-          >
-            {video}
+    <>
+      <div className={videoContainerClass.join(' ')}>
+        {loadingError && (
+          <div className="video-loading-error p-1">
+            <i className="fas fa-circle-notch fa-spin mx-1" /> {loadingError}
+          </div>
+        )}
+        <div className="ratio-bg">
+          <div style={contStyle} className="ratio-container">
+            <div
+              style={ratioStyle}
+              className="ratio embed-responsive loading-icon"
+            >
+              {video}
+              {!canPlay && loadError}
+            </div>
           </div>
         </div>
+        {load && videoRef.current && canPlay && (
+          <>
+            <div className="video-control-bar-cont">
+              <VideoControlBar
+                videoRef={videoRef}
+                duration={duration}
+                currentTime={currentTime}
+                playing={playing}
+                muted={muted}
+                content={content}
+                link={link}
+                buffer={buffer}
+              />
+            </div>
+
+            <div className="video-controls m-0 p-0">
+              <button
+                type="button"
+                className={`${btnClasses} ${
+                  controls ? 'ctrl-visible' : 'ctrl-hidden'
+                } video-controls-toggle`}
+                onClick={() => setControls(!controls)}
+                title="Toggle Browser Video Controls"
+              >
+                <i className="fas fa-sliders-h" />
+              </button>
+              <VideoAudioButton
+                link={link}
+                videoRef={videoRef}
+                audioWarning={content.audioWarning}
+                hasAudio={content.hasAudio}
+                muted={muted}
+                btnClasses={btnClasses}
+              />
+            </div>
+          </>
+        )}
       </div>
-      {load && (
-        <>
-          <VideoProgreeBar videoRef={videoRef} />
-          <div className="video-controls m-0 p-0">
-            <button
-              type="button"
-              className={`${btnClasses} ${
-                controls ? 'ctrl-visible' : 'ctrl-hidden'
-              } video-controls-toggle`}
-              onClick={() => setControls(!controls)}
-              title="Toggle Browser Video Controls"
-            >
-              <i className="fas fa-sliders-h" />
-            </button>
-            <button
-              type="button"
-              className={`${btnClasses} video-fullscreen`}
-              onClick={toggleFullscreen}
-              title="Full Screen"
-            >
-              <i className="fas fa-expand" />
-            </button>
-            <button
-              type="button"
-              className={`${btnClasses} video-play`}
-              onClick={playStop}
-              title={playTitle}
-            >
-              <i className={playIconClass} />
-            </button>
-            {content.hasAudio && (
-              <span className="video-audio-cont">
-                <button
-                  type="button"
-                  className={`${btnClasses} video-audio`}
-                  onClick={toggleSound}
-                  title={muteTitle}
-                  // disabled={content.audioWarning}
-                >
-                  <i className={mutedIconClass} />
-                </button>
-                {content.audioWarning && link && (
-                  <div
-                    className="audio-disabled bg-dark border border-light p-1"
-                    role="tooltip"
-                  >
-                    This video probably has audio but Reddit disables it on
-                    third-party sites though Safari still works (for now). Click{' '}
-                    <a href={link} target="_blank" rel="noopener noreferrer">
-                      here
-                    </a>{' '}
-                    load the video on reddit.
-                  </div>
-                )}
-              </span>
-            )}
-          </div>
-        </>
+      {debug && (
+        <VideoDebug
+          currentTime={currentTime}
+          duration={duration}
+          buffer={buffer}
+          canPlay={canPlay}
+          canPlayThrough={canPlayThrough}
+          stalled={stalled}
+          waiting={waiting}
+        />
       )}
-    </div>
+    </>
   );
 };
 
@@ -248,16 +396,10 @@ VideoComp.propTypes = {
   content: PropTypes.object.isRequired,
   load: PropTypes.bool.isRequired,
   link: PropTypes.string,
-  autoplay: PropTypes.bool,
 };
 
 VideoComp.defaultProps = {
   link: '',
-  autoplay: true,
 };
 
-const mapStateToProps = (state) => ({
-  autoplay: state.siteSettings.autoplay,
-});
-
-export default connect(mapStateToProps, {})(React.memo(VideoComp));
+export default React.memo(VideoComp);
