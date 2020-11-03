@@ -20,11 +20,13 @@ const Navigation = ({ redditBearer, subredditsFilter }) => {
       .getElementById('menu-overlay')
       .addEventListener('click', closeMenuIfOpen);
     return () => {
-      document
-        .getElementById('menu-overlay')
-        .removeEventListener('click', closeMenuIfOpen);
+      if (document.getElementById('menu-overlay')) {
+        document
+          .getElementById('menu-overlay')
+          .removeEventListener('click', closeMenuIfOpen);
+      }
     };
-  });
+  }, []);
 
   const { filterText, active } = subredditsFilter;
   const hideExtras = !isEmpty(filterText) || active;
