@@ -16,7 +16,7 @@
   "author": "Jeff Rigby",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^0.21.0",
     "classnames": "^2.2.6",
     "connected-react-router": "^6.6.1",
     "copy-to-clipboard": "^3.2.0",
