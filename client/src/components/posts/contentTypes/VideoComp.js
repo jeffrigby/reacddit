@@ -47,7 +47,7 @@ function getBuffers(videoRef) {
 }
 
 const VideoComp = ({ content, load, link }) => {
-  const videoRef = React.createRef();
+  const videoRef = useRef();
   const isPlaying = useRef(false);
   const isPlayingTimeout = useRef(null);
 
@@ -309,7 +309,7 @@ const VideoComp = ({ content, load, link }) => {
     </a>
   );
 
-  const loadError = showLoadError && (
+  const loadError = showLoadError && !canPlay && (
     <div className="slow-loading">
       This is taking longer than it should. You can try to load the video
       directly.

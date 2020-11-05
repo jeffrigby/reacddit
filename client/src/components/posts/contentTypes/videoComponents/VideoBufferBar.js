@@ -43,8 +43,6 @@ function VideoBufferBar({ videoRef, buffers, currentTime, duration }) {
     right: `${progressMarginRight}%`,
   };
 
-  // console.log('yo');
-
   return (
     <div className="video-bar-cont">
       <div
