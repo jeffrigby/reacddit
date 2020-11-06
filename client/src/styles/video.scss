@@ -12,6 +12,7 @@
     font-size: 75%;
     a {
       color: white !important;
+      text-decoration: underline;
     }
   }
 
@@ -160,6 +161,7 @@
     position: absolute;
     right: 10px;
     top: 10px;
+    z-index: 2;
     button {
       color: white;
       text-shadow: 1px 1px #000;

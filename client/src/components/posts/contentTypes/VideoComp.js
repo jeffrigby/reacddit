@@ -318,14 +318,17 @@ const VideoComp = ({ content, load, link }) => {
     </div>
   );
 
-  const btnClasses = 'btn btn-link m-0 py-0 px-1 btn-md video-ctr';
+  const btnClasses = 'btn btn-link shadow-none m-0 py-0 px-1 btn-md video-ctr';
 
   return (
     <>
       <div className={videoContainerClass.join(' ')}>
         {loadingError && (
-          <div className="video-loading-error p-1">
-            <i className="fas fa-circle-notch fa-spin mx-1" /> {loadingError}
+          <div className="video-loading-error p-1 d-flex">
+            <div>
+              <i className="fas fa-circle-notch fa-spin mx-1" />
+            </div>
+            <div>{loadingError}</div>
           </div>
         )}
         <div className="ratio-bg">
