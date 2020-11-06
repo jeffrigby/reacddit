@@ -102,6 +102,6 @@ MultiRedditsAdd.propTypes = {
 
 MultiRedditsAdd.defaultProps = {};
 
-const mapStateToProps = state => ({});
+const mapStateToProps = (state) => ({});
 
 export default connect(mapStateToProps, {})(MultiRedditsAdd);

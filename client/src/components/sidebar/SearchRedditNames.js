@@ -37,7 +37,7 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
 
   // Filter out subscribed reddits
   const filteredSubs = [];
-  searchResults.forEach(value => {
+  searchResults.forEach((value) => {
     if (subreddits.indexOf(value.toLowerCase()) === -1) {
       filteredSubs.push(value);
     }
@@ -118,7 +118,7 @@ SearchRedditNames.defaultProps = {
   over18: false,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   over18: state.redditMe.me.over_18,
   subreddits:
     state.subreddits.subreddits !== undefined

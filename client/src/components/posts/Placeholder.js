@@ -5,7 +5,8 @@ import renderSelf from './embeds/domains/self';
 import Self from './contentTypes/Self';
 
 const Placeholder = ({ load }) => {
-  const data = useContext(PostsContextData);
+  const post = useContext(PostsContextData);
+  const { data } = post;
 
   const getRatio = (width, height) => {
     const maxHeight = 625;
@@ -54,7 +55,7 @@ const Placeholder = ({ load }) => {
   const getRatioRounded = (width, height) =>
     Math.round((width / height) * 100) / 100;
 
-  const fixedRatio = r => {
+  const fixedRatio = (r) => {
     return (
       <div className="content">
         <div className="media-cont black-bg">
@@ -112,7 +113,7 @@ const Placeholder = ({ load }) => {
     );
   }
 
-  return <>THIS IS A PLACEHOLDER</>;
+  return <div className="content" />;
 };
 
 Placeholder.propTypes = {

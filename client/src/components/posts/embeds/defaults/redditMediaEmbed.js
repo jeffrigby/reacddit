@@ -1,4 +1,4 @@
-const redditMediaEmbed = entry => {
+const redditMediaEmbed = (entry) => {
   // Get it out of media embed:
   if (entry.media_embed && entry.media_embed.content) {
     const tempDiv = document.createElement('div');

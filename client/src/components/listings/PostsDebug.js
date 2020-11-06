@@ -13,10 +13,10 @@ const PostsDebug = () => {
   const location = useLocation();
   const match = useParams();
 
-  const debugEnabled = useSelector(state => state.siteSettings.debug);
-  const listingsFilter = useSelector(state => state.listingsFilter);
-  const listingsState = useSelector(state => listingState(state));
-  const data = useSelector(state => listingData(state));
+  const debugEnabled = useSelector((state) => state.siteSettings.debug);
+  const listingsFilter = useSelector((state) => state.listingsFilter);
+  const listingsState = useSelector((state) => listingState(state));
+  const data = useSelector((state) => listingData(state));
 
   const { actionable, focused, visible } = listingsState;
 

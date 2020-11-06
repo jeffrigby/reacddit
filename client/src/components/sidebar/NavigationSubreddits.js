@@ -38,7 +38,7 @@ class NavigationSubReddits extends React.PureComponent {
    * Configure the navigation hotkeys.
    * @param event
    */
-  handleSubredditHotkey = event => {
+  handleSubredditHotkey = (event) => {
     const pressedKey = event.key;
 
     if (hotkeyStatus()) {
@@ -65,7 +65,7 @@ class NavigationSubReddits extends React.PureComponent {
    * Handle the click on the reload subreddits
    * @param e
    */
-  reloadSubredditsClick = e => {
+  reloadSubredditsClick = (e) => {
     e.preventDefault();
     this.reloadSubreddits();
   };
@@ -86,7 +86,7 @@ class NavigationSubReddits extends React.PureComponent {
     const favoritesArray = [];
     const itemsArray = [];
 
-    Object.values(subreddits).forEach(item => {
+    Object.values(subreddits).forEach((item) => {
       if (item.user_has_favorited) {
         favoritesArray.push(item);
       } else {
@@ -98,7 +98,7 @@ class NavigationSubReddits extends React.PureComponent {
     const navItems = [];
     const filterActive = filter.active && !isEmpty(filter.filterText);
     if (favoritesArray.length) {
-      favoritesArray.forEach(sub => {
+      favoritesArray.forEach((sub) => {
         const trigger = filter.activeIndex === pos && filterActive;
         navItems.push(
           <NavigationItem item={sub} key={sub.name} trigger={trigger} />
@@ -112,7 +112,7 @@ class NavigationSubReddits extends React.PureComponent {
       );
     }
 
-    itemsArray.forEach(sub => {
+    itemsArray.forEach((sub) => {
       const trigger = filter.activeIndex === pos && filterActive;
       navItems.push(
         <NavigationItem item={sub} key={sub.name} trigger={trigger} />
@@ -214,7 +214,7 @@ NavigationSubReddits.propTypes = {
 
 NavigationSubReddits.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   redditBearer: state.redditBearer,
   subreddits: state.subreddits,
   filter: state.subredditsFilter,

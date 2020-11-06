@@ -38,10 +38,14 @@ export function redditGetBearer() {
       const status =
         bearer === null || bearer.substr(0, 1) === '-' ? 'anon' : 'auth';
 
+      const loginURL = RedditAPI.getLoginUrl();
+
       const result = {
         bearer,
         status,
+        loginURL,
       };
+
       const currentRedditBearer = currentState.redditBearer;
       if (currentRedditBearer.bearer !== bearer) {
         dispatch(redditBearer(result));
@@ -141,7 +145,7 @@ export function redditFetchFriends(reset) {
     const childrenSorted = children.sort((a, b) => {
       return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
     });
-    childrenSorted.forEach(friend => {
+    childrenSorted.forEach((friend) => {
       friendsKeyed[friend.name.toLowerCase()] = friend;
     });
 

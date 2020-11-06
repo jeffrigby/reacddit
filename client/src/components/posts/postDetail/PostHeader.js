@@ -4,9 +4,33 @@ import { Link } from 'react-router-dom';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 import { PostsContextData } from '../../../contexts';
+import PostMeta from './PostMeta';
+import PostExpandContract from '../postActions/PostExpandContract';
 
 const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
-  const data = useContext(PostsContextData);
+  const post = useContext(PostsContextData);
+  const { data, kind } = post;
+
+  if (kind === 't1') {
+    return (
+      <header className="d-flex">
+        <div className="mr-2 post-action-expand">
+          <PostExpandContract
+            expand={expand}
+            toggleView={toggleView}
+            kind={kind}
+          />
+        </div>
+        <div className="mr-auto comment-meta meta">
+          <PostMeta />
+        </div>
+        <div className="text-nowrap align-middle d-flex actions">
+          <PostVote />
+          <PostSave />
+        </div>
+      </header>
+    );
+  }
 
   const linkFlair = data.link_flair_text ? (
     <Link
@@ -26,6 +50,37 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     </div>
   ) : null;
 
+  const nsfwFlair = data.over_18 ? (
+    <div
+      className="badge badge-danger mx-1"
+      title="This post Contains NSFW content"
+    >
+      NSFW
+    </div>
+  ) : null;
+
+  const pinned = data.pinned ? (
+    <div className="badge badge-darl mx-1" title="Pinned Post">
+      <i className="fas fa-thumbtack" />
+    </div>
+  ) : null;
+
+  const sticky = data.stickied ? (
+    <div className="badge badge-darl mx-1" title="Sticky Post">
+      <i className="fas fa-sticky-note" />
+    </div>
+  ) : null;
+
+  const flairs = (
+    <>
+      {pinned}
+      {sticky}
+      {nsfwFlair}
+      {linkFlair}
+      {dupeFlair}
+    </>
+  );
+
   let searchLink = '';
   if (!data.is_self) {
     const searchTo = `/duplicates/${data.id}`;
@@ -42,23 +97,6 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     );
   }
 
-  const viewIcon = expand
-    ? 'fas fa-compress-arrows-alt'
-    : 'fas fa-expand-arrows-alt';
-
-  const viewTitle = expand ? 'Close this post (x)' : 'Open this post (x)';
-
-  const expandContractButton = (
-    <button
-      onClick={toggleView}
-      type="button"
-      className="btn btn-link btn-sm m-0 p-0"
-      title={viewTitle}
-    >
-      <i className={viewIcon} />
-    </button>
-  );
-
   const title = expand ? (
     <h6 className="title list-group-item-heading">
       <a
@@ -70,20 +108,19 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
-      {linkFlair}
-      {dupeFlair}
+      {flairs}
     </h6>
   ) : (
     <h6 className="p-0 m-0">
       <button
         onClick={toggleView}
-        className="btn btn-link m-0 p-0 post-title"
+        className="btn btn-link shadow-none m-0 p-0 post-title"
         type="button"
         aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
       />
-      {linkFlair} {dupeFlair}{' '}
+      {flairs}{' '}
       <a
         href={data.url}
         target="_blank"
@@ -104,7 +141,13 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
           <PostVote />
           <PostSave />
           {searchLink}
-          <div>{expandContractButton}</div>
+          <div>
+            <PostExpandContract
+              expand={expand}
+              toggleView={toggleView}
+              kind={kind}
+            />
+          </div>
         </div>
       ) : (
         // eslint-disable-next-line

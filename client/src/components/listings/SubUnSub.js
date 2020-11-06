@@ -27,7 +27,7 @@ const SubUnSub = ({
     await RedditAPI.subscribe(about.name, 'unsub');
     const newAbout = { ...about, user_is_subscriber: false };
     setCurrentSubreddit(locationKey, newAbout);
-    const newSubreddits = produce(subreddits, draft => {
+    const newSubreddits = produce(subreddits, (draft) => {
       delete draft.subreddits[about.display_name];
     });
     setSubreddits(newSubreddits);
@@ -37,7 +37,7 @@ const SubUnSub = ({
     await RedditAPI.subscribe(about.name, 'sub');
     const newAbout = { ...about, user_is_subscriber: true };
     setCurrentSubreddit(locationKey, newAbout);
-    const newSubreddits = produce(subreddits, draft => {
+    const newSubreddits = produce(subreddits, (draft) => {
       draft.subreddits[about.display_name] = newAbout;
     });
     setSubreddits(newSubreddits);
@@ -79,7 +79,7 @@ SubUnSub.defaultProps = {
   about: {},
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   about: getCurrentSubreddit(state),
   subreddits: state.subreddits,
   redditBearer: state.redditBearer,

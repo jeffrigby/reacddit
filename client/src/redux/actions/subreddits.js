@@ -43,7 +43,7 @@ export function subredditsClearLastUpdated() {
  * @param lastPost
  * @returns {*}
  */
-const getExpiredTime = lastPost => {
+const getExpiredTime = (lastPost) => {
   if (lastPost === undefined) return 3600;
   const nowSec = Date.now() / 1000;
   const timeSinceLastPost = nowSec - lastPost;
@@ -104,14 +104,14 @@ export function subredditsFetchLastUpdated() {
     }
 
     // Loop through them and create an object to insert.
-    chunks.forEach(async value => {
+    chunks.forEach(async (value) => {
       try {
         const results = await axios
           .all(value)
           .then(axios.spread((...args) => args));
 
         const toUpdate = {};
-        results.forEach(item => {
+        results.forEach((item) => {
           const entry = item.data;
           // process item
           if (typeof entry.data.children[0] === 'object') {
@@ -138,7 +138,7 @@ export function subredditsFetchLastUpdated() {
  * @param children
  * @returns {*}
  */
-const mapSubreddits = children => {
+const mapSubreddits = (children) => {
   return Object.entries(children)
     .map(([key, value]) => value.data)
     .reduce((ac, s) => ({ ...ac, [s.display_name.toLowerCase()]: s }), {});

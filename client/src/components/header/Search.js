@@ -52,11 +52,11 @@ class Search extends React.PureComponent {
     document.removeEventListener('keydown', this.handleSearchHotkey);
   }
 
-  handleChange = event => {
+  handleChange = (event) => {
     this.setState({ search: event.target.value });
   };
 
-  handleSearchHotkey = event => {
+  handleSearchHotkey = (event) => {
     const { focused } = this.state;
     const pressedKey = event.key;
 
@@ -119,7 +119,7 @@ class Search extends React.PureComponent {
     return qs;
   };
 
-  getMainSearchURL = q => {
+  getMainSearchURL = (q) => {
     const currentSearch = this.getCurrentSearchSort();
     const qs = { ...currentSearch, q };
     const qsString = queryString.stringify(qs);
@@ -170,7 +170,7 @@ class Search extends React.PureComponent {
     this.searchInput.current.blur();
   };
 
-  processSearch = e => {
+  processSearch = (e) => {
     const q = e.target.value;
     if (!q) {
       return;
@@ -282,8 +282,8 @@ const mapStateToProps = (state, ownProps) => ({
   listingsFilter: state.listingsFilter,
 });
 
-const mapDispatchToProps = dispatch => ({
-  pushUrl: url => dispatch(push(url)),
+const mapDispatchToProps = (dispatch) => ({
+  pushUrl: (url) => dispatch(push(url)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Search);

@@ -6,12 +6,12 @@ import { redditFetchFriends } from '../../../redux/actions/reddit';
 import RedditAPI from '../../../reddit/redditAPI';
 
 const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
-  const removeFriend = async name => {
+  const removeFriend = async (name) => {
     await RedditAPI.removeFriend(name);
     getFriends(true);
   };
 
-  const addFriend = async name => {
+  const addFriend = async (name) => {
     await RedditAPI.addFriend(name);
     getFriends(true);
   };
@@ -26,33 +26,37 @@ const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
     : `remove ${author} from your friends.`;
 
   const authorFlair = flair ? (
-    <span className="badge badge-dark">{flair}</span>
+    <>
+      <span className="badge badge-dark">{flair}</span>
+    </>
   ) : null;
 
   const authorLink =
     author === '[deleted]' ? (
-      <>
+      <div>
         <i className="fas fa-user" /> {author}
-      </>
+      </div>
     ) : (
       <>
-        <button
-          className="btn-link"
-          type="button"
-          onClick={onClick}
-          title={title}
-        >
-          <i
-            className={`fas  ${isFriend ? 'fa-user-minus' : 'fa-user-plus'}`}
-          />
-        </button>{' '}
-        <Link
-          to={`/user/${author}/submitted/new`}
-          className={isFriend ? 'is-friend' : 'not-friend'}
-        >
-          {author}
-        </Link>{' '}
-        {authorFlair}
+        <>
+          <button
+            className="btn btn-link btn-sm shadow-none"
+            type="button"
+            onClick={onClick}
+            title={title}
+          >
+            <i
+              className={`fas ${isFriend ? 'fa-user-minus' : 'fa-user-plus'}`}
+            />
+          </button>{' '}
+          <Link
+            to={`/user/${author}/submitted/new`}
+            className={isFriend ? 'is-friend' : 'not-friend'}
+          >
+            {author}
+          </Link>{' '}
+          {authorFlair}
+        </>
       </>
     );
 
@@ -70,7 +74,7 @@ PostBylineAuthor.defaultProps = {
   flair: null,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   redditFriends: state.redditFriends,
 });
 

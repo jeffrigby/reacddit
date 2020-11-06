@@ -131,7 +131,7 @@ ListingsHeaderSub.defaultProps = {
   about: {},
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   about: getCurrentSubreddit(state),
   filter: state.listingsFilter,
   cachedSub: getCachedSub(state),

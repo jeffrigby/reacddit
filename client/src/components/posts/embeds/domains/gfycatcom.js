@@ -16,7 +16,7 @@ import parse from 'url-parse';
 //   return cachedItem ? JSON.parse(cachedItem) : null;
 // };
 
-const getInfo = async id => {
+const getInfo = async (id) => {
   // const cache = getCache(id);
   // if (cache) {
   //   return cache;
@@ -31,7 +31,7 @@ const getInfo = async id => {
   return json.gfyItem;
 };
 
-const render = async entry => {
+const render = async (entry) => {
   const parsedUrl = parse(entry.url, true);
   const cleanID = parsedUrl.pathname
     .replace(/^\/|\/$/g, '')

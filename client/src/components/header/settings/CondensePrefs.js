@@ -4,10 +4,10 @@ import { siteSettings } from '../../../redux/actions/misc';
 
 const CondensePrefs = () => {
   const condenseStickySetting = useSelector(
-    state => state.siteSettings.condenseSticky
+    (state) => state.siteSettings.condenseSticky
   );
   const condenseDuplicatesSetting = useSelector(
-    state => state.siteSettings.condenseDuplicate
+    (state) => state.siteSettings.condenseDuplicate
   );
   const dispatch = useDispatch();
 

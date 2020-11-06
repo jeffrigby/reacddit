@@ -19,10 +19,10 @@ import { hotkeyStatus } from '../../common';
 
 const ListingsLogic = ({ saved }) => {
   // Get Redux Props
-  const status = useSelector(state => listingStatus(state));
-  const settings = useSelector(state => state.siteSettings);
-  const locationKey = useSelector(state => state.router.location.key);
-  const listingsCurrentState = useSelector(state => listingState(state));
+  const status = useSelector((state) => listingStatus(state));
+  const settings = useSelector((state) => state.siteSettings);
+  const locationKey = useSelector((state) => state.router.location.key);
+  const listingsCurrentState = useSelector((state) => listingState(state));
 
   // Keep latest props in a ref.
   const prevState = useRef(listingsCurrentState);
@@ -32,7 +32,7 @@ const ListingsLogic = ({ saved }) => {
   const dispatch = useDispatch();
 
   // Set some hotkeys
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
       const pressedKey = event.key;
       try {
@@ -97,11 +97,13 @@ const ListingsLogic = ({ saved }) => {
     setTimeout(monitorEntries, 2000);
   }, [monitorEntries]);
 
+  const { view } = settings;
+
   useEffect(() => {
-    if (prevView.current === settings.view) return;
+    if (prevView.current === view) return;
     forceDelayedUpdate();
-    prevView.current = settings.view;
-  }, [forceDelayedUpdate, settings.view]);
+    prevView.current = view;
+  }, [forceDelayedUpdate, view]);
 
   // Monitor Entries
   useEffect(() => {

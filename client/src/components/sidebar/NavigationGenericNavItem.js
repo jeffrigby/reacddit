@@ -7,7 +7,7 @@ const closeMenu = () => {
   document.body.classList.remove('show-menu');
 };
 
-const NavigationGenericNavItem = props => {
+const NavigationGenericNavItem = (props) => {
   const {
     to,
     text,

@@ -5,7 +5,8 @@ import { PostsContextData } from '../../../contexts';
 const ReactJson = lazy(() => import('react-json-view'));
 
 const PostDebug = ({ renderedContent }) => {
-  const data = useContext(PostsContextData);
+  const post = useContext(PostsContextData);
+  const { data } = post;
 
   return (
     <div className="debug">

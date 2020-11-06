@@ -5,19 +5,25 @@ const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeM
 const Dotenv = require('dotenv-webpack');
 const commonPaths = require('./paths');
 const CopyPlugin = require('copy-webpack-plugin');
+const eslintFormatter = require('react-dev-utils/eslintFormatter');
 
 module.exports = {
   module: {
     rules: [
       {
-        enforce: 'pre',
         test: /\.(js|jsx)$/,
-        loader: 'eslint-loader',
-        exclude: /(node_modules)/,
-        options: {
-          emitWarning: process.env.NODE_ENV !== 'production',
-          formatter: require('eslint-formatter-pretty'),
-        },
+        // include: src',
+        enforce: 'pre',
+        use: [
+          {
+            loader: 'eslint-loader',
+            options: {
+              // Pass the formatter:
+              emitWarning: process.env.NODE_ENV !== 'production',
+              formatter: eslintFormatter,
+            },
+          },
+        ],
       },
       {
         test: /\.(js|jsx)$/,
@@ -74,12 +80,12 @@ module.exports = {
   plugins: [
     new webpack.ProgressPlugin(),
     new Dotenv({ defaults: true }),
-    new CopyPlugin([
-      {
-        from: `${commonPaths.root}/src/PWA`,
-        to: commonPaths.pwaFolder,
-      },
-    ]),
+
+    new CopyPlugin({
+      patterns: [
+        { from: `${commonPaths.root}/src/PWA`, to: commonPaths.pwaFolder },
+      ],
+    }),
 
     new WatchMissingNodeModulesPlugin(commonPaths.modules),
 

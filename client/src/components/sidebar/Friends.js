@@ -20,7 +20,7 @@ const Friends = ({ redditFriends, getFriends }) => {
     }
   }, [getFriends, showFriends]);
 
-  const removeFriend = async id => {
+  const removeFriend = async (id) => {
     await RedditAPI.removeFriend(id);
     getFriends(true);
   };
@@ -34,7 +34,7 @@ const Friends = ({ redditFriends, getFriends }) => {
   }
 
   const navItems = [];
-  Object.values(friends).forEach(f => {
+  Object.values(friends).forEach((f) => {
     const link = `/user/${f.name}/submitted/new`;
     navItems.push(
       <React.Fragment key={f.id}>
@@ -110,7 +110,7 @@ Friends.propTypes = {
 
 Friends.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   redditFriends: state.redditFriends,
 });
 

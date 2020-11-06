@@ -11,9 +11,13 @@ import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
 import Placeholder from './Placeholder';
 import { PostsContextData } from '../../contexts';
+import HTTPSError from './contentTypes/HTTPSError';
+import RedditGallery from './contentTypes/RedditGallery';
 
 const Content = ({ content, load }) => {
-  const data = useContext(PostsContextData);
+  const post = useContext(PostsContextData);
+  const { data } = post;
+
   const { name, url } = data;
 
   if (data.is_self && !data.selftext) {
@@ -55,6 +59,12 @@ const Content = ({ content, load }) => {
         break;
       case 'twitter':
         contentRendered = <Twitter content={content} load={load} />;
+        break;
+      case 'httpserror':
+        contentRendered = <HTTPSError content={content} load={load} />;
+        break;
+      case 'redditGallery':
+        contentRendered = <RedditGallery content={content} load={load} />;
         break;
       default:
         break;

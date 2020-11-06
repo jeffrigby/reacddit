@@ -1,0 +1,66 @@
+div#entries {
+  .self {
+    position: relative;
+    p {
+      margin-bottom: 0.5rem;
+      :last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .self-t1 {
+    padding-left: 0.75rem !important;
+  }
+
+  .self-html {
+    // Small devices (landscape phones, 576px and up)
+    @media (min-width: 576px) {
+      max-height: 100px;
+    }
+
+    // Medium devices (tablets, 768px and up)
+    @media (min-width: 768px) {
+      max-height: 130px;
+    }
+
+    // Large devices (desktops, 992px and up)
+    @media (min-width: 992px) {
+      max-height: 168px;
+    }
+
+    // Extra large devices (large desktops, 1200px and up)
+    @media (min-width: 1200px) {
+      max-height: 204px;
+    }
+
+    position: relative;
+    overflow: hidden;
+    max-height: 100px;
+    margin: 0;
+
+    &.self-fade {
+      -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
+      mask-image: linear-gradient(180deg, #000 60%, transparent);
+    }
+
+    &.sf-html-show-all {
+      -webkit-mask-image: inherit;
+      mask-image: inherit;
+      overflow: auto;
+      text-overflow: inherit;
+      max-height: inherit !important;
+    }
+    * {
+      font-size: 1em !important;
+    }
+  }
+
+  // Override for detail pages
+  .self-t3-comments {
+    .self-html {
+      overflow: auto !important;
+      max-height: inherit !important;
+    }
+  }
+}

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import NavigationItem from './NavigationItem';
 
-const genNavItems = multiRedditSubs => {
+const genNavItems = (multiRedditSubs) => {
   const navigationItems = [];
   const multiRedditSubsKeyed = multiRedditSubs.reduce((obj, subreddit) => {
     obj[subreddit.data.display_name.toLowerCase()] = subreddit.data; // eslint-disable-line no-param-reassign

@@ -7,7 +7,7 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
   const [resolvedContent, setResolvedContent] = useState([]);
 
   useEffect(() => {
-    Promise.all(inline).then(content => {
+    Promise.all(inline).then((content) => {
       const resolved = [];
       content.forEach((value, key) => {
         if (value) {
@@ -61,7 +61,7 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
         <ul className="pagination pagination-sm mb-0">
           <li className="page-item">
             <button
-              className="page-link"
+              className="page-link shadow-none"
               aria-label="Previous"
               type="button"
               onClick={prevEntry}
@@ -77,7 +77,7 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
           </li>
           <li className="page-item">
             <button
-              className="page-link"
+              className="page-link shadow-none"
               aria-label="Next"
               type="button"
               onClick={nextEntry}

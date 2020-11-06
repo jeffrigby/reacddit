@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import PostBylineAuthor from './PostBylineAuthor';
 
-const PostByline = ({ data }) => {
+const PostByline = ({ data, kind }) => {
   const timeago = formatDistanceToNow(data.created_utc * 1000);
   // gotta be a better way to do this, but, whatever
   const timeagoshort = timeago
@@ -21,9 +21,9 @@ const PostByline = ({ data }) => {
     .replace(/ /g, '');
 
   const when = (
-    <>
+    <span>
       <i className="far fa-clock" /> {timeagoshort}
-    </>
+    </span>
   );
 
   const subUrl = `/r/${data.subreddit}`;
@@ -32,30 +32,28 @@ const PostByline = ({ data }) => {
   const commentCount = parseFloat(data.num_comments).toLocaleString('en');
   const comments = (
     <>
-      <a
-        href={`https://www.reddit.com${data.permalink}`}
-        rel="noopener noreferrer"
-        target="_blank"
-      >
+      <Link to={data.permalink}>
         <i className="far fa-comment" /> {commentCount}
-      </a>
+      </Link>
     </>
   );
 
   return (
     <>
-      <span className="pr-1">
-        <PostBylineAuthor author={data.author} flair={data.author_flair_text} />{' '}
-      </span>
-      <span className="pr-1">{when}</span>
-      <span className="pr-1">{comments}</span>
-      <span className="pr-1">{subredditInfo}</span>
+      <PostBylineAuthor author={data.author} flair={data.author_flair_text} />{' '}
+      {when}{' '}
+      {kind === 't3' && (
+        <>
+          {comments} {subredditInfo}{' '}
+        </>
+      )}
     </>
   );
 };
 
 PostByline.propTypes = {
   data: PropTypes.object.isRequired,
+  kind: PropTypes.string.isRequired,
 };
 
 export default PostByline;

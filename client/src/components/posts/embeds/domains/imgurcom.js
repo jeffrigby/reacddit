@@ -51,7 +51,7 @@ function getEmbedId(entry) {
   return false;
 }
 
-const render = async entry => {
+const render = async (entry) => {
   const parsedUrl = parse(entry.url, true);
   const { pathname } = parsedUrl;
 
@@ -69,20 +69,6 @@ const render = async entry => {
     height = h;
   }
 
-  // Fallback video content
-  try {
-    const video = redditVideoPreview(entry);
-    if (video) {
-      return {
-        ...video,
-        renderFunction: 'redditVideoPreview',
-      };
-    }
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error(e);
-  }
-
   // Check for gifv content;
   if (cleanedPath.match(/gifv$/)) {
     const mp4Filename = cleanedPath.replace(/gifv$/, 'mp4');
@@ -90,6 +76,7 @@ const render = async entry => {
     const sources = [{ type: 'video/mp4', src: mp4 }];
     return {
       type: 'video',
+      id: `imgur-${id}`,
       width,
       height,
       sources,
@@ -103,6 +90,7 @@ const render = async entry => {
     const sources = [{ type: 'video/mp4', src: mp4 }];
     return {
       type: 'video',
+      id: `imgur-${id}`,
       width,
       height,
       sources,
@@ -134,6 +122,20 @@ const render = async entry => {
         return { ...embedMp4, imgurRenderType: 'albumMP4' };
       }
     }
+  }
+
+  // Fallback video content
+  try {
+    const video = redditVideoPreview(entry);
+    if (video) {
+      return {
+        ...video,
+        renderFunction: 'redditVideoPreview',
+      };
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error(e);
   }
 
   // Check for preview image:
