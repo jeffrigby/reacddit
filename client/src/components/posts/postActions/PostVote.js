@@ -119,7 +119,7 @@ const PostVote = ({ bearer }) => {
     <div className="vote">
       <button
         type="button"
-        className="btn btn-link btn-sm"
+        className="btn btn-link btn-sm shadow-none"
         disabled={disabled}
         onClick={() => vote(1)}
         title="Vote Up (a)"
@@ -130,7 +130,7 @@ const PostVote = ({ bearer }) => {
       <span>{ups.toLocaleString()}</span>
       <button
         type="button"
-        className="btn btn-link btn-sm"
+        className="btn btn-link btn-sm shadow-none"
         disabled={disabled}
         onClick={() => vote(-1)}
         title="Vote Down (z)"

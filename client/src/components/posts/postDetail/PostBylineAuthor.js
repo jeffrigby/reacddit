@@ -40,7 +40,7 @@ const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
       <>
         <>
           <button
-            className="btn btn-link btn-sm"
+            className="btn btn-link btn-sm shadow-none"
             type="button"
             onClick={onClick}
             title={title}

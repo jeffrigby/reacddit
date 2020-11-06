@@ -29,7 +29,7 @@ const PostFooter = ({ debug, visible, renderedContent }) => {
             <footer className="d-flex clearfix align-middle mb-1">
               <div>
                 <button
-                  className="btn btn-link m-0 p-0 mr-1"
+                  className="btn btn-link shadow-none m-0 p-0 mr-1"
                   onClick={copyID}
                   title="Click to copy"
                   type="button"
@@ -37,7 +37,7 @@ const PostFooter = ({ debug, visible, renderedContent }) => {
                   {copied ? 'Copied' : data.name}
                 </button>
                 <button
-                  className="btn btn-link m-0 p-0 mr-1"
+                  className="btn btn-link shadow-none m-0 p-0 mr-1"
                   onClick={() => setShowDebug(!showDebug)}
                   title="Show debug"
                   type="button"
@@ -69,7 +69,7 @@ const PostFooter = ({ debug, visible, renderedContent }) => {
           {debug && (
             <span className="pl-3">
               <button
-                className="btn btn-link m-0 p-0 mr-1"
+                className="btn btn-link shadow-none m-0 p-0 mr-1"
                 onClick={copyID}
                 title="Click to copy"
                 type="button"
@@ -77,7 +77,7 @@ const PostFooter = ({ debug, visible, renderedContent }) => {
                 {copied ? 'Copied' : data.name}
               </button>
               <button
-                className="btn btn-link m-0 p-0 mr-1"
+                className="btn btn-link shadow-none m-0 p-0 mr-1"
                 onClick={() => setShowDebug(!showDebug)}
                 title="Show debug"
                 type="button"

@@ -114,7 +114,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     <h6 className="p-0 m-0">
       <button
         onClick={toggleView}
-        className="btn btn-link m-0 p-0 post-title"
+        className="btn btn-link shadow-none m-0 p-0 post-title"
         type="button"
         aria-label="Title"
         // eslint-disable-next-line

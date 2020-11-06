@@ -119,7 +119,7 @@ const Self = ({ content, load, name }) => {
           <div className="self-show-more text-right">
             <button
               type="button"
-              className="btn btn-link btn-sm p-0"
+              className="btn btn-link btn-sm shadow-none p-0"
               title="Load More"
               onClick={toggleShow}
             >

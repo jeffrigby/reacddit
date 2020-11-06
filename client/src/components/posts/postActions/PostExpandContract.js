@@ -19,7 +19,7 @@ const PostExpandContract = ({ expand, toggleView, kind }) => {
     <button
       onClick={toggleView}
       type="button"
-      className="btn btn-link btn-sm m-0 p-0"
+      className="btn btn-link btn-sm shadow-none m-0 p-0"
       title={viewTitle}
     >
       <i className={viewIcon} />

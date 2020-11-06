@@ -63,7 +63,7 @@ const PostSave = ({ bearer }) => {
   return (
     <div id="entry-save">
       <button
-        className="btn btn-link btn-sm m-0 p-0"
+        className="btn btn-link shadow-none btn-sm m-0 p-0"
         onClick={triggerSave}
         type="button"
         title={title}

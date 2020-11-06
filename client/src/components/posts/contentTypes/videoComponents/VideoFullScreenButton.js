@@ -20,7 +20,7 @@ const VideoFullScreenButton = ({ videoRef }) => {
   return (
     <button
       type="button"
-      className="btn btn-link mx-4 p-0 btn-sm"
+      className="btn btn-link shadow-none mx-4 p-0 btn-sm"
       onClick={toggleFullscreen}
       title="Full Screen"
     >
