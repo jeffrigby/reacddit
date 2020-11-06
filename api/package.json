@@ -20,7 +20,7 @@
     "dotenv-defaults": "^2.0.0",
     "koa": "^2.6.2",
     "koa-logger": "^3.2.0",
-    "koa-router": "^9.0.1",
+    "koa-router": "^10.0.0",
     "koa-session": "^6.0.0",
     "querystring": "^0.2.0",
     "request": "^2.88.0",
