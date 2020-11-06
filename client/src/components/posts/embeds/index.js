@@ -1,5 +1,4 @@
 import { getPublicSuffix, getDomain } from 'tldts';
-// import getUrls from 'get-urls';
 import stripTags from 'locutus/php/strings/strip_tags';
 import parse from 'url-parse';
 import Embeds from './embeds';
