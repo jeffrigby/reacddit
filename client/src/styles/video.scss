@@ -44,7 +44,7 @@
     &.muted .video-audio,
     &.paused .video-play {
       visibility: visible;
-      opacity: 1;
+      opacity: 1.0;
     }
   }
 
@@ -52,7 +52,7 @@
     .video-ctr,
     &.unmuted .video-audio {
       visibility: visible;
-      opacity: 1;
+      opacity: 1.0;
       transition: visibility 0s 0.25s, opacity 0.25s linear;
     }
   }
@@ -137,7 +137,7 @@
       &:hover {
         .audio-disabled {
           visibility: visible;
-          opacity: 1;
+          opacity: 1.0;
         }
       }
     }
@@ -147,7 +147,7 @@
   &.paused {
     .video-bar-cont {
       height: 10px !important;
-      opacity: 75%;
+      opacity: 0.75;
     }
 
     .video-control-bar-cont {
@@ -186,7 +186,7 @@
       &:hover {
         .audio-disabled {
           visibility: visible;
-          opacity: 1;
+          opacity: 1.0;
         }
       }
     }
@@ -201,7 +201,7 @@
       .video-ctr,
       &.unmuted .video-audio {
         visibility: visible;
-        opacity: 1;
+        opacity: 1.0;
         transition: visibility 0s 0.25s, opacity 0.25s linear;
       }
     }
