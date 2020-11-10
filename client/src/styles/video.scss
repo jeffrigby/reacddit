@@ -85,7 +85,7 @@
     }
 
     .video-bar-cont {
-      position:relative;
+      position: relative;
       background-color: lightgrey;
       height: 4px;
       z-index: 2;
@@ -106,7 +106,7 @@
         &.progress-bar {
           left: 0;
           background-color: #007bff;
-          opacity: .75;
+          opacity: 0.75;
           z-index: 6;
         }
 

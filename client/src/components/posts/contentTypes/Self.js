@@ -46,6 +46,7 @@ const Self = ({ content, load, name }) => {
   const [specs, setSpecs] = useState(null);
   const post = useContext(PostsContextData);
   const listType = useSelector((state) => state.listingsFilter.listType);
+  const debug = useSelector((state) => state.siteSettings.debug);
   const selfRef = useRef();
   const selfHTMLRef = useRef();
 
@@ -108,26 +109,32 @@ const Self = ({ content, load, name }) => {
 
   return (
     <>
-      <div
-        className={`self self-${post.kind} self-${post.kind}-${listType}`}
-        ref={selfRef}
-      >
-        <div className={selfHTMLClasses} ref={selfHTMLRef}>
-          {renderedHTML}
-        </div>
-        {showMore && (
-          <div className="self-show-more text-right">
-            <button
-              type="button"
-              className="btn btn-link btn-sm shadow-none p-0"
-              title="Load More"
-              onClick={toggleShow}
-            >
-              {buttonText}
-            </button>
+      <div className={`self self-${post.kind} self-${post.kind}-${listType}`}>
+        <div ref={selfRef}>
+          <div className={selfHTMLClasses} ref={selfHTMLRef}>
+            {renderedHTML}
           </div>
-        )}
+          {showMore && (
+            <div className="self-show-more text-right">
+              <button
+                type="button"
+                className="btn btn-link btn-sm shadow-none p-0"
+                title="Load More"
+                onClick={toggleShow}
+              >
+                {buttonText}
+              </button>
+            </div>
+          )}
+        </div>
         {inlineRendered}
+        {debug && specs && (
+          <code>
+            Self Height: {specs.self}px
+            <br />
+            selfHTML Height: {specs.selfHTML}px
+          </code>
+        )}
       </div>
     </>
   );

@@ -380,7 +380,7 @@ const VideoComp = ({ content, load, link }) => {
           </>
         )}
       </div>
-      {debug && (
+      {debug && load && (
         <VideoDebug
           currentTime={currentTime}
           duration={duration}

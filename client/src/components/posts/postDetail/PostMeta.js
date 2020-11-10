@@ -20,8 +20,10 @@ const PostMeta = () => {
       <PostByline data={data} kind={kind} />
       {crossPost && (
         <>
-          <i className="fas fa-random px-2" title="Crossposted" />{' '}
-          <PostByline data={data.crosspost_parent_list[0]} kind={kind} />
+          <div>
+            <i className="fas fa-random pr-2" title="Crossposted" />
+            <PostByline data={data.crosspost_parent_list[0]} kind={kind} />
+          </div>
         </>
       )}
       {sticky && <i className="fas fa-sticky-note px-2" title="Sticky" />}

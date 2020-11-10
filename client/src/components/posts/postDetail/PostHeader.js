@@ -89,7 +89,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
         <Link
           to={searchTo}
           title="Search for other posts linking to this link"
-          className="btn btn-link btn-sm m-0 p-0"
+          className="btn btn-link btn-sm m-0 p-0 shadow-none"
         >
           <i className="far fa-copy" />
         </Link>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
+import throttle from 'lodash/throttle';
 import Content from '../Content';
 import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
@@ -21,6 +22,7 @@ const classNames = require('classnames');
 
 function useRenderedContent(data, kind, expand) {
   const [renderedContent, setRenderedContent] = useState(null);
+  // Used for debugging offscreen elements.
   const isRendered = useRef(false);
 
   useEffect(() => {
@@ -77,6 +79,39 @@ const Post = ({
   parent,
 }) => {
   const { data, kind } = post;
+  const [hide, setHide] = useState(false);
+  const [showVisToggle, setShowVisToggle] = useState(false);
+  const postRef = useRef();
+  const minHeightRef = useRef();
+
+  const getMinHeight = useCallback(() => {
+    if (postRef.current && visible) {
+      minHeightRef.current = postRef.current.getBoundingClientRect().height;
+    }
+  }, [visible]);
+
+  useEffect(() => {
+    getMinHeight();
+    const throttledGetHeights = throttle(getMinHeight, 500);
+    if (visible) {
+      window.addEventListener('resize', throttledGetHeights, false);
+    } else {
+      window.removeEventListener('resize', throttledGetHeights, false);
+    }
+    return () => {
+      window.removeEventListener('resize', throttledGetHeights, false);
+    };
+  }, [getMinHeight, visible]);
+
+  useEffect(() => {
+    if (visible) {
+      getMinHeight();
+      // trigger it after a second in case things re-render
+      setTimeout(() => {
+        getMinHeight();
+      }, 500);
+    }
+  });
 
   const initView = useCallback(() => {
     if (data.stickied && siteSettings.condenseSticky) {
@@ -182,7 +217,7 @@ const Post = ({
 
   // Always visible if it's a comment
   // const isVisible = postType === 'comments' ? true : visible;
-  const isVisible = visible;
+  const isVisible = hide ? false : visible;
 
   const classArray = classNames('entry', 'list-group-item', `kind-${kind}`, {
     focused,
@@ -195,8 +230,24 @@ const Post = ({
   });
 
   const styles = {};
+  if (!isVisible && minHeightRef.current) {
+    styles.minHeight = minHeightRef.current;
+  }
 
   const isReplies = kind === 't1' && data.replies;
+
+  const visibilityToggle = showVisToggle ? (
+    <div className="debug-visibility">
+      <button
+        className="btn btn-primary btn-sm shadow-none m-0 p-0 mr-1"
+        onClick={() => setHide(!hide)}
+        title="Toggle visiblity"
+        type="button"
+      >
+        <i className={`fas ${hide ? 'fa-eye' : 'fa-eye-slash'}`} />
+      </button>
+    </div>
+  ) : null;
 
   return (
     <PostsContextData.Provider value={post}>
@@ -206,8 +257,10 @@ const Post = ({
           key={data.name}
           id={data.name}
           style={styles}
+          ref={postRef}
         >
           <div className={`entry-interior entry-interior-${kind}`}>
+            {visibilityToggle}
             <PostHeader
               visible={isVisible}
               expand={expand}
@@ -226,8 +279,9 @@ const Post = ({
                 debug={siteSettings.debug}
                 renderedContent={renderedContent}
                 visible={isVisible}
+                showVisToggle={showVisToggle}
+                setShowVisToggle={setShowVisToggle}
               />
-
               {isReplies && expand && (
                 <CommentReplyList
                   replies={data.replies}

@@ -6,7 +6,13 @@ import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
 
-const PostFooter = ({ debug, visible, renderedContent }) => {
+const PostFooter = ({
+  debug,
+  visible,
+  renderedContent,
+  setShowVisToggle,
+  showVisToggle,
+}) => {
   const post = useContext(PostsContextData);
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -21,30 +27,42 @@ const PostFooter = ({ debug, visible, renderedContent }) => {
     }, 500);
   };
 
+  const debugLinks = (
+    <>
+      <button
+        className="btn btn-link shadow-none m-0 p-0 mr-1"
+        onClick={copyID}
+        title="Click to copy"
+        type="button"
+      >
+        {copied ? 'Copied' : data.name}
+      </button>
+      <button
+        className="btn btn-link shadow-none m-0 p-0 mr-1"
+        onClick={() => setShowDebug(!showDebug)}
+        title="Show debug!"
+        type="button"
+      >
+        <i className="fas fa-code" />
+      </button>
+      <button
+        className="btn btn-link shadow-none m-0 p-0 mr-1"
+        onClick={() => setShowVisToggle(!showVisToggle)}
+        title="Show Visibility Toggle"
+        type="button"
+      >
+        <i className={`fas ${showVisToggle ? 'fa-eye-slash' : 'fa-eye'}`} />
+      </button>
+    </>
+  );
+
   if (kind === 't1') {
     return (
       <>
         {debug && (
           <>
             <footer className="d-flex clearfix align-middle mb-1">
-              <div>
-                <button
-                  className="btn btn-link shadow-none m-0 p-0 mr-1"
-                  onClick={copyID}
-                  title="Click to copy"
-                  type="button"
-                >
-                  {copied ? 'Copied' : data.name}
-                </button>
-                <button
-                  className="btn btn-link shadow-none m-0 p-0 mr-1"
-                  onClick={() => setShowDebug(!showDebug)}
-                  title="Show debug"
-                  type="button"
-                >
-                  <i className="fas fa-code" />
-                </button>
-              </div>
+              <div>{debugLinks}</div>
             </footer>
             {debug && showDebug && renderedContent && (
               <PostDebug renderedContent={renderedContent} />
@@ -66,26 +84,7 @@ const PostFooter = ({ debug, visible, renderedContent }) => {
       <footer className="d-flex clearfix align-middle mt-1">
         <div className="mr-auto meta">{kind === 't3' && <PostMeta />}</div>
         <div>
-          {debug && (
-            <span className="pl-3">
-              <button
-                className="btn btn-link shadow-none m-0 p-0 mr-1"
-                onClick={copyID}
-                title="Click to copy"
-                type="button"
-              >
-                {copied ? 'Copied' : data.name}
-              </button>
-              <button
-                className="btn btn-link shadow-none m-0 p-0 mr-1"
-                onClick={() => setShowDebug(!showDebug)}
-                title="Show debug"
-                type="button"
-              >
-                <i className="fas fa-code" />
-              </button>
-            </span>
-          )}
+          {debug && <span className="pl-3">{debugLinks}</span>}
           {!data.is_self && data.domain && (
             <Link
               to={`/r/${data.subreddit}/search?q=site:%22${data.domain}%22`}
@@ -106,6 +105,8 @@ PostFooter.propTypes = {
   debug: PropTypes.bool.isRequired,
   renderedContent: PropTypes.object,
   visible: PropTypes.bool.isRequired,
+  showVisToggle: PropTypes.bool.isRequired,
+  setShowVisToggle: PropTypes.func.isRequired,
 };
 
 PostFooter.defaultProps = {
