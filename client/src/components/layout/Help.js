@@ -88,7 +88,7 @@ const Help = () => {
                     <div className="col-md-4 text-right">
                       <kbd>g</kbd> then <kbd>b</kbd>
                     </div>
-                    <div className="col-md-8">Submitted</div>
+                    <div className="col-md-8">Posts</div>
                   </div>
                   <div className="d-flex">
                     <div className="col-md-4 text-right">

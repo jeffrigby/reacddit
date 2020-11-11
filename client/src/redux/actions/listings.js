@@ -71,7 +71,12 @@ const getContent = async (filters, params) => {
       entries = await RedditAPI.getListingMulti(user, target, sort, params);
       break;
     case 'u':
-      entries = await RedditAPI.getListingUser(user, target, sort, params);
+      entries = await RedditAPI.getListingUser(
+        user,
+        target === 'posts' ? 'submitted' : target,
+        sort,
+        params
+      );
       break;
     case 's':
       entries = multi

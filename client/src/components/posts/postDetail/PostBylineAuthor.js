@@ -50,7 +50,7 @@ const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
             />
           </button>{' '}
           <Link
-            to={`/user/${author}/submitted/new`}
+            to={`/user/${author}/posts/new`}
             className={isFriend ? 'is-friend' : 'not-friend'}
           >
             {author}

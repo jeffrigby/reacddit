@@ -35,7 +35,7 @@ const Friends = ({ redditFriends, getFriends }) => {
 
   const navItems = [];
   Object.values(friends).forEach((f) => {
-    const link = `/user/${f.name}/submitted/new`;
+    const link = `/user/${f.name}/posts/new`;
     navItems.push(
       <React.Fragment key={f.id}>
         <li className="nav-item d-flex friend-li">

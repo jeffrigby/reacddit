@@ -64,7 +64,7 @@ class NavigationItem extends React.PureComponent {
 
     const href =
       item.subreddit_type === 'user'
-        ? `/${_trim(item.url, '/')}/submitted/${_trim(currentSort, '/')}`
+        ? `/${_trim(item.url, '/')}/posts/${_trim(currentSort, '/')}`
         : `/${_trim(item.url, '/')}/${_trim(currentSort, '/')}`;
     const classNameStr = this.getDiffClassName();
     const subLabel = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;

@@ -36,7 +36,7 @@ const NavigationAccount = ({ me, urlPush }) => {
               urlPush(`/user/${name}/downvoted`);
               break;
             case 'b':
-              urlPush(`/user/${name}/submitted`);
+              urlPush(`/user/${name}/posts`);
               break;
             case 's':
               urlPush(`/user/${name}/saved`);
@@ -108,8 +108,8 @@ const NavigationAccount = ({ me, urlPush }) => {
         <ul className="nav flex-column">
           <Friends />
           <NavigationGenericNavItem
-            to={`/user/${me.name}/submitted`}
-            text="Submitted"
+            to={`/user/${me.name}/posts`}
+            text="Posts"
             title="Show My Submitted Posts"
             iconClass="far fa-file"
           />
