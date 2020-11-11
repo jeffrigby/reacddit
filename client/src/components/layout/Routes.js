@@ -27,7 +27,7 @@ const Routes = () => {
 
   const userSorts = 'hot|new|top|controversial';
   const userPaths = [
-    `/:listType(user)/:user/:target(upvoted|downvoted|submitted|saved|hidden|gilded)/:sort(${userSorts})?`,
+    `/:listType(user)/:user/:target(upvoted|downvoted|posts|comments|overview|submitted|saved|hidden|gilded)/:sort(${userSorts})?`,
   ];
 
   const duplicatesPaths = [`/:listType(duplicates)/:target`];
