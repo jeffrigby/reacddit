@@ -38,6 +38,13 @@ const Listings = ({ data, status, filter, settings }) => {
     comment,
   } = match;
 
+  // Set title for detail pages
+  if (data.originalPost) {
+    const origTitle = data.originalPost.data.title;
+    const origSub = data.originalPost.data.subreddit;
+    document.title = `${origTitle} : ${origSub}`;
+  }
+
   // Set the new filter.
   useEffect(() => {
     const qs = queryString.parse(location.search);
