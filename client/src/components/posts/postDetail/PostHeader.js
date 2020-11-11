@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 import { PostsContextData } from '../../../contexts';
@@ -9,6 +10,7 @@ import PostExpandContract from '../postActions/PostExpandContract';
 
 const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
   const post = useContext(PostsContextData);
+  const listType = useSelector((state) => state.listingsFilter.listType);
   const { data, kind } = post;
 
   if (kind === 't1') {
@@ -81,7 +83,10 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     </>
   );
 
+  const btnClass = 'btn btn-link btn-sm m-0 p-0 shadow-none';
+
   let searchLink = '';
+  let directLink = '';
   if (!data.is_self) {
     const searchTo = `/duplicates/${data.id}`;
     searchLink = (
@@ -89,47 +94,73 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
         <Link
           to={searchTo}
           title="Search for other posts linking to this link"
-          className="btn btn-link btn-sm m-0 p-0 shadow-none"
+          className={btnClass}
         >
           <i className="far fa-copy" />
         </Link>
       </div>
     );
+
+    directLink = (
+      <div>
+        <a
+          href={data.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={btnClass}
+          aria-label="Open this link directly"
+          title="Open this link directly"
+        >
+          <i className="fas fa-link" />
+        </a>
+      </div>
+    );
   }
 
-  const title = expand ? (
-    <h6 className="title list-group-item-heading">
+  const redditLink = (
+    <div>
       <a
-        href={data.url}
+        href={`https://reddit.com${data.permalink}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="list-group-item-heading"
-        aria-label="Title"
-        // eslint-disable-next-line
-        dangerouslySetInnerHTML={{ __html: data.title }}
-      />
-      {flairs}
-    </h6>
-  ) : (
-    <h6 className="p-0 m-0">
-      <button
-        onClick={toggleView}
-        className="btn btn-link shadow-none m-0 p-0 post-title"
-        type="button"
-        aria-label="Title"
-        // eslint-disable-next-line
-        dangerouslySetInnerHTML={{ __html: data.title }}
-      />
-      {flairs}{' '}
-      <a
-        href={data.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="list-group-item-heading"
-        title="Open link in new tab"
+        className={btnClass}
+        aria-label="Open on Reddit"
+        title="Open on Reddit"
       >
-        <i className="fas fa-link direct-link" />
+        <i className="fab fa-reddit" />
       </a>
+    </div>
+  );
+
+  let titleLink;
+  if (listType === 'comments') {
+    titleLink = (
+      <a
+        href={data.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="list-group-item-heading"
+        aria-label="Title"
+        // eslint-disable-next-line
+        dangerouslySetInnerHTML={{ __html: data.title }}
+      />
+    );
+  } else {
+    titleLink = (
+      <Link
+        to={data.permalink}
+        className="list-group-item-heading"
+        aria-label="Title"
+        // eslint-disable-next-line
+        dangerouslySetInnerHTML={{ __html: data.title }}
+      />
+    );
+  }
+
+  const title = (
+    <h6 className="title list-group-item-heading">
+      {titleLink}
+      {flairs}
     </h6>
   );
 
@@ -141,6 +172,8 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
           <PostVote />
           <PostSave />
           {searchLink}
+          {redditLink}
+          {directLink}
           <div>
             <PostExpandContract
               expand={expand}
