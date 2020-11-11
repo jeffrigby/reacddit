@@ -215,8 +215,6 @@ const Post = ({
     toggleViewAction,
   ]);
 
-  // Always visible if it's a comment
-  // const isVisible = postType === 'comments' ? true : visible;
   const isVisible = hide ? false : visible;
 
   const classArray = classNames('entry', 'list-group-item', `kind-${kind}`, {
