@@ -279,7 +279,7 @@ class RedditAPI {
       params,
     };
 
-    const url = `user/${user}/${type}/${sort}`;
+    const url = `user/${user}/${type}?sort=${sort}`;
     const result = await this.redditAPI.get(url, data);
     const query = queryString.stringify(params);
     result.data.requestUrl = `${url}?${query}`;
