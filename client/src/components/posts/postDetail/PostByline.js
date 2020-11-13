@@ -32,7 +32,14 @@ const PostByline = ({ data, kind }) => {
   const commentCount = parseFloat(data.num_comments).toLocaleString('en');
   const comments = (
     <>
-      <Link to={data.permalink}>
+      <Link
+        to={{
+          pathname: data.permalink,
+          state: {
+            showBack: true,
+          },
+        }}
+      >
         <i className="far fa-comment" /> {commentCount}
       </Link>
     </>

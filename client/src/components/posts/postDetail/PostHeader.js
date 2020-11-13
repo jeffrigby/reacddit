@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
@@ -8,8 +8,10 @@ import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
 import PostExpandContract from '../postActions/PostExpandContract';
 
-const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
+const PostHeader = ({ toggleView, expand, visible, duplicate, parent }) => {
   const post = useContext(PostsContextData);
+  const history = useHistory();
+  const location = useLocation();
   const listType = useSelector((state) => state.listingsFilter.listType);
   const { data, kind } = post;
 
@@ -92,7 +94,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     searchLink = (
       <div>
         <Link
-          to={searchTo}
+          to={{ pathname: searchTo, state: { showBack: true } }}
           title="Search for other posts linking to this link"
           className={btnClass}
         >
@@ -139,7 +141,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
         href={data.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="list-group-item-heading"
+        className="list-group-item-heading align-middle"
         aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
@@ -148,8 +150,13 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
   } else {
     titleLink = (
       <Link
-        to={data.permalink}
-        className="list-group-item-heading"
+        to={{
+          pathname: data.permalink,
+          state: {
+            showBack: true,
+          },
+        }}
+        className="list-group-item-heading align-middle"
         aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
@@ -157,36 +164,53 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     );
   }
 
+  const backButton = parent &&
+    location.state &&
+    location.state.showBack &&
+    history.length > 2 && (
+      <button
+        className="btn btn-link shadow-none m-0 p-0 mr-2 post-back-button"
+        type="button"
+        onClick={() => history.goBack()}
+        title="Go Back"
+      >
+        <i className="fas fa-chevron-left" /> Back
+      </button>
+    );
+
   const title = (
     <h6 className="title list-group-item-heading">
+      {backButton}
       {titleLink}
       {flairs}
     </h6>
   );
 
   return (
-    <header className="d-flex">
-      {title}
-      {visible ? (
-        <div className="text-nowrap d-flex actions ml-auto">
-          <PostVote />
-          <PostSave />
-          {searchLink}
-          {redditLink}
-          {directLink}
-          <div>
-            <PostExpandContract
-              expand={expand}
-              toggleView={toggleView}
-              kind={kind}
-            />
+    <>
+      <header className="d-flex">
+        {title}
+        {visible ? (
+          <div className="text-nowrap d-flex actions ml-auto">
+            <PostVote />
+            <PostSave />
+            {searchLink}
+            {redditLink}
+            {directLink}
+            <div>
+              <PostExpandContract
+                expand={expand}
+                toggleView={toggleView}
+                kind={kind}
+              />
+            </div>
           </div>
-        </div>
-      ) : (
-        // eslint-disable-next-line
-        <div className="text-nowrap d-flex actions ml-auto offscreen-placeholder" />
-      )}
-    </header>
+        ) : (
+          // eslint-disable-next-line
+          <div className="text-nowrap d-flex actions ml-auto offscreen-placeholder" />
+        )}
+      </header>
+    </>
   );
 };
 
@@ -195,6 +219,7 @@ PostHeader.propTypes = {
   visible: PropTypes.bool.isRequired,
   expand: PropTypes.bool.isRequired,
   duplicate: PropTypes.bool.isRequired,
+  parent: PropTypes.bool.isRequired,
 };
 
 export default React.memo(PostHeader);

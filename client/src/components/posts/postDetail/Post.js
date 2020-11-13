@@ -264,6 +264,7 @@ const Post = ({
               expand={expand}
               toggleView={toggleView}
               duplicate={duplicate}
+              parent={parent}
             />
             <div className="entry-after-header">
               {expand && (
