@@ -118,15 +118,21 @@ const Post = ({
       return false;
     }
 
+    if (data.pinned && siteSettings.condensePinned) {
+      return false;
+    }
+
     if (duplicate && siteSettings.condenseDuplicate) {
       return false;
     }
     return siteSettings.view === 'expanded' || false;
   }, [
     data.stickied,
+    data.pinned,
     siteSettings.condenseSticky,
-    siteSettings.view,
+    siteSettings.condensePinned,
     siteSettings.condenseDuplicate,
+    siteSettings.view,
     duplicate,
   ]);
 
