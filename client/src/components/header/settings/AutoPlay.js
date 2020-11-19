@@ -10,19 +10,17 @@ const AutoPlay = ({ setSiteSetting, autoplay }) => {
 
   return (
     <div className="auto-play">
-      <div className="form-check d-flex">
-        <div>
-          <label className="form-check-label" htmlFor="autoPlayCheck">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              id="autoPlayCheck"
-              defaultChecked={autoplay}
-              onClick={autoPlayToggle}
-            />
-            Auto Play Videos
-          </label>
-        </div>
+      <div className="form-check">
+        <label className="form-check-label" htmlFor="autoPlayCheck">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="autoPlayCheck"
+            defaultChecked={autoplay}
+            onClick={autoPlayToggle}
+          />
+          Auto Play Videos
+        </label>
       </div>
     </div>
   );

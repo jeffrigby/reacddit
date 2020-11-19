@@ -38,6 +38,37 @@ const Help = () => {
 
       <div
         className="modal fade"
+        id="condenseHelp"
+        tabIndex="-1"
+        role="dialog"
+        aria-labelledby="condenseHelp"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-sm">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="exampleModalLabel">
+                Condense By Default
+              </h5>
+              <button
+                type="button"
+                className="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div className="modal-body">
+              Condense sticky, pinned, and/or duplicate (within the same
+              listing) post by default.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="modal fade"
         id="hotkeys"
         tabIndex="-1"
         role="dialog"
