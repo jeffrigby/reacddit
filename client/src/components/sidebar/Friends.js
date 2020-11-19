@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from "react-redux";
 import { redditFetchFriends } from '../../redux/actions/reddit';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
@@ -9,6 +9,8 @@ import { setMenuStatus, getMenuStatus } from '../../common';
 const Friends = ({ redditFriends, getFriends }) => {
   const menuID = 'friends';
   const [showFriends, toggleShowFriends] = useState(getMenuStatus(menuID));
+  // const dispatch = useDispatch();
+
   useEffect(() => {
     if (showFriends) {
       // Get a fresh listing.
@@ -35,7 +37,7 @@ const Friends = ({ redditFriends, getFriends }) => {
 
   const navItems = [];
   Object.values(friends).forEach((f) => {
-    const link = `/user/${f.name}/posts/new`;
+    const link = `/user/${f.name}/posts?sort=new`;
     navItems.push(
       <React.Fragment key={f.id}>
         <li className="nav-item d-flex friend-li">

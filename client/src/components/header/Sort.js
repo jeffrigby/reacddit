@@ -41,6 +41,12 @@ const catsMultis = {
   R: 'rising',
 };
 
+const catsUsers = {
+  H: 'hot',
+  T: 'top',
+  N: 'new',
+};
+
 const catsComments = {
   B: 'best',
   T: 'top',
@@ -86,15 +92,22 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
     }
 
     let link = '';
-    if (listType === 'r') {
-      link = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
-    } else if (listType === 'm' && !me) {
-      link = `/user/${target}/m${userType}/${sort}`;
-    } else if (listType === 'm' && me) {
-      link = `/me/m/${target}/${sort}`;
-    } else if (listType === 's' || listType === 'comments') {
-      // // no need to
-      qs.sort = sort;
+    switch (listType) {
+      case 'r':
+        link = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
+        break;
+      case 'm':
+        link = !me
+          ? `/user/${target}/m${userType}/${sort}`
+          : `/me/m/${target}/${sort}`;
+        break;
+      case 's':
+      case 'comments':
+      case 'u':
+        qs.sort = sort;
+        break;
+      default:
+        break;
     }
 
     if (!_isEmpty(qs)) {
@@ -212,6 +225,8 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
       links2render = { ...catsMultis };
     } else if (listType === 'comments') {
       links2render = { ...catsComments };
+    } else if (listType === 'u') {
+      links2render = { ...catsUsers };
     }
 
     const links = [];
@@ -249,17 +264,28 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
   };
 
   const { listType, sort, target } = listingsFilter;
-  if (target === 'friends' || listType === 'u' || listType === 'duplicates') {
+  if (target === 'friends' || listType === 'duplicates') {
     return false;
   }
   let currentSort;
-  if (listType === 'r' || listType === 'm') {
-    currentSort = sort || 'hot';
-  } else if (listType === 's') {
-    const searchParsed = queryString.parse(search);
-    currentSort = searchParsed.sort || 'relevance';
-  } else if (listType === 'comments') {
-    currentSort = sort || 'best';
+  switch (listType) {
+    case 'r':
+    case 'm':
+      currentSort = sort || 'hot';
+      break;
+    case 's': {
+      const searchParsed = queryString.parse(search);
+      currentSort = searchParsed.sort || 'relevance';
+      break;
+    }
+    case 'comments':
+      currentSort = sort || 'best';
+      break;
+    case 'u':
+      currentSort = sort || 'new';
+      break;
+    default:
+      currentSort = 'hot';
   }
 
   const icon = getIcon(currentSort);
