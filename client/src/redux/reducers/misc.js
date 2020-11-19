@@ -5,6 +5,7 @@ export function siteSettings(
     debug: false,
     condenseSticky: true,
     condenseDuplicate: true,
+    condensePinned: true,
     stream: false,
     autoplay: true,
     pinMenu: true,
