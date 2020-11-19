@@ -61,7 +61,7 @@ const Help = () => {
             </div>
             <div className="modal-body">
               Condense sticky, pinned, and/or duplicate (within the same
-              listing) post by default.
+              listing) posts by default.
             </div>
           </div>
         </div>
