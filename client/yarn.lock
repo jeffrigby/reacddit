@@ -2687,9 +2687,9 @@ copy-to-clipboard@^3.2.0:
     toggle-selection "^1.0.6"
 
 copy-webpack-plugin@^6.0.1:
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/copy-webpack-plugin/-/copy-webpack-plugin-6.3.1.tgz#ceb6e9c3e4910e63a774fd4a27451156775f6e2a"
-  integrity sha512-SyIMdP6H3v+zPU+VIhKRsK0ZEF82KZ93JBlKOoIW8SkkuI84FSrHxG+aMTE1u4csbi9PLRqqWTIK+bfJ2xsFuQ==
+  version "6.3.2"
+  resolved "https://registry.yarnpkg.com/copy-webpack-plugin/-/copy-webpack-plugin-6.3.2.tgz#0e920a6c181a5052aa6e2861b164bda03f83afeb"
+  integrity sha512-MgJ1uouLIbDg4ST1GzqrGQyKoXY5iPqi6fghFqarijam7FQcBa/r6Rg0VkoIuzx75Xq8iAMghyOueMkWUQ5OaA==
   dependencies:
     cacache "^15.0.5"
     fast-glob "^3.2.4"
@@ -7352,9 +7352,9 @@ prettier-linter-helpers@^1.0.0:
     fast-diff "^1.1.2"
 
 prettier@^2.0.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.1.2.tgz#3050700dae2e4c8b67c4c3f666cdb8af405e1ce5"
-  integrity sha512-16c7K+x4qVlJg9rEbXl7HEGmQyZlG4R9AgP+oHKRMsMsuk8s+ATStlf1NpDqyBI1HpVyfjLOeMhH2LvuNvV5Vg==
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.2.0.tgz#8a03c7777883b29b37fb2c4348c66a78e980418b"
+  integrity sha512-yYerpkvseM4iKD/BXLYUkQV5aKt4tQPqaGW6EsZjzyu0r7sVZZNPJW4Y8MyKmicp6t42XUPcBVA+H6sB3gqndw==
 
 pretty-bytes@^5.3.0:
   version "5.4.1"
