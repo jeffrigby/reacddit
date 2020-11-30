@@ -3,11 +3,12 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const Dotenv = require('dotenv-webpack');
-const commonPaths = require('./paths');
 const CopyPlugin = require('copy-webpack-plugin');
 const eslintFormatter = require('react-dev-utils/eslintFormatter');
+const commonPaths = require('./paths');
 
 module.exports = {
+  target: 'web',
   module: {
     rules: [
       {
@@ -29,7 +30,7 @@ module.exports = {
         test: /\.(js|jsx)$/,
         loader: 'babel-loader',
         exclude: /(node_modules)/,
-        options: { cacheDirectory: true },
+        options: { cacheDirectory: true, envName: 'browser' },
       },
       {
         test: /\.(css|scss)$/,
@@ -56,17 +57,6 @@ module.exports = {
             options: {
               limit: 8192,
               outputPath: commonPaths.imagesFolder,
-            },
-          },
-        ],
-      },
-      {
-        test: /\.(woff2|ttf|woff|eot)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              outputPath: commonPaths.fontsFolder,
             },
           },
         ],
