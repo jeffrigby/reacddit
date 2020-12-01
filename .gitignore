@@ -42,3 +42,5 @@ ngrok
 stats.json
 /client/src/components/posts/embeds/domains_custom/*.js
 .env
+/client/.env.production
+/client/.eslintcache

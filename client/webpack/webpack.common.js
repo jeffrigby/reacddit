@@ -7,6 +7,8 @@ const CopyPlugin = require('copy-webpack-plugin');
 const eslintFormatter = require('react-dev-utils/eslintFormatter');
 const commonPaths = require('./paths');
 
+console.log(commonPaths);
+
 module.exports = {
   target: 'web',
   module: {
@@ -69,7 +71,10 @@ module.exports = {
   },
   plugins: [
     new webpack.ProgressPlugin(),
-    new Dotenv({ defaults: true }),
+    new Dotenv({
+      defaults: true,
+      path: commonPaths.dotenv,
+    }),
 
     new CopyPlugin({
       patterns: [

@@ -1,4 +1,10 @@
 const path = require('path');
+const fs = require('fs');
+
+// Make sure any symlinks in the project folder are resolved:
+// https://github.com/facebook/create-react-app/issues/637
+const appDirectory = fs.realpathSync(process.cwd());
+const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath);
 
 require('dotenv').config();
 
@@ -17,17 +23,26 @@ function ensureSlash(inputPath, needsSlash) {
   return inputPath;
 }
 
+function getEnvConfig() {
+  const envSpecificFile = `.env.${process.env.NODE_ENV}`;
+  if (fs.existsSync(resolveApp(envSpecificFile))) {
+    return envSpecificFile;
+  }
+  return '.env';
+}
+
 module.exports = {
-  root: path.resolve(__dirname, '../'),
-  modules: path.resolve('node_modules'),
-  outputPath: path.resolve(__dirname, '../', 'dist'),
-  entryPath: path.resolve(__dirname, '../', 'src/index.js'),
-  templatePath: path.resolve(__dirname, '../', 'src/index.tpl.html'),
+  root: resolveApp('.'),
+  modules: resolveApp('node_modules'),
+  outputPath: resolveApp('dist'),
+  entryPath: resolveApp('src/index.js'),
+  templatePath: resolveApp('src/index.tpl.html'),
   imagesFolder: 'static/images',
   pwaFolder: 'static/pwa',
   fontsFolder: 'static/fonts',
   cssFolder: 'static/css',
   jsFolder: 'static/js',
   webapp: 'static/webapp',
+  dotenv: getEnvConfig(),
   publicPath: ensureSlash(CLIENT_PATH, true),
 };
