@@ -65,6 +65,7 @@ module.exports = {
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
   appIndexJs: resolveModule(resolveApp, 'src/index'),
+  appSrc: resolveApp('src'),
   imagesFolder: 'static/images',
   pwaFolder: 'static/pwa',
   fontsFolder: 'static/fonts',
@@ -72,6 +73,6 @@ module.exports = {
   jsFolder: 'static/js',
   webapp: 'static/webapp',
   dotenv: getEnvConfig(),
-  publicPath: ensureSlash(CLIENT_PATH, true),
+  publicUrlOrPath: ensureSlash(CLIENT_PATH, true),
   swSrc: resolveModule(resolveApp, 'src/service-worker'),
 };
