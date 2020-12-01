@@ -1,4 +1,4 @@
-const commonPaths = require('./paths');
+const paths = require('./paths');
 const webpack = require('webpack');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -8,15 +8,15 @@ const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  entry: [commonPaths.entryPath],
+  entry: [paths.appIndexJs],
   output: {
     filename: '[name].js',
-    path: commonPaths.outputPath,
+    path: paths.appBuild,
     publicPath: '/',
     chunkFilename: '[name].js',
   },
   devServer: {
-    contentBase: commonPaths.outputPath,
+    contentBase: paths.appBuild,
     historyApiFallback: {
       // Paths with dots should still use the history fallback.
       // See https://github.com/facebook/create-react-app/issues/387.
@@ -28,7 +28,7 @@ module.exports = {
     watchContentBase: true,
     quiet: true,
     overlay: false,
-    public: commonPaths.publicPath,
+    public: paths.publicPath.slice(0, -1),
     disableHostCheck: true,
     publicPath: '',
     port: 3000,
@@ -41,13 +41,13 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       inject: true,
-      template: commonPaths.templatePath,
+      template: paths.appHtml,
     }),
     new webpack.DefinePlugin({
       BUILDTIME: JSON.stringify(new Date().toISOString()),
     }),
     new CreateFileWebpack({
-      path: commonPaths.outputPath,
+      path: paths.appBuild,
       fileName: 'build.json',
       content: JSON.stringify({ version: 'dev' }),
     }),

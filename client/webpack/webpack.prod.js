@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const safePostCssParser = require('postcss-safe-parser');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const commonPaths = require('./paths');
+const paths = require('./paths');
 const CreateFileWebpack = require('create-file-webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
@@ -15,12 +15,12 @@ const buildTime = buildTimeDate.toISOString();
 
 module.exports = {
   mode: 'production',
-  entry: [commonPaths.entryPath],
+  entry: [paths.appIndexJs],
   output: {
-    filename: `${commonPaths.jsFolder}/[name].[contenthash:8].js`,
-    path: commonPaths.outputPath,
+    filename: `${paths.jsFolder}/[name].[contenthash:8].js`,
+    path: paths.appBuild,
     publicPath: '/',
-    chunkFilename: `${commonPaths.jsFolder}/[name].[contenthash:8].chunk.js`,
+    chunkFilename: `${paths.jsFolder}/[name].[contenthash:8].chunk.js`,
   },
   module: {
     rules: [],
@@ -118,7 +118,7 @@ module.exports = {
     }),
 
     new CreateFileWebpack({
-      path: commonPaths.outputPath,
+      path: paths.appBuild,
       fileName: 'build.json',
       content: JSON.stringify({ buildTime }),
     }),
@@ -126,7 +126,7 @@ module.exports = {
     new OptimizeCSSAssetsPlugin({}),
     new HtmlWebpackPlugin({
       inject: true,
-      template: commonPaths.templatePath,
+      template: paths.appHtml,
       minify: {
         removeComments: true,
         collapseWhitespace: true,

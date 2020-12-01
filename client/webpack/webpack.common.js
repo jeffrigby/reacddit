@@ -5,9 +5,7 @@ const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeM
 const Dotenv = require('dotenv-webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const eslintFormatter = require('react-dev-utils/eslintFormatter');
-const commonPaths = require('./paths');
-
-console.log(commonPaths);
+const paths = require('./paths');
 
 module.exports = {
   target: 'web',
@@ -58,7 +56,7 @@ module.exports = {
             loader: 'url-loader',
             options: {
               limit: 8192,
-              outputPath: commonPaths.imagesFolder,
+              outputPath: paths.imagesFolder,
             },
           },
         ],
@@ -73,27 +71,25 @@ module.exports = {
     new webpack.ProgressPlugin(),
     new Dotenv({
       defaults: true,
-      path: commonPaths.dotenv,
+      path: paths.dotenv,
     }),
 
     new CopyPlugin({
-      patterns: [
-        { from: `${commonPaths.root}/src/PWA`, to: commonPaths.pwaFolder },
-      ],
+      patterns: [{ from: `${paths.appPath}/src/PWA`, to: paths.pwaFolder }],
     }),
 
-    new WatchMissingNodeModulesPlugin(commonPaths.modules),
+    new WatchMissingNodeModulesPlugin(paths.appNodeModules),
 
     new MiniCssExtractPlugin({
-      filename: `${commonPaths.cssFolder}/[name].[contenthash:8].css`,
-      chunkFilename: `${commonPaths.cssFolder}/[name].[contenthash:8].chunk.css`,
+      filename: `${paths.cssFolder}/[name].[contenthash:8].css`,
+      chunkFilename: `${paths.cssFolder}/[name].[contenthash:8].chunk.css`,
     }),
     // Generate a manifest file which contains a mapping of all asset filenames
     // to their corresponding output file so that tools can pick it up without
     // having to parse `index.html`.
     new ManifestPlugin({
       fileName: 'asset-manifest.json',
-      // publicPath: commonPaths.root,
+      // publicPath: paths.appPath,
     }),
   ],
   // Some libraries import Node modules but don't use them in the browser.
