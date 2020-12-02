@@ -66,6 +66,7 @@ module.exports = {
   appHtml: resolveApp('public/index.html'),
   appIndexJs: resolveModule(resolveApp, 'src/index'),
   appSrc: resolveApp('src'),
+  appPackageJson: resolveApp('package.json'),
   imagesFolder: 'static/images',
   pwaFolder: 'static/pwa',
   fontsFolder: 'static/fonts',

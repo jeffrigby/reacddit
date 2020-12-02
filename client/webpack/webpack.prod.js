@@ -5,16 +5,20 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const safePostCssParser = require('postcss-safe-parser');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const paths = require('./paths');
-const CreateFileWebpack = require('create-file-webpack');
+const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
+  .BundleAnalyzerPlugin;
 
-const buildTimeDate = new Date();
-const buildTime = buildTimeDate.toISOString();
+const paths = require('./paths');
+
+// Variable used for enabling profiling in Production
+const isEnvProductionProfile = process.env.PROFILE;
 
 module.exports = {
   mode: 'production',
+  bail: true,
+  devtool: false,
   entry: [paths.appIndexJs],
   output: {
     filename: `${paths.jsFolder}/[name].[contenthash:8].js`,
@@ -56,6 +60,9 @@ module.exports = {
           mangle: {
             safari10: true,
           },
+          // Added for profiling in devtools
+          keep_classnames: isEnvProductionProfile,
+          keep_fnames: isEnvProductionProfile,
           output: {
             ecma: 5,
             comments: false,
@@ -76,22 +83,15 @@ module.exports = {
         cssProcessorOptions: {
           parser: safePostCssParser,
           map: false,
+          cssProcessorPluginOptions: {
+            preset: ['default', { minifyFontValues: { removeQuotes: false } }],
+          },
         },
       }),
     ],
-    splitChunks: {
-      chunks: 'all',
-      // name: false,
-    },
-    // Keep the runtime chunk separated to enable long term caching
-    // https://twitter.com/wSokra/status/969679223278505985
-    runtimeChunk: true,
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new webpack.DefinePlugin({
-      BUILDTIME: JSON.stringify(buildTime),
-    }),
     new WorkboxWebpackPlugin.GenerateSW({
       cacheId: 'reacddit',
       cleanupOutdatedCaches: true,
@@ -116,14 +116,16 @@ module.exports = {
       filename: 'static/css/[name].[contenthash:8].css',
       chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
     }),
-
-    new CreateFileWebpack({
-      path: paths.appBuild,
-      fileName: 'build.json',
-      content: JSON.stringify({ buildTime }),
+    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
+    new OptimizeCSSAssetsPlugin({
+      cssProcessorOptions: {
+        parser: safePostCssParser,
+        map: false,
+      },
+      cssProcessorPluginOptions: {
+        preset: ['default', { minifyFontValues: { removeQuotes: false } }],
+      },
     }),
-
-    new OptimizeCSSAssetsPlugin({}),
     new HtmlWebpackPlugin({
       inject: true,
       template: paths.appHtml,
@@ -140,6 +142,7 @@ module.exports = {
         minifyURLs: true,
       },
     }),
-  ],
-  devtool: false,
+    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
+    isEnvProductionProfile && new BundleAnalyzerPlugin(),
+  ].filter(Boolean),
 };

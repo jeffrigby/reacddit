@@ -1,7 +1,6 @@
-const paths = require('./paths');
+const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CreateFileWebpack = require('create-file-webpack');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const errorOverlayMiddleware = require('react-dev-utils/errorOverlayMiddleware');
 const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware');
@@ -9,10 +8,13 @@ const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMi
 const ignoredFiles = require('react-dev-utils/ignoredFiles');
 const redirectServedPath = require('react-dev-utils/redirectServedPathMiddleware');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+const paths = require('./paths');
 
 const webpackDevClientEntry = require.resolve(
   'react-dev-utils/webpackHotDevClient'
 );
+
+const appPackageJson = require(paths.appPackageJson);
 
 const host = process.env.HOST || '0.0.0.0';
 const sockHost = process.env.WDS_SOCKET_HOST;
@@ -21,12 +23,20 @@ const sockPort = process.env.WDS_SOCKET_PORT;
 
 module.exports = {
   mode: 'development',
+  devtool: 'cheap-module-source-map',
   entry: [webpackDevClientEntry, paths.appIndexJs],
   output: {
-    filename: '[name].js',
-    path: paths.appBuild,
-    publicPath: '/',
-    chunkFilename: '[name].js',
+    path: undefined,
+    pathinfo: true,
+    filename: 'static/js/bundle.js',
+    // TODO: remove this when upgrading to webpack 5
+    futureEmitAssets: true,
+    chunkFilename: 'static/js/[name].chunk.js',
+    publicPath: paths.publicUrlOrPath,
+    devtoolModuleFilenameTemplate: (info) =>
+      path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+    jsonpFunction: `webpackJsonp${appPackageJson.name}`,
+    globalObject: 'this',
   },
   devServer: {
     disableHostCheck: false,
@@ -77,7 +87,9 @@ module.exports = {
       app.use(noopServiceWorkerMiddleware(paths.publicUrlOrPath));
     },
   },
-  devtool: 'cheap-module-source-map',
+  optimization: {
+    minimize: false,
+  },
   module: {
     rules: [],
   },
@@ -86,14 +98,7 @@ module.exports = {
       inject: true,
       template: paths.appHtml,
     }),
-    new webpack.DefinePlugin({
-      BUILDTIME: JSON.stringify(new Date().toISOString()),
-    }),
-    new CreateFileWebpack({
-      path: paths.appBuild,
-      fileName: 'build.json',
-      content: JSON.stringify({ version: 'dev' }),
-    }),
+    new webpack.HotModuleReplacementPlugin(),
     // new CleanTerminalPlugin(),
     new CaseSensitivePathsPlugin(),
     new FriendlyErrorsWebpackPlugin(),
