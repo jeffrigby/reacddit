@@ -11,7 +11,7 @@ import configureStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
 import Root from './components/layout/Root';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import { register as serviceWorkerRegister } from './serviceWorkerRegistration';
 
 const queryString = require('query-string');
 
@@ -100,4 +100,4 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   }
 }
 
-serviceWorkerRegistration.register();
+serviceWorkerRegister();
