@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import * as serviceWorker from '../../../serviceWorker';
+import * as serviceWorkerRegistration from '../../../serviceWorkerRegistration';
 
 /* global BUILDTIME */
 
@@ -12,7 +12,7 @@ const reload = () => {
       names.forEach((name) => caches.delete(name));
     });
   }
-  serviceWorker.unregister();
+  serviceWorkerRegistration.unregister();
   window.location.reload(true);
 };
 

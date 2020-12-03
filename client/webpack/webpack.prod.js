@@ -7,13 +7,15 @@ const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
-  .BundleAnalyzerPlugin;
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const paths = require('./paths');
 
 // Variable used for enabling profiling in Production
 const isEnvProductionProfile = process.env.PROFILE;
+
+// Get the path to the uncompiled service worker (if it exists).
+// const { swSrc } = paths;
 
 module.exports = {
   mode: 'production',
@@ -99,6 +101,8 @@ module.exports = {
       exclude: [/\.map$/, /asset-manifest\.json$/],
       navigateFallback: `/index.html`,
       skipWaiting: true,
+      maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
       navigateFallbackDenylist: [
         // Exclude URLs starting with /_, as they're likely an API call
         new RegExp('^/_'),
@@ -109,7 +113,15 @@ module.exports = {
         new RegExp('/[^/]+\\.[^/]+$'),
       ],
     }),
-    // new BundleAnalyzerPlugin(),
+    // new WorkboxWebpackPlugin.InjectManifest({
+    //   swSrc,
+    //   dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
+    //   exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
+    //   // Bump up the default maximum size (2mb) that's precached,
+    //   // to make lazy-loading failure scenarios less likely.
+    //   // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
+    //   maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+    // }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional

@@ -1,14 +1,14 @@
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const ManifestPlugin = require('webpack-manifest-plugin');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const Dotenv = require('dotenv-webpack');
-const CopyPlugin = require('copy-webpack-plugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const postcssNormalize = require('postcss-normalize');
 const CreateFileWebpack = require('create-file-webpack');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 const PnpWebpackPlugin = require(`pnp-webpack-plugin`);
 const paths = require('./paths');
@@ -287,7 +287,7 @@ module.exports = {
     }),
 
     new CopyPlugin({
-      patterns: [{ from: `${paths.appPath}/src/PWA`, to: paths.pwaFolder }],
+      patterns: [{ from: `${paths.appPublic}/PWA`, to: paths.pwaFolder }],
     }),
 
     new CreateFileWebpack({
@@ -305,7 +305,7 @@ module.exports = {
     //   `index.html`
     // - "entrypoints" key: Array of files which are included in `index.html`,
     //   can be used to reconstruct the HTML if necessary
-    new ManifestPlugin({
+    new WebpackManifestPlugin({
       fileName: 'asset-manifest.json',
       publicPath: paths.publicUrlOrPath,
       generate: (seed, files, entrypoints) => {
