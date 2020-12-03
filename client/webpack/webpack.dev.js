@@ -23,6 +23,7 @@ const sockPort = process.env.WDS_SOCKET_PORT;
 
 module.exports = {
   mode: 'development',
+  bail: false,
   devtool: 'cheap-module-source-map',
   entry: [webpackDevClientEntry, paths.appIndexJs],
   output: {
