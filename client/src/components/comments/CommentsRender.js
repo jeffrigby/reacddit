@@ -31,9 +31,7 @@ function CommentsRender({ posts, listType, linkId }) {
   let comments;
   const entriesKeys = Object.keys(posts);
   if (entriesKeys.length > 0) {
-    comments = entriesKeys.map((key, idx) => {
-      return renderComment(posts[key], idx);
-    });
+    comments = entriesKeys.map((key, idx) => renderComment(posts[key], idx));
   }
 
   return <>{comments}</>;

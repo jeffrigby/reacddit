@@ -79,9 +79,7 @@ const iconClasses = {
 };
 
 const Sort = ({ listingsFilter, search, me, gotoLink }) => {
-  const getIcon = (sort) => {
-    return <i className={iconClasses[sort]} />;
-  };
+  const getIcon = (sort) => <i className={iconClasses[sort]} />;
 
   const genLink = (sort, t) => {
     const { listType, target, userType } = listingsFilter;

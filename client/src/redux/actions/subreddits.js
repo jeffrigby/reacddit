@@ -138,11 +138,10 @@ export function subredditsFetchLastUpdated() {
  * @param children
  * @returns {*}
  */
-const mapSubreddits = (children) => {
-  return Object.entries(children)
+const mapSubreddits = (children) =>
+  Object.entries(children)
     .map(([key, value]) => value.data)
     .reduce((ac, s) => ({ ...ac, [s.display_name.toLowerCase()]: s }), {});
-};
 
 /**
  * Fetch all the subreddits and concat them together

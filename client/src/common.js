@@ -34,8 +34,8 @@ export const getLocationKey = (currentState) => {
   return key || 'front';
 };
 
-export const pruneObject = (obj, maxKeys, maxAge) => {
-  return produce(obj, (draft) => {
+export const pruneObject = (obj, maxKeys, maxAge) =>
+  produce(obj, (draft) => {
     const keys = Object.keys(draft);
 
     // Remove the keys older than an hour
@@ -56,7 +56,6 @@ export const pruneObject = (obj, maxKeys, maxAge) => {
       });
     }
   });
-};
 
 /**
  * Key the entry children to the name key

@@ -69,11 +69,12 @@ const VideoComp = ({ content, load, link }) => {
   const [buffer, setBuffer] = useState({ status: 'unloaded', buffers: [] });
 
   const isMounted = useRef(true);
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       isMounted.current = false;
-    };
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     // @todo this seems like a dumb way to handle not firing.

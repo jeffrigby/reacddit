@@ -44,9 +44,7 @@ const PostSave = ({ bearer }) => {
     } else {
       document.removeEventListener('keydown', hotkeys);
     }
-    return () => {
-      return document.removeEventListener('keydown', hotkeys);
-    };
+    return () => document.removeEventListener('keydown', hotkeys);
   }, [actionable, triggerSave]);
 
   const saveStr =

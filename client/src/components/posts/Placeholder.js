@@ -55,19 +55,15 @@ const Placeholder = ({ load }) => {
   const getRatioRounded = (width, height) =>
     Math.round((width / height) * 100) / 100;
 
-  const fixedRatio = (r) => {
-    return (
-      <div className="content">
-        <div className="media-cont black-bg">
-          <div className="media-contain-width">
-            <div
-              className={`embed-responsive embed-responsive-${r} black-bg`}
-            />
-          </div>
+  const fixedRatio = (r) => (
+    <div className="content">
+      <div className="media-cont black-bg">
+        <div className="media-contain-width">
+          <div className={`embed-responsive embed-responsive-${r} black-bg`} />
         </div>
       </div>
-    );
-  };
+    </div>
+  );
 
   if (data.is_self && data.selftext) {
     const selfContent = renderSelf(data);

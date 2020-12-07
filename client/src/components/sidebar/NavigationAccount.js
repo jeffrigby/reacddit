@@ -51,9 +51,7 @@ const NavigationAccount = ({ me, urlPush }) => {
 
   useEffect(() => {
     document.addEventListener('keydown', hotkeys);
-    return () => {
-      return document.removeEventListener('keydown', hotkeys);
-    };
+    return () => document.removeEventListener('keydown', hotkeys);
   });
 
   const toggleShowMenu = () => {

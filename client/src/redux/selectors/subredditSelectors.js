@@ -49,11 +49,12 @@ export const filterSubs = createSelector(
             .toLowerCase()
             .indexOf(filterText.toLowerCase()) > -1
       )
-      .reduce((obj, key) => {
-        return {
+      .reduce(
+        (obj, key) => ({
           ...obj,
           [key]: subreddits[key],
-        };
-      }, {});
+        }),
+        {}
+      );
   }
 );
