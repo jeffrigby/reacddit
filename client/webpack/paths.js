@@ -8,8 +8,6 @@ const resolveApp = (relativePath) => path.resolve(appDirectory, relativePath);
 
 require('dotenv').config();
 
-const { CLIENT_PATH } = process.env;
-
 function ensureSlash(inputPath, needsSlash) {
   const hasSlash = inputPath.endsWith('/');
   if (hasSlash && !needsSlash) {
@@ -74,6 +72,6 @@ module.exports = {
   jsFolder: 'static/js',
   webapp: 'static/webapp',
   dotenv: getEnvConfig(),
-  publicUrlOrPath: ensureSlash(CLIENT_PATH, true),
+  publicUrlOrPath: ensureSlash(process.env.PUBLIC_URL, true),
   swSrc: resolveModule(resolveApp, 'src/service-worker'),
 };
