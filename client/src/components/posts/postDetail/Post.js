@@ -17,6 +17,7 @@ import {
   postVisibility,
 } from '../../../redux/selectors/postSelectors';
 import CommentReplyList from '../../comments/CommentReplyList';
+import { useLocation } from 'react-router-dom';
 
 const classNames = require('classnames');
 
@@ -114,11 +115,11 @@ const Post = ({
   });
 
   const initView = useCallback(() => {
-    if (data.stickied && siteSettings.condenseSticky) {
+    if (data.stickied && siteSettings.condenseSticky && !parent) {
       return false;
     }
 
-    if (data.pinned && siteSettings.condensePinned) {
+    if (data.pinned && siteSettings.condensePinned && !parent) {
       return false;
     }
 
