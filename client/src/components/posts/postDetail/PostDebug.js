@@ -18,6 +18,7 @@ const PostDebug = ({ renderedContent }) => {
             theme="harmonic"
             sortKeys
             collapsed
+            quotesOnKeys={false}
           />
         )}
         {data.preview && (
@@ -27,6 +28,7 @@ const PostDebug = ({ renderedContent }) => {
             theme="harmonic"
             sortKeys
             collapsed
+            quotesOnKeys={false}
           />
         )}
         <ReactJson
@@ -35,6 +37,7 @@ const PostDebug = ({ renderedContent }) => {
           theme="harmonic"
           sortKeys
           collapsed
+          quotesOnKeys={false}
         />
       </Suspense>
     </div>
