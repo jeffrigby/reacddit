@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 const VideoDebug = ({
@@ -9,25 +9,43 @@ const VideoDebug = ({
   stalled,
   waiting,
   buffer,
-}) => (
-  <code>
-    Current Time: {currentTime}
-    <br />
-    Duration: {duration}
-    <br />
-    Can Play: {canPlay ? 'true' : 'false'}
-    <br />
-    Can Play Through: {canPlayThrough ? 'true' : 'false'}
-    <br />
-    Stalled: {stalled ? 'true' : 'false'}
-    <br />
-    Waiting: {waiting ? 'true' : 'false'}
-    <br />
-    Buffer Status: {buffer.status}
-    <br />
-    Buffers: {JSON.stringify(buffer.buffers)}
-  </code>
-);
+}) => {
+  const [showDebug, setShowDebug] = useState(false);
+  const toggleDebug = () => {
+    setShowDebug(!showDebug);
+  };
+
+  return (
+    <div>
+      <button
+        onClick={toggleDebug}
+        type="button"
+        className="btn btn-link btn-sm m-0 p-0 shadow-none"
+      >
+        {showDebug ? 'Hide' : 'Show'} Video Debug
+      </button>
+      {showDebug && (
+        <code>
+          Current Time: {currentTime}
+          <br />
+          Duration: {duration}
+          <br />
+          Can Play: {canPlay ? 'true' : 'false'}
+          <br />
+          Can Play Through: {canPlayThrough ? 'true' : 'false'}
+          <br />
+          Stalled: {stalled ? 'true' : 'false'}
+          <br />
+          Waiting: {waiting ? 'true' : 'false'}
+          <br />
+          Buffer Status: {buffer.status}
+          <br />
+          Buffers: {JSON.stringify(buffer.buffers)}
+        </code>
+      )}
+    </div>
+  );
+};
 
 VideoDebug.propTypes = {
   currentTime: PropTypes.number.isRequired,
