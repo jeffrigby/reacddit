@@ -32,8 +32,14 @@ const PostsParent = ({ post }) => {
       const parentCommentLink = `${post.data.permalink}${comment}/?context=8&depth=9`;
       commentLinks = (
         <div className="list-actions">
-          <Link to={post.data.permalink}>View all comments</Link>{' '}
-          <Link to={parentCommentLink}>Show parent comments</Link>
+          <Link
+            to={{ pathname: post.data.permalink, state: { showBack: true } }}
+          >
+            View all comments
+          </Link>{' '}
+          <Link to={{ pathname: parentCommentLink, state: { showBack: true } }}>
+            Show parent comments
+          </Link>
         </div>
       );
     }
