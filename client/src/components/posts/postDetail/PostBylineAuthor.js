@@ -5,7 +5,15 @@ import { Link } from 'react-router-dom';
 import { redditFetchFriends } from '../../../redux/actions/reddit';
 import RedditAPI from '../../../reddit/redditAPI';
 
-const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
+const classNames = require('classnames');
+
+const PostBylineAuthor = ({
+  author,
+  flair,
+  redditFriends,
+  getFriends,
+  isSubmitter,
+}) => {
   const removeFriend = async (name) => {
     await RedditAPI.removeFriend(name);
     getFriends(true);
@@ -31,6 +39,11 @@ const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
     </>
   ) : null;
 
+  const authorClasses = classNames({
+    'is-friend': isFriend,
+    'is-submitter': isSubmitter,
+  });
+
   const authorLink =
     author === '[deleted]' ? (
       <div>
@@ -38,25 +51,24 @@ const PostBylineAuthor = ({ author, flair, redditFriends, getFriends }) => {
       </div>
     ) : (
       <>
-        <>
-          <button
-            className="btn btn-link btn-sm shadow-none"
-            type="button"
-            onClick={onClick}
-            title={title}
-          >
-            <i
-              className={`fas ${isFriend ? 'fa-user-minus' : 'fa-user-plus'}`}
-            />
-          </button>{' '}
-          <Link
-            to={`/user/${author}/posts/new`}
-            className={isFriend ? 'is-friend' : 'not-friend'}
-          >
-            {author}
-          </Link>{' '}
-          {authorFlair}
-        </>
+        <button
+          className="btn btn-link btn-sm shadow-none"
+          type="button"
+          onClick={onClick}
+          title={title}
+        >
+          <i className={`fas ${isFriend ? 'fa-user-minus' : 'fa-user-plus'}`} />
+        </button>{' '}
+        <Link
+          to={{
+            pathname: `/user/${author}/posts/new`,
+            state: { showBack: true },
+          }}
+          className={authorClasses}
+        >
+          {author}
+        </Link>{' '}
+        {authorFlair}
       </>
     );
 
@@ -68,10 +80,12 @@ PostBylineAuthor.propTypes = {
   getFriends: PropTypes.func.isRequired,
   author: PropTypes.string.isRequired,
   flair: PropTypes.string,
+  isSubmitter: PropTypes.bool,
 };
 
 PostBylineAuthor.defaultProps = {
   flair: null,
+  isSubmitter: false,
 };
 
 const mapStateToProps = (state) => ({

@@ -27,7 +27,11 @@ const PostByline = ({ data, kind }) => {
   );
 
   const subUrl = `/r/${data.subreddit}`;
-  const subredditInfo = <Link to={subUrl}>/r/{data.subreddit}</Link>;
+  const subredditInfo = (
+    <Link to={{ pathname: subUrl, state: { showBack: true } }}>
+      /r/{data.subreddit}
+    </Link>
+  );
 
   const commentCount = parseFloat(data.num_comments).toLocaleString('en');
   const comments = (
@@ -47,7 +51,11 @@ const PostByline = ({ data, kind }) => {
 
   return (
     <>
-      <PostBylineAuthor author={data.author} flair={data.author_flair_text} />{' '}
+      <PostBylineAuthor
+        author={data.author}
+        flair={data.author_flair_text}
+        isSubmitter={data.is_submitter}
+      />{' '}
       {when}{' '}
       {kind === 't3' && (
         <>

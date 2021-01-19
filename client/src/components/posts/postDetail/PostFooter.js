@@ -87,7 +87,11 @@ const PostFooter = ({
           {debug && <span className="pl-3">{debugLinks}</span>}
           {!data.is_self && data.domain && (
             <Link
-              to={`/r/${data.subreddit}/search?q=site:%22${data.domain}%22`}
+              to={{
+                pathname: `/r/${data.subreddit}/search`,
+                search: `?q=site:%22${data.domain}%22`,
+                state: { showBack: true },
+              }}
             >
               {data.domain}
             </Link>

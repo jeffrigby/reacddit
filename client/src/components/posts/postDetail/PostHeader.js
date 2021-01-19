@@ -36,14 +36,25 @@ const PostHeader = ({ toggleView, expand, visible, duplicate, parent }) => {
     );
   }
 
-  const linkFlair = data.link_flair_text ? (
-    <Link
-      className="badge badge-dark mx-1"
-      to={`/r/${data.subreddit}/search?q=flair:%22${data.link_flair_text}%22`}
-    >
-      {data.link_flair_text}
-    </Link>
-  ) : null;
+  let linkFlair = null;
+  if (data.link_flair_text) {
+    const flairLinkQuery = encodeURIComponent(
+      `flair:"${data.link_flair_text}"`
+    );
+    const flairLink = `/r/${data.subreddit}/search`;
+    linkFlair = (
+      <Link
+        className="badge badge-dark mx-1"
+        to={{
+          pathname: flairLink,
+          search: `?q=${flairLinkQuery}`,
+          state: { showBack: true },
+        }}
+      >
+        {data.link_flair_text}
+      </Link>
+    );
+  }
 
   const dupeFlair = duplicate ? (
     <div
@@ -194,9 +205,13 @@ const PostHeader = ({ toggleView, expand, visible, duplicate, parent }) => {
           <div className="text-nowrap d-flex actions ml-auto">
             <PostVote />
             <PostSave />
-            {searchLink}
-            {redditLink}
-            {directLink}
+            {expand && (
+              <>
+                {searchLink}
+                {redditLink}
+                {directLink}
+              </>
+            )}
             <div>
               <PostExpandContract
                 expand={expand}

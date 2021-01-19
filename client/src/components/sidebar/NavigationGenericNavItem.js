@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
 import _trimEnd from 'lodash/trimEnd';
+import parse from 'url-parse';
 
 const closeMenu = () => {
   document.body.classList.remove('show-menu');
@@ -36,6 +37,7 @@ const NavigationGenericNavItem = (props) => {
   );
 
   const trimmedTo = _trimEnd(to, '/');
+  const url = parse(trimmedTo);
 
   let navItem;
 
@@ -45,7 +47,11 @@ const NavigationGenericNavItem = (props) => {
         <div className="flex-grow-1 nav-link-cont mr-2">
           <NavLink
             id={id}
-            to={trimmedTo}
+            to={{
+              pathname: url.pathname,
+              search: url.query,
+              state: { showBack: true },
+            }}
             title={titleNew}
             className={classNames}
             activeClassName="activeSubreddit"

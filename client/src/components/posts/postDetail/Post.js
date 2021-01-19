@@ -17,7 +17,6 @@ import {
   postVisibility,
 } from '../../../redux/selectors/postSelectors';
 import CommentReplyList from '../../comments/CommentReplyList';
-import { useLocation } from 'react-router-dom';
 
 const classNames = require('classnames');
 
@@ -134,6 +133,7 @@ const Post = ({
     siteSettings.condensePinned,
     siteSettings.condenseDuplicate,
     siteSettings.view,
+    parent,
     duplicate,
   ]);
 

@@ -89,13 +89,13 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
       qs.t = t;
     }
 
-    let link = '';
+    const to = {};
     switch (listType) {
       case 'r':
-        link = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
+        to.pathname = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
         break;
       case 'm':
-        link = !me
+        to.pathname = !me
           ? `/user/${target}/m${userType}/${sort}`
           : `/me/m/${target}/${sort}`;
         break;
@@ -113,10 +113,12 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
         delete qs.t;
       }
       const searchRendered = queryString.stringify(qs);
-      link += `?${searchRendered}`;
+      to.search = `?${searchRendered}`;
     }
 
-    return link;
+    to.state = { showBack: true };
+
+    return to;
   };
 
   const handleSortHotkey = (event) => {
