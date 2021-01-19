@@ -26,6 +26,11 @@ div#entries {
     font-weight: bold;
   }
 
+  .is-submitter {
+    font-weight: bold;
+    color: red;
+  }
+
   .media-cont {
     margin-left: -21px;
     margin-right: -21px;
@@ -65,9 +70,13 @@ div#entries {
   }
 
   div.condensed {
+    .title {
+      font-size: 1em;
+    }
     .post-title {
       white-space: normal;
       text-align: left;
+      font-size: 1em;
     }
 
     .comment-meta {
