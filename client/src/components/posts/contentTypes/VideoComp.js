@@ -92,11 +92,14 @@ const VideoComp = ({ content, load, link }) => {
   }, [videoRef, autoplay, autoplayState]);
 
   useEffect(() => {
-    setTimeout(() => {
+    const canPlayTimeout = setTimeout(() => {
       if (!canPlay && load && isMounted.current) {
         setLoadError(true);
       }
     }, 5000);
+    return () => {
+      clearTimeout(canPlayTimeout);
+    };
   }, [canPlay, load]);
 
   const getSetBuffer = useMemo(
@@ -114,7 +117,9 @@ const VideoComp = ({ content, load, link }) => {
   );
 
   useEffect(() => {
-    getSetBuffer();
+    if (isMounted.current) {
+      getSetBuffer();
+    }
   }, [getSetBuffer, playing, currentTime, duration, canPlay, canPlayThrough]);
 
   const { width, height, sources } = content;
@@ -208,14 +213,16 @@ const VideoComp = ({ content, load, link }) => {
   };
 
   const eventTimeUpdate = (e) => {
-    trackPlaying();
-    throttledTime(videoRef.current.currentTime);
-    if (stalled) {
-      setStalled(false);
-    }
+    if (isMounted.current) {
+      trackPlaying();
+      throttledTime(videoRef.current.currentTime);
+      if (stalled) {
+        setStalled(false);
+      }
 
-    if (waiting) {
-      setWaiting(false);
+      if (waiting) {
+        setWaiting(false);
+      }
     }
   };
 
