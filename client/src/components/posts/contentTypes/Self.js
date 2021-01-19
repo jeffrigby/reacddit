@@ -115,7 +115,7 @@ const Self = ({ content, load, name }) => {
             {renderedHTML}
           </div>
           {showMore && (
-            <div className="self-show-more text-right">
+            <div className="self-show-more">
               <button
                 type="button"
                 className="btn btn-link btn-sm shadow-none p-0"
