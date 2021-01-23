@@ -17,13 +17,15 @@ const VideoDebug = ({
 
   return (
     <div>
-      <button
-        onClick={toggleDebug}
-        type="button"
-        className="btn btn-link btn-sm m-0 p-0 shadow-none"
-      >
-        {showDebug ? 'Hide' : 'Show'} Video Debug
-      </button>
+      <div>
+        <button
+          onClick={toggleDebug}
+          type="button"
+          className="btn btn-link btn-sm m-0 p-0 shadow-none"
+        >
+          {showDebug ? 'Hide' : 'Show'} Video Debug
+        </button>
+      </div>
       {showDebug && (
         <code>
           Current Time: {currentTime}
