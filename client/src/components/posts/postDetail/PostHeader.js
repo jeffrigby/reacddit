@@ -1,39 +1,26 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useParams } from 'react-router';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 import { PostsContextData } from '../../../contexts';
-import PostMeta from './PostMeta';
 import PostExpandContract from '../postActions/PostExpandContract';
+import PostHeaderComment from './PostHeaderComment';
+import PostTimeAgo from './PostTimeAgo';
+import PostCommentLink from './PostCommentLink';
+import PostSubLink from './PostSubLink';
 
-const PostHeader = ({ toggleView, expand, visible, duplicate, parent }) => {
+const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
   const post = useContext(PostsContextData);
-  const history = useHistory();
-  const location = useLocation();
   const listType = useSelector((state) => state.listingsFilter.listType);
+  const params = useParams();
   const { data, kind } = post;
 
+  // Is this a comment?
   if (kind === 't1') {
-    return (
-      <header className="d-flex">
-        <div className="mr-2 post-action-expand">
-          <PostExpandContract
-            expand={expand}
-            toggleView={toggleView}
-            kind={kind}
-          />
-        </div>
-        <div className="mr-auto comment-meta meta">
-          <PostMeta />
-        </div>
-        <div className="text-nowrap align-middle d-flex actions">
-          <PostVote />
-          <PostSave />
-        </div>
-      </header>
-    );
+    return <PostHeaderComment expand={expand} toggleView={toggleView} />;
   }
 
   let linkFlair = null;
@@ -58,10 +45,10 @@ const PostHeader = ({ toggleView, expand, visible, duplicate, parent }) => {
 
   const dupeFlair = duplicate ? (
     <div
-      className="badge badge-dark mx-1"
+      className="badge badge-dark mr-1"
       title="This post appears in the list above."
     >
-      Duplicate Post
+      Duplicate
     </div>
   ) : null;
 
@@ -75,24 +62,21 @@ const PostHeader = ({ toggleView, expand, visible, duplicate, parent }) => {
   ) : null;
 
   const pinned = data.pinned ? (
-    <div className="badge badge-darl mx-1" title="Pinned Post">
+    <div className="badge badge-darl mr-1" title="Pinned Post">
       <i className="fas fa-thumbtack" />
     </div>
   ) : null;
 
   const sticky = data.stickied ? (
-    <div className="badge badge-darl mx-1" title="Sticky Post">
+    <div className="badge badge-darl mr-1" title="Sticky Post">
       <i className="fas fa-sticky-note" />
     </div>
   ) : null;
 
   const flairs = (
     <>
-      {pinned}
-      {sticky}
       {nsfwFlair}
       {linkFlair}
-      {dupeFlair}
     </>
   );
 
@@ -175,27 +159,64 @@ const PostHeader = ({ toggleView, expand, visible, duplicate, parent }) => {
     );
   }
 
-  const backButton = parent &&
-    location.state &&
-    location.state.showBack &&
-    history.length > 2 && (
-      <button
-        className="btn btn-link shadow-none m-0 p-0 mr-2 post-back-button"
-        type="button"
-        onClick={() => history.goBack()}
-        title="Go Back"
-      >
-        <i className="fas fa-chevron-left" /> Back
-      </button>
-    );
-
   const title = (
     <h6 className="title list-group-item-heading">
-      {backButton}
+      {pinned}
+      {sticky}
+      {dupeFlair}
       {titleLink}
       {flairs}
     </h6>
   );
+
+  // Show subreddit?
+  let showSubreddits = true;
+  if (params.listType === 'r' && params.target !== 'popular') {
+    showSubreddits = false;
+  }
+
+  if (!expand) {
+    return (
+      <header className="d-flex flex-nowrap">
+        <div>
+          {pinned}
+          {sticky}
+          {dupeFlair}
+        </div>
+        <div
+          className="flex-grow-1 list-group-item-heading align-middle title mr-2"
+          onClick={toggleView}
+          role="link"
+          title="Click to expand"
+          tabIndex={0}
+          onKeyDown={toggleView}
+        >
+          <span
+            className="font-weight-bold"
+            // eslint-disable-next-line
+            dangerouslySetInnerHTML={{ __html: data.title }}
+          />
+          {data.is_self && data.selftext && (
+            <span className="ml-1 small">{data.selftext}</span>
+          )}
+        </div>
+        {showSubreddits && (
+          <div className="mr-2">
+            <PostSubLink subreddit={data.subreddit} />
+          </div>
+        )}
+        <div className="mr-2">
+          <PostTimeAgo createdUtc={data.created_utc} />
+        </div>
+        <div>
+          <PostCommentLink
+            numComments={data.num_comments}
+            permalink={data.permalink}
+          />
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>
@@ -234,7 +255,6 @@ PostHeader.propTypes = {
   visible: PropTypes.bool.isRequired,
   expand: PropTypes.bool.isRequired,
   duplicate: PropTypes.bool.isRequired,
-  parent: PropTypes.bool.isRequired,
 };
 
 export default React.memo(PostHeader);

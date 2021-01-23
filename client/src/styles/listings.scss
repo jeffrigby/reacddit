@@ -65,32 +65,21 @@ div#entries {
     font-weight: normal;
   }
 
-  .post-back-button, .post-back-button i {
+  .post-back-button,
+  .post-back-button i {
     line-height: 1.2;
   }
 
   div.condensed {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    font-size: 0.925em;
+    div {
+      white-space: nowrap;
+    }
     .title {
-      font-size: 1em;
-    }
-    .post-title {
-      white-space: normal;
-      text-align: left;
-      font-size: 1em;
-    }
-
-    .comment-meta {
-      margin-bottom: 0.5rem;
-    }
-
-    .direct-link {
-      display: none;
-    }
-
-    header:hover {
-      .direct-link {
-        display: inline !important;
-      }
+      cursor: pointer;
+      overflow: hidden;
     }
   }
 

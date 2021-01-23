@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import throttle from 'lodash/throttle';
+import { useParams } from 'react-router';
 import Content from '../Content';
 import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
@@ -13,7 +14,6 @@ import { listingStatus } from '../../../redux/selectors/listingsSelector';
 import {
   postActionable,
   postFocused,
-  // postMinHeight,
   postVisibility,
 } from '../../../redux/selectors/postSelectors';
 import CommentReplyList from '../../comments/CommentReplyList';
@@ -81,6 +81,7 @@ const Post = ({
   const { data, kind } = post;
   const [hide, setHide] = useState(false);
   const [showVisToggle, setShowVisToggle] = useState(false);
+  const params = useParams();
   const postRef = useRef();
   const minHeightRef = useRef();
 
@@ -114,6 +115,14 @@ const Post = ({
   });
 
   const initView = useCallback(() => {
+    if (params.listType === 'comments') {
+      return true;
+    }
+
+    if (parent) {
+      return true;
+    }
+
     if (data.stickied && siteSettings.condenseSticky && !parent) {
       return false;
     }
@@ -127,6 +136,7 @@ const Post = ({
     }
     return siteSettings.view === 'expanded' || false;
   }, [
+    params.listType,
     data.stickied,
     data.pinned,
     siteSettings.condenseSticky,
@@ -235,7 +245,7 @@ const Post = ({
   });
 
   const styles = {};
-  if (!isVisible && minHeightRef.current) {
+  if (!isVisible && minHeightRef.current && expand) {
     styles.minHeight = minHeightRef.current;
   }
 
@@ -275,19 +285,22 @@ const Post = ({
             />
             <div className="entry-after-header">
               {expand && (
-                <Content
-                  content={renderedContent}
-                  load={isVisible}
-                  key={data.id}
-                />
+                <>
+                  <Content
+                    content={renderedContent}
+                    load={isVisible}
+                    key={data.id}
+                  />
+
+                  <PostFooter
+                    debug={siteSettings.debug}
+                    renderedContent={renderedContent}
+                    visible={isVisible}
+                    showVisToggle={showVisToggle}
+                    setShowVisToggle={setShowVisToggle}
+                  />
+                </>
               )}
-              <PostFooter
-                debug={siteSettings.debug}
-                renderedContent={renderedContent}
-                visible={isVisible}
-                showVisToggle={showVisToggle}
-                setShowVisToggle={setShowVisToggle}
-              />
               {isReplies && expand && (
                 <CommentReplyList
                   replies={data.replies}

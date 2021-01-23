@@ -16,6 +16,16 @@ export const nextEntry = (focused) => {
   }
 };
 
+export const nextEntryCollapsed = (focused) => {
+  if (isNil(focused)) return;
+
+  const current = document.getElementById(focused);
+  if (isNil(current)) return;
+
+
+
+};
+
 export const prevEntry = (focused) => {
   if (isNil(focused)) return;
 
