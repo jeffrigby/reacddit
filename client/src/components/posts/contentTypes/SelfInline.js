@@ -45,7 +45,6 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
     <div className="inline-render">
       <Content
         content={resolvedContent[inlineIdx].content}
-        load={load}
         data={{ name }} // Just pass the name.
         key={inlineKey}
       />

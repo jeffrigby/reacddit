@@ -3,8 +3,8 @@ import PostByline from './PostByline';
 import { PostsContextData } from '../../../contexts';
 
 const PostMeta = () => {
-  const post = useContext(PostsContextData);
-  const { data, kind } = post;
+  const postContext = useContext(PostsContextData);
+  const { data, kind } = postContext.post;
   const sticky = data.stickied || false;
 
   const crossPost =

@@ -1,7 +1,12 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext } from 'react';
+// import PropTypes from 'prop-types';
+import { PostsContextData } from '../../../contexts';
 
-const Thumb = ({ content, load }) => {
+const Thumb = () => {
+  const postContext = useContext(PostsContextData);
+  const { content } = postContext;
+  const load = postContext.isLoaded;
+
   let img;
   if (load) {
     img = (
@@ -36,9 +41,6 @@ const Thumb = ({ content, load }) => {
   );
 };
 
-Thumb.propTypes = {
-  content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
-};
+Thumb.propTypes = {};
 
 export default Thumb;

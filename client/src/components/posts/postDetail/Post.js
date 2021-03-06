@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useContext,
+} from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
@@ -8,13 +14,16 @@ import Content from '../Content';
 import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
-import { PostsContextData, PostsContextActionable } from '../../../contexts';
+import {
+  PostsContextData,
+  PostsContextActionable,
+  ListingsContextLastExpanded,
+} from '../../../contexts';
 import { hotkeyStatus } from '../../../common';
 import { listingStatus } from '../../../redux/selectors/listingsSelector';
 import {
   postActionable,
   postFocused,
-  postVisibility,
 } from '../../../redux/selectors/postSelectors';
 import CommentReplyList from '../../comments/CommentReplyList';
 
@@ -70,9 +79,7 @@ const Post = ({
   siteSettings,
   post,
   focused,
-  visible,
   actionable,
-  // minHeight,
   listingsStatus,
   gotoLink,
   duplicate,
@@ -80,21 +87,49 @@ const Post = ({
 }) => {
   const { data, kind } = post;
   const [hide, setHide] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const [onScreen, setOnScreen] = useState({});
   const [showVisToggle, setShowVisToggle] = useState(false);
   const params = useParams();
   const postRef = useRef();
   const minHeightRef = useRef();
 
+  const [lastExpanded, setLastExpanded] = useContext(
+    ListingsContextLastExpanded
+  );
+
+  // Set observer for loading range.
+  useEffect(() => {
+    const loadObserver = new IntersectionObserver(
+      (entries) => {
+        setShouldLoad(entries[0].isIntersecting);
+      },
+      { threshold: 0, rootMargin: '250px 0px 500px 0px' }
+    );
+    loadObserver.observe(postRef.current);
+    return () => loadObserver.disconnect();
+  }, [postRef]);
+
+  // Set observer for on screen range.
+  useEffect(() => {
+    const onScreenObs = new IntersectionObserver(
+      (entries) => setOnScreen(entries[0].isIntersecting),
+      { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
+    );
+    onScreenObs.observe(postRef.current);
+    return () => onScreenObs.disconnect();
+  }, [postRef]);
+
   const getMinHeight = useCallback(() => {
-    if (postRef.current && visible) {
+    if (postRef.current && shouldLoad) {
       minHeightRef.current = postRef.current.getBoundingClientRect().height;
     }
-  }, [visible]);
+  }, [shouldLoad]);
 
   useEffect(() => {
     getMinHeight();
     const throttledGetHeights = throttle(getMinHeight, 500);
-    if (visible) {
+    if (shouldLoad) {
       window.addEventListener('resize', throttledGetHeights, false);
     } else {
       window.removeEventListener('resize', throttledGetHeights, false);
@@ -102,10 +137,10 @@ const Post = ({
     return () => {
       window.removeEventListener('resize', throttledGetHeights, false);
     };
-  }, [getMinHeight, visible]);
+  }, [getMinHeight, shouldLoad]);
 
   useEffect(() => {
-    if (visible) {
+    if (shouldLoad) {
       getMinHeight();
       // trigger it after a second in case things re-render
       setTimeout(() => {
@@ -154,11 +189,57 @@ const Post = ({
     setExpand(view);
   }, [initView]);
 
+  useEffect(() => {
+    let reposInt;
+    if (siteSettings.view === 'condensed' && lastExpanded) {
+      // Close one that was already open.
+      if (expand && data.name !== lastExpanded) {
+        setExpand(false);
+      } else if (data.name === lastExpanded && !expand) {
+        setExpand(true);
+      }
+
+      if (data.name === lastExpanded) {
+        const reposition = () => {
+          const lastExpandedPost = document.getElementById(lastExpanded);
+          const { top, bottom } = lastExpandedPost.getBoundingClientRect();
+          const bottomPos = bottom - window.innerHeight;
+
+          // Top is above the top of the screen
+          if (top < 50 || bottomPos > -10) {
+            const scrollBy = top - 50;
+            window.scrollBy({ top: scrollBy, left: 0 });
+            return true;
+          }
+          return false;
+        };
+
+        let timesRun = 0;
+        reposInt = setInterval(() => {
+          timesRun += 1;
+          const triggered = reposition();
+          if (triggered || timesRun === 5) {
+            clearInterval(reposInt);
+          }
+        }, 100);
+      }
+    }
+    return () => {
+      clearInterval(reposInt);
+    };
+  }, [data.name, expand, lastExpanded, siteSettings.view]);
+
   const { renderedContent } = useRenderedContent(data, kind, expand);
 
   const toggleViewAction = useCallback(() => {
-    setExpand(!expand);
-  }, [expand]);
+    if (siteSettings.view === 'expanded') {
+      setExpand(!expand);
+    } else {
+      const lastexp = !expand ? data.name : '';
+      setLastExpanded(lastexp);
+      setExpand(!expand);
+    }
+  }, [data.name, expand, setLastExpanded, siteSettings.view]);
 
   const toggleView = useCallback(
     (event) => {
@@ -232,20 +313,26 @@ const Post = ({
     toggleViewAction,
   ]);
 
-  const isVisible = hide ? false : visible;
+  const isLoaded = hide ? false : shouldLoad;
+  // const isActionable =
+  //   siteSettings.view === 'expanded' ? actionable : lastExpanded === data.name;
+  // const isFocused =
+  //   siteSettings.view === 'expanded' ? focused : lastExpanded === data.name;
 
   const classArray = classNames('entry', 'list-group-item', `kind-${kind}`, {
     focused,
-    visible: isVisible,
     actionable,
     'post-parent': parent,
     condensed: !expand,
+    expanded: expand,
     duplicate,
+    loaded: shouldLoad,
+    'on-screen': onScreen,
     'comment-child': kind === 't1' && data.depth > 0,
   });
 
   const styles = {};
-  if (!isVisible && minHeightRef.current && expand) {
+  if (!isLoaded && minHeightRef.current && expand) {
     styles.minHeight = minHeightRef.current;
   }
 
@@ -264,8 +351,15 @@ const Post = ({
     </div>
   ) : null;
 
+  const postContext = {
+    post,
+    isLoaded,
+    actionable,
+    content: renderedContent,
+  };
+
   return (
-    <PostsContextData.Provider value={post}>
+    <PostsContextData.Provider value={postContext}>
       <PostsContextActionable.Provider value={actionable}>
         <div
           className={classArray}
@@ -277,7 +371,6 @@ const Post = ({
           <div className={`entry-interior entry-interior-${kind}`}>
             {visibilityToggle}
             <PostHeader
-              visible={isVisible}
               expand={expand}
               toggleView={toggleView}
               duplicate={duplicate}
@@ -286,16 +379,11 @@ const Post = ({
             <div className="entry-after-header">
               {expand && (
                 <>
-                  <Content
-                    content={renderedContent}
-                    load={isVisible}
-                    key={data.id}
-                  />
+                  <Content key={data.id} />
 
                   <PostFooter
                     debug={siteSettings.debug}
                     renderedContent={renderedContent}
-                    visible={isVisible}
                     showVisToggle={showVisToggle}
                     setShowVisToggle={setShowVisToggle}
                   />
@@ -324,9 +412,8 @@ Post.propTypes = {
   focused: PropTypes.bool.isRequired,
   actionable: PropTypes.bool.isRequired,
   siteSettings: PropTypes.object.isRequired,
-  visible: PropTypes.bool.isRequired,
+  // visible: PropTypes.bool.isRequired,
   gotoLink: PropTypes.func.isRequired,
-  // minHeight: PropTypes.number,
   listingsStatus: PropTypes.string,
   duplicate: PropTypes.bool,
   parent: PropTypes.bool,
@@ -343,7 +430,7 @@ const mapStateToProps = (state, props) => ({
   siteSettings: state.siteSettings,
   listingsStatus: listingStatus(state),
   // minHeight: postMinHeight(state, props),
-  visible: postVisibility(state, props),
+  // visible: postVisibility(state, props),
   focused: postFocused(state, props),
   actionable: postActionable(state, props),
 });

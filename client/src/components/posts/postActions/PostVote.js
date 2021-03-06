@@ -58,8 +58,8 @@ const getNewState = (dir, ups, likes) => {
 };
 
 const PostVote = ({ bearer }) => {
-  const post = useContext(PostsContextData);
-  const { data } = post;
+  const postContext = useContext(PostsContextData);
+  const { data } = postContext.post;
   const actionable = useContext(PostsContextActionable);
 
   const [ups, setUps] = useState(data.ups);

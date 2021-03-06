@@ -335,8 +335,10 @@ module.exports = {
       // ESLint class options
       cwd: paths.appPath,
       resolvePluginsRelativeTo: __dirname,
-      emitError: isEnvProduction,
+      emitError: true,
       emitWarning: isEnvDevelopment,
+      // failOnWarning: isEnvProduction,
+      // failOnError: isEnvProduction,
     }),
   ],
   // Some libraries import Node modules but don't use them in the browser.

@@ -12,11 +12,11 @@ import PostTimeAgo from './PostTimeAgo';
 import PostCommentLink from './PostCommentLink';
 import PostSubLink from './PostSubLink';
 
-const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
-  const post = useContext(PostsContextData);
+const PostHeader = ({ toggleView, expand, duplicate }) => {
+  const postContext = useContext(PostsContextData);
   const listType = useSelector((state) => state.listingsFilter.listType);
   const params = useParams();
-  const { data, kind } = post;
+  const { data, kind } = postContext.post;
 
   // Is this a comment?
   if (kind === 't1') {
@@ -184,7 +184,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
           {dupeFlair}
         </div>
         <div
-          className="flex-grow-1 list-group-item-heading align-middle title mr-2"
+          className="flex-grow-1 list-group-item-heading shadow-none align-middle title mr-2"
           onClick={toggleView}
           role="link"
           title="Click to expand"
@@ -222,7 +222,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     <>
       <header className="d-flex">
         {title}
-        {visible ? (
+        {postContext.isLoaded ? (
           <div className="text-nowrap d-flex actions ml-auto">
             <PostVote />
             <PostSave />
@@ -252,7 +252,6 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
 
 PostHeader.propTypes = {
   toggleView: PropTypes.func.isRequired,
-  visible: PropTypes.bool.isRequired,
   expand: PropTypes.bool.isRequired,
   duplicate: PropTypes.bool.isRequired,
 };

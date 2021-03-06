@@ -16,14 +16,26 @@ export const nextEntry = (focused) => {
   }
 };
 
-export const nextEntryCollapsed = (focused) => {
-  if (isNil(focused)) return;
+export const nextEntryCollapsed = (lastExpanded, setLastExpanded) => {
+  // Open up the first one.
+  if (!lastExpanded) {
+    const first = document.getElementsByClassName('entry')[0];
+    // console.log(first);
+    if (isNil(first)) return null;
+    setLastExpanded(first.id);
+    return first.id;
+  }
 
-  const current = document.getElementById(focused);
-  if (isNil(current)) return;
+  const current = document.getElementById(lastExpanded);
+  if (isNil(current)) return null;
 
+  const next = current.nextElementSibling;
+  if (next.classList.contains('entry')) {
+    setLastExpanded(next.id);
+    return next.id;
+  }
 
-
+  return null;
 };
 
 export const prevEntry = (focused) => {
@@ -40,6 +52,23 @@ export const prevEntry = (focused) => {
   window.scrollBy({ top: scrollBy, left: 0 });
 };
 
+export const prevEntryCollapsed = (lastExpanded, setLastExpanded) => {
+  // Open up the first one.
+  if (!lastExpanded) {
+    return null;
+  }
+
+  const current = document.getElementById(lastExpanded);
+  if (isNil(current)) return null;
+
+  const prev = current.previousElementSibling;
+  if (prev.classList.contains('entry')) {
+    setLastExpanded(prev.id);
+    return prev.id;
+  }
+  return null;
+};
+
 export const getCurrentListingState = (currentState) => {
   const postsCollection = document.getElementsByClassName('entry');
   if (postsCollection.length === 0) return {};
@@ -47,7 +76,7 @@ export const getCurrentListingState = (currentState) => {
   let focused = '';
   let actionable = null;
   // const minHeights = {};
-  const visible = [];
+  // const visible = [];
   let prevPostId = null;
 
   posts.forEach((post) => {
@@ -70,18 +99,15 @@ export const getCurrentListingState = (currentState) => {
           actionable = inView ? post.id : prevPostId;
         }
       }
-      // minHeights[post.id] = height;
-      visible.push(post.id);
+      // visible.push(post.id);
     }
     prevPostId = post.id;
   });
 
   return {
     focused,
-    visible,
+    // visible,
     actionable,
-    // minHeights: { ...currentState.minHeights, ...minHeights },
-    // scroll: { x: window.scrollX, y: window.scrollY },
   };
 };
 

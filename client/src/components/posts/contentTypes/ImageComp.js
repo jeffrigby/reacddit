@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useEffect, useState } from 'react';
+// import PropTypes from 'prop-types';
+import { PostsContextData } from '../../../contexts';
 
 function getMeta(url) {
   return new Promise((resolve, reject) => {
@@ -10,25 +11,28 @@ function getMeta(url) {
   });
 }
 
-const ImageComp = ({ content, load }) => {
-  const contentRender = content;
+const ImageComp = () => {
+  const postContext = useContext(PostsContextData);
+  const { content } = postContext;
+  const load = postContext.isLoaded;
+
   const [dimensions, setDimensions] = useState({
-    width: contentRender.width,
-    height: contentRender.height,
+    width: content.width,
+    height: content.height,
   });
 
   useEffect(() => {
     const getImageHeight = async () => {
-      const img = await getMeta(contentRender.src);
+      const img = await getMeta(content.src);
       setDimensions({
         width: img.width,
         height: img.height,
       });
     };
-    if (!contentRender.width || !contentRender.height) {
+    if (!content.width || !content.height) {
       getImageHeight();
     }
-  }, [contentRender.height, contentRender.src, contentRender.width]);
+  }, [content.height, content.src, content.width]);
 
   if (!dimensions.width || !dimensions.height) return null;
 
@@ -48,28 +52,23 @@ const ImageComp = ({ content, load }) => {
   const ratio = (finalHeight / finalWidth) * 100;
   const ratioStyle = { paddingBottom: `${ratio}%` };
   let imgClass = 'embed-responsive-item';
-  if (contentRender.class) {
-    imgClass += ` ${contentRender.class}`;
+  if (content.class) {
+    imgClass += ` ${content.class}`;
   }
 
-  const title = load === true ? contentRender.title : 'placeholder';
+  const title = load === true ? content.title : 'placeholder';
 
   return (
     <div className="ratio-bg media-cont">
       <div style={contStyle} className="ratio-container">
         <div style={ratioStyle} className="ratio embed-responsive loading-icon">
-          {load && (
-            <img src={contentRender.src} alt={title} className={imgClass} />
-          )}
+          {load && <img src={content.src} alt={title} className={imgClass} />}
         </div>
       </div>
     </div>
   );
 };
 
-ImageComp.propTypes = {
-  content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
-};
+// ImageComp.propTypes = {};
 
 export default ImageComp;

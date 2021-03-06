@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { PostsContextData } from '../../contexts';
 import renderSelf from './embeds/domains/self';
 import Self from './contentTypes/Self';
 
-const Placeholder = ({ load }) => {
-  const post = useContext(PostsContextData);
-  const { data } = post;
+const Placeholder = () => {
+  const postContext = useContext(PostsContextData);
+  const { data } = postContext.post;
 
   const getRatio = (width, height) => {
     const maxHeight = 625;
@@ -69,7 +69,7 @@ const Placeholder = ({ load }) => {
     const selfContent = renderSelf(data);
     return (
       <div className="content">
-        <Self content={selfContent} load={load} name={data.name} />
+        <Self content={selfContent} name={data.name} />
       </div>
     );
   }
@@ -112,8 +112,6 @@ const Placeholder = ({ load }) => {
   return <div className="content" />;
 };
 
-Placeholder.propTypes = {
-  load: PropTypes.bool.isRequired,
-};
+Placeholder.propTypes = {};
 
 export default Placeholder;

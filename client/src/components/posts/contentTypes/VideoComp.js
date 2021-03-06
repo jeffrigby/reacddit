@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
@@ -6,6 +6,7 @@ import '../../../styles/video.scss';
 import VideoDebug from './videoComponents/VideoDebug';
 import VideoAudioButton from './videoComponents/VideoAudioButton';
 import VideoControlBar from './videoComponents/VideoControlBar';
+import { PostsContextData } from '../../../contexts';
 
 const classNames = require('classnames');
 
@@ -46,7 +47,10 @@ function getBuffers(videoRef) {
   return {};
 }
 
-const VideoComp = ({ content, load, link }) => {
+const VideoComp = ({ link }) => {
+  const postContext = useContext(PostsContextData);
+  const { content } = postContext;
+  const load = postContext.isLoaded;
   const videoRef = useRef();
   const isPlaying = useRef(false);
   const isPlayingTimeout = useRef(null);
@@ -404,8 +408,6 @@ const VideoComp = ({ content, load, link }) => {
 };
 
 VideoComp.propTypes = {
-  content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
   link: PropTypes.string,
 };
 

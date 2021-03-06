@@ -41,14 +41,20 @@ const cleanLinks = (html) => {
   return rawhtml;
 };
 
-const Self = ({ content, load, name }) => {
-  const [showAll, setShowAll] = useState(content.expand || false);
+const Self = ({ name }) => {
+  const postContext = useContext(PostsContextData);
+  const { content } = postContext;
+  const load = postContext.isLoaded;
+
+  const [showAll, setShowAll] = useState(content ? content.expand : false);
   const [specs, setSpecs] = useState(null);
-  const post = useContext(PostsContextData);
+
   const listType = useSelector((state) => state.listingsFilter.listType);
   const debug = useSelector((state) => state.siteSettings.debug);
   const selfRef = useRef();
   const selfHTMLRef = useRef();
+
+  const { post } = postContext;
 
   const getHeights = () => {
     const dimensions = {};
@@ -75,6 +81,10 @@ const Self = ({ content, load, name }) => {
     if (content.expand) return;
     setShowAll(!showAll);
   };
+
+  if (!content) {
+    return null;
+  }
 
   const { html } = content;
   if (!html) return null;
@@ -141,8 +151,6 @@ const Self = ({ content, load, name }) => {
 };
 
 Self.propTypes = {
-  content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
 };
 

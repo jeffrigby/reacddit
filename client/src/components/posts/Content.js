@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import IFrame16x9 from './contentTypes/IFrame16x9';
 import ImageComp from './contentTypes/ImageComp';
 import VideoComp from './contentTypes/VideoComp';
@@ -14,9 +14,10 @@ import { PostsContextData } from '../../contexts';
 import HTTPSError from './contentTypes/HTTPSError';
 import RedditGallery from './contentTypes/RedditGallery';
 
-const Content = ({ content, load }) => {
-  const post = useContext(PostsContextData);
-  const { data } = post;
+const Content = () => {
+  const postContext = useContext(PostsContextData);
+  const { data } = postContext.post;
+  const { content } = postContext;
 
   const { name, url } = data;
 
@@ -25,46 +26,46 @@ const Content = ({ content, load }) => {
   }
 
   if (!content) {
-    return <Placeholder load={load} />;
+    return <Placeholder />;
   }
 
   let contentRendered = '';
   if (content.type) {
     switch (content.type) {
       case 'image':
-        contentRendered = <ImageComp content={content} load={load} />;
+        contentRendered = <ImageComp />;
         break;
       case 'video':
-        contentRendered = (
-          <VideoComp content={content} load={load} link={url} />
-        );
+        contentRendered = <VideoComp link={url} />;
         break;
       case 'iframe_4x4':
-        contentRendered = <IFrame4x4 content={content} load={load} />;
+        contentRendered = <IFrame4x4 />;
         break;
       case 'iframe16x9':
-        contentRendered = <IFrame16x9 content={content} load={load} />;
+        contentRendered = <IFrame16x9 />;
         break;
       case 'imgur_album':
-        contentRendered = <ImgurAlbum content={content} load={load} />;
+        contentRendered = (
+          <ImgurAlbum content={content} load={postContext.isLoaded} />
+        );
         break;
       case 'thumb':
-        contentRendered = <Thumb content={content} load={load} />;
+        contentRendered = <Thumb />;
         break;
       case 'self':
-        contentRendered = <Self content={content} load={load} name={name} />;
+        contentRendered = <Self name={name} />;
         break;
       case 'raw_html':
-        contentRendered = <RawHTML content={content} load={load} />;
+        contentRendered = <RawHTML />;
         break;
       case 'twitter':
-        contentRendered = <Twitter content={content} load={load} />;
+        contentRendered = <Twitter tweetId={content.id} />;
         break;
       case 'httpserror':
-        contentRendered = <HTTPSError content={content} load={load} />;
+        contentRendered = <HTTPSError />;
         break;
       case 'redditGallery':
-        contentRendered = <RedditGallery content={content} load={load} />;
+        contentRendered = <RedditGallery />;
         break;
       default:
         break;
@@ -76,10 +77,7 @@ const Content = ({ content, load }) => {
   return <div className="content">{contentRendered}</div>;
 };
 
-Content.propTypes = {
-  content: PropTypes.object,
-  load: PropTypes.bool.isRequired,
-};
+Content.propTypes = {};
 
 Content.defaultProps = {
   content: null,
