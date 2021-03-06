@@ -43,7 +43,7 @@
     "error-overlay-webpack-plugin": "^0.4.1",
     "eslint": "^7.0.0",
     "eslint-config-airbnb": "^18.0.1",
-    "eslint-config-prettier": "^7.0.0",
+    "eslint-config-prettier": "^8.1.0",
     "eslint-formatter-pretty": "^4.0.0",
     "eslint-loader": "^4.0.0",
     "eslint-plugin-flowtype": "^5.1.0",
