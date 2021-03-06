@@ -98,7 +98,7 @@
     "tldts": "^5.6.3",
     "url-loader": "^4.0.0",
     "url-parse": "^1.4.7",
-    "url-regex-safe": "^1.0.2",
+    "url-regex-safe": "^2.0.2",
     "webpack": "^4.41.5",
     "webpack-bundle-analyzer": "^4.2.0",
     "webpack-cli": "^4.1.0",
