@@ -65,6 +65,7 @@ const VideoComp = ({ link, content }) => {
   const [stalled, setStalled] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
+  const [manualStop, setManualStop] = useState(false);
   const [canPlayThrough, setCanPlayThrough] = useState(false);
   const [showLoadError, setLoadError] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -147,10 +148,13 @@ const VideoComp = ({ link, content }) => {
    * Toggle lock to set the controls
    */
   const toggleLock = () => {
-    // eslint-disable-next-line no-unused-expressions
-    videoRef.current.paused
-      ? videoRef.current.play()
-      : videoRef.current.pause();
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setManualStop(false);
+    } else {
+      videoRef.current.pause();
+      setManualStop(true);
+    }
     setCtrLock(!ctrLock);
   };
 
@@ -250,6 +254,7 @@ const VideoComp = ({ link, content }) => {
       'video-paused': !playing,
       'audio-muted': muted,
       'audio-on': !muted,
+      'manual-stop': manualStop,
     }
   );
 
