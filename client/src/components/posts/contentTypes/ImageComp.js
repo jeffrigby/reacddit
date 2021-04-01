@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { PostsContextData } from '../../../contexts';
 
 function getMeta(url) {
@@ -11,9 +11,8 @@ function getMeta(url) {
   });
 }
 
-const ImageComp = () => {
+const ImageComp = ({ content }) => {
   const postContext = useContext(PostsContextData);
-  const { content } = postContext;
   const load = postContext.isLoaded;
 
   const [dimensions, setDimensions] = useState({
@@ -69,6 +68,8 @@ const ImageComp = () => {
   );
 };
 
-// ImageComp.propTypes = {};
+ImageComp.propTypes = {
+  content: PropTypes.object.isRequired,
+};
 
 export default ImageComp;

@@ -1,10 +1,7 @@
-import React, { useContext } from 'react';
-// import PropTypes from 'prop-types';
-import { PostsContextData } from '../../../contexts';
+import React from 'react';
+import PropTypes from 'prop-types';
 
-const RawHTML = () => {
-  const postContext = useContext(PostsContextData);
-  const { content } = postContext;
+const RawHTML = ({ content }) => {
   const rawhtml = content.html;
 
   // eslint-disable-next-line react/no-danger
@@ -13,6 +10,8 @@ const RawHTML = () => {
   return <div className="raw-html">{html}</div>;
 };
 
-RawHTML.propTypes = {};
+RawHTML.propTypes = {
+  content: PropTypes.object.isRequired,
+};
 
 export default RawHTML;

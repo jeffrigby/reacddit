@@ -41,9 +41,8 @@ const cleanLinks = (html) => {
   return rawhtml;
 };
 
-const Self = ({ name }) => {
+const Self = ({ name, content }) => {
   const postContext = useContext(PostsContextData);
-  const { content } = postContext;
   const load = postContext.isLoaded;
 
   const [showAll, setShowAll] = useState(content ? content.expand : false);
@@ -97,7 +96,6 @@ const Self = ({ name }) => {
       inline={content.inline}
       inlineLinks={content.inlineLinks}
       name={name}
-      load={load}
     />
   ) : null;
 
@@ -152,6 +150,7 @@ const Self = ({ name }) => {
 
 Self.propTypes = {
   name: PropTypes.string.isRequired,
+  content: PropTypes.object.isRequired,
 };
 
 export default Self;

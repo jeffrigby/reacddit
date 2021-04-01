@@ -355,7 +355,7 @@ const Post = ({
     post,
     isLoaded,
     actionable,
-    content: renderedContent,
+    // content: renderedContent,
   };
 
   return (
@@ -379,7 +379,7 @@ const Post = ({
             <div className="entry-after-header">
               {expand && (
                 <>
-                  <Content key={data.id} />
+                  <Content key={data.id} content={renderedContent} />
 
                   <PostFooter
                     debug={siteSettings.debug}

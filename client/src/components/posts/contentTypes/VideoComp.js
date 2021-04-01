@@ -47,9 +47,8 @@ function getBuffers(videoRef) {
   return {};
 }
 
-const VideoComp = ({ link }) => {
+const VideoComp = ({ link, content }) => {
   const postContext = useContext(PostsContextData);
-  const { content } = postContext;
   const load = postContext.isLoaded;
   const videoRef = useRef();
   const isPlaying = useRef(false);
@@ -409,6 +408,7 @@ const VideoComp = ({ link }) => {
 
 VideoComp.propTypes = {
   link: PropTypes.string,
+  content: PropTypes.object.isRequired,
 };
 
 VideoComp.defaultProps = {

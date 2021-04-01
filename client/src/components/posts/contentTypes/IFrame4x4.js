@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import { PostsContextData } from '../../../contexts';
 
-const IFrame4x4 = () => {
+const IFrame4x4 = ({ content }) => {
   const postContext = useContext(PostsContextData);
-  const { content } = postContext;
   const load = postContext.isLoaded;
   return (
     <div className="media-cont">
@@ -22,6 +22,8 @@ const IFrame4x4 = () => {
   );
 };
 
-// IFrame4x4.propTypes = {};
+IFrame4x4.propTypes = {
+  content: PropTypes.object.isRequired,
+};
 
 export default IFrame4x4;

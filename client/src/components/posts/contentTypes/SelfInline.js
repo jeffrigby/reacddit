@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Content from '../Content';
 
-const SelfInline = ({ inline, inlineLinks, load, name }) => {
+const SelfInline = ({ inline, inlineLinks, name }) => {
   const [inlineIdx, setInlineIdx] = useState(0);
   const [resolvedContent, setResolvedContent] = useState([]);
 
@@ -102,7 +102,6 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
 SelfInline.propTypes = {
   inline: PropTypes.array.isRequired,
   inlineLinks: PropTypes.array.isRequired,
-  load: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
 };
 
