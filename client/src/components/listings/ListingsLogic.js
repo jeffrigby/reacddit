@@ -99,7 +99,11 @@ const ListingsLogic = ({ saved }) => {
     if (postsCollection.length === 0) return;
     scrollResize.current = false;
 
-    const newState = getCurrentListingState(prevState.current);
+    const newState = getCurrentListingState(
+      prevState.current,
+      settings.view,
+      lastExpanded
+    );
 
     const key = locationKey || 'front';
 
@@ -121,8 +125,9 @@ const ListingsLogic = ({ saved }) => {
     }
 
     scrollResize.current = true;
-  }, [dispatch, locationKey, settings.autoplay]);
+  }, [dispatch, lastExpanded, locationKey, settings.autoplay, settings.view]);
 
+  // This seems like a dumb way to do this.
   const forceDelayedUpdate = useCallback(() => {
     monitorEntries();
     setTimeout(monitorEntries, 100);
