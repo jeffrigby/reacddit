@@ -44,3 +44,4 @@ stats.json
 .env
 /client/.env.production
 /client/.eslintcache
+/.vscode
