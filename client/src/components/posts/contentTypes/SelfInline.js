@@ -94,7 +94,12 @@ const SelfInline = ({ inline, inlineLinks, name }) => {
     <div className="inlineLinks">
       {inlineNav}
       {inlineRendered}
-      <div className="small">Source: {inlineLink}</div>
+      <div className="small">
+        Source:{' '}
+        <a href={inlineLink} target="_blank" rel="noreferrer">
+          {inlineLink}
+        </a>
+      </div>
     </div>
   );
 };
