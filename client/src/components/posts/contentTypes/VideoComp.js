@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useContext,
+  useCallback,
+} from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
@@ -144,10 +151,15 @@ const VideoComp = ({ link, content }) => {
   const ratioStyle = { paddingBottom: `${ratio}%` };
   const videoId = `video-${content.id}`;
 
+  // In a const so I can pass it to the play button
+  const toggleManualStop = useCallback((state) => {
+    setManualStop(state);
+  }, []);
+
   /**
    * Toggle lock to set the controls
    */
-  const toggleLock = () => {
+  const toggleLock = useCallback(() => {
     if (videoRef.current.paused) {
       videoRef.current.play();
       setManualStop(false);
@@ -156,7 +168,7 @@ const VideoComp = ({ link, content }) => {
       setManualStop(true);
     }
     setCtrLock(!ctrLock);
-  };
+  }, [ctrLock]);
 
   /**
    * Set the muted state if the volume is manually changed.
@@ -370,6 +382,7 @@ const VideoComp = ({ link, content }) => {
                 content={content}
                 link={link}
                 buffer={buffer}
+                toggleManualStop={toggleManualStop}
               />
             </div>
 
