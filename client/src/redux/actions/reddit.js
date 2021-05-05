@@ -102,7 +102,12 @@ export function redditFetchMe(reset) {
   };
 }
 
-export function redditFetchFriends(reset) {
+/**
+ * Fetch friends from reddit API
+ * @param reset
+ * @returns {function(*, *): Promise<undefined>}
+ */
+export function redditFetchFriends(reset = false) {
   return async (dispatch, getState) => {
     const currentState = getState();
 

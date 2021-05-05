@@ -71,16 +71,13 @@ export function subredditsFetchLastUpdated() {
   return (dispatch, getState) => {
     const currentState = getState();
     const { subreddits } = currentState.subreddits;
+    const { friends } = currentState.redditFriends;
     const nowSec = Date.now() / 1000;
-
     const createdToGet = [];
-    Object.entries(subreddits).forEach(([key, value]) => {
-      // @todo convert to API? Concerned about rate limit.
-      // Limit is 2 because it occasionally returns nothing when the limit is 1. No idea why.
-      const url = `https://www.reddit.com${value.url}new.json?limit=2`;
 
+    const generateRequest = (listingId, url) => {
       // look for cache
-      const lastUpdated = currentState.lastUpdated[value.name];
+      const lastUpdated = currentState.lastUpdated[listingId];
       if (lastUpdated) {
         const { expires } = lastUpdated;
         const expired = nowSec >= expires;
@@ -90,6 +87,20 @@ export function subredditsFetchLastUpdated() {
       } else {
         createdToGet.push(axios.get(url).catch(() => null));
       }
+    };
+
+    // Create subreddit requests
+    Object.entries(subreddits).forEach(([key, value]) => {
+      // @todo convert to API? Concerned about rate limit.
+      // Limit is 2 because it occasionally returns nothing when the limit is 1. No idea why.
+      const url = `https://www.reddit.com${value.url}new.json?limit=5`;
+      generateRequest(value.name, url);
+    });
+
+    // Create friends
+    Object.entries(friends).forEach(([key, value]) => {
+      const url = `https://www.reddit.com/user/${value.name}/submitted.json?sort=new&limit=10`;
+      generateRequest(value.id, url);
     });
 
     // Nothing to update
@@ -112,13 +123,30 @@ export function subredditsFetchLastUpdated() {
 
         const toUpdate = {};
         results.forEach((item) => {
+          const listingType = item.config.url.includes('/submitted.json')
+            ? 'friend'
+            : 'subreddit';
+
           const entry = item.data;
           // process item
           if (typeof entry.data.children[0] === 'object') {
-            const lastPost = entry.data.children[0].data.created_utc;
-            const subredditId = entry.data.children[0].data.subreddit_id;
+            // Get first non-pinned post
+            let firstNonPinned = {};
+            entry.data.children.some((post) => {
+              if (!post.data.pinned) {
+                firstNonPinned = post.data;
+                return true;
+              }
+              return false;
+            });
+
+            const lastPost = firstNonPinned.created_utc;
+            const listingId =
+              listingType === 'subreddit'
+                ? firstNonPinned.subreddit_id
+                : firstNonPinned.author_fullname;
             const expires = getExpiredTime(lastPost);
-            toUpdate[subredditId] = {
+            toUpdate[listingId] = {
               lastPost,
               expires,
             };
