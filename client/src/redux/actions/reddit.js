@@ -248,9 +248,8 @@ export function redditVote(id, dir) {
     const locationKey = getLocationKey(currentState);
 
     try {
-      let { likes, ups } = currentState.listingsRedditEntries[
-        locationKey
-      ].children[id].data;
+      let { likes, ups } =
+        currentState.listingsRedditEntries[locationKey].children[id].data;
       await RedditAPI.vote(id, dir);
 
       switch (dir) {

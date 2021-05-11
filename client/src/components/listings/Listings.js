@@ -29,16 +29,8 @@ const Listings = ({ data, status, filter, settings }) => {
   const dispatch = useDispatch();
   const [lastExpanded, setLastExpanded] = useState('');
 
-  const {
-    listType,
-    target,
-    sort,
-    user,
-    userType,
-    multi,
-    postName,
-    comment,
-  } = match;
+  const { listType, target, sort, user, userType, multi, postName, comment } =
+    match;
 
   // Set title for detail pages
   if (data.originalPost) {
