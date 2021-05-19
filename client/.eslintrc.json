@@ -15,6 +15,7 @@
     "process": false
   },
   "plugins": ["flowtype", "react", "react-hooks", "jsx-a11y", "prettier"],
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
