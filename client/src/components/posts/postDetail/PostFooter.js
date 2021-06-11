@@ -8,15 +8,14 @@ import PostDebug from './PostDebug';
 
 const PostFooter = ({
   debug,
-  visible,
   renderedContent,
   setShowVisToggle,
   showVisToggle,
 }) => {
-  const post = useContext(PostsContextData);
+  const postContext = useContext(PostsContextData);
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { data, kind } = post;
+  const { data, kind } = postContext.post;
 
   const copyID = (comp) => {
     const id = comp.target.textContent;
@@ -73,7 +72,7 @@ const PostFooter = ({
     );
   }
 
-  if (!visible) {
+  if (!postContext.isLoaded) {
     return (
       <footer className="d-flex clearfix align-middle mt-1 offscreen-placeholder" />
     );
@@ -87,7 +86,11 @@ const PostFooter = ({
           {debug && <span className="pl-3">{debugLinks}</span>}
           {!data.is_self && data.domain && (
             <Link
-              to={`/r/${data.subreddit}/search?q=site:%22${data.domain}%22`}
+              to={{
+                pathname: `/r/${data.subreddit}/search`,
+                search: `?q=site:%22${data.domain}%22`,
+                state: { showBack: true },
+              }}
             >
               {data.domain}
             </Link>
@@ -104,7 +107,6 @@ const PostFooter = ({
 PostFooter.propTypes = {
   debug: PropTypes.bool.isRequired,
   renderedContent: PropTypes.object,
-  visible: PropTypes.bool.isRequired,
   showVisToggle: PropTypes.bool.isRequired,
   setShowVisToggle: PropTypes.func.isRequired,
 };

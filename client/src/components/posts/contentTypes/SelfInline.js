@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Content from '../Content';
 
-const SelfInline = ({ inline, inlineLinks, load, name }) => {
+const SelfInline = ({ inline, inlineLinks, name }) => {
   const [inlineIdx, setInlineIdx] = useState(0);
   const [resolvedContent, setResolvedContent] = useState([]);
 
@@ -45,7 +45,6 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
     <div className="inline-render">
       <Content
         content={resolvedContent[inlineIdx].content}
-        load={load}
         data={{ name }} // Just pass the name.
         key={inlineKey}
       />
@@ -95,7 +94,12 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
     <div className="inlineLinks">
       {inlineNav}
       {inlineRendered}
-      <div className="small">Source: {inlineLink}</div>
+      <div className="small">
+        Source:{' '}
+        <a href={inlineLink} target="_blank" rel="noreferrer">
+          {inlineLink}
+        </a>
+      </div>
     </div>
   );
 };
@@ -103,7 +107,6 @@ const SelfInline = ({ inline, inlineLinks, load, name }) => {
 SelfInline.propTypes = {
   inline: PropTypes.array.isRequired,
   inlineLinks: PropTypes.array.isRequired,
-  load: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
 };
 

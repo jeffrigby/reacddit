@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
@@ -8,12 +8,15 @@ import {
   listingState,
   listingStatus,
 } from '../../redux/selectors/listingsSelector';
+import { ListingsContextLastExpanded } from '../../contexts';
 import {
   getCurrentListingState,
   unfocusIFrame,
   autoPlayVideos,
   nextEntry,
+  nextEntryCollapsed,
   prevEntry,
+  prevEntryCollapsed,
 } from '../posts/PostsFunctions';
 import { hotkeyStatus } from '../../common';
 
@@ -29,7 +32,36 @@ const ListingsLogic = ({ saved }) => {
   const prevView = useRef(settings.view);
   const scrollResize = useRef(true);
 
+  const [lastExpanded, setLastExpanded] = useContext(
+    ListingsContextLastExpanded
+  );
+
   const dispatch = useDispatch();
+
+  const setLastExpandedRedux = (expandedId) => {
+    if (expandedId) {
+      const newState = { ...listingsCurrentState };
+      newState.lastExpanded = expandedId;
+      const key = locationKey || 'front';
+      dispatch(listingsState(key, newState));
+    }
+  };
+
+  const next = () => {
+    if (settings.view === 'expanded') {
+      nextEntry(listingsCurrentState.focused);
+    } else {
+      setLastExpandedRedux(nextEntryCollapsed(lastExpanded, setLastExpanded));
+    }
+  };
+
+  const prev = () => {
+    if (settings.view === 'expanded') {
+      prevEntry(listingsCurrentState.focused);
+    } else {
+      setLastExpandedRedux(prevEntryCollapsed(lastExpanded, setLastExpanded));
+    }
+  };
 
   // Set some hotkeys
   const hotkeys = (event) => {
@@ -38,10 +70,11 @@ const ListingsLogic = ({ saved }) => {
       try {
         switch (pressedKey) {
           case 'j':
-            nextEntry(listingsCurrentState.focused);
+            next();
             break;
+
           case 'k':
-            prevEntry(listingsCurrentState.focused);
+            prev();
             break;
           default:
             break;
@@ -66,7 +99,12 @@ const ListingsLogic = ({ saved }) => {
     if (postsCollection.length === 0) return;
     scrollResize.current = false;
 
-    const newState = getCurrentListingState(prevState.current);
+    const newState = getCurrentListingState(
+      prevState.current,
+      settings.view,
+      lastExpanded
+    );
+
     const key = locationKey || 'front';
 
     const compareState = { ...prevState.current };
@@ -87,8 +125,9 @@ const ListingsLogic = ({ saved }) => {
     }
 
     scrollResize.current = true;
-  }, [dispatch, locationKey, settings.autoplay]);
+  }, [dispatch, lastExpanded, locationKey, settings.autoplay, settings.view]);
 
+  // This seems like a dumb way to do this.
   const forceDelayedUpdate = useCallback(() => {
     monitorEntries();
     setTimeout(monitorEntries, 100);

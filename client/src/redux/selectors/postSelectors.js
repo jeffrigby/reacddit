@@ -79,7 +79,5 @@ export const postActionable = createSelector(
 
 export const postMinHeight = createSelector(
   [postVisibilitySelector, postMinHeightSelector],
-  (visible, minHeight) => {
-    return !visible ? minHeight : 0;
-  }
+  (visible, minHeight) => (!visible ? minHeight : 0)
 );

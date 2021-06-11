@@ -2,53 +2,53 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useParams } from 'react-router';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 import { PostsContextData } from '../../../contexts';
-import PostMeta from './PostMeta';
 import PostExpandContract from '../postActions/PostExpandContract';
+import PostHeaderComment from './PostHeaderComment';
+import PostTimeAgo from './PostTimeAgo';
+import PostCommentLink from './PostCommentLink';
+import PostSubLink from './PostSubLink';
 
-const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
-  const post = useContext(PostsContextData);
+const PostHeader = ({ toggleView, expand, duplicate }) => {
+  const postContext = useContext(PostsContextData);
   const listType = useSelector((state) => state.listingsFilter.listType);
-  const { data, kind } = post;
+  const params = useParams();
+  const { data, kind } = postContext.post;
 
+  // Is this a comment?
   if (kind === 't1') {
-    return (
-      <header className="d-flex">
-        <div className="mr-2 post-action-expand">
-          <PostExpandContract
-            expand={expand}
-            toggleView={toggleView}
-            kind={kind}
-          />
-        </div>
-        <div className="mr-auto comment-meta meta">
-          <PostMeta />
-        </div>
-        <div className="text-nowrap align-middle d-flex actions">
-          <PostVote />
-          <PostSave />
-        </div>
-      </header>
+    return <PostHeaderComment expand={expand} toggleView={toggleView} />;
+  }
+
+  let linkFlair = null;
+  if (data.link_flair_text) {
+    const flairLinkQuery = encodeURIComponent(
+      `flair:"${data.link_flair_text}"`
+    );
+    const flairLink = `/r/${data.subreddit}/search`;
+    linkFlair = (
+      <Link
+        className="badge badge-dark mx-1"
+        to={{
+          pathname: flairLink,
+          search: `?q=${flairLinkQuery}`,
+          state: { showBack: true },
+        }}
+      >
+        {data.link_flair_text}
+      </Link>
     );
   }
 
-  const linkFlair = data.link_flair_text ? (
-    <Link
-      className="badge badge-dark mx-1"
-      to={`/r/${data.subreddit}/search?q=flair:%22${data.link_flair_text}%22`}
-    >
-      {data.link_flair_text}
-    </Link>
-  ) : null;
-
   const dupeFlair = duplicate ? (
     <div
-      className="badge badge-dark mx-1"
+      className="badge badge-dark mr-1"
       title="This post appears in the list above."
     >
-      Duplicate Post
+      Duplicate
     </div>
   ) : null;
 
@@ -62,24 +62,21 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
   ) : null;
 
   const pinned = data.pinned ? (
-    <div className="badge badge-darl mx-1" title="Pinned Post">
+    <div className="badge badge-darl mr-1" title="Pinned Post">
       <i className="fas fa-thumbtack" />
     </div>
   ) : null;
 
   const sticky = data.stickied ? (
-    <div className="badge badge-darl mx-1" title="Sticky Post">
+    <div className="badge badge-darl mr-1" title="Sticky Post">
       <i className="fas fa-sticky-note" />
     </div>
   ) : null;
 
   const flairs = (
     <>
-      {pinned}
-      {sticky}
       {nsfwFlair}
       {linkFlair}
-      {dupeFlair}
     </>
   );
 
@@ -92,7 +89,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
     searchLink = (
       <div>
         <Link
-          to={searchTo}
+          to={{ pathname: searchTo, state: { showBack: true } }}
           title="Search for other posts linking to this link"
           className={btnClass}
         >
@@ -139,7 +136,7 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
         href={data.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="list-group-item-heading"
+        className="list-group-item-heading align-middle"
         aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
@@ -148,8 +145,13 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
   } else {
     titleLink = (
       <Link
-        to={data.permalink}
-        className="list-group-item-heading"
+        to={{
+          pathname: data.permalink,
+          state: {
+            showBack: true,
+          },
+        }}
+        className="list-group-item-heading align-middle"
         aria-label="Title"
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{ __html: data.title }}
@@ -159,40 +161,97 @@ const PostHeader = ({ toggleView, expand, visible, duplicate }) => {
 
   const title = (
     <h6 className="title list-group-item-heading">
+      {pinned}
+      {sticky}
+      {dupeFlair}
       {titleLink}
       {flairs}
     </h6>
   );
 
-  return (
-    <header className="d-flex">
-      {title}
-      {visible ? (
-        <div className="text-nowrap d-flex actions ml-auto">
-          <PostVote />
-          <PostSave />
-          {searchLink}
-          {redditLink}
-          {directLink}
-          <div>
-            <PostExpandContract
-              expand={expand}
-              toggleView={toggleView}
-              kind={kind}
-            />
-          </div>
+  // Show subreddit?
+  let showSubreddits = true;
+  if (params.listType === 'r' && params.target !== 'popular') {
+    showSubreddits = false;
+  }
+
+  if (!expand) {
+    return (
+      <header className="d-flex flex-nowrap">
+        <div>
+          {pinned}
+          {sticky}
+          {dupeFlair}
         </div>
-      ) : (
-        // eslint-disable-next-line
-        <div className="text-nowrap d-flex actions ml-auto offscreen-placeholder" />
-      )}
-    </header>
+        <div
+          className="flex-grow-1 list-group-item-heading shadow-none align-middle title mr-2"
+          onClick={toggleView}
+          role="link"
+          title="Click to expand"
+          tabIndex={0}
+          onKeyDown={toggleView}
+        >
+          <span
+            className="font-weight-bold"
+            // eslint-disable-next-line
+            dangerouslySetInnerHTML={{ __html: data.title }}
+          />
+          {data.is_self && data.selftext && (
+            <span className="ml-1 small">{data.selftext}</span>
+          )}
+        </div>
+        {showSubreddits && (
+          <div className="mr-2">
+            <PostSubLink subreddit={data.subreddit} />
+          </div>
+        )}
+        <div className="mr-2">
+          <PostTimeAgo createdUtc={data.created_utc} />
+        </div>
+        <div>
+          <PostCommentLink
+            numComments={data.num_comments}
+            permalink={data.permalink}
+          />
+        </div>
+      </header>
+    );
+  }
+
+  return (
+    <>
+      <header className="d-flex">
+        {title}
+        {postContext.isLoaded ? (
+          <div className="text-nowrap d-flex actions ml-auto">
+            <PostVote />
+            <PostSave />
+            {expand && (
+              <>
+                {searchLink}
+                {redditLink}
+                {directLink}
+              </>
+            )}
+            <div>
+              <PostExpandContract
+                expand={expand}
+                toggleView={toggleView}
+                kind={kind}
+              />
+            </div>
+          </div>
+        ) : (
+          // eslint-disable-next-line
+          <div className="text-nowrap d-flex actions ml-auto offscreen-placeholder" />
+        )}
+      </header>
+    </>
   );
 };
 
 PostHeader.propTypes = {
   toggleView: PropTypes.func.isRequired,
-  visible: PropTypes.bool.isRequired,
   expand: PropTypes.bool.isRequired,
   duplicate: PropTypes.bool.isRequired,
 };

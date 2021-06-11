@@ -42,9 +42,9 @@ function PostsRender({ posts, listType, idxOffset }) {
   let entries;
   const entriesKeys = Object.keys(posts);
   if (entriesKeys.length > 0) {
-    entries = entriesKeys.map((key, idx) => {
-      return renderPost(posts[key], idx + idxOffset);
-    });
+    entries = entriesKeys.map((key, idx) =>
+      renderPost(posts[key], idx + idxOffset)
+    );
   }
 
   return <>{entries}</>;

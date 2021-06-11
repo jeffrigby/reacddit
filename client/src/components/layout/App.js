@@ -71,9 +71,13 @@ const App = () => {
   if (redditMe.status === 'error') {
     return (
       <div className="alert alert-danger m-2" role="alert">
-        {"Can't connect to the reddit API. This is possibly related to your browser blocking connections to " +
-          'oauth.reddit.com. Please check your browser content blocking settings and try again.'}{' '}
-        {redditMe.error}
+        <p>
+          Can&apos;t connect to the reddit API. This is possibly related to your
+          browser blocking connections to &apos;oauth.reddit.com&apos;. Firefox
+          blocks this by default. Please check your browser content blocking
+          settings and try again.
+        </p>
+        <p>{redditMe.error}</p>
       </div>
     );
   }

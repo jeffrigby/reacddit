@@ -1,7 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext } from 'react';
+// import PropTypes from 'prop-types';
+import { PostsContextData } from '../../../contexts';
 
-const HTTPSError = ({ content, load }) => {
+const HTTPSError = () => {
+  const postContext = useContext(PostsContextData);
+  const { content } = postContext;
   return (
     <div className="self">
       <p>
@@ -15,9 +18,6 @@ const HTTPSError = ({ content, load }) => {
   );
 };
 
-HTTPSError.propTypes = {
-  content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
-};
+HTTPSError.propTypes = {};
 
 export default HTTPSError;

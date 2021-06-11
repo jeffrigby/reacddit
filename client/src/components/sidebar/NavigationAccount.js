@@ -7,8 +7,6 @@ import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 
-const { API_PATH } = process.env;
-
 const NavigationAccount = ({ me, urlPush }) => {
   let lastKeyPressed = '';
   const menuID = 'navAccount';
@@ -53,9 +51,7 @@ const NavigationAccount = ({ me, urlPush }) => {
 
   useEffect(() => {
     document.addEventListener('keydown', hotkeys);
-    return () => {
-      return document.removeEventListener('keydown', hotkeys);
-    };
+    return () => document.removeEventListener('keydown', hotkeys);
   });
 
   const toggleShowMenu = () => {
@@ -94,7 +90,7 @@ const NavigationAccount = ({ me, urlPush }) => {
         </span>
         <span className="ml-auto">
           <NavigationGenericNavItem
-            to={`${API_PATH}/logout`}
+            to={`${process.env.API_PATH}/logout`}
             text=""
             title="Logout"
             isStatic

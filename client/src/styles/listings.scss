@@ -26,6 +26,11 @@ div#entries {
     font-weight: bold;
   }
 
+  .is-submitter {
+    font-weight: bold;
+    color: red;
+  }
+
   .media-cont {
     margin-left: -21px;
     margin-right: -21px;
@@ -60,24 +65,21 @@ div#entries {
     font-weight: normal;
   }
 
+  .post-back-button,
+  .post-back-button i {
+    line-height: 1.2;
+  }
+
   div.condensed {
-    .post-title {
-      white-space: normal;
-      text-align: left;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    font-size: 0.925em;
+    div {
+      white-space: nowrap;
     }
-
-    .comment-meta {
-      margin-bottom: 0.5rem;
-    }
-
-    .direct-link {
-      display: none;
-    }
-
-    header:hover {
-      .direct-link {
-        display: inline !important;
-      }
+    .title {
+      cursor: pointer;
+      overflow: hidden;
     }
   }
 

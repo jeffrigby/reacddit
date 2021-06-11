@@ -1,6 +1,6 @@
 import React from 'react';
 // import PropTypes from 'prop-types';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useHistory, useLocation } from 'react-router-dom';
 import Search from '../header/Search';
 import Sort from '../header/Sort';
 import Reload from '../header/Reload';
@@ -12,6 +12,9 @@ import '../../styles/header.scss';
 import PinMenu from '../header/settings/PinMenu';
 
 const Header = () => {
+  const history = useHistory();
+  const location = useLocation();
+
   const showMenu = () => {
     document.body.classList.add('show-menu');
     document.body.classList.remove('hide-menu');
@@ -50,6 +53,21 @@ const Header = () => {
     </NavLink>
   );
 
+  const backButton = location.state &&
+    location.state.showBack &&
+    history.length > 2 && (
+      <div>
+        <button
+          className="btn btn-secondary btn-sm mr-2"
+          type="button"
+          onClick={() => history.goBack()}
+          title="Go Back"
+        >
+          <i className="fas fa-chevron-left" />
+        </button>
+      </div>
+    );
+
   return (
     <>
       <div className="d-flex flex-nowrap align-middle m-0 sidebar sidebar-navbar navbar-group filter-cont">
@@ -62,6 +80,7 @@ const Header = () => {
 
       <div className="header-brand-title pr-2 d-flex">
         <div className="px-2 open-menu-link">{menuButton}</div>
+        {backButton}
         <div className="dflex-nowrap header-main pr-0 m-0">
           <div className="navbar-brand p-0 m-0">{brand}</div>
         </div>

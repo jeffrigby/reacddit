@@ -73,8 +73,7 @@ class RedditAPI {
 
     if (token === 'expired' || reset === true || token === null) {
       // token expired or forced refresh. Get a new one.
-      const { API_PATH } = process.env;
-      const getToken = await axios.get(`${API_PATH}/bearer`);
+      const getToken = await axios.get(`${process.env.API_PATH}/bearer`);
       token = getToken.data.accessToken;
     }
 

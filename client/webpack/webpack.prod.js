@@ -5,22 +5,28 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const safePostCssParser = require('postcss-safe-parser');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const commonPaths = require('./paths');
-const CreateFileWebpack = require('create-file-webpack');
+const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
-const buildTimeDate = new Date();
-const buildTime = buildTimeDate.toISOString();
+const paths = require('./paths');
+
+// Variable used for enabling profiling in Production
+const isEnvProductionProfile = process.env.PROFILE;
+
+// Get the path to the uncompiled service worker (if it exists).
+// const { swSrc } = paths;
 
 module.exports = {
   mode: 'production',
-  entry: [commonPaths.entryPath],
+  bail: true,
+  devtool: false,
+  entry: [paths.appIndexJs],
   output: {
-    filename: `${commonPaths.jsFolder}/[name].[contenthash:8].js`,
-    path: commonPaths.outputPath,
+    filename: `${paths.jsFolder}/[name].[contenthash:8].js`,
+    path: paths.appBuild,
     publicPath: '/',
-    chunkFilename: `${commonPaths.jsFolder}/[name].[contenthash:8].chunk.js`,
+    chunkFilename: `${paths.jsFolder}/[name].[contenthash:8].chunk.js`,
   },
   module: {
     rules: [],
@@ -56,6 +62,9 @@ module.exports = {
           mangle: {
             safari10: true,
           },
+          // Added for profiling in devtools
+          keep_classnames: isEnvProductionProfile,
+          keep_fnames: isEnvProductionProfile,
           output: {
             ecma: 5,
             comments: false,
@@ -76,22 +85,15 @@ module.exports = {
         cssProcessorOptions: {
           parser: safePostCssParser,
           map: false,
+          cssProcessorPluginOptions: {
+            preset: ['default', { minifyFontValues: { removeQuotes: false } }],
+          },
         },
       }),
     ],
-    splitChunks: {
-      chunks: 'all',
-      // name: false,
-    },
-    // Keep the runtime chunk separated to enable long term caching
-    // https://twitter.com/wSokra/status/969679223278505985
-    runtimeChunk: true,
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new webpack.DefinePlugin({
-      BUILDTIME: JSON.stringify(buildTime),
-    }),
     new WorkboxWebpackPlugin.GenerateSW({
       cacheId: 'reacddit',
       cleanupOutdatedCaches: true,
@@ -99,6 +101,8 @@ module.exports = {
       exclude: [/\.map$/, /asset-manifest\.json$/],
       navigateFallback: `/index.html`,
       skipWaiting: true,
+      maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+      dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
       navigateFallbackDenylist: [
         // Exclude URLs starting with /_, as they're likely an API call
         new RegExp('^/_'),
@@ -109,24 +113,34 @@ module.exports = {
         new RegExp('/[^/]+\\.[^/]+$'),
       ],
     }),
-    // new BundleAnalyzerPlugin(),
+    // new WorkboxWebpackPlugin.InjectManifest({
+    //   swSrc,
+    //   dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
+    //   exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
+    //   // Bump up the default maximum size (2mb) that's precached,
+    //   // to make lazy-loading failure scenarios less likely.
+    //   // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
+    //   maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+    // }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
       filename: 'static/css/[name].[contenthash:8].css',
       chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
     }),
-
-    new CreateFileWebpack({
-      path: commonPaths.outputPath,
-      fileName: 'build.json',
-      content: JSON.stringify({ buildTime }),
+    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
+    new OptimizeCSSAssetsPlugin({
+      cssProcessorOptions: {
+        parser: safePostCssParser,
+        map: false,
+      },
+      cssProcessorPluginOptions: {
+        preset: ['default', { minifyFontValues: { removeQuotes: false } }],
+      },
     }),
-
-    new OptimizeCSSAssetsPlugin({}),
     new HtmlWebpackPlugin({
       inject: true,
-      template: commonPaths.templatePath,
+      template: paths.appHtml,
       minify: {
         removeComments: true,
         collapseWhitespace: true,
@@ -140,6 +154,7 @@ module.exports = {
         minifyURLs: true,
       },
     }),
-  ],
-  devtool: false,
+    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
+    isEnvProductionProfile && new BundleAnalyzerPlugin(),
+  ].filter(Boolean),
 };

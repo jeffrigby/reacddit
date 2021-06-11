@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect, useDispatch } from 'react-redux';
 import { useLocation, useParams } from 'react-router';
@@ -19,6 +19,7 @@ import ListingsHeader from './ListingsHeader';
 import PostsDebug from './PostsDebug';
 import '../../styles/listings.scss';
 import Posts from '../posts/postsContainer/Posts';
+import { ListingsContextLastExpanded } from '../../contexts';
 
 const queryString = require('query-string');
 
@@ -26,17 +27,10 @@ const Listings = ({ data, status, filter, settings }) => {
   const location = useLocation();
   const match = useParams();
   const dispatch = useDispatch();
+  const [lastExpanded, setLastExpanded] = useState('');
 
-  const {
-    listType,
-    target,
-    sort,
-    user,
-    userType,
-    multi,
-    postName,
-    comment,
-  } = match;
+  const { listType, target, sort, user, userType, multi, postName, comment } =
+    match;
 
   // Set title for detail pages
   if (data.originalPost) {
@@ -86,6 +80,7 @@ const Listings = ({ data, status, filter, settings }) => {
   // Get new posts if the filter changes.
   useEffect(() => {
     if (!filter.target) return;
+    setLastExpanded('');
     dispatch(listingsFetchEntriesReddit(filter));
   }, [filter, dispatch]);
 
@@ -174,14 +169,16 @@ const Listings = ({ data, status, filter, settings }) => {
 
   const locationKey = location.key || 'front';
   return (
-    <>
+    <ListingsContextLastExpanded.Provider
+      value={[lastExpanded, setLastExpanded]}
+    >
       <div className="list-group" id="entries">
         <ListingsHeader />
         <Posts key={locationKey} />
         <ListingsLogic saved={data.saved} />
       </div>
       <PostsDebug />
-    </>
+    </ListingsContextLastExpanded.Provider>
   );
 };
 

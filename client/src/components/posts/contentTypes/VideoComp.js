@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useContext,
+  useCallback,
+} from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
@@ -6,6 +13,7 @@ import '../../../styles/video.scss';
 import VideoDebug from './videoComponents/VideoDebug';
 import VideoAudioButton from './videoComponents/VideoAudioButton';
 import VideoControlBar from './videoComponents/VideoControlBar';
+import { PostsContextData } from '../../../contexts';
 
 const classNames = require('classnames');
 
@@ -46,7 +54,9 @@ function getBuffers(videoRef) {
   return {};
 }
 
-const VideoComp = ({ content, load, link }) => {
+const VideoComp = ({ link, content }) => {
+  const postContext = useContext(PostsContextData);
+  const load = postContext.isLoaded;
   const videoRef = useRef();
   const isPlaying = useRef(false);
   const isPlayingTimeout = useRef(null);
@@ -62,6 +72,7 @@ const VideoComp = ({ content, load, link }) => {
   const [stalled, setStalled] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [canPlay, setCanPlay] = useState(false);
+  const [manualStop, setManualStop] = useState(false);
   const [canPlayThrough, setCanPlayThrough] = useState(false);
   const [showLoadError, setLoadError] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -69,11 +80,12 @@ const VideoComp = ({ content, load, link }) => {
   const [buffer, setBuffer] = useState({ status: 'unloaded', buffers: [] });
 
   const isMounted = useRef(true);
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       isMounted.current = false;
-    };
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     // @todo this seems like a dumb way to handle not firing.
@@ -91,11 +103,14 @@ const VideoComp = ({ content, load, link }) => {
   }, [videoRef, autoplay, autoplayState]);
 
   useEffect(() => {
-    setTimeout(() => {
+    const canPlayTimeout = setTimeout(() => {
       if (!canPlay && load && isMounted.current) {
         setLoadError(true);
       }
     }, 5000);
+    return () => {
+      clearTimeout(canPlayTimeout);
+    };
   }, [canPlay, load]);
 
   const getSetBuffer = useMemo(
@@ -113,7 +128,9 @@ const VideoComp = ({ content, load, link }) => {
   );
 
   useEffect(() => {
-    getSetBuffer();
+    if (isMounted.current) {
+      getSetBuffer();
+    }
   }, [getSetBuffer, playing, currentTime, duration, canPlay, canPlayThrough]);
 
   const { width, height, sources } = content;
@@ -134,16 +151,24 @@ const VideoComp = ({ content, load, link }) => {
   const ratioStyle = { paddingBottom: `${ratio}%` };
   const videoId = `video-${content.id}`;
 
+  // In a const so I can pass it to the play button
+  const toggleManualStop = useCallback((state) => {
+    setManualStop(state);
+  }, []);
+
   /**
    * Toggle lock to set the controls
    */
-  const toggleLock = () => {
-    // eslint-disable-next-line no-unused-expressions
-    videoRef.current.paused
-      ? videoRef.current.play()
-      : videoRef.current.pause();
+  const toggleLock = useCallback(() => {
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setManualStop(false);
+    } else {
+      videoRef.current.pause();
+      setManualStop(true);
+    }
     setCtrLock(!ctrLock);
-  };
+  }, [ctrLock]);
 
   /**
    * Set the muted state if the volume is manually changed.
@@ -207,14 +232,16 @@ const VideoComp = ({ content, load, link }) => {
   };
 
   const eventTimeUpdate = (e) => {
-    trackPlaying();
-    throttledTime(videoRef.current.currentTime);
-    if (stalled) {
-      setStalled(false);
-    }
+    if (isMounted.current) {
+      trackPlaying();
+      throttledTime(videoRef.current.currentTime);
+      if (stalled) {
+        setStalled(false);
+      }
 
-    if (waiting) {
-      setWaiting(false);
+      if (waiting) {
+        setWaiting(false);
+      }
     }
   };
 
@@ -239,6 +266,7 @@ const VideoComp = ({ content, load, link }) => {
       'video-paused': !playing,
       'audio-muted': muted,
       'audio-on': !muted,
+      'manual-stop': manualStop,
     }
   );
 
@@ -354,6 +382,7 @@ const VideoComp = ({ content, load, link }) => {
                 content={content}
                 link={link}
                 buffer={buffer}
+                toggleManualStop={toggleManualStop}
               />
             </div>
 
@@ -396,9 +425,8 @@ const VideoComp = ({ content, load, link }) => {
 };
 
 VideoComp.propTypes = {
-  content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
   link: PropTypes.string,
+  content: PropTypes.object.isRequired,
 };
 
 VideoComp.defaultProps = {

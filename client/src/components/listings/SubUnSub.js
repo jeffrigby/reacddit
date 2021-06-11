@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
 import { useLocation } from 'react-router';
+import { useParams } from 'react-router-dom';
 import produce from 'immer';
 import { subredditsData } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
@@ -17,9 +18,14 @@ const SubUnSub = ({
   redditBearer,
 }) => {
   const location = useLocation();
+  const params = useParams();
   const locationKey = location.key || 'front';
 
-  if (isEmpty(about) || redditBearer.status !== 'auth') {
+  if (
+    isEmpty(about) ||
+    redditBearer.status !== 'auth' ||
+    (params.target === 'popular' && params.listType === 'r')
+  ) {
     return null;
   }
 

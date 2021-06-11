@@ -6,8 +6,8 @@ import { hotkeyStatus } from '../../../common';
 import redditAPI from '../../../reddit/redditAPI';
 
 const PostSave = ({ bearer }) => {
-  const post = useContext(PostsContextData);
-  const { data } = post;
+  const postContext = useContext(PostsContextData);
+  const { data } = postContext.post;
   const actionable = useContext(PostsContextActionable);
 
   const [saved, setSaved] = useState(data.saved);
@@ -44,9 +44,7 @@ const PostSave = ({ bearer }) => {
     } else {
       document.removeEventListener('keydown', hotkeys);
     }
-    return () => {
-      return document.removeEventListener('keydown', hotkeys);
-    };
+    return () => document.removeEventListener('keydown', hotkeys);
   }, [actionable, triggerSave]);
 
   const saveStr =

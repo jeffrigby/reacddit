@@ -41,14 +41,19 @@ const cleanLinks = (html) => {
   return rawhtml;
 };
 
-const Self = ({ content, load, name }) => {
-  const [showAll, setShowAll] = useState(content.expand || false);
+const Self = ({ name, content }) => {
+  const postContext = useContext(PostsContextData);
+  // const load = postContext.isLoaded;
+
+  const [showAll, setShowAll] = useState(content ? content.expand : false);
   const [specs, setSpecs] = useState(null);
-  const post = useContext(PostsContextData);
+
   const listType = useSelector((state) => state.listingsFilter.listType);
   const debug = useSelector((state) => state.siteSettings.debug);
   const selfRef = useRef();
   const selfHTMLRef = useRef();
+
+  const { post } = postContext;
 
   const getHeights = () => {
     const dimensions = {};
@@ -76,6 +81,10 @@ const Self = ({ content, load, name }) => {
     setShowAll(!showAll);
   };
 
+  if (!content) {
+    return null;
+  }
+
   const { html } = content;
   if (!html) return null;
   const rawhtml = cleanLinks(html);
@@ -87,7 +96,6 @@ const Self = ({ content, load, name }) => {
       inline={content.inline}
       inlineLinks={content.inlineLinks}
       name={name}
-      load={load}
     />
   ) : null;
 
@@ -115,7 +123,7 @@ const Self = ({ content, load, name }) => {
             {renderedHTML}
           </div>
           {showMore && (
-            <div className="self-show-more text-right">
+            <div className="self-show-more">
               <button
                 type="button"
                 className="btn btn-link btn-sm shadow-none p-0"
@@ -141,9 +149,8 @@ const Self = ({ content, load, name }) => {
 };
 
 Self.propTypes = {
-  content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
+  content: PropTypes.object.isRequired,
 };
 
 export default Self;

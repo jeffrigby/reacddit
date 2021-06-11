@@ -1,28 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+// import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import { formatDistanceToNow } from 'date-fns';
 import { redditFetchFriends } from '../../redux/actions/reddit';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
 import { setMenuStatus, getMenuStatus } from '../../common';
+import { getDiffClassName } from './navHelpers';
 
-const Friends = ({ redditFriends, getFriends }) => {
+const Friends = () => {
   const menuID = 'friends';
   const [showFriends, toggleShowFriends] = useState(getMenuStatus(menuID));
+  const lastUpdated = useSelector((state) => state.lastUpdated);
+  const redditFriends = useSelector((state) => state.redditFriends);
+  const dispatch = useDispatch();
+
   useEffect(() => {
     if (showFriends) {
       // Get a fresh listing.
-      getFriends(true);
+      dispatch(redditFetchFriends(true));
     } else {
       // Get from the cache. This is mostly to support
       // Marking friends in post listing.
-      getFriends();
+      dispatch(redditFetchFriends());
     }
-  }, [getFriends, showFriends]);
+  }, [dispatch, showFriends]);
 
   const removeFriend = async (id) => {
     await RedditAPI.removeFriend(id);
-    getFriends(true);
+    dispatch(redditFetchFriends(true));
   };
 
   if (redditFriends.status === 'unloaded') return null;
@@ -35,12 +41,34 @@ const Friends = ({ redditFriends, getFriends }) => {
 
   const navItems = [];
   Object.values(friends).forEach((f) => {
-    const link = `/user/${f.name}/posts/new`;
+    const link = `/user/${f.name}/posts?sort=new`;
+    const friendLastUpdated = lastUpdated[f.id]
+      ? lastUpdated[f.id].lastPost
+      : 0;
+
+    let title = `${f.name} Posts`;
+
+    const classNameStr = getDiffClassName(friendLastUpdated, false);
+    const badge = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;
+
+    if (friendLastUpdated !== 0) {
+      const timeago = formatDistanceToNow(friendLastUpdated * 1000);
+      title += ` - updated ${timeago} ago`;
+    }
+
     navItems.push(
       <React.Fragment key={f.id}>
         <li className="nav-item d-flex friend-li">
-          <div className="mr-auto">
-            <NavigationGenericNavItem text={f.name} to={link} noLi />
+          <div className="mr-auto d-flex w-100">
+            <NavigationGenericNavItem
+              to={link}
+              text={f.name}
+              id={f.id}
+              classes={classNameStr}
+              title={title}
+              badge={badge}
+              noLi
+            />
           </div>
           <div className="friend-actions">
             <button
@@ -103,17 +131,7 @@ const Friends = ({ redditFriends, getFriends }) => {
   );
 };
 
-Friends.propTypes = {
-  redditFriends: PropTypes.object.isRequired,
-  getFriends: PropTypes.func.isRequired,
-};
-
+Friends.propTypes = {};
 Friends.defaultProps = {};
 
-const mapStateToProps = (state) => ({
-  redditFriends: state.redditFriends,
-});
-
-export default connect(mapStateToProps, {
-  getFriends: redditFetchFriends,
-})(Friends);
+export default Friends;

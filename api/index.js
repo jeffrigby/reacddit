@@ -8,14 +8,8 @@ const crypto = require("crypto");
 const logger = require("koa-logger");
 const chalk = require("chalk");
 const { v4: uuidv4 } = require("uuid");
-const AccessToken = require("simple-oauth2/lib/access-token");
-const Client = require("simple-oauth2/lib/client");
 
-const {
-  ClientCredentials,
-  ResourceOwnerPassword,
-  AuthorizationCode,
-} = require("simple-oauth2");
+const { ClientCredentials, AuthorizationCode } = require("simple-oauth2");
 
 require("dotenv-defaults").config();
 
@@ -508,43 +502,23 @@ router.get("/api/logout", async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
   if (token) {
     try {
-      const accessTokenRevoke = await revokeToken(token.access_token, 'access_token');
-      const refreshTokenRevoke = await revokeToken(token.refresh_token, 'refresh_token');
-    }
-    catch (error) {
+      const accessTokenRevoke = await revokeToken(
+        token.access_token,
+        "access_token"
+      );
+      const refreshTokenRevoke = await revokeToken(
+        token.refresh_token,
+        "refresh_token"
+      );
+    } catch (error) {
       console.log("ERROR REVOKING TOKEN: ", error.message, error);
     }
     ctx.session.token = null;
     ctx.cookies.set("token");
     return ctx.redirect(`${CLIENT_PATH}/?logout`);
   }
-  console.log(token);
-  return;
-
-  // if (token) {
-  //   revokeToken(token, access_token);
-  //
-  //   return;
-  //   // const AccessTokenClass = new AccessToken(oauth2Config, client, token);
-  //   const newClient = new Client(oauth2Config);
-  //   const accessToken = new AccessToken(oauth2Config, newClient, token);
-  //   // Revoke both access and refresh tokens
-  //   try {
-  //     // Revokes both tokens, refresh token is only revoked if the access_token is properly revoked
-  //     await accessToken.revokeAll();
-  //   } catch (error) {
-  //     console.log("ERROR REVOKING TOKEN: ", error.message, error);
-  //   }
-  //   console.log("TOKEN DETROYED");
-  // } else {
-  //   console.log("TOKEN NOT FOUND");
-  // }
-  // ctx.session.token = null;
-  // ctx.cookies.set("token");
-  // return ctx.redirect(`${CLIENT_PATH}/?logout`);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
 
 http.createServer(app.callback()).listen(PORT);
-// https.createServer(app.callback()).listen(PORTSSL);

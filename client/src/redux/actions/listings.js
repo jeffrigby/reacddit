@@ -156,15 +156,8 @@ export function listingsFetchEntriesReddit(filters) {
         });
       }
       // End  cache Check
-      // console.log(locationKey, 'uncached');
 
-      // batch(() => {
       dispatch(listingsRedditStatus(locationKey, 'loading'));
-      // dispatch(currentSubreddit(locationKey, {}));
-      // dispatch(listingsRedditEntries(locationKey, {}));
-      // });
-
-      // const limit = currentState.siteSettings.view === 'condensed' ? 25 : 10;
 
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
@@ -172,6 +165,10 @@ export function listingsFetchEntriesReddit(filters) {
         // limit,
         ...qs,
       };
+
+      if (currentState.siteSettings.view === 'condensed' && !params.limit) {
+        params.limit = '100';
+      }
 
       const entries = await getContent(filters, params);
 

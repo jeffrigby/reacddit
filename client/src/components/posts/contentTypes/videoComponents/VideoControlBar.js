@@ -15,6 +15,7 @@ const VideoControlBar = ({
   content,
   link,
   buffer,
+  toggleManualStop,
 }) => {
   if (!duration) return <></>;
 
@@ -22,7 +23,11 @@ const VideoControlBar = ({
     <>
       <div className="video-bottom-control-cont">
         <div className="video-actions d-flex px-2">
-          <VideoPlayButton videoRef={videoRef} playing={playing} />
+          <VideoPlayButton
+            videoRef={videoRef}
+            playing={playing}
+            toggleManualStop={toggleManualStop}
+          />
           <VideoTime duration={duration} currentTime={currentTime} />
           <VideoAudioButton
             link={link}
@@ -56,6 +61,7 @@ VideoControlBar.propTypes = {
   content: PropTypes.object.isRequired,
   link: PropTypes.string,
   buffer: PropTypes.object.isRequired,
+  toggleManualStop: PropTypes.func.isRequired,
 };
 
 VideoControlBar.defaultProps = {

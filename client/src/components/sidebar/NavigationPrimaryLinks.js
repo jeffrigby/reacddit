@@ -7,8 +7,6 @@ import { isMobile } from 'react-device-detect';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
 
-const { API_PATH } = process.env;
-
 function NavigationPrimaryLinks({
   me,
   gotoLink,
@@ -44,11 +42,10 @@ function NavigationPrimaryLinks({
   );
 
   const getLoginUrl = useCallback(() => {
-    //   const loginLink = `${API_PATH}/login${isMobile ? '?mobile' : ''}`;
     const { loginURL } = redditBearer;
 
     if (!loginURL) {
-      return `${API_PATH}/login`;
+      return `${process.env.API_PATH}/login`;
     }
 
     if (isMobile) {
@@ -86,7 +83,9 @@ function NavigationPrimaryLinks({
         }
 
         if (key === 'L') {
-          window.location.href = me.name ? `${API_PATH}/logout` : getLoginUrl();
+          window.location.href = me.name
+            ? `${process.env.API_PATH}/logout`
+            : getLoginUrl();
         }
 
         lastKeyPressed.current = key;

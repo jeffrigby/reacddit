@@ -4,47 +4,15 @@ import { connect } from 'react-redux';
 import _trim from 'lodash/trim';
 import _trimEnd from 'lodash/trimEnd';
 import { formatDistanceToNow } from 'date-fns';
+import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
 
 const queryString = require('query-string');
 
 class NavigationItem extends React.PureComponent {
-  static lastUpdatedDiff(lastUpdated) {
-    const now = Math.floor(new Date().getTime() / 1000);
-    return now - lastUpdated;
-  }
-
-  getDiffClassName() {
-    const { lastUpdated, trigger } = this.props;
-    const classes = [];
-    if (lastUpdated > 0) {
-      const seconds = NavigationItem.lastUpdatedDiff(lastUpdated);
-      const deadSecs = (365 / 2) * 24 * 3600; // 6 months
-      const staleSecs = (365 / 12) * 24 * 3600; // 3 months
-      const todaySecs = 24 * 3600; // 1 day
-      const newSecs = 3600 / 2; // 30 minutes
-
-      if (seconds >= deadSecs) {
-        classes.push('sub-dead');
-      } else if (seconds >= staleSecs) {
-        classes.push('sub-stale');
-      } else if (seconds <= newSecs) {
-        classes.push('sub-new');
-      } else if (seconds <= todaySecs) {
-        classes.push('sub-today');
-      }
-    }
-
-    if (trigger) {
-      classes.push('mark trigger');
-    }
-
-    return classes.join(' ');
-  }
-
   render() {
-    const { sort, location, item, lastUpdated, me } = this.props;
+    const { sort, location, item, lastUpdated, me, trigger } = this.props;
     const query = queryString.parse(location.search);
     const { t } = query;
     let currentSort = sort || '';
@@ -66,7 +34,7 @@ class NavigationItem extends React.PureComponent {
       item.subreddit_type === 'user'
         ? `/${_trim(item.url, '/')}/posts/${_trim(currentSort, '/')}`
         : `/${_trim(item.url, '/')}/${_trim(currentSort, '/')}`;
-    const classNameStr = this.getDiffClassName();
+    const classNameStr = getDiffClassName(lastUpdated, trigger);
     const subLabel = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;
 
     let { title } = item;
