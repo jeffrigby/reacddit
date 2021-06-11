@@ -1,7 +1,7 @@
 import React from 'react';
 
 const SortItem = () => {
-  re
-}
+  re;
+};
 
 export default SortItem;

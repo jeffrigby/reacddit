@@ -1,14 +1,13 @@
-// this is a file
 const refresh = () => {
   if ('serviceWorker' in navigator) {
     if (caches) {
       // Service worker cache should be cleared with caches.delete()
-      caches.keys().then(names => {
+      caches.keys().then((names) => {
         for (let name of names) caches.delete(name);
       });
     }
 
-    navigator.serviceWorker.ready.then(registration => {
+    navigator.serviceWorker.ready.then((registration) => {
       registration.unregister();
       window.location.reload(true);
     });

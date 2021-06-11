@@ -1,9 +1,9 @@
 import { batch } from 'react-redux';
 import produce from 'immer';
-import { getLocationKey } from '../../common';
+import { getLocationKey, keyEntryChildren } from '../../common';
 import RedditAPI from '../../reddit/redditAPI';
 
-// @todo there's no reason for any of this to be in Redux. Move to hooks.
+// @todo there's no reason for any of this logic to be in Redux. Move to hooks.
 const queryString = require('query-string');
 
 export function listingsFilter(listFilter) {
@@ -52,19 +52,16 @@ export function listingsState(key, currentListingsState) {
   };
 }
 
-const keyEntryChildren = entries => {
-  const arrayToObject = (arr, keyField) =>
-    Object.assign({}, ...arr.map(item => ({ [item.data[keyField]]: item })));
-
-  const newChildren = arrayToObject(entries.data.children, 'name');
-  return produce(entries, draft => {
-    draft.data.children = newChildren;
-  });
-};
-
+/**
+ * @TODO move to lisitngs componenet.
+ * @param filters
+ * @param params
+ * @returns {Promise<{[p: string]: *}>}
+ */
 const getContent = async (filters, params) => {
   const target = filters.target !== 'mine' ? filters.target : null;
-  const { user, sort, multi, listType } = filters;
+  const { user, sort, multi, listType, postName, comment } = filters;
+  // console.log(filters);
   let entries;
   switch (listType) {
     case 'r':
@@ -74,7 +71,12 @@ const getContent = async (filters, params) => {
       entries = await RedditAPI.getListingMulti(user, target, sort, params);
       break;
     case 'u':
-      entries = await RedditAPI.getListingUser(user, target, sort, params);
+      entries = await RedditAPI.getListingUser(
+        user,
+        target === 'posts' ? 'submitted' : target,
+        sort,
+        params
+      );
       break;
     case 's':
       entries = multi
@@ -90,6 +92,20 @@ const getContent = async (filters, params) => {
       };
       break;
     }
+    case 'comments': {
+      const comments = await RedditAPI.getComments(
+        target,
+        postName,
+        comment,
+        params
+      );
+      entries = {
+        ...comments[1],
+        originalPost: comments[0],
+        requestUrl: comments.requestUrl,
+      };
+      break;
+    }
     default:
       break;
   }
@@ -100,7 +116,7 @@ const getContent = async (filters, params) => {
   return entries;
 };
 
-const subredditAbout = async filter => {
+const subredditAbout = async (filter) => {
   const { target, listType, multi } = filter;
   const badTarget = !target || target.match(/mine|popular|friends/);
 
@@ -129,6 +145,7 @@ export function listingsFetchEntriesReddit(filters) {
           Date.now() - currentState.listingsRedditEntries[locationKey].saved;
         if (elapsed <= 3600 * 1000) {
           // Everything is cool. Return Cache
+          // console.log(locationKey, 'cached');
           return;
         }
 
@@ -140,13 +157,7 @@ export function listingsFetchEntriesReddit(filters) {
       }
       // End  cache Check
 
-      // batch(() => {
       dispatch(listingsRedditStatus(locationKey, 'loading'));
-      // dispatch(currentSubreddit(locationKey, {}));
-      // dispatch(listingsRedditEntries(locationKey, {}));
-      // });
-
-      // const limit = currentState.siteSettings.view === 'condensed' ? 25 : 10;
 
       const { search } = currentState.router.location;
       const qs = queryString.parse(search);
@@ -155,7 +166,12 @@ export function listingsFetchEntriesReddit(filters) {
         ...qs,
       };
 
+      if (currentState.siteSettings.view === 'condensed' && !params.limit) {
+        params.limit = '100';
+      }
+
       const entries = await getContent(filters, params);
+
       const { listType } = filters;
 
       const data = {
@@ -164,7 +180,10 @@ export function listingsFetchEntriesReddit(filters) {
         type: 'init',
       };
 
-      if (entries.originalPost && listType === 'duplicates') {
+      if (
+        entries.originalPost &&
+        (listType === 'duplicates' || listType === 'comments')
+      ) {
         // eslint-disable-next-line
         data.originalPost = entries.originalPost.data.children[0];
       }
@@ -204,7 +223,7 @@ export function listingsFetchRedditNext() {
 
       const entries = await getContent(currentState.listingsFilter, params);
 
-      const newListings = produce(currentData, draft => {
+      const newListings = produce(currentData, (draft) => {
         draft.after = entries.data.after;
         draft.children = {
           ...currentData.children,
@@ -286,14 +305,14 @@ export function listingsFetchRedditNew(stream = false) {
 
       if (newChildKeys.length > 500) {
         const sliced = newChildKeys.slice(500);
-        sliced.forEach(key => {
+        sliced.forEach((key) => {
           delete newChildren[key];
         });
       }
 
       const newListings = produce(
         currentState.listingsRedditEntries[locationKey],
-        draft => {
+        (draft) => {
           draft.before = entries.data.before;
           draft.children = newChildren;
           draft.type = 'new';

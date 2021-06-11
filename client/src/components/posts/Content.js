@@ -10,10 +10,14 @@ import ImgurAlbum from './contentTypes/ImgurAlbum';
 import RawHTML from './contentTypes/RawHTML';
 import Twitter from './contentTypes/Twitter';
 import Placeholder from './Placeholder';
-import { PostsContextData } from '../../contexts';
+import { PostsContextData, PostsContextContent } from '../../contexts';
+import HTTPSError from './contentTypes/HTTPSError';
+import RedditGallery from './contentTypes/RedditGallery';
 
-const Content = ({ content, load }) => {
-  const data = useContext(PostsContextData);
+const Content = ({ content }) => {
+  const postContext = useContext(PostsContextData);
+  const { data } = postContext.post;
+
   const { name, url } = data;
 
   if (data.is_self && !data.selftext) {
@@ -21,40 +25,46 @@ const Content = ({ content, load }) => {
   }
 
   if (!content) {
-    return <Placeholder load={load} />;
+    return <Placeholder />;
   }
 
   let contentRendered = '';
   if (content.type) {
     switch (content.type) {
       case 'image':
-        contentRendered = <ImageComp content={content} load={load} />;
+        contentRendered = <ImageComp content={content} />;
         break;
       case 'video':
-        contentRendered = (
-          <VideoComp content={content} load={load} link={url} />
-        );
+        contentRendered = <VideoComp link={url} content={content} />;
         break;
       case 'iframe_4x4':
-        contentRendered = <IFrame4x4 content={content} load={load} />;
+        contentRendered = <IFrame4x4 content={content} />;
         break;
       case 'iframe16x9':
-        contentRendered = <IFrame16x9 content={content} load={load} />;
+        contentRendered = <IFrame16x9 content={content} />;
         break;
       case 'imgur_album':
-        contentRendered = <ImgurAlbum content={content} load={load} />;
+        contentRendered = (
+          <ImgurAlbum content={content} load={postContext.isLoaded} />
+        );
         break;
       case 'thumb':
-        contentRendered = <Thumb content={content} load={load} />;
+        contentRendered = <Thumb content={content} />;
         break;
       case 'self':
-        contentRendered = <Self content={content} load={load} name={name} />;
+        contentRendered = <Self name={name} content={content} />;
         break;
       case 'raw_html':
-        contentRendered = <RawHTML content={content} load={load} />;
+        contentRendered = <RawHTML content={content} />;
         break;
       case 'twitter':
-        contentRendered = <Twitter content={content} load={load} />;
+        contentRendered = <Twitter tweetId={content.id} />;
+        break;
+      case 'httpserror':
+        contentRendered = <HTTPSError />;
+        break;
+      case 'redditGallery':
+        contentRendered = <RedditGallery content={content} />;
         break;
       default:
         break;
@@ -63,12 +73,15 @@ const Content = ({ content, load }) => {
     // couldn't load an embed
     return null;
   }
-  return <div className="content">{contentRendered}</div>;
+  return (
+    <PostsContextContent.Provider value={postContext}>
+      <div className="content">{contentRendered}</div>
+    </PostsContextContent.Provider>
+  );
 };
 
 Content.propTypes = {
   content: PropTypes.object,
-  load: PropTypes.bool.isRequired,
 };
 
 Content.defaultProps = {

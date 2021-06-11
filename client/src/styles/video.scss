@@ -1,6 +1,39 @@
 .video-container {
   position: relative;
 
+  .video-loading-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: red;
+    color: white;
+    font-weight: bold;
+    z-index: 3;
+    font-size: 75%;
+    a {
+      color: white !important;
+      text-decoration: underline;
+    }
+  }
+
+  .slow-loading {
+    position: absolute;
+    top: 75%;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    width: 100%;
+    z-index: 6;
+  }
+
+  video {
+    z-index: 1;
+  }
+
+  &.video-unloaded {
+    margin-bottom: 4px;
+  }
+
   &.unlocked {
     .video-ctr,
     &.unmuted .video-audio {
@@ -11,7 +44,7 @@
     &.muted .video-audio,
     &.paused .video-play {
       visibility: visible;
-      opacity: 1;
+      opacity: 1.0;
     }
   }
 
@@ -19,31 +52,108 @@
     .video-ctr,
     &.unmuted .video-audio {
       visibility: visible;
-      opacity: 1;
+      opacity: 1.0;
       transition: visibility 0s 0.25s, opacity 0.25s linear;
     }
   }
 
-  .video-progress-bar {
-    display: flex;
+  .video-control-bar-cont {
+    position: absolute;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    height: 4px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    vertical-align: top;
-    border-image-width: 0;
-    line-height: 4px !important;
-    cursor: pointer;
-    border-radius: 0;
-    -webkit-appearance: none;
+    margin: 0 1px;
 
-    &::-webkit-progress-bar {
-      background-color: lightgrey;
+    .video-bottom-control-cont {
+      position: relative;
+      display: none;
+      z-index: 3;
+      font-weight: bold;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.25);
+      button {
+        color: white !important;
+        //text-shadow: 1px 1px #000;
+        border: none;
+
+        &:focus,
+        &:active {
+          outline: none !important;
+          box-shadow: none;
+        }
+      }
     }
 
-    &::-webkit-progress-value {
-      background-color: darkgray;
+    .video-bar-cont {
+      position: relative;
+      background-color: lightgrey;
+      height: 4px;
+      z-index: 2;
+
+      div {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+
+        &.seek-bar {
+          left: 0;
+          right: 0;
+          z-index: 8;
+          cursor: pointer;
+          background-color: transparent;
+        }
+
+        &.progress-bar {
+          left: 0;
+          background-color: #007bff;
+          opacity: 0.75;
+          z-index: 6;
+        }
+
+        &.buffer-bar {
+          background-color: darkgray;
+        }
+
+        &.buffer-bar-full {
+          right: 0;
+          left: 0;
+        }
+      }
+    }
+
+    .video-audio-cont {
+      position: relative;
+      .audio-disabled {
+        position: absolute;
+        width: 300px;
+        left: 0;
+        top: -100px;
+        font-size: 0.75rem;
+        visibility: hidden;
+        opacity: 0;
+        color: white;
+        transition: visibility 0s 0.25s, opacity 0.25s linear;
+      }
+      &:hover {
+        .audio-disabled {
+          visibility: visible;
+          opacity: 1.0;
+        }
+      }
+    }
+  }
+
+  &:hover,
+  &.paused {
+    .video-bar-cont {
+      height: 10px !important;
+      opacity: 0.75;
+    }
+
+    .video-control-bar-cont {
+      .video-bottom-control-cont {
+        display: block;
+      }
     }
   }
 
@@ -51,6 +161,7 @@
     position: absolute;
     right: 10px;
     top: 10px;
+    z-index: 2;
     button {
       color: white;
       text-shadow: 1px 1px #000;
@@ -75,7 +186,7 @@
       &:hover {
         .audio-disabled {
           visibility: visible;
-          opacity: 1;
+          opacity: 1.0;
         }
       }
     }
@@ -90,7 +201,7 @@
       .video-ctr,
       &.unmuted .video-audio {
         visibility: visible;
-        opacity: 1;
+        opacity: 1.0;
         transition: visibility 0s 0.25s, opacity 0.25s linear;
       }
     }

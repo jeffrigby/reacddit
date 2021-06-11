@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const RawHTML = ({ content, load }) => {
+const RawHTML = ({ content }) => {
   const rawhtml = content.html;
 
   // eslint-disable-next-line react/no-danger
@@ -12,7 +12,6 @@ const RawHTML = ({ content, load }) => {
 
 RawHTML.propTypes = {
   content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
 };
 
 export default RawHTML;

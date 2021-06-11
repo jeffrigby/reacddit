@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
 import { useLocation } from 'react-router';
+import { useParams } from 'react-router-dom';
 import produce from 'immer';
 import { subredditsData } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
@@ -17,9 +18,14 @@ const SubUnSub = ({
   redditBearer,
 }) => {
   const location = useLocation();
+  const params = useParams();
   const locationKey = location.key || 'front';
 
-  if (isEmpty(about) || redditBearer.status !== 'auth') {
+  if (
+    isEmpty(about) ||
+    redditBearer.status !== 'auth' ||
+    (params.target === 'popular' && params.listType === 'r')
+  ) {
     return null;
   }
 
@@ -27,7 +33,7 @@ const SubUnSub = ({
     await RedditAPI.subscribe(about.name, 'unsub');
     const newAbout = { ...about, user_is_subscriber: false };
     setCurrentSubreddit(locationKey, newAbout);
-    const newSubreddits = produce(subreddits, draft => {
+    const newSubreddits = produce(subreddits, (draft) => {
       delete draft.subreddits[about.display_name];
     });
     setSubreddits(newSubreddits);
@@ -37,7 +43,7 @@ const SubUnSub = ({
     await RedditAPI.subscribe(about.name, 'sub');
     const newAbout = { ...about, user_is_subscriber: true };
     setCurrentSubreddit(locationKey, newAbout);
-    const newSubreddits = produce(subreddits, draft => {
+    const newSubreddits = produce(subreddits, (draft) => {
       draft.subreddits[about.display_name] = newAbout;
     });
     setSubreddits(newSubreddits);
@@ -79,7 +85,7 @@ SubUnSub.defaultProps = {
   about: {},
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   about: getCurrentSubreddit(state),
   subreddits: state.subreddits,
   redditBearer: state.redditBearer,

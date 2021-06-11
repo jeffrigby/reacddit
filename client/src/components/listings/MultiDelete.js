@@ -39,7 +39,7 @@ MultiDelete.propTypes = {
 
 MultiDelete.defaultProps = {};
 
-const mapStateToProps = state => ({});
+const mapStateToProps = (state) => ({});
 
 export default connect(mapStateToProps, {
   fetchMultis: redditFetchMultis,

@@ -74,7 +74,7 @@ class ImgurAlbum extends React.Component {
         <div className="btn-group btn-group-xs albumNav">
           <button
             type="button"
-            className="btn btn-default"
+            className="btn btn-default shadow-none"
             aria-label="Previous Slide"
             onClick={this.prevSlide}
           >
@@ -85,7 +85,7 @@ class ImgurAlbum extends React.Component {
           </div>
           <button
             type="button"
-            className="btn btn-default"
+            className="btn btn-default shadow-none"
             aria-label="Next Slide"
             onClick={this.nextSlide}
           >

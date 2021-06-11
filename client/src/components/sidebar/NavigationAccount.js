@@ -7,8 +7,6 @@ import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 
-const { API_PATH } = process.env;
-
 const NavigationAccount = ({ me, urlPush }) => {
   let lastKeyPressed = '';
   const menuID = 'navAccount';
@@ -16,7 +14,7 @@ const NavigationAccount = ({ me, urlPush }) => {
     getMenuStatus(menuID, true)
   );
 
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     const pressedKey = event.key;
 
     if (hotkeyStatus()) {
@@ -36,7 +34,7 @@ const NavigationAccount = ({ me, urlPush }) => {
               urlPush(`/user/${name}/downvoted`);
               break;
             case 'b':
-              urlPush(`/user/${name}/submitted`);
+              urlPush(`/user/${name}/posts`);
               break;
             case 's':
               urlPush(`/user/${name}/saved`);
@@ -53,9 +51,7 @@ const NavigationAccount = ({ me, urlPush }) => {
 
   useEffect(() => {
     document.addEventListener('keydown', hotkeys);
-    return () => {
-      return document.removeEventListener('keydown', hotkeys);
-    };
+    return () => document.removeEventListener('keydown', hotkeys);
   });
 
   const toggleShowMenu = () => {
@@ -94,7 +90,7 @@ const NavigationAccount = ({ me, urlPush }) => {
         </span>
         <span className="ml-auto">
           <NavigationGenericNavItem
-            to={`${API_PATH}/logout`}
+            to={`${process.env.API_PATH}/logout`}
             text=""
             title="Logout"
             isStatic
@@ -108,8 +104,8 @@ const NavigationAccount = ({ me, urlPush }) => {
         <ul className="nav flex-column">
           <Friends />
           <NavigationGenericNavItem
-            to={`/user/${me.name}/submitted`}
-            text="Submitted"
+            to={`/user/${me.name}/posts`}
+            text="Posts"
             title="Show My Submitted Posts"
             iconClass="far fa-file"
           />
@@ -144,7 +140,7 @@ NavigationAccount.propTypes = {
 
 NavigationAccount.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   me: state.redditMe.me,
 });
 

@@ -3,16 +3,11 @@
     "airbnb",
     "plugin:react/recommended",
     "plugin:flowtype/recommended",
-    "prettier",
-    "prettier/flowtype",
-    "prettier/react",
-    "prettier/standard"
+    "prettier"
   ],
   "env": {
     "browser": true,
-    "es6": true,
-    "commonjs": true,
-    "node": true
+    "es2021": true
   },
   "globals": {
     "jQuery": true,
@@ -20,20 +15,22 @@
     "process": false
   },
   "plugins": ["flowtype", "react", "react-hooks", "jsx-a11y", "prettier"],
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "ecmaVersion": 2018,
-    "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
-    }
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
   },
   "rules": {
-    "prettier/prettier": "error",
-    //    "max-len": ["error", 200],
-    //    "no-console": "off",
+    "prettier/prettier": "warn",
     "no-param-reassign": [
       "error",
-      { "props": true, "ignorePropertyModificationsFor": ["draft"] }
+      {
+        "props": true,
+        "ignorePropertyModificationsFor": ["draft"]
+      }
     ],
     "strict": ["error", "global"],
     "curly": "warn",
@@ -44,17 +41,30 @@
         "ignoreClassFields": true
       }
     ],
-    // airbnb override
     "global-require": 0,
-    "no-unused-vars": ["error", { "args": "none" }],
+    "no-unused-vars": [
+      "warn",
+      {
+        "args": "none"
+      }
+    ],
     "react/jsx-filename-extension": 0,
     "react/forbid-prop-types": 0,
     "no-unused-expressions": [
       "error",
-      { "allowShortCircuit": true, "allowTernary": false }
+      {
+        "allowShortCircuit": true,
+        "allowTernary": false
+      }
     ],
-    "import/no-cycle": [2, { "maxDepth": 1 }],
+    "import/no-cycle": [
+      2,
+      {
+        "maxDepth": 1
+      }
+    ],
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "no-unreachable": "warn"
   }
 }

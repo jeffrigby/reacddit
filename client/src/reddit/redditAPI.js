@@ -15,7 +15,7 @@ class RedditAPI {
     });
 
     this.redditAPI.interceptors.request.use(
-      async config => {
+      async (config) => {
         const newConfig = config;
         const token = await this.getToken(false);
 
@@ -25,7 +25,7 @@ class RedditAPI {
 
         return newConfig;
       },
-      error => Promise.reject(error)
+      (error) => Promise.reject(error)
     );
   }
 
@@ -33,7 +33,7 @@ class RedditAPI {
     // @todo this can be modernized
     const params = Object.assign(defaults, options);
     Object.keys(params).forEach(
-      key => (params[key] == null || params[key] === '') && delete params[key]
+      (key) => (params[key] == null || params[key] === '') && delete params[key]
     );
 
     return params;
@@ -73,8 +73,7 @@ class RedditAPI {
 
     if (token === 'expired' || reset === true || token === null) {
       // token expired or forced refresh. Get a new one.
-      const { API_PATH } = process.env;
-      const getToken = await axios.get(`${API_PATH}/bearer`);
+      const getToken = await axios.get(`${process.env.API_PATH}/bearer`);
       token = getToken.data.accessToken;
     }
 
@@ -84,6 +83,16 @@ class RedditAPI {
       sessionStorage.clear();
     }
     return token;
+  }
+
+  /**
+   * Helper funtion to grab the loginURL from the cookie to avoid
+   * @returns string the full URL to login
+   */
+  // eslint-disable-next-line class-methods-use-this
+  getLoginUrl() {
+    const { loginURL } = cookies.getJSON('token');
+    return loginURL;
   }
 
   /**
@@ -269,7 +278,7 @@ class RedditAPI {
       params,
     };
 
-    const url = `user/${user}/${type}/${sort}`;
+    const url = `user/${user}/${type}?sort=${sort}`;
     const result = await this.redditAPI.get(url, data);
     const query = queryString.stringify(params);
     result.data.requestUrl = `${url}?${query}`;
@@ -599,6 +608,42 @@ class RedditAPI {
   async me() {
     const me = await this.redditAPI.get('/api/v1/me');
     return me.data;
+  }
+
+  async getComments(target, postName, comment, options) {
+    const defaults = {
+      raw_json: 1,
+      comment: comment || null,
+    };
+    const params = RedditAPI.setParams(defaults, options);
+    const data = {
+      params,
+    };
+
+    const comments = await this.redditAPI.get(
+      `r/${target}/comments/${postName}/`,
+      data
+    );
+
+    return comments.data;
+  }
+
+  async getMoreComments(linkID, children, options) {
+    const defaults = {
+      link_id: linkID,
+      children: children.join(','),
+      raw_json: 1,
+      api_type: 'json',
+      depth: null,
+      id: null,
+      limit_children: false,
+    };
+    const params = RedditAPI.setParams(defaults, options);
+    const data = {
+      params,
+    };
+    const moreComments = await this.redditAPI.get(`api/morechildren`, data);
+    return moreComments;
   }
 }
 

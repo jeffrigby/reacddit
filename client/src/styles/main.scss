@@ -1,16 +1,20 @@
+html {
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
 body {
-  font-size: .875rem;
+  font-size: 0.875rem;
 }
 
 .form-control-dark {
   color: #fff;
-  background-color: rgba(255, 255, 255, .1);
-  border-color: rgba(255, 255, 255, .1);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .form-control-dark:focus {
   border-color: transparent;
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
 }
 
 .show-cursor {
@@ -25,7 +29,7 @@ div {
 }
 
 .offscreen-placeholder:after {
-  content: "\00A0\00A0\00A0\00A0";
+  content: '\00A0\00A0\00A0\00A0';
 }
 
 .app-loading {

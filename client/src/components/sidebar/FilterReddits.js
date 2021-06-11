@@ -16,7 +16,7 @@ class FilterReddits extends React.Component {
     document.removeEventListener('keydown', this.handleFilterHotkey);
   }
 
-  handleFilterHotkey = event => {
+  handleFilterHotkey = (event) => {
     const { filter, setFilter, goto } = this.props;
     const pressedKey = event.key;
     const subLength = document.querySelectorAll(
@@ -82,7 +82,7 @@ class FilterReddits extends React.Component {
    * @param item
    * @returns {void|*}
    */
-  filterReddits = item => {
+  filterReddits = (item) => {
     const { setFilter } = this.props;
     const filterText = item.target.value;
     // Always reset the index.
@@ -129,7 +129,11 @@ class FilterReddits extends React.Component {
   render() {
     const { filter } = this.props;
     return (
-      <div className="filterText w-100 d-flex m-0 p-2">
+      <div
+        className={`filterText w-100 d-flex m-0 p-2 ${
+          filter.active ? 'filter-focused' : 'filter-unfocused'
+        }`}
+      >
         <input
           type="text"
           className="form-control form-control-dark form-control-sm w-100"
@@ -143,7 +147,7 @@ class FilterReddits extends React.Component {
         />
         {(filter.active || filter.filterText) && (
           <i
-            className="far fa-times-circle form-control-clear"
+            className="far fa-times-circle form-control-clear filter-clear"
             onClick={this.clearSearch}
             aria-hidden
             role="button"
@@ -163,7 +167,7 @@ FilterReddits.propTypes = {
 
 FilterReddits.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   filter: state.subredditsFilter,
 });
 

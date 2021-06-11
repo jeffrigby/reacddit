@@ -6,8 +6,8 @@ import { subredditsData } from '../../redux/actions/subreddits';
 import RedditAPI from '../../reddit/redditAPI';
 
 const SubFavorite = ({ isFavorite, srName }) => {
-  const me = useSelector(state => state.redditMe.me);
-  const subreddits = useSelector(state => state.subreddits);
+  const me = useSelector((state) => state.redditMe.me);
+  const subreddits = useSelector((state) => state.subreddits);
   const dispatch = useDispatch();
 
   if (!me.name) return null;
@@ -17,7 +17,7 @@ const SubFavorite = ({ isFavorite, srName }) => {
   const toggleFavorite = async () => {
     const favRequest = await RedditAPI.favorite(!isFavorite, srName);
     if (favRequest.status === 200) {
-      const newSubs = produce(subreddits, draftState => {
+      const newSubs = produce(subreddits, (draftState) => {
         const index = srName.toLowerCase();
         // eslint-disable-next-line no-param-reassign
         draftState.subreddits[index].user_has_favorited = !isFavorite;

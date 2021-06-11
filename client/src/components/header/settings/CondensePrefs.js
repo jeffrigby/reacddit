@@ -4,10 +4,13 @@ import { siteSettings } from '../../../redux/actions/misc';
 
 const CondensePrefs = () => {
   const condenseStickySetting = useSelector(
-    state => state.siteSettings.condenseSticky
+    (state) => state.siteSettings.condenseSticky
   );
   const condenseDuplicatesSetting = useSelector(
-    state => state.siteSettings.condenseDuplicate
+    (state) => state.siteSettings.condenseDuplicate
+  );
+  const condensePinnedSetting = useSelector(
+    (state) => state.siteSettings.condensePinned
   );
   const dispatch = useDispatch();
 
@@ -19,37 +22,60 @@ const CondensePrefs = () => {
     dispatch(siteSettings({ condenseSticky: !condenseStickySetting }));
   };
 
+  const togglePinned = () => {
+    dispatch(siteSettings({ condensePinned: !condensePinnedSetting }));
+  };
+
   return (
-    <div className="condense-settings">
-      <div className="form-check d-flex">
-        <div>
-          <label className="form-check-label" htmlFor="debugCheck">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              id="autoPlayCheck"
-              defaultChecked={condenseStickySetting}
-              onClick={toggleSticky}
-            />
-            Condense sticky posts
-          </label>
+    <>
+      <div className="mt-2 d-flex">
+        <div className="font-weight-bold">Default Condense:</div>
+        <div
+          data-toggle="modal"
+          data-target="#condenseHelp"
+          title="Auto Refresh Info"
+          className="ml-auto"
+        >
+          <i className="fas fa-info-circle" />
         </div>
       </div>
-      <div className="form-check d-flex">
-        <div>
-          <label className="form-check-label" htmlFor="debugCheck">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              id="autoPlayCheck"
-              defaultChecked={condenseDuplicatesSetting}
-              onClick={toggleDupe}
-            />
-            Condense duplicate posts
-          </label>
-        </div>
+      <div className="form-check">
+        <label className="form-check-label" htmlFor="condenseStickySetting">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="condenseStickySetting"
+            defaultChecked={condenseStickySetting}
+            onClick={toggleSticky}
+          />
+          Sticky
+        </label>
       </div>
-    </div>
+      <div className="form-check">
+        <label className="form-check-label" htmlFor="condensePinnedSetting">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="condensePinnedSetting"
+            defaultChecked={condensePinnedSetting}
+            onClick={togglePinned}
+          />
+          Pinned
+        </label>
+      </div>
+      <div className="form-check">
+        <label className="form-check-label" htmlFor="condenseDuplicatesSetting">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="condenseDuplicatesSetting"
+            defaultChecked={condenseDuplicatesSetting}
+            onClick={toggleDupe}
+          />
+          Duplicate
+        </label>
+      </div>
+    </>
   );
 };
 

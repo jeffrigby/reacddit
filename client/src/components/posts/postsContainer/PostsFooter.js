@@ -26,7 +26,7 @@ PostsFooter.propTypes = {
   status: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   status: listingStatus(state),
 });
 

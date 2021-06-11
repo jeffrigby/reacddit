@@ -51,7 +51,7 @@ PostsLoadingStatus.propTypes = {
   status: PropTypes.string.isRequired,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   data: listingData(state),
   status: listingStatus(state),
 });

@@ -5,7 +5,7 @@ import * as listings from './listings';
 import * as reddit from './reddit';
 import * as misc from './misc';
 
-export default history =>
+export default (history) =>
   combineReducers({
     router: connectRouter(history),
     ...subreddits,

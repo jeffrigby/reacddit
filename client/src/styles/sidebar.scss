@@ -13,6 +13,7 @@
   z-index: 5;
   height: calc(100vh - 3rem);
   overflow: hidden !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.125);
 }
 
 #aside-content {
@@ -125,9 +126,6 @@
     margin: 0 0 0 !important;
     padding: 0 !important;
   }
-  //.open-menu-link {
-  //  display: inherit;
-  //}
 }
 
 .show-menu {
@@ -145,22 +143,30 @@
   }
 }
 
+#menu-overlay {
+  position: absolute;
+  background-color: black;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: none;
+  z-index: 1000000;
+  opacity: 0;
+  margin-left: 0;
+}
+
+.show-menu {
+  #menu-overlay {
+    transition: margin-left 0.3s;
+    margin-left: 14rem !important;
+    display: block;
+  }
+}
+
 @media (max-width: 767.98px) {
   .open-menu-link {
     display: inherit;
-  }
-
-  #menu-overlay {
-    position: absolute;
-    background-color: black;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    display: none;
-    z-index: 1000000;
-    opacity: 0;
-    margin-left: 0;
   }
 
   .sidebar {
@@ -189,16 +195,6 @@
 
     .open-menu-link {
       display: none !important;
-    }
-
-    #menu-overlay {
-      transition: margin-left 0.3s;
-      margin-left: 14rem !important;
-      display: block;
-    }
-
-    #main {
-      //visibility: hidden !important;
     }
 
     .navbar-brand,
@@ -253,6 +249,9 @@
     &:hover {
       .friend-actions {
         display: block;
+      }
+      .badge {
+        display: none;
       }
     }
   }

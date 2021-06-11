@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import * as serviceWorker from '../../../serviceWorker';
+import { unregister } from '../../../serviceWorkerRegistration';
 
 /* global BUILDTIME */
 
@@ -8,16 +8,18 @@ import * as serviceWorker from '../../../serviceWorker';
 const reload = () => {
   if (caches) {
     // Service worker cache should be cleared with caches.delete()
-    caches.keys().then(names => {
-      names.forEach(name => caches.delete(name));
+    caches.keys().then((names) => {
+      names.forEach((name) => caches.delete(name));
     });
   }
-  serviceWorker.unregister();
-  window.location.reload(true);
+  unregister();
+  setTimeout(() => {
+    window.location.reload(true);
+  }, 1000);
 };
 
 const ForceRefresh = () => {
-  const settings = useSelector(state => state.siteSettings);
+  const settings = useSelector((state) => state.siteSettings);
 
   return (
     <div>
@@ -41,9 +43,5 @@ const ForceRefresh = () => {
     </div>
   );
 };
-
-ForceRefresh.propTypes = {};
-
-ForceRefresh.defaultProps = {};
 
 export default ForceRefresh;

@@ -50,6 +50,9 @@ const ListingsHeaderMulti = ({ filter, multis, me }) => {
     );
   }
 
+  // Set the title
+  document.title = `${currentMulti.name} subreddites curated by /u/${currentMulti.owner}`;
+
   return (
     <>
       <div className="d-flex">
@@ -79,7 +82,7 @@ ListingsHeaderMulti.propTypes = {
 
 ListingsHeaderMulti.defaultProps = {};
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   filter: state.listingsFilter,
   multis: state.redditMultiReddits,
   me: state.redditMe,

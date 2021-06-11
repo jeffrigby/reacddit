@@ -20,9 +20,19 @@ const ListingsHeaderSub = ({ about, filter, cachedSub }) => {
   let showSubInfo = false;
   switch (listType) {
     case 'u':
+      document.title = `u/${user}: ${
+        target.charAt(0).toUpperCase() + target.slice(1)
+      }`;
       title = `/u/${user} ${target}`;
       break;
     case 'r': {
+      // Title
+      if (target === 'mine') {
+        document.title = 'reacddit';
+      } else {
+        document.title = target;
+      }
+
       if (target === 'friends') {
         title = 'My Friends';
       } else if (target === 'popular') {
@@ -57,15 +67,17 @@ const ListingsHeaderSub = ({ about, filter, cachedSub }) => {
       searchEverywhere = target !== 'mine' && (
         <NavLink to={`/search?q=${qs.q}`}>Search Everywhere</NavLink>
       );
-      title = `Results for '${qs.q}'`;
+      title = `Search results for '${qs.q}'`;
       if (multi) {
         title += ` in /m/${target}`;
       } else if (target !== 'mine') {
         title += ` in /r/${target}`;
       }
+      document.title = title;
       break;
     }
     default:
+      document.title = 'reacddit';
       title = '';
       break;
   }
@@ -131,7 +143,7 @@ ListingsHeaderSub.defaultProps = {
   about: {},
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   about: getCurrentSubreddit(state),
   filter: state.listingsFilter,
   cachedSub: getCachedSub(state),

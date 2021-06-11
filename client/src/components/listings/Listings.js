@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect, useDispatch } from 'react-redux';
 import { useLocation, useParams } from 'react-router';
@@ -19,6 +19,7 @@ import ListingsHeader from './ListingsHeader';
 import PostsDebug from './PostsDebug';
 import '../../styles/listings.scss';
 import Posts from '../posts/postsContainer/Posts';
+import { ListingsContextLastExpanded } from '../../contexts';
 
 const queryString = require('query-string');
 
@@ -26,8 +27,17 @@ const Listings = ({ data, status, filter, settings }) => {
   const location = useLocation();
   const match = useParams();
   const dispatch = useDispatch();
+  const [lastExpanded, setLastExpanded] = useState('');
 
-  const { listType, target, sort, user, userType, multi } = match;
+  const { listType, target, sort, user, userType, multi, postName, comment } =
+    match;
+
+  // Set title for detail pages
+  if (data.originalPost) {
+    const origTitle = data.originalPost.data.title;
+    const origSub = data.originalPost.data.subreddit;
+    document.title = `${origTitle} : ${origSub}`;
+  }
 
   // Set the new filter.
   useEffect(() => {
@@ -49,14 +59,28 @@ const Listings = ({ data, status, filter, settings }) => {
       user: user || '',
       listType: listingType,
       qs: location.search,
+      postName: postName || '',
+      comment: comment || '',
     };
 
     dispatch(listingsFilter(newFilter));
-  }, [listType, target, sort, user, userType, multi, location, dispatch]);
+  }, [
+    listType,
+    target,
+    sort,
+    user,
+    userType,
+    multi,
+    location,
+    dispatch,
+    postName,
+    comment,
+  ]);
 
   // Get new posts if the filter changes.
   useEffect(() => {
     if (!filter.target) return;
+    setLastExpanded('');
     dispatch(listingsFetchEntriesReddit(filter));
   }, [filter, dispatch]);
 
@@ -115,7 +139,7 @@ const Listings = ({ data, status, filter, settings }) => {
   }, [status, dispatch]);
 
   // Set some hotkeys
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
       const pressedKey = event.key;
       try {
@@ -145,14 +169,16 @@ const Listings = ({ data, status, filter, settings }) => {
 
   const locationKey = location.key || 'front';
   return (
-    <>
+    <ListingsContextLastExpanded.Provider
+      value={[lastExpanded, setLastExpanded]}
+    >
       <div className="list-group" id="entries">
         <ListingsHeader />
         <Posts key={locationKey} />
         <ListingsLogic saved={data.saved} />
       </div>
       <PostsDebug />
-    </>
+    </ListingsContextLastExpanded.Provider>
   );
 };
 
@@ -167,7 +193,7 @@ Listings.defaultProps = {
   settings: { debug: false, view: 'expanded' },
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   data: listingData(state),
   status: listingStatus(state),
   settings: state.siteSettings,

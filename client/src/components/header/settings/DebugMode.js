@@ -9,7 +9,7 @@ const DebugMode = ({ setSiteSetting, debug }) => {
     setSiteSetting({ debug: !debug });
   };
 
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     if (hotkeyStatus()) {
       const pressedKey = event.key;
       try {
@@ -31,21 +31,17 @@ const DebugMode = ({ setSiteSetting, debug }) => {
   });
 
   return (
-    <div className="debug-settings">
-      <div className="form-check d-flex">
-        <div>
-          <label className="form-check-label" htmlFor="debugCheck">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              id="autoPlayCheck"
-              defaultChecked={debug}
-              onClick={debugToggle}
-            />
-            Show Debug Info
-          </label>
-        </div>
-      </div>
+    <div className="form-check">
+      <label className="form-check-label" htmlFor="debugCheck">
+        <input
+          type="checkbox"
+          className="form-check-input"
+          id="debugCheck"
+          defaultChecked={debug}
+          onClick={debugToggle}
+        />
+        Show Debug Info
+      </label>
     </div>
   );
 };
@@ -59,7 +55,7 @@ DebugMode.defaultProps = {
   debug: false,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   debug: state.siteSettings.debug,
 });
 

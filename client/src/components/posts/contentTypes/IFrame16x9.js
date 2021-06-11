@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
+import { PostsContextData } from '../../../contexts';
 
-const IFrame16x9 = ({ content, load }) => {
+const IFrame16x9 = ({ content }) => {
+  const postContext = useContext(PostsContextData);
+  const load = postContext.isLoaded;
   return (
     <div className="media-cont black-bg">
       <div className="media-contain-width">
@@ -24,7 +27,6 @@ const IFrame16x9 = ({ content, load }) => {
 
 IFrame16x9.propTypes = {
   content: PropTypes.object.isRequired,
-  load: PropTypes.bool.isRequired,
 };
 
 export default IFrame16x9;

@@ -8,13 +8,13 @@ import { listingState } from '../../redux/selectors/listingsSelector';
 const ViewMode = ({ siteSettingsView, setSiteSetting, actionable }) => {
   const btnClasses = 'btn btn-secondary btn-sm';
 
-  const toggleView = async view => {
+  const toggleView = async (view) => {
     // const currentFocus = document.getElementById(actionable);
     window.scrollTo(0, 0);
     await setSiteSetting({ view });
   };
 
-  const hotkeys = event => {
+  const hotkeys = (event) => {
     if (hotkeyStatus()) {
       const pressedKey = event.key;
       try {
@@ -71,7 +71,7 @@ ViewMode.defaultProps = {
   actionable: '',
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   siteSettingsView: state.siteSettings.view,
   actionable: listingState(state).actionable,
 });

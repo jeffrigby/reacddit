@@ -6,11 +6,12 @@ import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import { createBrowserHistory } from 'history';
 import throttle from 'lodash/throttle';
+import cookies from 'js-cookie';
 import configureStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
 import Root from './components/layout/Root';
-import * as serviceWorker from './serviceWorker';
+import { register as serviceWorkerRegister } from './serviceWorkerRegistration';
 
 const queryString = require('query-string');
 
@@ -41,8 +42,10 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     document.getElementById('root')
   );
 } else {
-  // Clear the local/session cache. Mostly for debugging.
-  if (parsed.cb !== undefined) {
+  // Clear the local/session cache. Mostly for debugging or a weird cookie mismatch.
+  const cookieToken = cookies.getJSON('token');
+
+  if (parsed.cb !== undefined || cookieToken === undefined) {
     localStorage.clear();
     sessionStorage.clear();
   }
@@ -78,7 +81,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     }, 1000)
   );
 
-  const render = Component => {
+  const render = (Component) => {
     ReactDOM.render(
       <Provider store={store}>
         <ConnectedRouter history={history}>
@@ -90,6 +93,11 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   };
 
   render(Root);
+  if (module.hot) {
+    module.hot.accept('./components/layout/Root', () => {
+      render(Root);
+    });
+  }
 }
 
-serviceWorker.register();
+serviceWorkerRegister();

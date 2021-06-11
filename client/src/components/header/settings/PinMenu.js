@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/actions/misc';
 
 const PinMenu = () => {
-  const pinMenuSetting = useSelector(state => state.siteSettings.pinMenu);
+  const pinMenuSetting = useSelector((state) => state.siteSettings.pinMenu);
   const dispatch = useDispatch();
 
   const togglePinMenu = () => {

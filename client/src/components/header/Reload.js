@@ -41,7 +41,7 @@ Reload.defaultProps = {
   stream: false,
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   listingsStatus: listingStatus(state),
   stream: state.siteSettings.stream,
 });

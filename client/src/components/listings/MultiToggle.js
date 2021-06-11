@@ -9,7 +9,7 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
   const multiRef = React.createRef();
 
   useEffect(() => {
-    const disableClose = e => {
+    const disableClose = (e) => {
       if (!e.target.classList.contains('multi-toggle-input')) {
         e.stopPropagation();
       }
@@ -37,7 +37,7 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
     return null;
   }
 
-  const addRemove = async e => {
+  const addRemove = async (e) => {
     let rsp = '';
     if (e.target.checked) {
       rsp = await RedditAPI.multiAddSubreddit(e.target.value, srName);
@@ -52,17 +52,17 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
     }
   };
 
-  const getSubreddits = subs => {
+  const getSubreddits = (subs) => {
     const subNames = [];
-    subs.forEach(sub => {
+    subs.forEach((sub) => {
       subNames.push(sub.name);
     });
     return subNames;
   };
 
   const menuItems = [];
-  multis.multis.forEach(item => {
-    const key = `${item.data.display_name}-${item.data.created}`;
+  multis.multis.forEach((item) => {
+    const key = `${item.data.display_name}-${item.data.created}-${srName}`;
     const subNames = getSubreddits(item.data.subreddits);
     const checked = subNames.includes(srName);
 
@@ -115,7 +115,7 @@ MultiToggle.defaultProps = {
   multis: { status: 'unloaded' },
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   about: state.currentSubreddit,
   multis: state.redditMultiReddits,
   redditBearer: state.redditBearer,

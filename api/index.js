@@ -3,11 +3,13 @@ const http = require("http");
 const Koa = require("koa");
 const Router = require("koa-router");
 const session = require("koa-session");
-const uuidv4 = require("uuid/v4");
 const rp = require("request-promise");
 const crypto = require("crypto");
 const logger = require("koa-logger");
 const chalk = require("chalk");
+const { v4: uuidv4 } = require("uuid");
+
+const { ClientCredentials, AuthorizationCode } = require("simple-oauth2");
 
 require("dotenv-defaults").config();
 
@@ -20,7 +22,7 @@ const {
   SALT,
   SESSION_LENGTH_SECS,
   PORT,
-  DEBUG
+  DEBUG,
 } = process.env;
 
 const debugEnabled = DEBUG === "1" || DEBUG === "true" || false;
@@ -55,7 +57,7 @@ function checkEnvErrors() {
   }
 
   if (env_errors.length > 0) {
-    env_errors.forEach(value => {
+    env_errors.forEach((value) => {
       console.log(chalk.red(`.env ERROR: ${value}`));
     });
     process.exit(1);
@@ -77,22 +79,28 @@ const CONFIG = {
   rolling: true /** (boolean) Force a session identifier cookie to be set on every response.
    The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
   renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
-   (default is false) */
+   (default is false) */,
 };
 
-const oauth2 = require("simple-oauth2").create({
+const oauth2Config = {
   client: {
     id: REDDIT_CLIENT_ID,
-    secret: REDDIT_CLIENT_SECRET
+    secret: REDDIT_CLIENT_SECRET,
   },
   auth: {
     authorizeHost: "https://ssl.reddit.com",
     authorizePath: "/api/v1/authorize",
     tokenHost: "https://ssl.reddit.com",
     tokenPath: "/api/v1/access_token",
-    revokePath: "/api/v1/revoke_token"
-  }
-});
+    revokePath: "/api/v1/revoke_token",
+  },
+};
+
+const scope =
+  REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save";
+
+const oauth2 = new AuthorizationCode(oauth2Config);
+const client = new ClientCredentials(oauth2Config);
 
 /**
  * Encrypt the token for storage in the cookie. The IV is
@@ -100,7 +108,7 @@ const oauth2 = require("simple-oauth2").create({
  * @param token The token object
  * @returns {{iv: string, token: string}}
  */
-const encryptToken = token => {
+const encryptToken = (token) => {
   const iv = crypto.randomBytes(16);
   const tokenString = JSON.stringify(token);
   const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(SALT), iv);
@@ -114,7 +122,7 @@ const encryptToken = token => {
  * @param encryptedToken
  * @returns {token_object}
  */
-const decryptToken = encryptedToken => {
+const decryptToken = (encryptedToken) => {
   if (
     !encryptedToken ||
     encryptedToken.iv === undefined ||
@@ -145,7 +153,8 @@ const setSessAndCookie = (token, ctx) => {
 
   const cookieStorage = {
     accessToken: token.access_token,
-    expires: token.expires
+    expires: token.expires,
+    loginURL: getLoginUrl(ctx),
   };
 
   const tokenJson = JSON.stringify(cookieStorage);
@@ -156,7 +165,7 @@ const setSessAndCookie = (token, ctx) => {
       expireDate.getTime() + SESSION_LENGTH_SECS * 1000
     ),
     httpOnly: false,
-    overwrite: true
+    overwrite: true,
   });
 };
 
@@ -165,7 +174,7 @@ const setSessAndCookie = (token, ctx) => {
  * @param token
  * @returns {boolean}
  */
-const isExpired = token => {
+const isExpired = (token) => {
   if (!token.expires) {
     return true;
   }
@@ -174,16 +183,17 @@ const isExpired = token => {
   return token.expires - 300 <= now;
 };
 
-const isAuth = accessCode => accessCode.substring(0, 1) !== "-";
+const isAuth = (accessCode) => accessCode.substring(0, 1) !== "-";
 
-const addExtraInfo = token => {
+const addExtraInfo = (AccessToken) => {
+  const { token } = AccessToken;
   const now = Date.now() / 1000;
   const expires = now + token.expires_in - 120;
   const auth = isAuth(token.access_token);
   return {
     ...token,
     expires,
-    auth
+    auth,
   };
 };
 
@@ -194,11 +204,36 @@ const addExtraInfo = token => {
 const getAnonToken = async () => {
   // Get the access token object for the client
   try {
-    const anonToken = await oauth2.clientCredentials.getToken();
+    const tokenParams = {
+      scope,
+    };
+    const anonToken = await client.getToken(tokenParams);
     const anonTokenParsed = addExtraInfo(anonToken);
     return anonTokenParsed;
   } catch (error) {
-    console.log("Access Token error", error.message);
+    console.error("Error: Access Token error", error.message, error.get);
+    return false;
+  }
+};
+
+const revokeToken = async (token, tokenType) => {
+  const options = {
+    method: "POST",
+    uri: "https://www.reddit.com/api/v1/revoke_token",
+    form: {
+      token,
+      token_type_hint: tokenType,
+    },
+    auth: {
+      user: REDDIT_CLIENT_ID,
+      pass: REDDIT_CLIENT_SECRET,
+    },
+  };
+  try {
+    await rp(options);
+    return true;
+  } catch (error) {
+    console.log("Revoke Token error", error.message);
     return false;
   }
 };
@@ -208,27 +243,31 @@ const getAnonToken = async () => {
  * @param refreshToken
  * @returns {Promise<*>}
  */
-const getRefreshToken = async refreshToken => {
+const getRefreshToken = async (refreshToken) => {
   const options = {
     method: "POST",
     uri: "https://www.reddit.com/api/v1/access_token",
     form: {
       grant_type: "refresh_token",
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     },
     auth: {
       user: REDDIT_CLIENT_ID,
-      pass: REDDIT_CLIENT_SECRET
+      pass: REDDIT_CLIENT_SECRET,
     },
     headers: {
       /* 'content-type': 'application/x-www-form-urlencoded' */
       // Is set automatically
-    }
+    },
   };
   try {
     const newToken = await rp(options);
     const tokenJson = JSON.parse(newToken);
-    const tokenParsed = addExtraInfo(tokenJson);
+    const AccessToken = {
+      token: tokenJson,
+    };
+    console.log(tokenJson, "tokenJson");
+    const tokenParsed = addExtraInfo(AccessToken);
     return tokenParsed;
   } catch (error) {
     console.log("Access Token error", error.message);
@@ -246,7 +285,7 @@ const getBearer = (accessToken, params = {}) => ({
   accessToken: accessToken.access_token,
   expires: accessToken.expires,
   auth: accessToken.auth,
-  ...params
+  ...params,
 });
 
 /**
@@ -254,16 +293,14 @@ const getBearer = (accessToken, params = {}) => ({
  * @param ctx
  * @returns {String}
  */
-const getLoginUrl = ctx => {
+const getLoginUrl = (ctx) => {
   const state = ctx.session.state || uuidv4();
   ctx.session.state = state;
-  const scope =
-    REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save";
-  const authorizationUri = oauth2.authorizationCode.authorizeURL({
+  const authorizationUri = oauth2.authorizeURL({
     redirect_uri: REDDIT_CALLBACK_URI,
     scope: scope.split(","),
     state,
-    duration: "permanent"
+    duration: "permanent",
   });
   return authorizationUri;
 };
@@ -341,22 +378,23 @@ router.get("/api/callback", async (ctx, next) => {
   const options = {
     grant_type: "authorization_code",
     code,
-    redirect_uri: REDDIT_CALLBACK_URI
+    redirect_uri: REDDIT_CALLBACK_URI,
   };
 
   try {
-    const token = await oauth2.authorizationCode.getToken(options);
+    const AccessToken = await oauth2.getToken(options);
+    const { token } = AccessToken;
     if (token.access_token) {
       // we are good.
       console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
-      const accessToken = addExtraInfo(token);
+      const accessToken = addExtraInfo(AccessToken);
       setSessAndCookie(accessToken, ctx);
       ctx.redirect(`${CLIENT_PATH}/?login`);
       return;
     }
   } catch (exception) {
     message = `ACCESS TOKEN ERROR ${exception.message}`;
-    console.log(message);
+    console.error(message);
     ctx.status = 500;
     ctx.body = { status: "error", message };
     return;
@@ -368,8 +406,8 @@ router.get("/api/callback", async (ctx, next) => {
 /**
  * Three things can happen
  *  1. No token exists. Get a new anon token
- *  2. The exisitng token in the session is expired or force refresh is set (?refresh)
- *  3. Refresh the toekn if auth or get a new anon token.
+ *  2. The existing token in the session is expired or force refresh is set (?refresh)
+ *  3. Refresh the token if auth or get a new anon token.
  */
 router.get("/api/bearer", async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
@@ -399,7 +437,7 @@ router.get("/api/bearer", async (ctx, next) => {
   const forceRefresh = ctx.query.refresh !== undefined;
   if (forceRefresh) {
     message = `FORCED REFRESH IS TRUE ${
-      debugEnabled ? token.access_token : ""
+      debugEnabled ? token.refresh_token : ""
     }`;
     console.log(message);
   }
@@ -423,7 +461,7 @@ router.get("/api/bearer", async (ctx, next) => {
     const refreshedTokenResult = await getRefreshToken(refreshToken);
     const newToken = {
       ...refreshedTokenResult,
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     };
 
     setSessAndCookie(newToken, ctx);
@@ -463,24 +501,24 @@ router.get("/api/bearer", async (ctx, next) => {
 router.get("/api/logout", async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
   if (token) {
-    const accessToken = oauth2.accessToken.create(token);
-    // Revoke both access and refresh tokens
     try {
-      // Revokes both tokens, refresh token is only revoked if the access_token is properly revoked
-      await accessToken.revokeAll();
+      const accessTokenRevoke = await revokeToken(
+        token.access_token,
+        "access_token"
+      );
+      const refreshTokenRevoke = await revokeToken(
+        token.refresh_token,
+        "refresh_token"
+      );
     } catch (error) {
-      console.log("ERROR REVOKING TOKEN: ", error.message);
+      console.log("ERROR REVOKING TOKEN: ", error.message, error);
     }
-    console.log("TOKEN DETROYED");
-  } else {
-    console.log("TOKEN NOT FOUND");
+    ctx.session.token = null;
+    ctx.cookies.set("token");
+    return ctx.redirect(`${CLIENT_PATH}/?logout`);
   }
-  ctx.session.token = null;
-  ctx.cookies.set("token");
-  return ctx.redirect(`${CLIENT_PATH}/?logout`);
 });
 
 app.use(router.routes()).use(router.allowedMethods());
 
 http.createServer(app.callback()).listen(PORT);
-// https.createServer(app.callback()).listen(PORTSSL);

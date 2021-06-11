@@ -38,10 +38,14 @@ export function redditGetBearer() {
       const status =
         bearer === null || bearer.substr(0, 1) === '-' ? 'anon' : 'auth';
 
+      const loginURL = RedditAPI.getLoginUrl();
+
       const result = {
         bearer,
         status,
+        loginURL,
       };
+
       const currentRedditBearer = currentState.redditBearer;
       if (currentRedditBearer.bearer !== bearer) {
         dispatch(redditBearer(result));
@@ -98,7 +102,12 @@ export function redditFetchMe(reset) {
   };
 }
 
-export function redditFetchFriends(reset) {
+/**
+ * Fetch friends from reddit API
+ * @param reset
+ * @returns {function(*, *): Promise<undefined>}
+ */
+export function redditFetchFriends(reset = false) {
   return async (dispatch, getState) => {
     const currentState = getState();
 
@@ -138,10 +147,10 @@ export function redditFetchFriends(reset) {
     }
 
     const friendsKeyed = {};
-    const childrenSorted = children.sort((a, b) => {
-      return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
-    });
-    childrenSorted.forEach(friend => {
+    const childrenSorted = children.sort((a, b) =>
+      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+    );
+    childrenSorted.forEach((friend) => {
       friendsKeyed[friend.name.toLowerCase()] = friend;
     });
 
@@ -239,9 +248,8 @@ export function redditVote(id, dir) {
     const locationKey = getLocationKey(currentState);
 
     try {
-      let { likes, ups } = currentState.listingsRedditEntries[
-        locationKey
-      ].children[id].data;
+      let { likes, ups } =
+        currentState.listingsRedditEntries[locationKey].children[id].data;
       await RedditAPI.vote(id, dir);
 
       switch (dir) {

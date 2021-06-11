@@ -1,11 +1,12 @@
 import React, { useContext } from 'react';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { PostsContextData } from '../../contexts';
 import renderSelf from './embeds/domains/self';
 import Self from './contentTypes/Self';
 
-const Placeholder = ({ load }) => {
-  const data = useContext(PostsContextData);
+const Placeholder = () => {
+  const postContext = useContext(PostsContextData);
+  const { data } = postContext.post;
 
   const getRatio = (width, height) => {
     const maxHeight = 625;
@@ -54,25 +55,21 @@ const Placeholder = ({ load }) => {
   const getRatioRounded = (width, height) =>
     Math.round((width / height) * 100) / 100;
 
-  const fixedRatio = r => {
-    return (
-      <div className="content">
-        <div className="media-cont black-bg">
-          <div className="media-contain-width">
-            <div
-              className={`embed-responsive embed-responsive-${r} black-bg`}
-            />
-          </div>
+  const fixedRatio = (r) => (
+    <div className="content">
+      <div className="media-cont black-bg">
+        <div className="media-contain-width">
+          <div className={`embed-responsive embed-responsive-${r} black-bg`} />
         </div>
       </div>
-    );
-  };
+    </div>
+  );
 
   if (data.is_self && data.selftext) {
     const selfContent = renderSelf(data);
     return (
       <div className="content">
-        <Self content={selfContent} load={load} name={data.name} />
+        <Self content={selfContent} name={data.name} />
       </div>
     );
   }
@@ -112,11 +109,9 @@ const Placeholder = ({ load }) => {
     );
   }
 
-  return <>THIS IS A PLACEHOLDER</>;
+  return <div className="content" />;
 };
 
-Placeholder.propTypes = {
-  load: PropTypes.bool.isRequired,
-};
+Placeholder.propTypes = {};
 
 export default Placeholder;

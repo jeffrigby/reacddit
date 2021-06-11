@@ -9,34 +9,26 @@ div#entries {
     color: rgb(252, 71, 35);
   }
 
-  .self-html {
-    max-height: 100px;
-    overflow: hidden;
-    //text-overflow: ellipsis;
-    cursor: pointer;
-    position: relative;
-    margin: 0;
-    padding-bottom: 10px;
-    -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
-    mask-image: linear-gradient(180deg, #000 60%, transparent);
-    &.sf-html-show-all {
-      -webkit-mask-image: inherit;
-      mask-image: inherit;
-    }
+  .post-action-expand {
+    margin-left: -0.3rem !important;
+  }
+
+  .entry-interior-t1 .entry-after-header {
+    border-left: 1px solid rgba(0, 0, 0, 0.125) !important;
+  }
+
+  .post-parent {
+    margin-top: 0.5rem !important;
+    border-top: none;
   }
 
   .is-friend {
     font-weight: bold;
   }
 
-  .self {
-    position: relative;
-    p {
-      margin-bottom: 0.5rem;
-      :last-child {
-        margin-bottom: 0;
-      }
-    }
+  .is-submitter {
+    font-weight: bold;
+    color: red;
   }
 
   .media-cont {
@@ -49,16 +41,9 @@ div#entries {
     }
   }
 
-
   .media-contain-width {
     margin: 0 auto;
     max-width: 1120px;
-  }
-
-  .sf-html-show-all {
-    max-height: inherit !important;
-    overflow: auto;
-    text-overflow: inherit;
   }
 
   .listings-header {
@@ -76,20 +61,25 @@ div#entries {
     padding: 0.75rem 1.25rem;
   }
 
+  .list-actions {
+    font-weight: normal;
+  }
+
+  .post-back-button,
+  .post-back-button i {
+    line-height: 1.2;
+  }
+
   div.condensed {
-    .post-title {
-      white-space: normal;
-      text-align: left;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    font-size: 0.925em;
+    div {
+      white-space: nowrap;
     }
-
-    .direct-link {
-      display: none;
-    }
-
-    header:hover {
-      .direct-link {
-        display: inline !important;
-      }
+    .title {
+      cursor: pointer;
+      overflow: hidden;
     }
   }
 
@@ -97,18 +87,46 @@ div#entries {
     background-color: #000;
   }
 
+  .listings-header {
+    border-left: 0;
+  }
+
   div.entry {
+    border-left: 0;
+
+    &.comment-child,
+    .comments-more {
+      border-width: 0 0 0 1px;
+      padding-right: 0;
+      padding-bottom: 0;
+      padding-top: 0;
+    }
+
+    &.kind-t1 {
+      border-bottom: 0;
+      padding-top: 0;
+      &.condensed {
+        padding-bottom: 0;
+      }
+    }
+
     &:first-child {
       padding-top: 0.5em;
     }
 
     .actions {
+      font-size: 0.85em;
       div {
         margin-left: 0.25rem;
       }
       button {
         margin: 0;
         padding: 0;
+        font-size: 1em;
+      }
+
+      a {
+        line-height: 1;
       }
     }
 
@@ -131,16 +149,35 @@ div#entries {
       }
     }
 
-    footer {
+    .meta {
+      span,
+      a,
+      button {
+        vertical-align: middle !important;
+      }
+      a {
+        line-height: 1;
+      }
+    }
+
+    footer,
+    .comment-meta {
       font-size: 0.85em;
 
       button {
-        line-height: 1 !important;
+        //line-height: 1 !important;
         padding: 0;
         margin: 0;
         font-size: 1em;
         border: none !important;
         background-color: transparent;
+      }
+    }
+
+    .redditGallery {
+      background-color: black;
+      .image-gallery-image {
+        max-height: 600px;
       }
     }
   }
@@ -194,6 +231,12 @@ div#entries {
   }
 }
 
+.debug-visibility {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 /** Specific settings for touch devices **/
 .touch {
   .actions {
@@ -204,7 +247,7 @@ div#entries {
 /** Specific settings for Desktop **/
 .no-phone {
   .actionable {
-    background-color: rgb(245, 245, 245);
+    // background-color: rgb(245, 245, 245);
   }
 
   .actions {
