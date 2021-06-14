@@ -2,20 +2,33 @@
   "name": "reacddit_client",
   "version": "1.0.0",
   "description": "A Reddit client built in reactjs.",
-  "main": "index.js",
-  "scripts": {
-    "start": "cross-env NODE_ENV=development webpack serve --mode development --progress",
-    "build": "cross-env NODE_ENV=production webpack --mode production",
-    "profile": "cross-env NODE_ENV=production PROFILE=true webpack --mode production"
-  },
   "keywords": [
     "es6",
     "react",
     "redux",
     "reddit"
   ],
-  "author": "Jeff Rigby",
   "license": "MIT",
+  "author": "Jeff Rigby",
+  "main": "index.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=development webpack serve --mode development --progress",
+    "build": "cross-env NODE_ENV=production webpack --mode production",
+    "profile": "cross-env NODE_ENV=production PROFILE=true webpack --mode production"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "resolutions": {},
   "dependencies": {
     "axios": "^0.21.0",
     "classnames": "^2.2.6",
@@ -65,19 +78,6 @@
     "workbox-strategies": "^6.0.0",
     "workbox-webpack-plugin": "^6.0.0"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "resolutions": {},
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/eslint-parser": "^7.14.5",
