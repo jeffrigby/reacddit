@@ -1,8 +1,7 @@
 const webpack = require('webpack');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const safePostCssParser = require('postcss-safe-parser');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
@@ -14,14 +13,11 @@ const paths = require('./paths');
 // Variable used for enabling profiling in Production
 const isEnvProductionProfile = process.env.PROFILE;
 
-// Get the path to the uncompiled service worker (if it exists).
-// const { swSrc } = paths;
-
 module.exports = {
   mode: 'production',
   bail: true,
   devtool: false,
-  entry: [paths.appIndexJs],
+  entry: paths.appIndexJs,
   output: {
     filename: `${paths.jsFolder}/[name].[contenthash:8].js`,
     path: paths.appBuild,
@@ -37,58 +33,19 @@ module.exports = {
       // stolen from create-react-app
       new TerserPlugin({
         terserOptions: {
-          parse: {
-            // we want terser to parse ecma 8 code. However, we don't want it
-            // to apply any minfication steps that turns valid ecma 5 code
-            // into invalid ecma 5 code. This is why the 'compress' and 'output'
-            // sections only apply transformations that are ecma 5 safe
-            // https://github.com/facebook/create-react-app/pull/4234
-            ecma: 8,
-          },
-          compress: {
-            ecma: 5,
-            warnings: false,
-            // Disabled because of an issue with Uglify breaking seemingly valid code:
-            // https://github.com/facebook/create-react-app/issues/2376
-            // Pending further investigation:
-            // https://github.com/mishoo/UglifyJS2/issues/2011
-            comparisons: false,
-            // Disabled because of an issue with Terser breaking valid code:
-            // https://github.com/facebook/create-react-app/issues/5250
-            // Pending futher investigation:
-            // https://github.com/terser-js/terser/issues/120
-            inline: 2,
-          },
-          mangle: {
-            safari10: true,
-          },
-          // Added for profiling in devtools
           keep_classnames: isEnvProductionProfile,
           keep_fnames: isEnvProductionProfile,
           output: {
-            ecma: 5,
             comments: false,
             // Turned on because emoji and regex is not minified properly using default
             // https://github.com/facebook/create-react-app/issues/2488
             ascii_only: true,
           },
         },
-        // Use multi-process parallel running to improve the build speed
-        // Default number of concurrent runs: os.cpus().length - 1
-        parallel: true,
-        // Enable file caching
-        cache: true,
-        sourceMap: false,
       }),
       // This is only used in production mode
-      new OptimizeCSSAssetsPlugin({
-        cssProcessorOptions: {
-          parser: safePostCssParser,
-          map: false,
-          cssProcessorPluginOptions: {
-            preset: ['default', { minifyFontValues: { removeQuotes: false } }],
-          },
-        },
+      new CssMinimizerPlugin({
+        parallel: true,
       }),
     ],
   },
@@ -113,15 +70,6 @@ module.exports = {
         new RegExp('/[^/]+\\.[^/]+$'),
       ],
     }),
-    // new WorkboxWebpackPlugin.InjectManifest({
-    //   swSrc,
-    //   dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
-    //   exclude: [/\.map$/, /asset-manifest\.json$/, /LICENSE/],
-    //   // Bump up the default maximum size (2mb) that's precached,
-    //   // to make lazy-loading failure scenarios less likely.
-    //   // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
-    //   maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-    // }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output
       // both options are optional
@@ -129,15 +77,6 @@ module.exports = {
       chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
     }),
     new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
-    new OptimizeCSSAssetsPlugin({
-      cssProcessorOptions: {
-        parser: safePostCssParser,
-        map: false,
-      },
-      cssProcessorPluginOptions: {
-        preset: ['default', { minifyFontValues: { removeQuotes: false } }],
-      },
-    }),
     new HtmlWebpackPlugin({
       inject: true,
       template: paths.appHtml,

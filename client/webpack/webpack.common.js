@@ -10,7 +10,6 @@ const CreateFileWebpack = require('create-file-webpack');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
-const PnpWebpackPlugin = require(`pnp-webpack-plugin`);
 const paths = require('./paths');
 
 const imageInlineSizeLimit = parseInt(
@@ -101,7 +100,6 @@ module.exports = {
     // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
     splitChunks: {
       chunks: 'all',
-      name: false,
     },
     // Keep the runtime chunk separated to enable long term caching
     // https://twitter.com/wSokra/status/969679223278505985
@@ -113,16 +111,13 @@ module.exports = {
   resolve: {
     modules: ['src', 'node_modules'],
     extensions: ['*', '.js', '.jsx', '.css', '.scss'],
-    plugins: [PnpWebpackPlugin],
   },
-  resolveLoader: {
-    plugins: [PnpWebpackPlugin.moduleLoader(module)],
-  },
+  resolveLoader: {},
   module: {
     strictExportPresence: true,
     rules: [
-      // Disable require.ensure as it's not a standard language feature.
-      { parser: { requireEnsure: false } },
+      // // Disable require.ensure as it's not a standard language feature.
+      // { parser: { requireEnsure: false } },
       {
         oneOf: [
           // TODO: Merge this config once `image/avif` is in the mime-db
@@ -133,7 +128,7 @@ module.exports = {
             options: {
               limit: imageInlineSizeLimit,
               mimetype: 'image/avif',
-              name: 'static/media/[name].[hash:8].[ext]',
+              name: 'static/media/[name].[contenthash:8].[ext]',
             },
           },
           // "url" loader works like "file" loader except that it embeds assets
@@ -144,7 +139,7 @@ module.exports = {
             loader: require.resolve('url-loader'),
             options: {
               limit: imageInlineSizeLimit,
-              name: `${paths.imagesFolder}/[name].[hash:8].[ext]`,
+              name: `${paths.imagesFolder}/[name].[contenthash:8].[ext]`,
             },
           },
           {
@@ -266,7 +261,7 @@ module.exports = {
             // by webpacks internal loaders.
             exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
             options: {
-              name: 'static/media/[name].[hash:8].[ext]',
+              name: 'static/media/[name].[contenthash:8].[ext]',
             },
           },
           // ** STOP ** Are you adding a new loader?
@@ -341,17 +336,5 @@ module.exports = {
       // failOnError: isEnvProduction,
     }),
   ],
-  // Some libraries import Node modules but don't use them in the browser.
-  // Tell webpack to provide empty mocks for them so importing them works.
-  node: {
-    module: 'empty',
-    dgram: 'empty',
-    dns: 'mock',
-    fs: 'empty',
-    http2: 'empty',
-    net: 'empty',
-    tls: 'empty',
-    child_process: 'empty',
-  },
-  performance: false,
+  // performance: false,
 };
