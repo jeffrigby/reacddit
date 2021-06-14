@@ -19,7 +19,7 @@ async function getMP4(id, name, width, height) {
           id: `video-${name}`,
           type: 'video',
           thumb: `https://i.imgur.com/${id}.jpg`,
-          hasAudio: false,
+          hasAudio: true,
         };
       }
     }
@@ -81,6 +81,7 @@ const render = async (entry) => {
       height,
       sources,
       imgurRenderType: 'imgurGifVPath',
+      hasAudio: true,
     };
   }
 

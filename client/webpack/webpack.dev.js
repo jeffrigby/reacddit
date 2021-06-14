@@ -14,8 +14,6 @@ const webpackDevClientEntry = require.resolve(
   'react-dev-utils/webpackHotDevClient'
 );
 
-const appPackageJson = require(paths.appPackageJson);
-
 const host = process.env.HOST || '0.0.0.0';
 const sockHost = process.env.WDS_SOCKET_HOST;
 const sockPath = process.env.WDS_SOCKET_PATH; // default: '/sockjs-node'
@@ -27,16 +25,13 @@ module.exports = {
   devtool: 'cheap-module-source-map',
   entry: [webpackDevClientEntry, paths.appIndexJs],
   output: {
-    path: undefined,
+    path: paths.appBuild,
     pathinfo: true,
-    filename: 'static/js/bundle.js',
-    // TODO: remove this when upgrading to webpack 5
-    futureEmitAssets: true,
+    filename: 'static/js/[name].js',
     chunkFilename: 'static/js/[name].chunk.js',
     publicPath: paths.publicUrlOrPath,
     devtoolModuleFilenameTemplate: (info) =>
       path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
-    jsonpFunction: `webpackJsonp${appPackageJson.name}`,
     globalObject: 'this',
   },
   devServer: {

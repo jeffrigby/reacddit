@@ -2,6 +2,8 @@
   "name": "reacddit_api",
   "version": "1.0.0",
   "description": "reacddit Oauth2 API",
+  "license": "MIT",
+  "author": "",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -12,8 +14,6 @@
     "pm2-delete": "pm2 delete reacddit_api",
     "pm2-restart": "pm2 restart 'reacddit_api'"
   },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "chalk": "^4.0.0",
     "dotenv": "^9.0.2",
