@@ -37,7 +37,7 @@ const VideoControlBar = ({
             muted={muted}
             btnClasses="btn btn-link mx-4 p-0 btn-sm"
           />
-          <div className="ml-auto">
+          <div className="ms-auto">
             <VideoFullScreenButton videoRef={videoRef} />
           </div>
         </div>

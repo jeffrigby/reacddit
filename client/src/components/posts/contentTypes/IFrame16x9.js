@@ -8,14 +8,14 @@ const IFrame16x9 = ({ content }) => {
   return (
     <div className="media-cont black-bg">
       <div className="media-contain-width">
-        <div className="embed-responsive embed-responsive-16by9 black-bg">
+        <div className="ratio ratio-16x9 black-bg">
           {load && (
             <iframe
               src={content.src}
               scrolling="no"
               title={content.name}
               allow={content.allow}
-              className="embed-responsive-item loading-icon"
+              className="loading-icon"
               allowFullScreen
             />
           )}

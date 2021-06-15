@@ -29,7 +29,7 @@ const PostFooter = ({
   const debugLinks = (
     <>
       <button
-        className="btn btn-link shadow-none m-0 p-0 mr-1"
+        className="btn btn-link shadow-none m-0 p-0 me-1"
         onClick={copyID}
         title="Click to copy"
         type="button"
@@ -37,7 +37,7 @@ const PostFooter = ({
         {copied ? 'Copied' : data.name}
       </button>
       <button
-        className="btn btn-link shadow-none m-0 p-0 mr-1"
+        className="btn btn-link shadow-none m-0 p-0 me-1"
         onClick={() => setShowDebug(!showDebug)}
         title="Show debug!"
         type="button"
@@ -45,7 +45,7 @@ const PostFooter = ({
         <i className="fas fa-code" />
       </button>
       <button
-        className="btn btn-link shadow-none m-0 p-0 mr-1"
+        className="btn btn-link shadow-none m-0 p-0 me-1"
         onClick={() => setShowVisToggle(!showVisToggle)}
         title="Show Visibility Toggle"
         type="button"
@@ -81,9 +81,9 @@ const PostFooter = ({
   return (
     <>
       <footer className="d-flex clearfix align-middle mt-1">
-        <div className="mr-auto meta">{kind === 't3' && <PostMeta />}</div>
+        <div className="me-auto meta">{kind === 't3' && <PostMeta />}</div>
         <div>
-          {debug && <span className="pl-3">{debugLinks}</span>}
+          {debug && <span className="ps-3">{debugLinks}</span>}
           {!data.is_self && data.domain && (
             <Link
               to={{

@@ -31,7 +31,7 @@ const NavigationGenericNavItem = (props) => {
   const iconString = iconClass ? <i className={`${iconClass} fa-fw`} /> : '';
 
   const badgeRender = badge ? (
-    <span className="badge badge-primary badge-pill">{badge}</span>
+    <span className="badge bg-primary rounded-pill">{badge}</span>
   ) : (
     ''
   );
@@ -44,7 +44,7 @@ const NavigationGenericNavItem = (props) => {
   if (!isStatic) {
     navItem = (
       <>
-        <div className="flex-grow-1 nav-link-cont mr-2">
+        <div className="flex-grow-1 nav-link-cont me-2">
           <NavLink
             id={id}
             to={{

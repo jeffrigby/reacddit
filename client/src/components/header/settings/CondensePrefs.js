@@ -29,12 +29,12 @@ const CondensePrefs = () => {
   return (
     <>
       <div className="mt-2 d-flex">
-        <div className="font-weight-bold">Default Condense:</div>
+        <div className="fw-bold mb-1">Default Condense</div>
         <div
-          data-toggle="modal"
-          data-target="#condenseHelp"
+          data-bs-toggle="modal"
+          data-bs-target="#condenseHelp"
           title="Auto Refresh Info"
-          className="ml-auto"
+          className="ms-auto"
         >
           <i className="fas fa-info-circle" />
         </div>

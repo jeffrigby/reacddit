@@ -203,7 +203,7 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
           activeClassName="sort-active"
           isActive={active}
         >
-          <span className="sort-title pl-3 small">{linkString}</span>
+          <span className="sort-title ps-3 small">{linkString}</span>
         </NavLink>
       );
     });
@@ -249,7 +249,7 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
               activeClassName="active"
               isActive={active}
             >
-              <div className="mr-auto pr-2 sort-title">
+              <div className="me-auto pe-2 sort-title">
                 {getIcon(sortName)} {sortName}
               </div>{' '}
               <span className="menu-shortcut">&#x21E7;{key}</span>
@@ -296,14 +296,14 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
       <button
         type="button"
         className="btn btn-secondary btn-sm form-control-sm dropdown-toggle sort-button"
-        data-toggle="dropdown"
+        data-bs-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
         aria-label="Sort"
       >
         {icon} {currentSort}
       </button>
-      <div className="dropdown-menu dropdown-menu-right">{links}</div>
+      <div className="dropdown-menu dropdown-menu-end">{links}</div>
     </div>
   );
 };

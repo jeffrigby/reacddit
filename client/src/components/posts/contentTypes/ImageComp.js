@@ -50,7 +50,7 @@ const ImageComp = ({ content }) => {
   const contStyle = { width: `${width}px` };
   const ratio = (finalHeight / finalWidth) * 100;
   const ratioStyle = { paddingBottom: `${ratio}%` };
-  let imgClass = 'embed-responsive-item';
+  let imgClass = '';
   if (content.class) {
     imgClass += ` ${content.class}`;
   }

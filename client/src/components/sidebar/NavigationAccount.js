@@ -78,7 +78,7 @@ const NavigationAccount = ({ me, urlPush }) => {
   return (
     <div id="sidebar-nav_account">
       <div className="sidebar-heading d-flex text-muted show-cursor">
-        <span className="mr-1" onClick={toggleShowMenu} role="presentation">
+        <span className="me-1" onClick={toggleShowMenu} role="presentation">
           <i className={caretClass} /> {me.name}
         </span>
         <span>
@@ -88,7 +88,7 @@ const NavigationAccount = ({ me, urlPush }) => {
             id="nav-user-info"
           />
         </span>
-        <span className="ml-auto">
+        <span className="ms-auto">
           <NavigationGenericNavItem
             to={`${process.env.API_PATH}/logout`}
             text=""

@@ -57,7 +57,8 @@ function NavigationPrimaryLinks({
 
   const openHotkeys = (e) => {
     if (e) e.preventDefault();
-    jQuery('#hotkeys').modal();
+    const modal = new bootstrap.Modal(document.getElementById('hotkeys'));
+    modal.show();
   };
 
   useEffect(() => {

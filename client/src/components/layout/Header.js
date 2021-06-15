@@ -58,7 +58,7 @@ const Header = () => {
     history.length > 2 && (
       <div>
         <button
-          className="btn btn-secondary btn-sm mr-2"
+          className="btn btn-secondary btn-sm me-2"
           type="button"
           onClick={() => history.goBack()}
           title="Go Back"
@@ -69,19 +69,19 @@ const Header = () => {
     );
 
   return (
-    <>
+    <div className="container-fluid p-0">
       <div className="d-flex flex-nowrap align-middle m-0 sidebar sidebar-navbar navbar-group filter-cont">
-        <div className="ml-2 close-menu-link">{closeMenuButton}</div>
-        <div className="ml-2 pin-menu-link">
+        <div className="ms-2 close-menu-link">{closeMenuButton}</div>
+        <div className="ms-2 pin-menu-link">
           <PinMenu />
         </div>
         <FilterReddits />
       </div>
 
-      <div className="header-brand-title pr-2 d-flex">
+      <div className="header-brand-title pe-2 d-flex">
         <div className="px-2 open-menu-link">{menuButton}</div>
         {backButton}
-        <div className="dflex-nowrap header-main pr-0 m-0">
+        <div className="dflex-nowrap header-main pe-0 m-0">
           <div className="navbar-brand p-0 m-0">{brand}</div>
         </div>
       </div>
@@ -90,13 +90,13 @@ const Header = () => {
         <Search />
       </div>
 
-      <div className="d-flex flex-nowrap align-middle m-0 pr-2 header-main header-actions">
+      <div className="d-flex flex-nowrap align-middle m-0 pe-2 header-main header-actions">
         <Reload />
         <Sort />
         <ViewMode />
         <Settings />
       </div>
-    </>
+    </div>
   );
 };
 

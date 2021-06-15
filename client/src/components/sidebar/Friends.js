@@ -59,7 +59,7 @@ const Friends = () => {
     navItems.push(
       <React.Fragment key={f.id}>
         <li className="nav-item d-flex friend-li">
-          <div className="mr-auto d-flex w-100">
+          <div className="me-auto d-flex w-100">
             <NavigationGenericNavItem
               to={link}
               text={f.name}
@@ -102,7 +102,7 @@ const Friends = () => {
     <>
       <li className="nav-item">
         <div className="d-flex">
-          <div className="mr-auto">
+          <div className="me-auto">
             <NavigationGenericNavItem
               to="/r/friends"
               text="Friends"
@@ -124,7 +124,7 @@ const Friends = () => {
       </li>
       {showFriends && (
         <li className="friends">
-          <ul className="nav subnav pl-2">{navItems}</ul>
+          <ul className="nav subnav ps-2">{navItems}</ul>
         </li>
       )}
     </>

@@ -26,7 +26,7 @@ const genNavItems = (multiRedditSubs) => {
 const MultiRedditsSubs = ({ multiRedditSubs }) => {
   if (multiRedditSubs) {
     const navItems = genNavItems(multiRedditSubs);
-    return <ul className="nav subnav pl-2">{navItems}</ul>;
+    return <ul className="nav subnav ps-2">{navItems}</ul>;
   }
   return <div />;
 };

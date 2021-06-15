@@ -96,7 +96,7 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
   return (
     <div id="sidebar-subreddits">
       <div className="sidebar-heading d-flex text-muted">
-        <span className="mr-auto">Search</span>
+        <span className="me-auto">Search</span>
       </div>
       <ul className="nav flex-column">{navItems}</ul>
       {nsfwButton}

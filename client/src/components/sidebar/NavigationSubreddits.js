@@ -180,7 +180,7 @@ class NavigationSubReddits extends React.PureComponent {
       <div id="sidebar-subreddits">
         <div className="sidebar-heading d-flex text-muted">
           <span
-            className="mr-auto show-cursor"
+            className="me-auto show-cursor"
             onClick={this.toggleMenu}
             role="presentation"
           >

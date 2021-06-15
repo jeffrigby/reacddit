@@ -46,10 +46,10 @@ const AutoRefresh = ({ setSiteSetting, stream }) => {
           </label>
         </div>
         <div
-          data-toggle="modal"
-          data-target="#autoRefresh"
+          data-bs-toggle="modal"
+          data-bs-target="#autoRefresh"
           title="Auto Refresh Info"
-          className="ml-auto"
+          className="ms-auto"
         >
           <i className="fas fa-info-circle" />
         </div>

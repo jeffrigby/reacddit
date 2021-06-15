@@ -35,7 +35,7 @@ const PostBylineAuthor = ({
 
   const authorFlair = flair ? (
     <>
-      <span className="badge badge-dark">{flair}</span>
+      <span className="badge bg-dark">{flair}</span>
     </>
   ) : null;
 

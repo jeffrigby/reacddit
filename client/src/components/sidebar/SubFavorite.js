@@ -28,7 +28,7 @@ const SubFavorite = ({ isFavorite, srName }) => {
 
   return (
     <button
-      className="btn btn-link btn-sm m-0 p-0 mr-1 faded"
+      className="btn btn-link btn-sm m-0 p-0 me-1 faded"
       type="button"
       title="Toogle Favorites"
       onClick={toggleFavorite}

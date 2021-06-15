@@ -21,7 +21,7 @@ const PostMeta = () => {
       {crossPost && (
         <>
           <div>
-            <i className="fas fa-random pr-2" title="Crossposted" />
+            <i className="fas fa-random pe-2" title="Crossposted" />
             <PostByline data={data.crosspost_parent_list[0]} kind={kind} />
           </div>
         </>

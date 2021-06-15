@@ -39,7 +39,7 @@ const ListingsHeaderMulti = ({ filter, multis, me }) => {
     return (
       <>
         <div className="d-flex">
-          <div className="mr-auto title-contrainer">
+          <div className="me-auto title-contrainer">
             <h5 className="m-0 p-0 w-100">/m/{target}</h5>
           </div>
         </div>
@@ -56,12 +56,12 @@ const ListingsHeaderMulti = ({ filter, multis, me }) => {
   return (
     <>
       <div className="d-flex">
-        <div className="mr-auto title-contrainer">
+        <div className="me-auto title-contrainer">
           <h5 className="m-0 p-0 w-100">/m/{target}</h5>
         </div>
         {currentMulti.can_edit && (
           <div>
-            <div className="listing-actions pl-2 d-flex flex-nowrap">
+            <div className="listing-actions ps-2 d-flex flex-nowrap">
               <MultiDelete multi={currentMulti} />
             </div>
           </div>

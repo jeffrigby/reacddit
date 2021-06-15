@@ -34,7 +34,7 @@ const MultiRedditsItem = ({ item, sort, location }) => {
   return (
     <li key={item.data.path} className="nav-item has-child m-0 p-0">
       <div className="d-flex align-middle">
-        <span className="mr-auto">
+        <span className="me-auto">
           <NavigationGenericNavItem
             to={_trimEnd(navTo, '/')}
             text={item.data.name}
@@ -44,7 +44,7 @@ const MultiRedditsItem = ({ item, sort, location }) => {
         </span>
         <span>
           <button
-            className="btn btn-link btn-sm m-0 p-0 pl-2 border-0"
+            className="btn btn-link btn-sm m-0 p-0 ps-2 border-0"
             onClick={hideShowSubs}
             type="button"
           >

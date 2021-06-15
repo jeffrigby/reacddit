@@ -25,7 +25,8 @@ const App = () => {
 
     if (hotkeyStatus()) {
       if (pressedKey === '?') {
-        jQuery('#hotkeys').modal();
+        const modal = new bootstrap.Modal(document.getElementById('hotkeys'));
+        modal.show();
       }
     }
   };

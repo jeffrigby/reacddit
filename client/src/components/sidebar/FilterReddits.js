@@ -136,7 +136,7 @@ class FilterReddits extends React.Component {
       >
         <input
           type="text"
-          className="form-control form-control-dark form-control-sm w-100"
+          className="form-control form-control-dark form-control-sm w-100 py-0"
           onChange={this.filterReddits}
           onFocus={this.setFocus}
           onBlur={this.setBlur}

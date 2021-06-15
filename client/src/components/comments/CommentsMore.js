@@ -51,7 +51,7 @@ function CommentsMore({ moreList, linkId }) {
   // console.log(moreList.data.id, moreList);
 
   return (
-    <div className="comments-more pl-2 mt-2">
+    <div className="comments-more ps-2 mt-2">
       <button
         className="btn btn-outline-secondary btn-sm mb-2"
         onClick={getMoreComments}

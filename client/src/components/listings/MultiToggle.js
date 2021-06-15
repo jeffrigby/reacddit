@@ -67,16 +67,16 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
     const checked = subNames.includes(srName);
 
     menuItems.push(
-      <div key={key} className="form-check dropdown-item small">
-        <label className="form-check-label" htmlFor={key}>
+      <div key={key} className="form-check dropdown-item small m-0 p-0">
+        <label className="form-check-label w-100" htmlFor={key}>
           <input
-            className="form-check-input multi-toggle-input"
+            className="form-check-input multi-toggle-input mx-2"
             type="checkbox"
             id={key}
             defaultChecked={checked}
             onChange={addRemove}
             value={item.data.path}
-          />{' '}
+          />
           {item.data.display_name}
         </label>
       </div>
@@ -84,18 +84,18 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
   });
 
   return (
-    <div className="btn-group multi-menu header-button ml-2">
+    <div className="multi-menu header-button ms-2">
       <button
         type="button"
         className="btn btn-primary btn-sm form-control-sm"
-        data-toggle="dropdown"
+        data-bs-toggle="dropdown"
         aria-haspopup="true"
         aria-expanded="false"
         aria-label="Multis"
       >
         Multis <i className="fas fa-caret-down" />
       </button>
-      <div className="dropdown-menu dropdown-menu-right" ref={multiRef}>
+      <div className="dropdown-menu dropdown-menu-end" ref={multiRef}>
         {menuItems}
       </div>
     </div>

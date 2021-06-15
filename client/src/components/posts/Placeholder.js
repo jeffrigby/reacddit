@@ -59,7 +59,7 @@ const Placeholder = () => {
     <div className="content">
       <div className="media-cont black-bg">
         <div className="media-contain-width">
-          <div className={`embed-responsive embed-responsive-${r} black-bg`} />
+          <div className={`ratio ratio-${r} black-bg`} />
         </div>
       </div>
     </div>
@@ -79,19 +79,19 @@ const Placeholder = () => {
     const [width, height] = dimensions;
     const ratioRounded = getRatioRounded(width, height);
     if (ratioRounded >= 1.76 && ratioRounded <= 1.79) {
-      return fixedRatio('16by9');
+      return fixedRatio('16x9');
     }
 
     if (ratioRounded >= 1.3 && ratioRounded <= 1.36) {
-      return fixedRatio('4by3');
+      return fixedRatio('4x3');
     }
 
     if (ratioRounded >= 2.3 && ratioRounded <= 2.36) {
-      return fixedRatio('21by9');
+      return fixedRatio('21x9');
     }
 
     if (ratioRounded === 1) {
-      return fixedRatio('1by1');
+      return fixedRatio('1x1');
     }
 
     const { contStyle, ratioStyle } = getRatio(width, height);

@@ -341,7 +341,7 @@ const Post = ({
   const visibilityToggle = showVisToggle ? (
     <div className="debug-visibility">
       <button
-        className="btn btn-primary btn-sm shadow-none m-0 p-0 mr-1"
+        className="btn btn-primary btn-sm shadow-none m-0 p-0 me-1"
         onClick={() => setHide(!hide)}
         title="Toggle visiblity"
         type="button"

@@ -17,6 +17,16 @@ body {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
 }
 
+.btn:active,
+.btn:focus,
+.btn.active,
+.btn:active:focus {
+  background-image: none;
+  outline: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
 .show-cursor {
   cursor: pointer;
 }

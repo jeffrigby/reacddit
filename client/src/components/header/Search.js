@@ -221,7 +221,7 @@ class Search extends React.PureComponent {
       <div id="search" ref={this.searchInputParent} className={searchClassName}>
         <input
           type="text"
-          className="form-control form-control-dark form-control-sm w-100"
+          className="form-control form-control-dark form-control-sm w-100 py-0"
           id="search-reddit"
           onFocus={this.focusSearch}
           onBlur={this.blurSearch}
@@ -246,7 +246,7 @@ class Search extends React.PureComponent {
             {showTargetSearch && (
               <button
                 type="button"
-                className="btn btn-primary btn-sm mr-1"
+                className="btn btn-primary btn-sm me-1"
                 onClick={this.searchTarget}
                 disabled={!search}
               >

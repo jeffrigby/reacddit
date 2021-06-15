@@ -7,10 +7,10 @@ import PostSave from '../postActions/PostSave';
 
 const PostHeaderComment = ({ expand, toggleView }) => (
   <header className="d-flex">
-    <div className="mr-2 post-action-expand">
+    <div className="me-2 post-action-expand">
       <PostExpandContract expand={expand} toggleView={toggleView} kind="t1" />
     </div>
-    <div className="mr-auto comment-meta meta">
+    <div className="me-auto comment-meta meta">
       <PostMeta />
     </div>
     <div className="text-nowrap align-middle d-flex actions">

@@ -41,7 +41,7 @@ const MultiRedditsAdd = ({ setShowAdd, reloadMultis }) => {
           <button
             className="btn btn-sm btn-outline-secondary dropdown-toggle"
             type="button"
-            data-toggle="dropdown"
+            data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
           >
@@ -76,7 +76,7 @@ const MultiRedditsAdd = ({ setShowAdd, reloadMultis }) => {
       </div>
       <div className="form-group mt-2">
         <button
-          className="btn btn-primary btn-sm mr-2"
+          className="btn btn-primary btn-sm me-2"
           type="button"
           disabled={disabled}
           onClick={addMulti}

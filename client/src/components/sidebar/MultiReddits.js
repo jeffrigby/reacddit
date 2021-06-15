@@ -67,13 +67,13 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
         ? 'fas fa-caret-down menu-caret'
         : 'fas fa-caret-right menu-caret';
 
-      const showAddClass = !showAdd ? 'fas fa-plus mr-1' : 'fas fa-minus mr-1';
+      const showAddClass = !showAdd ? 'fas fa-plus me-1' : 'fas fa-minus me-1';
 
       return (
         <div id="sidebar-multis">
           <div className="sidebar-heading d-flex text-muted">
             <span
-              className="mr-auto show-cursor"
+              className="me-auto show-cursor"
               onClick={toggleMenu}
               role="presentation"
             >

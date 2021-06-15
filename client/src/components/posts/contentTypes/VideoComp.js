@@ -257,18 +257,13 @@ const VideoComp = ({ link, content }) => {
     setDuration(videoRef.current.duration);
   };
 
-  const videoClasses = classNames(
-    'loaded',
-    'embed-responsive-item',
-    'preload',
-    {
-      'video-playing': playing,
-      'video-paused': !playing,
-      'audio-muted': muted,
-      'audio-on': !muted,
-      'manual-stop': manualStop,
-    }
-  );
+  const videoClasses = classNames('loaded', 'preload', {
+    'video-playing': playing,
+    'video-paused': !playing,
+    'audio-muted': muted,
+    'audio-on': !muted,
+    'manual-stop': manualStop,
+  });
 
   let video;
   if (load === true) {

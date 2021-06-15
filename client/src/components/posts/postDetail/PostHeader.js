@@ -31,7 +31,7 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
     const flairLink = `/r/${data.subreddit}/search`;
     linkFlair = (
       <Link
-        className="badge badge-dark mx-1"
+        className="badge bg-dark mx-1"
         to={{
           pathname: flairLink,
           search: `?q=${flairLinkQuery}`,
@@ -45,7 +45,7 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
 
   const dupeFlair = duplicate ? (
     <div
-      className="badge badge-dark mr-1"
+      className="badge bg-dark me-1"
       title="This post appears in the list above."
     >
       Duplicate
@@ -54,7 +54,7 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
 
   const nsfwFlair = data.over_18 ? (
     <div
-      className="badge badge-danger mx-1"
+      className="badge bg-danger mx-1"
       title="This post Contains NSFW content"
     >
       NSFW
@@ -62,13 +62,13 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
   ) : null;
 
   const pinned = data.pinned ? (
-    <div className="badge badge-darl mr-1" title="Pinned Post">
+    <div className="badge text-dark me-1" title="Pinned Post">
       <i className="fas fa-thumbtack" />
     </div>
   ) : null;
 
   const sticky = data.stickied ? (
-    <div className="badge badge-darl mr-1" title="Sticky Post">
+    <div className="badge text-dark me-1" title="Sticky Post">
       <i className="fas fa-sticky-note" />
     </div>
   ) : null;
@@ -184,7 +184,7 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
           {dupeFlair}
         </div>
         <div
-          className="flex-grow-1 list-group-item-heading shadow-none align-middle title mr-2"
+          className="flex-grow-1 list-group-item-heading shadow-none align-middle title me-2"
           onClick={toggleView}
           role="link"
           title="Click to expand"
@@ -192,20 +192,20 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
           onKeyDown={toggleView}
         >
           <span
-            className="font-weight-bold"
+            className="fw-bold"
             // eslint-disable-next-line
             dangerouslySetInnerHTML={{ __html: data.title }}
           />
           {data.is_self && data.selftext && (
-            <span className="ml-1 small">{data.selftext}</span>
+            <span className="ms-1 small">{data.selftext}</span>
           )}
         </div>
         {showSubreddits && (
-          <div className="mr-2">
+          <div className="me-2">
             <PostSubLink subreddit={data.subreddit} />
           </div>
         )}
-        <div className="mr-2">
+        <div className="me-2">
           <PostTimeAgo createdUtc={data.created_utc} />
         </div>
         <div>
@@ -223,7 +223,7 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
       <header className="d-flex">
         {title}
         {postContext.isLoaded ? (
-          <div className="text-nowrap d-flex actions ml-auto">
+          <div className="text-nowrap d-flex actions ms-auto">
             <PostVote />
             <PostSave />
             {expand && (
@@ -243,7 +243,7 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
           </div>
         ) : (
           // eslint-disable-next-line
-          <div className="text-nowrap d-flex actions ml-auto offscreen-placeholder" />
+          <div className="text-nowrap d-flex actions ms-auto offscreen-placeholder" />
         )}
       </header>
     </>
