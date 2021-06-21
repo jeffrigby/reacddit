@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { memo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import _trimEnd from 'lodash/trimEnd';
@@ -70,4 +70,4 @@ const mapStateToProps = (state) => ({
   location: state.router.location,
 });
 
-export default connect(mapStateToProps, null)(React.memo(MultiRedditsItem));
+export default connect(mapStateToProps, null)(memo(MultiRedditsItem));

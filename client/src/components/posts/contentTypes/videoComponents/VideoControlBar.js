@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import VideoAudioButton from './VideoAudioButton';
 import VideoFullScreenButton from './VideoFullScreenButton';
@@ -68,4 +68,4 @@ VideoControlBar.defaultProps = {
   link: '',
 };
 
-export default React.memo(VideoControlBar);
+export default memo(VideoControlBar);

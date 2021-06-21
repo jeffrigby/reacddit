@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
@@ -44,4 +44,4 @@ const mapStateToProps = (state) => ({});
 export default connect(mapStateToProps, {
   fetchMultis: redditFetchMultis,
   urlPush: push,
-})(React.memo(MultiDelete));
+})(memo(MultiDelete));

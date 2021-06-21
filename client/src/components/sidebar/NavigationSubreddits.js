@@ -1,4 +1,4 @@
-import React from 'react';
+import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
@@ -10,7 +10,7 @@ import NavigationItem from './NavigationItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 import { filterSubs } from '../../redux/selectors/subredditSelectors';
 
-class NavigationSubReddits extends React.PureComponent {
+class NavigationSubReddits extends PureComponent {
   checkLastUpdated = null;
 
   constructor(props) {

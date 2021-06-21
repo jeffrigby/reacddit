@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import { memo, useContext, useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { PostsContextData, PostsContextActionable } from '../../../contexts';
@@ -147,4 +147,4 @@ const mapStateToProps = (state) => ({
   bearer: state.redditBearer,
 });
 
-export default React.memo(connect(mapStateToProps, {})(PostVote));
+export default memo(connect(mapStateToProps, {})(PostVote));

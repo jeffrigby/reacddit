@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import PostExpandContract from '../postActions/PostExpandContract';
 import PostMeta from './PostMeta';
@@ -25,4 +25,4 @@ PostHeaderComment.propTypes = {
   expand: PropTypes.bool.isRequired,
 };
 
-export default React.memo(PostHeaderComment);
+export default memo(PostHeaderComment);

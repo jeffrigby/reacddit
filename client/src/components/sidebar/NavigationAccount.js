@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
@@ -145,5 +145,5 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, { urlPush: push })(
-  React.memo(NavigationAccount)
+  memo(NavigationAccount)
 );

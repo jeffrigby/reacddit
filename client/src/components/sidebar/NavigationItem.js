@@ -1,4 +1,4 @@
-import React from 'react';
+import { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import _trim from 'lodash/trim';
@@ -10,7 +10,7 @@ import SubFavorite from './SubFavorite';
 
 const queryString = require('query-string');
 
-class NavigationItem extends React.PureComponent {
+class NavigationItem extends PureComponent {
   render() {
     const { sort, location, item, lastUpdated, me, trigger } = this.props;
     const query = queryString.parse(location.search);

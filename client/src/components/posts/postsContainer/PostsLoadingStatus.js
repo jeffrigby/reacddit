@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
@@ -56,4 +56,4 @@ const mapStateToProps = (state) => ({
   status: listingStatus(state),
 });
 
-export default React.memo(connect(mapStateToProps, {})(PostsLoadingStatus));
+export default memo(connect(mapStateToProps, {})(PostsLoadingStatus));

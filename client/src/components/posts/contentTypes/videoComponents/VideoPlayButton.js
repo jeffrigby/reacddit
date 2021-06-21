@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 const VideoPlayButton = ({ videoRef, playing, toggleManualStop }) => {
@@ -35,4 +35,4 @@ VideoPlayButton.propTypes = {
 
 VideoPlayButton.defaultProps = {};
 
-export default React.memo(VideoPlayButton);
+export default memo(VideoPlayButton);

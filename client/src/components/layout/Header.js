@@ -1,5 +1,3 @@
-import React from 'react';
-// import PropTypes from 'prop-types';
 import { NavLink, useHistory, useLocation } from 'react-router-dom';
 import Search from '../header/Search';
 import Sort from '../header/Sort';

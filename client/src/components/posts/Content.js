@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import PropTypes from 'prop-types';
 import IFrame16x9 from './contentTypes/IFrame16x9';
 import ImageComp from './contentTypes/ImageComp';

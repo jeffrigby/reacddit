@@ -1,5 +1,3 @@
-import React from 'react';
-
 const NotFound404 = () => (
   <div className="m-2 d-flex">
     <div className="mt-2 alert alert-warning w-100" role="alert">

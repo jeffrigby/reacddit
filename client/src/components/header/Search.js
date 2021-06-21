@@ -1,4 +1,4 @@
-import React from 'react';
+import { createRef, PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { push } from 'connected-react-router';
 import { connect } from 'react-redux';
@@ -6,10 +6,10 @@ import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
 
-class Search extends React.PureComponent {
-  searchInput = React.createRef();
+class Search extends PureComponent {
+  searchInput = createRef();
 
-  searchInputParent = React.createRef();
+  searchInputParent = createRef();
 
   constructor(props) {
     // Required step: always call the parent class' constructor

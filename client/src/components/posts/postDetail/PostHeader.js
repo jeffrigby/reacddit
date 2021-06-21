@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { memo, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -256,4 +256,4 @@ PostHeader.propTypes = {
   duplicate: PropTypes.bool.isRequired,
 };
 
-export default React.memo(PostHeader);
+export default memo(PostHeader);

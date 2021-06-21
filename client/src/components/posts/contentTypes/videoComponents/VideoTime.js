@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 function convertSeconds(secs) {
@@ -42,4 +42,4 @@ VideoTime.propTypes = {
 
 VideoTime.defaultProps = {};
 
-export default React.memo(VideoTime);
+export default memo(VideoTime);

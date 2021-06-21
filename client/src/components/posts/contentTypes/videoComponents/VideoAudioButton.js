@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 const VideoAudioButton = ({
@@ -73,4 +73,4 @@ VideoAudioButton.defaultProps = {
   link: '',
 };
 
-export default React.memo(VideoAudioButton);
+export default memo(VideoAudioButton);

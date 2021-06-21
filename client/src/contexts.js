@@ -1,11 +1,11 @@
-import React from 'react';
+import { createContext } from 'react';
 
 // Posts
-export const PostsContextData = React.createContext({});
-export const PostsContextActionable = React.createContext({});
-export const PostsContextVisible = React.createContext({});
-export const PostsContextStatus = React.createContext({});
-export const PostsContextContent = React.createContext({});
+export const PostsContextData = createContext({});
+export const PostsContextActionable = createContext({});
+export const PostsContextVisible = createContext({});
+export const PostsContextStatus = createContext({});
+export const PostsContextContent = createContext({});
 
 // Listings
-export const ListingsContextLastExpanded = React.createContext({});
+export const ListingsContextLastExpanded = createContext({});

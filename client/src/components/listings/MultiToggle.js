@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { createRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { connect } from 'react-redux';
@@ -6,7 +6,7 @@ import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
 const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
-  const multiRef = React.createRef();
+  const multiRef = createRef();
 
   useEffect(() => {
     const disableClose = (e) => {

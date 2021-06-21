@@ -1,9 +1,9 @@
-import React from 'react';
+import { Component } from 'react';
 import PropTypes from 'prop-types';
 import VideoComp from './VideoComp';
 import Image from './ImageComp';
 
-class ImgurAlbum extends React.Component {
+class ImgurAlbum extends Component {
   constructor(props) {
     super(props);
     this.state = {

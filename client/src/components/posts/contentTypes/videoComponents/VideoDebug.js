@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { memo, useState } from 'react';
 import PropTypes from 'prop-types';
 
 const VideoDebug = ({
@@ -59,4 +59,4 @@ VideoDebug.propTypes = {
   buffer: PropTypes.object.isRequired,
 };
 
-export default React.memo(VideoDebug);
+export default memo(VideoDebug);

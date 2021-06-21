@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { memo, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 function VideoBufferBar({ videoRef, buffers, currentTime, duration }) {
@@ -64,4 +64,4 @@ VideoBufferBar.propTypes = {
   currentTime: PropTypes.number.isRequired,
 };
 
-export default React.memo(VideoBufferBar);
+export default memo(VideoBufferBar);

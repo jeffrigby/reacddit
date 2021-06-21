@@ -1,12 +1,12 @@
-import React from 'react';
+import { createRef, Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'connected-react-router';
 import { subredditsFilter } from '../../redux/actions/subreddits';
 import { hotkeyStatus } from '../../common';
 
-class FilterReddits extends React.Component {
-  filterInput = React.createRef();
+class FilterReddits extends Component {
+  filterInput = createRef();
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleFilterHotkey);

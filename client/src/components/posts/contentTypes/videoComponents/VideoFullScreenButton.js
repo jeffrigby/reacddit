@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 const VideoFullScreenButton = ({ videoRef }) => {
@@ -35,4 +35,4 @@ VideoFullScreenButton.propTypes = {
 
 VideoFullScreenButton.defaultProps = {};
 
-export default React.memo(VideoFullScreenButton);
+export default memo(VideoFullScreenButton);

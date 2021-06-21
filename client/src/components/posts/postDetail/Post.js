@@ -1,4 +1,5 @@
-import React, {
+import {
+  memo,
   useState,
   useEffect,
   useRef,
@@ -435,7 +436,7 @@ const mapStateToProps = (state, props) => ({
   actionable: postActionable(state, props),
 });
 
-export default React.memo(
+export default memo(
   connect(
     mapStateToProps,
     {

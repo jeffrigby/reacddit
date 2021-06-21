@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 
 const PostExpandContract = ({ expand, toggleView, kind }) => {
@@ -33,4 +33,4 @@ PostExpandContract.propTypes = {
   kind: PropTypes.string.isRequired,
 };
 
-export default React.memo(PostExpandContract);
+export default memo(PostExpandContract);
