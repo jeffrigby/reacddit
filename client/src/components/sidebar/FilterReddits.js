@@ -1,23 +1,58 @@
-import { createRef, Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { push } from 'connected-react-router';
 import { subredditsFilter } from '../../redux/actions/subreddits';
 import { hotkeyStatus } from '../../common';
 
-class FilterReddits extends Component {
-  filterInput = createRef();
+function FilterReddits() {
+  const filterInput = useRef();
+  const filter = useSelector((state) => state.subredditsFilter);
+  const dispatch = useDispatch();
 
-  componentDidMount() {
-    document.addEventListener('keydown', this.handleFilterHotkey);
-  }
+  /**
+   * Set the subreddit filter data.
+   * @param item
+   * @returns {void|*}
+   */
+  const filterReddits = (item) => {
+    const filterText = item.target.value;
+    // Always reset the index.
+    const activeIndex = 0;
+    if (!filterText) {
+      return dispatch(subredditsFilter({ filterText: '', activeIndex }));
+    }
+    return dispatch(subredditsFilter({ filterText, activeIndex }));
+  };
 
-  componentWillUnmount() {
-    document.removeEventListener('keydown', this.handleFilterHotkey);
-  }
+  /**
+   * Helper to clear the filter textbox
+   */
+  const clearSearch = () => {
+    const filterText = '';
+    const activeIndex = 0;
+    dispatch(subredditsFilter({ filterText, activeIndex }));
+  };
 
-  handleFilterHotkey = (event) => {
-    const { filter, setFilter, goto } = this.props;
+  /**
+   * Disable the hotkeys when using the filter.
+   */
+  const setFocus = () => {
+    document.getElementById('aside-content').scrollTop = 0;
+    const active = true;
+    filterInput.current.select();
+    dispatch(subredditsFilter({ active }));
+  };
+
+  /**
+   * Enable the hotkeys when not in a textbox.
+   */
+  const setBlur = () => {
+    const active = false;
+    const activeIndex = 0;
+    dispatch(subredditsFilter({ active, activeIndex }));
+  };
+
+  const handleFilterHotkey = (event) => {
     const pressedKey = event.key;
     const subLength = document.querySelectorAll(
       '#sidebar-subreddits .nav-item a'
@@ -27,9 +62,9 @@ class FilterReddits extends Component {
       switch (pressedKey) {
         case 'F':
         case 'q':
-          this.filterInput.current.focus();
+          filterInput.current.focus();
           document.body.classList.add('show-menu');
-          this.clearSearch();
+          clearSearch();
           event.preventDefault();
           break;
         default:
@@ -41,7 +76,7 @@ class FilterReddits extends Component {
         case 'ArrowUp': {
           const activeIndex = filter.activeIndex - 1;
           if (activeIndex >= 0) {
-            setFilter({ activeIndex });
+            dispatch(subredditsFilter({ activeIndex }));
           }
           event.preventDefault();
           break;
@@ -51,7 +86,7 @@ class FilterReddits extends Component {
             break;
           }
           const activeIndex = filter.activeIndex + 1;
-          setFilter({ activeIndex });
+          dispatch(subredditsFilter({ activeIndex }));
           event.preventDefault();
           break;
         }
@@ -60,16 +95,16 @@ class FilterReddits extends Component {
             '#sidebar-subreddits .nav-item a.trigger'
           );
           if (trigger && trigger.pathname) {
-            goto(trigger.pathname);
+            dispatch(push(trigger.pathname));
           }
           document.body.classList.remove('show-menu');
-          this.filterInput.current.blur();
+          filterInput.current.blur();
           break;
         }
         case 'Escape':
-          this.filterInput.current.blur();
+          filterInput.current.blur();
           document.body.classList.remove('show-menu');
-          this.clearSearch();
+          clearSearch();
           break;
         default:
           break;
@@ -77,101 +112,41 @@ class FilterReddits extends Component {
     }
   };
 
-  /**
-   * Set the subreddit filter data.
-   * @param item
-   * @returns {void|*}
-   */
-  filterReddits = (item) => {
-    const { setFilter } = this.props;
-    const filterText = item.target.value;
-    // Always reset the index.
-    const activeIndex = 0;
-    if (!filterText) {
-      return setFilter({ filterText: '', activeIndex });
-    }
-    return setFilter({ filterText, activeIndex });
-  };
+  useEffect(() => {
+    document.addEventListener('keydown', handleFilterHotkey);
+    return () => {
+      document.removeEventListener('keydown', handleFilterHotkey);
+    };
+  });
 
-  /**
-   * Helper to clear the filter textbox
-   */
-  clearSearch = () => {
-    const { setFilter } = this.props;
-    const filterText = '';
-    const activeIndex = 0;
-    setFilter({ filterText, activeIndex });
-  };
-
-  /**
-   * Disable the hotkeys when using the filter.
-   */
-  setFocus = () => {
-    document.getElementById('aside-content').scrollTop = 0;
-    const { setFilter } = this.props;
-    const active = true;
-    this.filterInput.current.select();
-    setFilter({ active });
-    // document.body.classList.add('filter-active');
-  };
-
-  /**
-   * Enable the hotkeys when not in a textbox.
-   */
-  setBlur = () => {
-    const { setFilter } = this.props;
-    const active = false;
-    const activeIndex = 0;
-    setFilter({ active, activeIndex });
-    // document.body.classList.remove('filter-active');
-  };
-
-  render() {
-    const { filter } = this.props;
-    return (
-      <div
-        className={`filterText w-100 d-flex m-0 p-2 ${
-          filter.active ? 'filter-focused' : 'filter-unfocused'
-        }`}
-      >
-        <input
-          type="text"
-          className="form-control form-control-dark form-control-sm w-100 py-0"
-          onChange={this.filterReddits}
-          onFocus={this.setFocus}
-          onBlur={this.setBlur}
-          placeholder="Filter"
-          id="subreddit-filter"
-          value={filter.filterText}
-          ref={this.filterInput}
+  return (
+    <div
+      className={`filterText w-100 d-flex m-0 p-2 ${
+        filter.active ? 'filter-focused' : 'filter-unfocused'
+      }`}
+    >
+      <input
+        type="text"
+        className="form-control form-control-dark form-control-sm w-100 py-0"
+        onChange={filterReddits}
+        onFocus={setFocus}
+        onBlur={setBlur}
+        placeholder="Filter"
+        id="subreddit-filter"
+        value={filter.filterText}
+        ref={filterInput}
+      />
+      {(filter.active || filter.filterText) && (
+        <i
+          className="far fa-times-circle form-control-clear filter-clear"
+          onClick={clearSearch}
+          aria-hidden
+          role="button"
+          aria-label="Clear Filter Box"
         />
-        {(filter.active || filter.filterText) && (
-          <i
-            className="far fa-times-circle form-control-clear filter-clear"
-            onClick={this.clearSearch}
-            aria-hidden
-            role="button"
-            aria-label="Clear Filter Box"
-          />
-        )}
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 }
 
-FilterReddits.propTypes = {
-  setFilter: PropTypes.func.isRequired,
-  goto: PropTypes.func.isRequired,
-  filter: PropTypes.object.isRequired,
-};
-
-FilterReddits.defaultProps = {};
-
-const mapStateToProps = (state) => ({
-  filter: state.subredditsFilter,
-});
-
-export default connect(mapStateToProps, {
-  setFilter: subredditsFilter,
-  goto: push,
-})(FilterReddits);
+export default FilterReddits;
