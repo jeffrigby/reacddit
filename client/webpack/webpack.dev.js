@@ -10,6 +10,7 @@ const redirectServedPath = require('react-dev-utils/redirectServedPathMiddleware
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const paths = require('./paths');
 
+// Not compatible with webpack5
 const webpackDevClientEntry = require.resolve(
   'react-dev-utils/webpackHotDevClient'
 );
@@ -24,6 +25,7 @@ module.exports = {
   bail: false,
   devtool: 'cheap-module-source-map',
   entry: [webpackDevClientEntry, paths.appIndexJs],
+  // entry: [paths.appIndexJs],
   output: {
     path: paths.appBuild,
     pathinfo: true,

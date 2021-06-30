@@ -95,6 +95,12 @@ body.search-active {
       font-size: 90%;
     }
   }
+  #search-clear {
+    color: white;
+  }
+  &.search-focused #search-clear {
+    color: black;
+  }
 }
 
 @media (max-width: 767.98px) {
