@@ -56,7 +56,7 @@ function Search() {
     return () => {
       document.removeEventListener('keydown', handleSearchHotkey);
     };
-  });
+  }, [focused]);
 
   const handleChange = (event) => {
     setSearch(event.target.value);
