@@ -11,6 +11,7 @@ import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
 import Root from './components/layout/Root';
 import { register as serviceWorkerRegister } from './serviceWorkerRegistration';
+import reportWebVitals from './reportWebVitals';
 
 const queryString = require('query-string');
 
@@ -92,11 +93,11 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   };
 
   render(Root);
-  if (module.hot) {
-    module.hot.accept('./components/layout/Root', () => {
-      render(Root);
-    });
-  }
 }
 
 serviceWorkerRegister();
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();

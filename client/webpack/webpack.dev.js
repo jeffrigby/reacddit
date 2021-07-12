@@ -7,25 +7,17 @@ const evalSourceMapMiddleware = require('react-dev-utils/evalSourceMapMiddleware
 const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMiddleware');
 const ignoredFiles = require('react-dev-utils/ignoredFiles');
 const redirectServedPath = require('react-dev-utils/redirectServedPathMiddleware');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const paths = require('./paths');
 
-// Not compatible with webpack5
-const webpackDevClientEntry = require.resolve(
-  'react-dev-utils/webpackHotDevClient'
-);
-
 const host = process.env.HOST || '0.0.0.0';
-const sockHost = process.env.WDS_SOCKET_HOST;
-const sockPath = process.env.WDS_SOCKET_PATH; // default: '/sockjs-node'
-const sockPort = process.env.WDS_SOCKET_PORT;
 
 module.exports = {
   mode: 'development',
   bail: false,
   devtool: 'cheap-module-source-map',
-  entry: [webpackDevClientEntry, paths.appIndexJs],
-  // entry: [paths.appIndexJs],
+  entry: [paths.appIndexJs],
   output: {
     path: paths.appBuild,
     pathinfo: true,
@@ -44,11 +36,9 @@ module.exports = {
     contentBasePublicPath: paths.publicUrlOrPath,
     watchContentBase: true,
     hot: true,
+    liveReload: false,
     transportMode: 'ws',
-    injectClient: false,
-    sockHost,
-    sockPath,
-    sockPort,
+    // injectClient: false,
     publicPath: paths.publicUrlOrPath.slice(0, -1),
     quiet: true,
     watchOptions: {
@@ -62,7 +52,6 @@ module.exports = {
       disableDotRule: true,
       index: paths.publicUrlOrPath,
     },
-    // stats: 'normal',
     public: paths.publicUrlOrPath.slice(0, -1),
     port: 3000,
     before(app, server) {
@@ -92,11 +81,11 @@ module.exports = {
     rules: [],
   },
   plugins: [
+    new ReactRefreshWebpackPlugin(),
     new HtmlWebpackPlugin({
       inject: true,
       template: paths.appHtml,
     }),
-    new webpack.HotModuleReplacementPlugin(),
     // new CleanTerminalPlugin(),
     new CaseSensitivePathsPlugin(),
     new FriendlyErrorsWebpackPlugin(),
