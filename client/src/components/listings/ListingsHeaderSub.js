@@ -1,6 +1,5 @@
-import PropTypes from 'prop-types';
 import { NavLink } from 'react-router-dom';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import SubUnSub from './SubUnSub';
 import MultiToggle from './MultiToggle';
 import {
@@ -10,7 +9,11 @@ import {
 
 const queryString = require('query-string/index');
 
-const ListingsHeaderSub = ({ about, filter, cachedSub }) => {
+const ListingsHeaderSub = () => {
+  const about = useSelector((state) => getCurrentSubreddit(state));
+  const filter = useSelector((state) => state.listingsFilter);
+  const cachedSub = useSelector((state) => getCachedSub(state));
+
   const { listType, target, multi, user } = filter;
 
   let title = '';
@@ -132,20 +135,4 @@ const ListingsHeaderSub = ({ about, filter, cachedSub }) => {
   );
 };
 
-ListingsHeaderSub.propTypes = {
-  about: PropTypes.object,
-  filter: PropTypes.object.isRequired,
-  cachedSub: PropTypes.object.isRequired,
-};
-
-ListingsHeaderSub.defaultProps = {
-  about: {},
-};
-
-const mapStateToProps = (state) => ({
-  about: getCurrentSubreddit(state),
-  filter: state.listingsFilter,
-  cachedSub: getCachedSub(state),
-});
-
-export default connect(mapStateToProps, {})(ListingsHeaderSub);
+export default ListingsHeaderSub;

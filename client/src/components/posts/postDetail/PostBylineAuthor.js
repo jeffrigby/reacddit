@@ -1,26 +1,23 @@
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { redditFetchFriends } from '../../../redux/actions/reddit';
 import RedditAPI from '../../../reddit/redditAPI';
 
 const classNames = require('classnames');
 
-const PostBylineAuthor = ({
-  author,
-  flair,
-  redditFriends,
-  getFriends,
-  isSubmitter,
-}) => {
+const PostBylineAuthor = ({ author, flair, isSubmitter }) => {
+  const redditFriends = useSelector((state) => state.redditFriends);
+  const dispatch = useDispatch();
+
   const removeFriend = async (name) => {
     await RedditAPI.removeFriend(name);
-    getFriends(true);
+    dispatch(redditFetchFriends(true));
   };
 
   const addFriend = async (name) => {
     await RedditAPI.addFriend(name);
-    getFriends(true);
+    dispatch(redditFetchFriends(true));
   };
 
   const { friends } = redditFriends;
@@ -75,8 +72,6 @@ const PostBylineAuthor = ({
 };
 
 PostBylineAuthor.propTypes = {
-  redditFriends: PropTypes.object.isRequired,
-  getFriends: PropTypes.func.isRequired,
   author: PropTypes.string.isRequired,
   flair: PropTypes.string,
   isSubmitter: PropTypes.bool,
@@ -87,10 +82,4 @@ PostBylineAuthor.defaultProps = {
   isSubmitter: false,
 };
 
-const mapStateToProps = (state) => ({
-  redditFriends: state.redditFriends,
-});
-
-export default connect(mapStateToProps, {
-  getFriends: redditFetchFriends,
-})(PostBylineAuthor);
+export default PostBylineAuthor;

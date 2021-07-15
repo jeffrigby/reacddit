@@ -1,6 +1,7 @@
 import { memo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router';
 import _trimEnd from 'lodash/trimEnd';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsSubs from './MultiRedditsSubs';
@@ -8,9 +9,12 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 const queryString = require('query-string');
 
-const MultiRedditsItem = ({ item, sort, location }) => {
+const MultiRedditsItem = ({ item }) => {
   const { path } = item.data;
   const [showSubs, setShowSubs] = useState(getMenuStatus(path));
+
+  const sort = useSelector((state) => state.listingsFilter.sort);
+  const location = useLocation();
 
   const hideShowSubs = () => {
     setMenuStatus(path, !showSubs);
@@ -59,15 +63,8 @@ const MultiRedditsItem = ({ item, sort, location }) => {
 
 MultiRedditsItem.propTypes = {
   item: PropTypes.object.isRequired,
-  sort: PropTypes.string.isRequired,
-  location: PropTypes.object.isRequired,
 };
 
 MultiRedditsItem.defaultProps = {};
 
-const mapStateToProps = (state) => ({
-  sort: state.listingsFilter.sort,
-  location: state.router.location,
-});
-
-export default connect(mapStateToProps, null)(memo(MultiRedditsItem));
+export default memo(MultiRedditsItem);

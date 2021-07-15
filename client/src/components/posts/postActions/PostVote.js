@@ -1,6 +1,5 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { PostsContextData, PostsContextActionable } from '../../../contexts';
 import { hotkeyStatus } from '../../../common';
 import redditAPI from '../../../reddit/redditAPI';
@@ -57,7 +56,9 @@ const getNewState = (dir, ups, likes) => {
   return newState;
 };
 
-const PostVote = ({ bearer }) => {
+const PostVote = () => {
+  const bearer = useSelector((state) => state.redditBearer);
+
   const postContext = useContext(PostsContextData);
   const { data } = postContext.post;
   const actionable = useContext(PostsContextActionable);
@@ -139,12 +140,4 @@ const PostVote = ({ bearer }) => {
   );
 };
 
-PostVote.propTypes = {
-  bearer: PropTypes.object.isRequired,
-};
-
-const mapStateToProps = (state) => ({
-  bearer: state.redditBearer,
-});
-
-export default memo(connect(mapStateToProps, {})(PostVote));
+export default memo(PostVote);

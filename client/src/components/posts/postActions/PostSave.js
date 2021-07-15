@@ -1,11 +1,11 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { PostsContextActionable, PostsContextData } from '../../../contexts';
 import { hotkeyStatus } from '../../../common';
 import redditAPI from '../../../reddit/redditAPI';
 
-const PostSave = ({ bearer }) => {
+const PostSave = () => {
+  const bearer = useSelector((state) => state.redditBearer);
   const postContext = useContext(PostsContextData);
   const { data } = postContext.post;
   const actionable = useContext(PostsContextActionable);
@@ -72,12 +72,4 @@ const PostSave = ({ bearer }) => {
   );
 };
 
-PostSave.propTypes = {
-  bearer: PropTypes.object.isRequired,
-};
-
-const mapStateToProps = (state) => ({
-  bearer: state.redditBearer,
-});
-
-export default memo(connect(mapStateToProps, {})(PostSave));
+export default memo(PostSave);

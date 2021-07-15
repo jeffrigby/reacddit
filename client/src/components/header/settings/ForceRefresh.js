@@ -18,7 +18,7 @@ const reload = () => {
 };
 
 const ForceRefresh = () => {
-  const settings = useSelector((state) => state.siteSettings);
+  const debug = useSelector((state) => state.siteSettings.debug);
 
   return (
     <div>
@@ -29,7 +29,7 @@ const ForceRefresh = () => {
       >
         <small>Load Newest Version</small>
       </button>
-      {settings.debug && (
+      {debug && (
         <>
           <div className="dropdown-divider" />
           <div className="supersmall">

@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/actions/misc';
 import { hotkeyStatus } from '../../../common';
 
-const AutoRefresh = ({ setSiteSetting, stream }) => {
+const AutoRefresh = () => {
+  const stream = useSelector((state) => state.siteSettings.stream);
+  const dispatch = useDispatch();
+
   const autoRefreshToggle = () => {
     window.scrollTo(0, 0);
-    setSiteSetting({ stream: !stream });
+    dispatch(siteSettings({ stream: !stream }));
   };
 
   const hotkeys = (event) => {
@@ -58,19 +60,4 @@ const AutoRefresh = ({ setSiteSetting, stream }) => {
   );
 };
 
-AutoRefresh.propTypes = {
-  stream: PropTypes.bool,
-  setSiteSetting: PropTypes.func.isRequired,
-};
-
-AutoRefresh.defaultProps = {
-  stream: false,
-};
-
-const mapStateToProps = (state) => ({
-  stream: state.siteSettings.stream,
-});
-
-export default connect(mapStateToProps, {
-  setSiteSetting: siteSettings,
-})(AutoRefresh);
+export default AutoRefresh;
