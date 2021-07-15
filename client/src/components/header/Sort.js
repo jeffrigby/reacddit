@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
-import PropTypes from 'prop-types';
 import _isEmpty from 'lodash/isEmpty';
 import { NavLink } from 'react-router-dom';
 import { push } from 'connected-react-router';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router';
 import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
@@ -78,7 +78,13 @@ const iconClasses = {
   old: 'fas fa-history fa-fw',
 };
 
-const Sort = ({ listingsFilter, search, me, gotoLink }) => {
+const Sort = () => {
+  const me = useSelector((state) => state.redditMe.me);
+  const listingsFilter = useSelector((state) => state.listingsFilter);
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const { search } = location;
+
   const getIcon = (sort) => <i className={iconClasses[sort]} />;
 
   const genLink = (sort, t) => {
@@ -127,38 +133,38 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
-          gotoLink(genLink('hot'));
+          dispatch(push(genLink('hot')));
           break;
         }
         case 'B': {
-          gotoLink(genLink('best'));
+          dispatch(push(genLink('best')));
           break;
         }
         case 'N': {
-          gotoLink(genLink('new'));
+          dispatch(push(genLink('new')));
           break;
         }
         case 'C': {
-          gotoLink(genLink('controversial'));
+          dispatch(push(genLink('controversial')));
           break;
         }
         case 'R': {
-          gotoLink(genLink('rising'));
+          dispatch(push(genLink('rising')));
           break;
         }
         case 'T': {
-          gotoLink(genLink('top'));
+          dispatch(push(genLink('top')));
           break;
         }
         case 'Q': {
           if (listType === 'comments') {
-            gotoLink(genLink('qa'));
+            dispatch(push(genLink('qa')));
           }
           break;
         }
         case 'O': {
           if (listType === 'comments') {
-            gotoLink(genLink('old'));
+            dispatch(push(genLink('old')));
           }
           break;
         }
@@ -308,21 +314,4 @@ const Sort = ({ listingsFilter, search, me, gotoLink }) => {
   );
 };
 
-Sort.propTypes = {
-  listingsFilter: PropTypes.object.isRequired,
-  search: PropTypes.string,
-  gotoLink: PropTypes.func.isRequired,
-  me: PropTypes.object.isRequired,
-};
-
-Sort.defaultProps = {
-  search: '',
-};
-
-const mapStateToProps = (state, ownProps) => ({
-  me: state.redditMe.me,
-  search: state.router.location.search,
-  listingsFilter: state.listingsFilter,
-});
-
-export default connect(mapStateToProps, { gotoLink: push })(Sort);
+export default Sort;
