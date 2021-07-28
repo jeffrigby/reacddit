@@ -1,9 +1,10 @@
 import { memo } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { listingStatus } from '../../../redux/selectors/listingsSelector';
 
-const PostsFooter = ({ status }) => {
+const PostsFooter = () => {
+  const status = useSelector((state) => listingStatus(state));
+
   let footerStatus = '';
   if (status === 'loadingNext') {
     footerStatus = (
@@ -22,12 +23,4 @@ const PostsFooter = ({ status }) => {
   return <div className="footer-status p-2">{footerStatus}</div>;
 };
 
-PostsFooter.propTypes = {
-  status: PropTypes.string.isRequired,
-};
-
-const mapStateToProps = (state) => ({
-  status: listingStatus(state),
-});
-
-export default memo(connect(mapStateToProps, {})(PostsFooter));
+export default memo(PostsFooter);

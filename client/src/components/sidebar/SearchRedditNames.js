@@ -1,12 +1,23 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
 
 const queryString = require('query-string');
 
-const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
+const SearchRedditNames = ({ filterText }) => {
+  const over18 = useSelector((state) => state.redditMe.me.over_18);
+  const subreddits = useSelector((state) =>
+    state.subreddits.subreddits !== undefined
+      ? Object.keys(state.subreddits.subreddits)
+      : []
+  );
+  const sort = useSelector((state) => state.listingsFilter.sort);
+  const auth = useSelector(
+    (state) => state.redditBearer.status === 'auth' || false
+  );
+
   const initShowSearchResuts = over18 !== undefined ? over18 : false;
   const [searchResults, setSearchResults] = useState([]);
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
@@ -106,26 +117,10 @@ const SearchRedditNames = ({ filterText, over18, auth, subreddits, sort }) => {
 
 SearchRedditNames.propTypes = {
   filterText: PropTypes.string,
-  over18: PropTypes.bool,
-  sort: PropTypes.string.isRequired,
-  subreddits: PropTypes.array,
-  auth: PropTypes.bool.isRequired,
 };
 
 SearchRedditNames.defaultProps = {
   filterText: '',
-  subreddits: [],
-  over18: false,
 };
 
-const mapStateToProps = (state) => ({
-  over18: state.redditMe.me.over_18,
-  subreddits:
-    state.subreddits.subreddits !== undefined
-      ? Object.keys(state.subreddits.subreddits)
-      : [],
-  sort: state.listingsFilter.sort,
-  auth: state.redditBearer.status === 'auth' || false,
-});
-
-export default connect(mapStateToProps, {})(SearchRedditNames);
+export default SearchRedditNames;

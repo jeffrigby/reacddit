@@ -1,12 +1,14 @@
 import { memo } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
   listingData,
   listingStatus,
 } from '../../../redux/selectors/listingsSelector';
 
-const PostsLoadingStatus = ({ status, data }) => {
+const PostsLoadingStatus = () => {
+  const data = useSelector((state) => listingData(state));
+  const status = useSelector((state) => listingStatus(state));
+
   let message;
   let icon;
   let alertType;
@@ -46,14 +48,4 @@ const PostsLoadingStatus = ({ status, data }) => {
   );
 };
 
-PostsLoadingStatus.propTypes = {
-  data: PropTypes.object.isRequired,
-  status: PropTypes.string.isRequired,
-};
-
-const mapStateToProps = (state) => ({
-  data: listingData(state),
-  status: listingStatus(state),
-});
-
-export default memo(connect(mapStateToProps, {})(PostsLoadingStatus));
+export default memo(PostsLoadingStatus);
