@@ -43,7 +43,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   );
 } else {
   // Clear the local/session cache. Mostly for debugging or a weird cookie mismatch.
-  const cookieToken = cookies.getJSON('token');
+  const cookieToken = JSON.parse(cookies.get('token'));
 
   if (parsed.cb !== undefined || cookieToken === undefined) {
     localStorage.clear();

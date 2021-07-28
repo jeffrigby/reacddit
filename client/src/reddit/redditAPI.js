@@ -46,7 +46,7 @@ class RedditAPI {
   static getTokenStorage() {
     let token = null;
 
-    const cookieToken = cookies.getJSON('token');
+    const cookieToken = JSON.parse(cookies.get('token'));
 
     if (cookieToken !== undefined) {
       const { expires } = cookieToken;
@@ -91,14 +91,13 @@ class RedditAPI {
    */
   // eslint-disable-next-line class-methods-use-this
   getLoginUrl() {
-    const { loginURL } = cookies.getJSON('token');
+    const { loginURL } = JSON.parse(cookies.get('token'));
     return loginURL;
   }
 
   /**
    *
-   * @param subreddit
-   * @param sort
+   * @param target
    * @param options
    * @returns {Promise<*>}
    */
