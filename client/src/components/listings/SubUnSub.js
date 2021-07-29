@@ -1,6 +1,5 @@
-import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import { useParams } from 'react-router-dom';
 import produce from 'immer';
@@ -9,16 +8,16 @@ import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
 import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
 
-const SubUnSub = ({
-  about,
-  setCurrentSubreddit,
-  subreddits,
-  setSubreddits,
-  redditBearer,
-}) => {
+const SubUnSub = () => {
   const location = useLocation();
   const params = useParams();
   const locationKey = location.key || 'front';
+
+  const about = useSelector((state) => getCurrentSubreddit(state));
+  const subreddits = useSelector((state) => state.subreddits);
+  const redditBearer = useSelector((state) => state.redditBearer);
+
+  const dispatch = useDispatch();
 
   if (
     isEmpty(about) ||
@@ -31,21 +30,22 @@ const SubUnSub = ({
   const unsubAction = async () => {
     await RedditAPI.subscribe(about.name, 'unsub');
     const newAbout = { ...about, user_is_subscriber: false };
-    setCurrentSubreddit(locationKey, newAbout);
+    dispatch(currentSubreddit(locationKey, newAbout));
+
     const newSubreddits = produce(subreddits, (draft) => {
       delete draft.subreddits[about.display_name];
     });
-    setSubreddits(newSubreddits);
+    dispatch(subredditsData(newSubreddits));
   };
 
   const subAction = async () => {
     await RedditAPI.subscribe(about.name, 'sub');
     const newAbout = { ...about, user_is_subscriber: true };
-    setCurrentSubreddit(locationKey, newAbout);
+    dispatch(currentSubreddit(locationKey, newAbout));
     const newSubreddits = produce(subreddits, (draft) => {
       draft.subreddits[about.display_name] = newAbout;
     });
-    setSubreddits(newSubreddits);
+    dispatch(subredditsData(newSubreddits));
   };
 
   const buttonAction = about.user_is_subscriber ? unsubAction : subAction;
@@ -72,25 +72,4 @@ const SubUnSub = ({
   );
 };
 
-SubUnSub.propTypes = {
-  about: PropTypes.object,
-  setCurrentSubreddit: PropTypes.func.isRequired,
-  subreddits: PropTypes.object.isRequired,
-  setSubreddits: PropTypes.func.isRequired,
-  redditBearer: PropTypes.object.isRequired,
-};
-
-SubUnSub.defaultProps = {
-  about: {},
-};
-
-const mapStateToProps = (state) => ({
-  about: getCurrentSubreddit(state),
-  subreddits: state.subreddits,
-  redditBearer: state.redditBearer,
-});
-
-export default connect(mapStateToProps, {
-  setCurrentSubreddit: currentSubreddit,
-  setSubreddits: subredditsData,
-})(SubUnSub);
+export default SubUnSub;
