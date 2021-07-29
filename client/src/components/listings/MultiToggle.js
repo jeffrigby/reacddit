@@ -1,12 +1,17 @@
 import { createRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
-const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
+const MultiToggle = ({ srName }) => {
   const multiRef = createRef();
+
+  const about = useSelector((state) => state.currentSubreddit);
+  const multis = useSelector((state) => state.redditMultiReddits);
+  const redditBearer = useSelector((state) => state.redditBearer);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const disableClose = (e) => {
@@ -46,7 +51,7 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
     }
 
     if (rsp.status === 200 || rsp.status === 201) {
-      await fetchMultis(true);
+      await dispatch(redditFetchMultis(true));
     } else {
       // Show an error?
     }
@@ -103,24 +108,9 @@ const MultiToggle = ({ about, redditBearer, multis, srName, fetchMultis }) => {
 };
 
 MultiToggle.propTypes = {
-  about: PropTypes.object,
   srName: PropTypes.string.isRequired,
-  multis: PropTypes.object,
-  redditBearer: PropTypes.object.isRequired,
-  fetchMultis: PropTypes.func.isRequired,
 };
 
-MultiToggle.defaultProps = {
-  about: {},
-  multis: { status: 'unloaded' },
-};
+MultiToggle.defaultProps = {};
 
-const mapStateToProps = (state) => ({
-  about: state.currentSubreddit,
-  multis: state.redditMultiReddits,
-  redditBearer: state.redditBearer,
-});
-
-export default connect(mapStateToProps, { fetchMultis: redditFetchMultis })(
-  MultiToggle
-);
+export default MultiToggle;
