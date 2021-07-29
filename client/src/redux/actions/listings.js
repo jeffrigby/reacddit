@@ -208,6 +208,15 @@ export function listingsFetchRedditNext() {
     const currentState = getState();
     const locationKey = getLocationKey(currentState);
     const currentData = currentState.listingsRedditEntries[locationKey];
+    if (!currentData) {
+      // Not sure why this is suddenly needed.
+      // eslint-disable-next-line no-console
+      console.error(
+        `listingsFetchRedditNext: Can't find the location key in the current state.`,
+        locationKey
+      );
+      return;
+    }
 
     const { after } = currentData;
     dispatch(listingsRedditStatus(locationKey, 'loadingNext'));
