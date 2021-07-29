@@ -1,15 +1,17 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { push } from 'connected-react-router';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
-const MultiDelete = ({ multi, fetchMultis, urlPush }) => {
+const MultiDelete = ({ multi }) => {
+  const dispatch = useDispatch();
+
   const deleteMulti = async () => {
     await RedditAPI.multiDelete(multi.path);
-    fetchMultis(true);
-    urlPush('/');
+    dispatch(redditFetchMultis(true));
+    dispatch(push('/'));
   };
 
   const removeMulti = () => {
@@ -33,15 +35,8 @@ const MultiDelete = ({ multi, fetchMultis, urlPush }) => {
 
 MultiDelete.propTypes = {
   multi: PropTypes.object.isRequired,
-  fetchMultis: PropTypes.func.isRequired,
-  urlPush: PropTypes.func.isRequired,
 };
 
 MultiDelete.defaultProps = {};
 
-const mapStateToProps = (state) => ({});
-
-export default connect(mapStateToProps, {
-  fetchMultis: redditFetchMultis,
-  urlPush: push,
-})(memo(MultiDelete));
+export default memo(MultiDelete);
