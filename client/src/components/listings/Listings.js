@@ -120,7 +120,7 @@ const Listings = () => {
       ) {
         moreLoading.current = true;
         await dispatch(listingsFetchRedditNext());
-        // Give it a few seconds to reneder before turning it off to avoid re-renders.
+        // Give it a few seconds to render before turning it off to avoid re-renders.
         setTimeout(() => {
           moreLoading.current = false;
         }, 2000);
