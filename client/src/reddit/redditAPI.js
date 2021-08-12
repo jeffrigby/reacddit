@@ -46,14 +46,15 @@ class RedditAPI {
   static getTokenStorage() {
     let token = null;
 
-    const cookieToken = JSON.parse(cookies.get('token'));
+    const cookieToken = cookies.get('token');
 
     if (cookieToken !== undefined) {
-      const { expires } = cookieToken;
+      const cookieTokenParsed = JSON.parse(cookieToken);
+      const { expires } = cookieTokenParsed;
       const dateTime = Date.now();
       const timestamp = Math.floor(dateTime / 1000);
       if (expires >= timestamp) {
-        token = cookieToken.accessToken;
+        token = cookieTokenParsed.accessToken;
       } else {
         token = 'expired';
       }
