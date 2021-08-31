@@ -1,28 +1,31 @@
 import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 import MultiRedditsItem from './MultiRedditsItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsAdd from './MultiRedditsAdd';
 
-const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
+const MultiReddits = () => {
   const menuId = 'multis';
 
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(getMenuStatus(menuId, true));
   const [showAdd, setShowAdd] = useState(false);
 
+  const multireddits = useSelector((state) => state.redditMultiReddits);
+  const redditBearer = useSelector((state) => state.redditBearer);
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const getMultis = async () => {
       if (redditBearer.status === 'auth') {
-        await fetchMultis();
+        await dispatch(redditFetchMultis());
         setLoading(false);
       }
     };
 
     getMultis();
-  }, [redditBearer.status, setLoading, fetchMultis]);
+  }, [dispatch, redditBearer.status, setLoading]);
 
   if (redditBearer.status !== 'auth') {
     return null;
@@ -30,7 +33,7 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
 
   const reloadMultis = async () => {
     setLoading(true);
-    await fetchMultis(true);
+    await dispatch(redditFetchMultis(true));
     setLoading(false);
   };
 
@@ -115,19 +118,8 @@ const MultiReddits = ({ multireddits, fetchMultis, redditBearer }) => {
   return null;
 };
 
-MultiReddits.propTypes = {
-  fetchMultis: PropTypes.func.isRequired,
-  multireddits: PropTypes.object.isRequired,
-  redditBearer: PropTypes.object.isRequired,
-};
+MultiReddits.propTypes = {};
 
 MultiReddits.defaultProps = {};
 
-const mapStateToProps = (state) => ({
-  multireddits: state.redditMultiReddits,
-  redditBearer: state.redditBearer,
-});
-
-export default connect(mapStateToProps, {
-  fetchMultis: redditFetchMultis,
-})(MultiReddits);
+export default MultiReddits;
