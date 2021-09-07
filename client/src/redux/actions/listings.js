@@ -209,12 +209,12 @@ export function listingsFetchRedditNext() {
     const locationKey = getLocationKey(currentState);
     const currentData = currentState.listingsRedditEntries[locationKey];
     if (!currentData) {
-      // Not sure why this is suddenly needed.
+      // This can happen when the listing is loaded, but not rendered yet.
       // eslint-disable-next-line no-console
-      console.error(
-        `listingsFetchRedditNext: Can't find the location key in the current state.`,
-        locationKey
-      );
+      // console.error(
+      //   `listingsFetchRedditNext: Can't find the location key in the current state.`,
+      //   locationKey
+      // );
       return;
     }
 
