@@ -1,7 +1,6 @@
 import { createSelector } from 'reselect';
 
-const postSelector = (state, props) => {
-  const { postName } = props;
+const postSelector = (state, postName) => {
   const key = state.router.location.key || 'front';
   const entries = state.listingsRedditEntries[key];
   const { listType } = state.listingsFilter;
