@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import { memo, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import copy from 'copy-to-clipboard';
@@ -115,4 +115,4 @@ PostFooter.defaultProps = {
   renderedContent: null,
 };
 
-export default React.memo(PostFooter);
+export default memo(PostFooter);

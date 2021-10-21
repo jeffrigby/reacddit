@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import { createRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import RedditAPI from '../../reddit/redditAPI';
 
 const MultiRedditsAdd = ({ setShowAdd, reloadMultis }) => {
-  const nameInput = React.createRef();
-  const descriptionTextarea = React.createRef();
+  const nameInput = createRef();
+  const descriptionTextarea = createRef();
 
   const [visibility, setVisibility] = useState(false);
   const [disabled, setDisabled] = useState(true);
@@ -100,8 +99,4 @@ MultiRedditsAdd.propTypes = {
   reloadMultis: PropTypes.func.isRequired,
 };
 
-MultiRedditsAdd.defaultProps = {};
-
-const mapStateToProps = (state) => ({});
-
-export default connect(mapStateToProps, {})(MultiRedditsAdd);
+export default MultiRedditsAdd;

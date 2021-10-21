@@ -1,19 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { memo, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { push } from 'connected-react-router';
 import { formatDistanceToNow } from 'date-fns';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 
-const NavigationAccount = ({ me, urlPush }) => {
-  let lastKeyPressed = '';
-  const menuID = 'navAccount';
+const menuID = 'navAccount';
+
+const NavigationAccount = () => {
+  const me = useSelector((state) => state.redditMe.me);
+  const dispatch = useDispatch();
+
+  const urlPush = (url) => dispatch(push(url));
+
   const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(
     getMenuStatus(menuID, true)
   );
 
+  let lastKeyPressed = '';
   const hotkeys = (event) => {
     const pressedKey = event.key;
 
@@ -133,17 +138,4 @@ const NavigationAccount = ({ me, urlPush }) => {
   );
 };
 
-NavigationAccount.propTypes = {
-  me: PropTypes.object.isRequired,
-  urlPush: PropTypes.func.isRequired,
-};
-
-NavigationAccount.defaultProps = {};
-
-const mapStateToProps = (state) => ({
-  me: state.redditMe.me,
-});
-
-export default connect(mapStateToProps, { urlPush: push })(
-  React.memo(NavigationAccount)
-);
+export default memo(NavigationAccount);

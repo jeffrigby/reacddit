@@ -1,11 +1,12 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/actions/misc';
 
-const AutoPlay = ({ setSiteSetting, autoplay }) => {
+const AutoPlay = () => {
+  const autoplay = useSelector((state) => state.siteSettings.autoplay);
+  const dispatch = useDispatch();
+
   const autoPlayToggle = () => {
-    setSiteSetting({ autoplay: !autoplay });
+    dispatch(siteSettings({ autoplay: !autoplay }));
   };
 
   return (
@@ -26,19 +27,4 @@ const AutoPlay = ({ setSiteSetting, autoplay }) => {
   );
 };
 
-AutoPlay.propTypes = {
-  autoplay: PropTypes.bool,
-  setSiteSetting: PropTypes.func.isRequired,
-};
-
-AutoPlay.defaultProps = {
-  autoplay: true,
-};
-
-const mapStateToProps = (state) => ({
-  autoplay: state.siteSettings.autoplay,
-});
-
-export default connect(mapStateToProps, {
-  setSiteSetting: siteSettings,
-})(AutoPlay);
+export default AutoPlay;

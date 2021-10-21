@@ -1,6 +1,5 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
@@ -12,6 +11,7 @@ import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
 import Root from './components/layout/Root';
 import { register as serviceWorkerRegister } from './serviceWorkerRegistration';
+import reportWebVitals from './reportWebVitals';
 
 const queryString = require('query-string');
 
@@ -43,7 +43,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   );
 } else {
   // Clear the local/session cache. Mostly for debugging or a weird cookie mismatch.
-  const cookieToken = cookies.getJSON('token');
+  const cookieToken = cookies.get('token');
 
   if (parsed.cb !== undefined || cookieToken === undefined) {
     localStorage.clear();
@@ -93,11 +93,11 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   };
 
   render(Root);
-  if (module.hot) {
-    module.hot.accept('./components/layout/Root', () => {
-      render(Root);
-    });
-  }
 }
 
 serviceWorkerRegister();
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();

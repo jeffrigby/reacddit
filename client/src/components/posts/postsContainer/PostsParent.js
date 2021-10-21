@@ -1,4 +1,4 @@
-import React from 'react';
+import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -61,4 +61,4 @@ PostsParent.propTypes = {
   post: PropTypes.object.isRequired,
 };
 
-export default React.memo(PostsParent);
+export default memo(PostsParent);

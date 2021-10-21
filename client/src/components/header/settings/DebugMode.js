@@ -1,12 +1,14 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/actions/misc';
 import { hotkeyStatus } from '../../../common';
 
-const DebugMode = ({ setSiteSetting, debug }) => {
+const DebugMode = () => {
+  const debug = useSelector((state) => state.siteSettings.debug);
+  const dispatch = useDispatch();
+
   const debugToggle = () => {
-    setSiteSetting({ debug: !debug });
+    dispatch(siteSettings({ debug: !debug }));
   };
 
   const hotkeys = (event) => {
@@ -46,19 +48,4 @@ const DebugMode = ({ setSiteSetting, debug }) => {
   );
 };
 
-DebugMode.propTypes = {
-  debug: PropTypes.bool,
-  setSiteSetting: PropTypes.func.isRequired,
-};
-
-DebugMode.defaultProps = {
-  debug: false,
-};
-
-const mapStateToProps = (state) => ({
-  debug: state.siteSettings.debug,
-});
-
-export default connect(mapStateToProps, {
-  setSiteSetting: siteSettings,
-})(DebugMode);
+export default DebugMode;

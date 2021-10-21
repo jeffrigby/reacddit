@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import Post from '../posts/postDetail/Post';
 // eslint-disable-next-line import/no-cycle

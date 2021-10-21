@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
-import { connect, useDispatch } from 'react-redux';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useParams } from 'react-router';
 import throttle from 'lodash/throttle';
 import ListingsLogic from './ListingsLogic';
@@ -23,11 +22,16 @@ import { ListingsContextLastExpanded } from '../../contexts';
 
 const queryString = require('query-string');
 
-const Listings = ({ data, status, filter, settings }) => {
+const Listings = () => {
   const location = useLocation();
   const match = useParams();
   const dispatch = useDispatch();
   const [lastExpanded, setLastExpanded] = useState('');
+
+  const data = useSelector((state) => listingData(state));
+  const status = useSelector((state) => listingStatus(state));
+  const settings = useSelector((state) => state.siteSettings);
+  const filter = useSelector((state) => state.listingsFilter);
 
   const { listType, target, sort, user, userType, multi, postName, comment } =
     match;
@@ -116,7 +120,7 @@ const Listings = ({ data, status, filter, settings }) => {
       ) {
         moreLoading.current = true;
         await dispatch(listingsFetchRedditNext());
-        // Give it a few seconds to reneder before turning it off to avoid re-renders.
+        // Give it a few seconds to render before turning it off to avoid re-renders.
         setTimeout(() => {
           moreLoading.current = false;
         }, 2000);
@@ -182,22 +186,10 @@ const Listings = ({ data, status, filter, settings }) => {
   );
 };
 
-Listings.propTypes = {
-  data: PropTypes.object.isRequired,
-  status: PropTypes.string.isRequired,
-  filter: PropTypes.object.isRequired,
-  settings: PropTypes.object,
-};
+Listings.propTypes = {};
 
 Listings.defaultProps = {
   settings: { debug: false, view: 'expanded' },
 };
 
-const mapStateToProps = (state) => ({
-  data: listingData(state),
-  status: listingStatus(state),
-  settings: state.siteSettings,
-  filter: state.listingsFilter,
-});
-
-export default connect(mapStateToProps, null)(Listings);
+export default Listings;

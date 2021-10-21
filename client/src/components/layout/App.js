@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { memo, StrictMode, useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ReactTooltip from 'react-tooltip';
 import Navigation from './Navigation';
@@ -100,7 +100,7 @@ const App = () => {
 
   return (
     <div className={menuStatus}>
-      <React.StrictMode>
+      <StrictMode>
         <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
           <Header />
         </header>
@@ -120,9 +120,9 @@ const App = () => {
         <Help />
         <ReactTooltip effect="solid" html place="right" />
         <div id="menu-overlay" />
-      </React.StrictMode>
+      </StrictMode>
     </div>
   );
 };
 
-export default React.memo(App);
+export default memo(App);

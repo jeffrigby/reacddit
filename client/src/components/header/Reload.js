@@ -1,10 +1,12 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { listingsFetchRedditNew } from '../../redux/actions/listings';
 import { listingStatus } from '../../redux/selectors/listingsSelector';
 
-const Reload = ({ getNewRedditEntries, listingsStatus, stream }) => {
+const Reload = () => {
+  const listingsStatus = useSelector((state) => listingStatus(state));
+  const stream = useSelector((state) => state.siteSettings.stream);
+  const dispatch = useDispatch();
+
   const loading = listingsStatus !== 'loaded' && listingsStatus !== 'loadedAll';
   const iconClass = `fas fa-sync-alt${loading ? ' fa-spin' : ''}`;
   const btnClass = stream
@@ -13,7 +15,7 @@ const Reload = ({ getNewRedditEntries, listingsStatus, stream }) => {
 
   const refresh = async () => {
     window.scrollTo(0, 0);
-    await getNewRedditEntries();
+    await dispatch(listingsFetchRedditNew());
   };
 
   return (
@@ -31,21 +33,4 @@ const Reload = ({ getNewRedditEntries, listingsStatus, stream }) => {
   );
 };
 
-Reload.propTypes = {
-  getNewRedditEntries: PropTypes.func.isRequired,
-  listingsStatus: PropTypes.string.isRequired,
-  stream: PropTypes.bool,
-};
-
-Reload.defaultProps = {
-  stream: false,
-};
-
-const mapStateToProps = (state) => ({
-  listingsStatus: listingStatus(state),
-  stream: state.siteSettings.stream,
-});
-
-export default connect(mapStateToProps, {
-  getNewRedditEntries: listingsFetchRedditNew,
-})(Reload);
+export default Reload;

@@ -1,17 +1,18 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../redux/actions/misc';
 import { hotkeyStatus } from '../../common';
-import { listingState } from '../../redux/selectors/listingsSelector';
 
-const ViewMode = ({ siteSettingsView, setSiteSetting, actionable }) => {
+const ViewMode = () => {
+  const siteSettingsView = useSelector((state) => state.siteSettings.view);
+  const dispatch = useDispatch();
+
   const btnClasses = 'btn btn-secondary btn-sm';
 
   const toggleView = async (view) => {
     // const currentFocus = document.getElementById(actionable);
     window.scrollTo(0, 0);
-    await setSiteSetting({ view });
+    await dispatch(siteSettings({ view }));
   };
 
   const hotkeys = (event) => {
@@ -60,22 +61,4 @@ const ViewMode = ({ siteSettingsView, setSiteSetting, actionable }) => {
   return <div className="header-button">{button}</div>;
 };
 
-ViewMode.propTypes = {
-  siteSettingsView: PropTypes.string,
-  setSiteSetting: PropTypes.func.isRequired,
-  actionable: PropTypes.string,
-};
-
-ViewMode.defaultProps = {
-  siteSettingsView: 'view',
-  actionable: '',
-};
-
-const mapStateToProps = (state) => ({
-  siteSettingsView: state.siteSettings.view,
-  actionable: listingState(state).actionable,
-});
-
-export default connect(mapStateToProps, {
-  setSiteSetting: siteSettings,
-})(ViewMode);
+export default ViewMode;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 // import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
@@ -57,7 +57,7 @@ const Friends = () => {
     }
 
     navItems.push(
-      <React.Fragment key={f.id}>
+      <Fragment key={f.id}>
         <li className="nav-item d-flex friend-li">
           <div className="me-auto d-flex w-100">
             <NavigationGenericNavItem
@@ -85,7 +85,7 @@ const Friends = () => {
             </button>
           </div>
         </li>
-      </React.Fragment>
+      </Fragment>
     );
   });
 

@@ -128,9 +128,10 @@ export const getCurrentListingState = (
         }
 
         if (!actionable) {
-          const actionTop = top - 16;
+          const offset = 22;
+          const actionTop = top - offset;
           if (actionTop > 0) {
-            const inView = top - window.innerHeight <= -16;
+            const inView = top - window.innerHeight <= -offset;
             actionable = inView ? post.id : prevPostId;
           }
         }

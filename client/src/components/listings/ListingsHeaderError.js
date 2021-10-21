@@ -1,9 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 
-const ListingsHeaderError = ({ filter }) => {
-  const { target } = filter;
+const ListingsHeaderError = () => {
+  const target = useSelector((state) => state.listingsFilter?.target);
 
   return (
     <>
@@ -16,14 +14,4 @@ const ListingsHeaderError = ({ filter }) => {
   );
 };
 
-ListingsHeaderError.propTypes = {
-  filter: PropTypes.object.isRequired,
-};
-
-ListingsHeaderError.defaultProps = {};
-
-const mapStateToProps = (state) => ({
-  filter: state.listingsFilter,
-});
-
-export default connect(mapStateToProps, {})(ListingsHeaderError);
+export default ListingsHeaderError;

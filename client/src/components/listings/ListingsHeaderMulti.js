@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import RedditAPI from '../../reddit/redditAPI';
 import MultiDelete from './MultiDelete';
 
-const ListingsHeaderMulti = ({ filter, multis, me }) => {
-  const { target, user } = filter;
+const ListingsHeaderMulti = () => {
   const [currentMulti, setCurrentMulti] = useState(null);
+  const filter = useSelector((state) => state.listingsFilter);
+  // const multis = useSelector((state) => state.redditMultiReddits);
+  const me = useSelector((state) => state.redditMe);
+
+  const { target, user } = filter;
   const name = user === 'me' ? me.me.name : user;
 
   useEffect(() => {
@@ -74,18 +77,4 @@ const ListingsHeaderMulti = ({ filter, multis, me }) => {
   );
 };
 
-ListingsHeaderMulti.propTypes = {
-  filter: PropTypes.object.isRequired,
-  multis: PropTypes.object.isRequired,
-  me: PropTypes.object.isRequired,
-};
-
-ListingsHeaderMulti.defaultProps = {};
-
-const mapStateToProps = (state) => ({
-  filter: state.listingsFilter,
-  multis: state.redditMultiReddits,
-  me: state.redditMe,
-});
-
-export default connect(mapStateToProps, {})(ListingsHeaderMulti);
+export default ListingsHeaderMulti;

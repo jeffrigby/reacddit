@@ -1,13 +1,14 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { listingData } from '../../../redux/selectors/listingsSelector';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
 import PostsParent from './PostsParent';
 
-const Posts = ({ data, listType }) => {
+const Posts = () => {
+  const listType = useSelector((state) => state.listingsFilter.listType);
+  const data = useSelector((state) => listingData(state));
+
   const entriesObject = data.children;
   if (!entriesObject) return <PostsLoadingStatus />;
 
@@ -28,18 +29,4 @@ const Posts = ({ data, listType }) => {
   );
 };
 
-Posts.propTypes = {
-  data: PropTypes.object.isRequired,
-  listType: PropTypes.string,
-};
-
-Posts.defaultProps = {
-  listType: '',
-};
-
-const mapStateToProps = (state) => ({
-  data: listingData(state),
-  listType: state.listingsFilter.listType,
-});
-
-export default connect(mapStateToProps, {}, null)(Posts);
+export default Posts;

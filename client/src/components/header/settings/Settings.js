@@ -1,4 +1,3 @@
-import React from 'react';
 import AutoRefresh from './AutoRefresh';
 import ForceRefresh from './ForceRefresh';
 import AutoPlay from './AutoPlay';

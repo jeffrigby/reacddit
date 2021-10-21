@@ -1,20 +1,26 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import { useEffect, useRef, useCallback } from 'react';
 import { push } from 'connected-react-router';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
 
-function NavigationPrimaryLinks({
-  me,
-  gotoLink,
-  subreddits,
-  sort,
-  t,
-  redditBearer,
-}) {
+function NavigationPrimaryLinks() {
+  const me = useSelector((state) => state.redditMe.me);
+  const redditBearer = useSelector((state) => state.redditBearer);
+  const sort = useSelector((state) => state.listingsFilter.sort);
+  const t = useSelector((state) => state.listingsFilter.t);
+  const subreddits = useSelector((state) => state.subreddits);
+  const dispatch = useDispatch();
+
+  const gotoLink = useCallback(
+    (url) => {
+      dispatch(push(url));
+    },
+    [dispatch]
+  );
+
   const lastKeyPressed = useRef('');
 
   /**
@@ -153,27 +159,4 @@ function NavigationPrimaryLinks({
   );
 }
 
-NavigationPrimaryLinks.propTypes = {
-  me: PropTypes.object.isRequired,
-  sort: PropTypes.string.isRequired,
-  t: PropTypes.string,
-  subreddits: PropTypes.object.isRequired,
-  gotoLink: PropTypes.func.isRequired,
-  redditBearer: PropTypes.object.isRequired,
-};
-
-NavigationPrimaryLinks.defaultProps = {
-  t: '',
-};
-
-const mapStateToProps = (state) => ({
-  me: state.redditMe.me,
-  redditBearer: state.redditBearer,
-  sort: state.listingsFilter.sort,
-  t: state.listingsFilter.t,
-  subreddits: state.subreddits,
-});
-
-export default connect(mapStateToProps, {
-  gotoLink: push,
-})(NavigationPrimaryLinks);
+export default NavigationPrimaryLinks;

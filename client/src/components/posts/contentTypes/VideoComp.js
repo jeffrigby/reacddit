@@ -1,4 +1,5 @@
-import React, {
+import {
+  memo,
   useState,
   useEffect,
   useRef,
@@ -428,4 +429,4 @@ VideoComp.defaultProps = {
   link: '',
 };
 
-export default React.memo(VideoComp);
+export default memo(VideoComp);

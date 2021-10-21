@@ -46,14 +46,15 @@ class RedditAPI {
   static getTokenStorage() {
     let token = null;
 
-    const cookieToken = cookies.getJSON('token');
+    const cookieToken = cookies.get('token');
 
     if (cookieToken !== undefined) {
-      const { expires } = cookieToken;
+      const cookieTokenParsed = JSON.parse(cookieToken);
+      const { expires } = cookieTokenParsed;
       const dateTime = Date.now();
       const timestamp = Math.floor(dateTime / 1000);
       if (expires >= timestamp) {
-        token = cookieToken.accessToken;
+        token = cookieTokenParsed.accessToken;
       } else {
         token = 'expired';
       }
@@ -91,14 +92,13 @@ class RedditAPI {
    */
   // eslint-disable-next-line class-methods-use-this
   getLoginUrl() {
-    const { loginURL } = cookies.getJSON('token');
+    const { loginURL } = JSON.parse(cookies.get('token'));
     return loginURL;
   }
 
   /**
    *
-   * @param subreddit
-   * @param sort
+   * @param target
    * @param options
    * @returns {Promise<*>}
    */

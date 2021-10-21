@@ -74,4 +74,6 @@ module.exports = {
   dotenv: getEnvConfig(),
   publicUrlOrPath: ensureSlash(process.env.PUBLIC_URL, true),
   swSrc: resolveModule(resolveApp, 'src/service-worker'),
+  wsPort: parseInt(process.env.WSPORT || 3000, 10),
+  port: parseInt(process.env.PORT || 3000, 10),
 };

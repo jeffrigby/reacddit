@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback, useContext } from 'react';
+import { useEffect, useRef, useCallback, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
