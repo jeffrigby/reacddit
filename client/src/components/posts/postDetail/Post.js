@@ -7,7 +7,7 @@ import {
   useContext,
 } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { push } from 'connected-react-router';
 import throttle from 'lodash/throttle';
 import { useParams } from 'react-router';
@@ -32,6 +32,7 @@ const classNames = require('classnames');
 
 function useRenderedContent(data, kind, expand) {
   const [renderedContent, setRenderedContent] = useState(null);
+
   // Used for debugging offscreen elements.
   const isRendered = useRef(false);
 
@@ -76,16 +77,7 @@ function useRenderedContent(data, kind, expand) {
   return { renderedContent };
 }
 
-const Post = ({
-  siteSettings,
-  post,
-  focused,
-  actionable,
-  listingsStatus,
-  gotoLink,
-  duplicate,
-  parent,
-}) => {
+const Post = ({ post, duplicate, parent, postName, idx }) => {
   const { data, kind } = post;
   const [hide, setHide] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -94,6 +86,15 @@ const Post = ({
   const params = useParams();
   const postRef = useRef();
   const minHeightRef = useRef();
+
+  const siteSettings = useSelector((state) => state.siteSettings);
+  const listingsStatus = useSelector((state) => listingStatus(state));
+  const focused = useSelector((state) => postFocused(state, postName, idx));
+  const actionable = useSelector((state) =>
+    postActionable(state, postName, idx)
+  );
+
+  const dispatch = useDispatch();
 
   const [lastExpanded, setLastExpanded] = useContext(
     ListingsContextLastExpanded
@@ -253,9 +254,9 @@ const Post = ({
   const gotoDuplicates = useCallback(() => {
     if (!data.is_self) {
       const searchTo = `/duplicates/${data.id}`;
-      gotoLink(searchTo);
+      dispatch(push(searchTo));
     }
-  }, [data.id, data.is_self, gotoLink]);
+  }, [data.id, data.is_self, dispatch]);
 
   // @todo is there a way around pop up blockers?
   const openReddit = useCallback(() => {
@@ -405,43 +406,17 @@ const Post = ({
 };
 
 Post.propTypes = {
-  // eslint-disable-next-line react/no-unused-prop-types
   postName: PropTypes.string.isRequired,
-  // eslint-disable-next-line react/no-unused-prop-types
   idx: PropTypes.number.isRequired,
   post: PropTypes.object.isRequired,
-  focused: PropTypes.bool.isRequired,
-  actionable: PropTypes.bool.isRequired,
-  siteSettings: PropTypes.object.isRequired,
   // visible: PropTypes.bool.isRequired,
-  gotoLink: PropTypes.func.isRequired,
-  listingsStatus: PropTypes.string,
   duplicate: PropTypes.bool,
   parent: PropTypes.bool,
 };
 
 Post.defaultProps = {
-  // minHeight: 0,
-  listingsStatus: 'unloaded',
   duplicate: false,
   parent: false,
 };
 
-const mapStateToProps = (state, props) => ({
-  siteSettings: state.siteSettings,
-  listingsStatus: listingStatus(state),
-  // minHeight: postMinHeight(state, props),
-  // visible: postVisibility(state, props),
-  focused: postFocused(state, props),
-  actionable: postActionable(state, props),
-});
-
-export default memo(
-  connect(
-    mapStateToProps,
-    {
-      gotoLink: push,
-    },
-    null
-  )(Post)
-);
+export default memo(Post);

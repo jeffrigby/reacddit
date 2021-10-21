@@ -25,8 +25,7 @@ const postVisibilitySelector = (state, props) => {
   return visible.length === 0 ? idx < 5 : visible.includes(postName);
 };
 
-const postFocusedSelector = (state, props) => {
-  const { postName, idx } = props;
+const postFocusedSelector = (state, postName, idx) => {
   const key = state.router.location.key || 'front';
   const listingState = state.listingsState[key];
   if (!listingState) {
@@ -36,8 +35,7 @@ const postFocusedSelector = (state, props) => {
   return !focused ? idx === 0 : focused === postName;
 };
 
-const postActionableSelector = (state, props) => {
-  const { postName, idx } = props;
+const postActionableSelector = (state, postName, idx) => {
   const key = state.router.location.key || 'front';
   const listingState = state.listingsState[key];
   if (!listingState) {
