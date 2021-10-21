@@ -29,49 +29,57 @@ module.exports = {
     globalObject: 'this',
   },
   devServer: {
-    disableHostCheck: false,
-    compress: true,
-    clientLogLevel: 'none',
-    contentBase: paths.appPublic,
-    contentBasePublicPath: paths.publicUrlOrPath,
-    watchContentBase: true,
-    hot: true,
-    liveReload: false,
-    transportMode: 'ws',
-    // injectClient: false,
-    publicPath: paths.publicUrlOrPath.slice(0, -1),
-    quiet: true,
-    watchOptions: {
-      ignored: ignoredFiles(paths.appSrc),
+    devMiddleware: {
+      publicPath: paths.publicUrlOrPath.slice(0, -1),
     },
+    static: {
+      directory: paths.appPublic,
+      publicPath: paths.publicUrlOrPath,
+      watch: {
+        ignored: ignoredFiles(paths.appSrc),
+      },
+    },
+    allowedHosts: 'all',
+    hot: 'only',
+    liveReload: false,
+    webSocketServer: 'ws',
     host,
-    overlay: false,
+    client: {
+      overlay: false,
+      logging: 'verbose',
+      webSocketURL: {
+        hostname: '0.0.0.0',
+        pathname: '/ws',
+        protocol: 'auto',
+        // This defaults to 3000, but if you need SSL via a proxy, use 443
+        port: paths.wsPort,
+      },
+    },
     historyApiFallback: {
       // Paths with dots should still use the history fallback.
       // See https://github.com/facebook/create-react-app/issues/387.
       disableDotRule: true,
       index: paths.publicUrlOrPath,
     },
-    public: paths.publicUrlOrPath.slice(0, -1),
-    port: 3000,
-    before(app, server) {
+    port: paths.port,
+    onBeforeSetupMiddleware(devServer) {
       // Keep `evalSourceMapMiddleware` and `errorOverlayMiddleware`
       // middlewares before `redirectServedPath` otherwise will not have any effect
       // This lets us fetch source contents from webpack for the error overlay
-      app.use(evalSourceMapMiddleware(server));
+      devServer.app.use(evalSourceMapMiddleware(devServer.server));
       // This lets us open files from the runtime error overlay.
-      app.use(errorOverlayMiddleware());
+      devServer.app.use(errorOverlayMiddleware());
     },
-    after(app) {
+    onAfterSetupMiddleware(devServer) {
       // Redirect to `PUBLIC_URL` or `homepage` from `package.json` if url not match
-      app.use(redirectServedPath(paths.publicUrlOrPath));
+      devServer.app.use(redirectServedPath(paths.publicUrlOrPath));
 
       // This service worker file is effectively a 'no-op' that will reset any
       // previous service worker registered for the same host:port combination.
       // We do this in development to avoid hitting the production cache if
       // it used the same host and port.
       // https://github.com/facebook/create-react-app/issues/2272#issuecomment-302832432
-      app.use(noopServiceWorkerMiddleware(paths.publicUrlOrPath));
+      devServer.app.use(noopServiceWorkerMiddleware(paths.publicUrlOrPath));
     },
   },
   optimization: {
@@ -81,7 +89,12 @@ module.exports = {
     rules: [],
   },
   plugins: [
-    new ReactRefreshWebpackPlugin(),
+    new ReactRefreshWebpackPlugin({
+      // This is needed when loading through a proxy.
+      overlay: {
+        sockPort: paths.wsPort,
+      },
+    }),
     new HtmlWebpackPlugin({
       inject: true,
       template: paths.appHtml,
