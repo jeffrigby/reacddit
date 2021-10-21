@@ -46,7 +46,7 @@ module.exports = {
     host,
     client: {
       overlay: false,
-      logging: 'verbose',
+      logging: 'info',
       webSocketURL: {
         hostname: '0.0.0.0',
         pathname: '/ws',
