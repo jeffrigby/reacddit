@@ -6,11 +6,13 @@ import { isMobile } from 'react-device-detect';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
 
+const queryString = require('query-string/index');
+
 function NavigationPrimaryLinks() {
   const me = useSelector((state) => state.redditMe.me);
   const redditBearer = useSelector((state) => state.redditBearer);
   const sort = useSelector((state) => state.listingsFilter.sort);
-  const t = useSelector((state) => state.listingsFilter.t);
+  const query = useSelector((state) => state.listingsFilter.qs);
   const subreddits = useSelector((state) => state.subreddits);
   const dispatch = useDispatch();
 
@@ -34,17 +36,21 @@ function NavigationPrimaryLinks() {
         return false;
       }
 
+      const qs = queryString.parse(query);
+
       const keys = Object.keys(subreddits.subreddits);
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
       const randomSubreddit = subreddits.subreddits[randomKey];
 
       const sortTopQS =
-        sort === 'top' || sort === 'controversial' ? `?t=${t}` : '';
+        (sort === 'top' || sort === 'controversial') && qs.t
+          ? `?t=${qs.t}`
+          : '';
 
       const url = randomSubreddit.url + (sort || 'hot') + sortTopQS;
       return gotoLink(url);
     },
-    [gotoLink, sort, subreddits.subreddits, t]
+    [gotoLink, query, sort, subreddits.subreddits]
   );
 
   const getLoginUrl = useCallback(() => {
