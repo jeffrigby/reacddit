@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 
-const VideoPlayButton = ({ videoRef, playing, toggleManualStop }) => {
+function VideoPlayButton({ videoRef, playing, toggleManualStop }) {
   const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
   const playTitle = playing ? 'Pause' : 'Play';
 
@@ -25,7 +25,7 @@ const VideoPlayButton = ({ videoRef, playing, toggleManualStop }) => {
       <i className={playIconClass} />
     </button>
   );
-};
+}
 
 VideoPlayButton.propTypes = {
   videoRef: PropTypes.object.isRequired,

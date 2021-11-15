@@ -3,7 +3,7 @@ import { withRouter } from 'react-router';
 import Listings from '../listings/Listings';
 import NotFound404 from '../../NotFound404';
 
-const Routes = () => {
+function Routes() {
   const redditSorts = 'hot|new|top|controversial|rising|best';
   const redditPaths = [
     '/',
@@ -57,6 +57,6 @@ const Routes = () => {
   );
 
   return <Switch>{routes}</Switch>;
-};
+}
 
 export default withRouter(Routes);

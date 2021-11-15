@@ -8,7 +8,7 @@ import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
 import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
 
-const SubUnSub = () => {
+function SubUnSub() {
   const location = useLocation();
   const params = useParams();
   const locationKey = location.key || 'front';
@@ -70,6 +70,6 @@ const SubUnSub = () => {
       <i className={iconClass} /> {text}
     </button>
   );
-};
+}
 
 export default SubUnSub;

@@ -5,6 +5,7 @@ import {
   useRef,
   useCallback,
   useContext,
+  useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
@@ -77,7 +78,7 @@ function useRenderedContent(data, kind, expand) {
   return { renderedContent };
 }
 
-const Post = ({ post, duplicate, parent, postName, idx }) => {
+function Post({ post, duplicate, parent, postName, idx }) {
   const { data, kind } = post;
   const [hide, setHide] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -353,12 +354,11 @@ const Post = ({ post, duplicate, parent, postName, idx }) => {
     </div>
   ) : null;
 
-  const postContext = {
-    post,
-    isLoaded,
-    actionable,
+  const postContext = useMemo(
+    () => ({ post, isLoaded, actionable }),
     // content: renderedContent,
-  };
+    [actionable, isLoaded, post]
+  );
 
   return (
     <PostsContextData.Provider value={postContext}>
@@ -403,7 +403,7 @@ const Post = ({ post, duplicate, parent, postName, idx }) => {
       </PostsContextActionable.Provider>
     </PostsContextData.Provider>
   );
-};
+}
 
 Post.propTypes = {
   postName: PropTypes.string.isRequired,

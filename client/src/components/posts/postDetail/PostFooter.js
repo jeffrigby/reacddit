@@ -6,12 +6,12 @@ import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
 
-const PostFooter = ({
+function PostFooter({
   debug,
   renderedContent,
   setShowVisToggle,
   showVisToggle,
-}) => {
+}) {
   const postContext = useContext(PostsContextData);
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -56,20 +56,16 @@ const PostFooter = ({
   );
 
   if (kind === 't1') {
-    return (
+    return debug ? (
       <>
-        {debug && (
-          <>
-            <footer className="d-flex clearfix align-middle mb-1">
-              <div>{debugLinks}</div>
-            </footer>
-            {debug && showDebug && renderedContent && (
-              <PostDebug renderedContent={renderedContent} />
-            )}
-          </>
+        <footer className="d-flex clearfix align-middle mb-1">
+          <div>{debugLinks}</div>
+        </footer>
+        {debug && showDebug && renderedContent && (
+          <PostDebug renderedContent={renderedContent} />
         )}
       </>
-    );
+    ) : null;
   }
 
   if (!postContext.isLoaded) {
@@ -102,7 +98,7 @@ const PostFooter = ({
       )}
     </>
   );
-};
+}
 
 PostFooter.propTypes = {
   debug: PropTypes.bool.isRequired,

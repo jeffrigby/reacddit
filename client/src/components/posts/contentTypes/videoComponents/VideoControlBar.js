@@ -6,7 +6,7 @@ import VideoPlayButton from './VideoPlayButton';
 import VideoTime from './VideoTime';
 import VideoBufferBar from './VideoBufferBar';
 
-const VideoControlBar = ({
+function VideoControlBar({
   videoRef,
   duration,
   currentTime,
@@ -16,8 +16,8 @@ const VideoControlBar = ({
   link,
   buffer,
   toggleManualStop,
-}) => {
-  if (!duration) return <></>;
+}) {
+  if (!duration) return null;
 
   return (
     <>
@@ -50,7 +50,7 @@ const VideoControlBar = ({
       />
     </>
   );
-};
+}
 
 VideoControlBar.propTypes = {
   videoRef: PropTypes.object.isRequired,

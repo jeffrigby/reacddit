@@ -23,7 +23,7 @@ function convertSeconds(secs) {
   return timestamp;
 }
 
-const VideoTime = ({ currentTime, duration }) => {
+function VideoTime({ currentTime, duration }) {
   // Figure out the times
   const durationPretty = convertSeconds(duration);
   const currentTimePretty = currentTime ? convertSeconds(currentTime) : '00:00';
@@ -33,7 +33,7 @@ const VideoTime = ({ currentTime, duration }) => {
       {currentTimePretty} / {durationPretty}
     </div>
   );
-};
+}
 
 VideoTime.propTypes = {
   currentTime: PropTypes.number.isRequired,

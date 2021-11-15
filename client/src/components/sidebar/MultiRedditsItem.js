@@ -9,7 +9,7 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 const queryString = require('query-string');
 
-const MultiRedditsItem = ({ item }) => {
+function MultiRedditsItem({ item }) {
   const { path } = item.data;
   const [showSubs, setShowSubs] = useState(getMenuStatus(path));
 
@@ -59,7 +59,7 @@ const MultiRedditsItem = ({ item }) => {
       {showSubs && <MultiRedditsSubs multiRedditSubs={item.data.subreddits} />}
     </li>
   );
-};
+}
 
 MultiRedditsItem.propTypes = {
   item: PropTypes.object.isRequired,

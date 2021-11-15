@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { useSelector } from 'react-redux';
 import { listingStatus } from '../../../redux/selectors/listingsSelector';
 
-const PostsFooter = () => {
+function PostsFooter() {
   const status = useSelector((state) => listingStatus(state));
 
   let footerStatus = '';
@@ -21,6 +21,6 @@ const PostsFooter = () => {
   }
 
   return <div className="footer-status p-2">{footerStatus}</div>;
-};
+}
 
 export default memo(PostsFooter);

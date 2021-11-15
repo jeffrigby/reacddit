@@ -7,6 +7,7 @@ const MAX_HISTORY_TIME = 3600;
 const cleanHistory = (history) =>
   pruneObject(history, MAX_HISTORY_ITEMS, MAX_HISTORY_TIME);
 
+// eslint-disable-next-line default-param-last
 export function listingsFilter(state = { sort: 'hot', t: 'day' }, action) {
   switch (action.type) {
     case 'LISTINGS_FILTER':
@@ -17,6 +18,7 @@ export function listingsFilter(state = { sort: 'hot', t: 'day' }, action) {
   }
 }
 
+// eslint-disable-next-line default-param-last
 export function currentSubreddit(state = {}, action) {
   switch (action.type) {
     case 'CURRENT_SUBREDDIT': {
@@ -31,6 +33,7 @@ export function currentSubreddit(state = {}, action) {
   }
 }
 
+// eslint-disable-next-line default-param-last
 export function listingsState(state = {}, action) {
   switch (action.type) {
     case 'LISTINGS_STATE': {
@@ -45,6 +48,7 @@ export function listingsState(state = {}, action) {
   }
 }
 
+// eslint-disable-next-line default-param-last
 export function listingsRedditEntries(state = {}, action) {
   switch (action.type) {
     case 'LISTINGS_REDDIT_ENTRIES': {
@@ -72,6 +76,7 @@ export function listingsRedditEntries(state = {}, action) {
   }
 }
 
+// eslint-disable-next-line default-param-last
 export function listingsRedditStatus(state = {}, action) {
   switch (action.type) {
     case 'LISTINGS_REDDIT_STATUS': {

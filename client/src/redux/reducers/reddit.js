@@ -1,3 +1,4 @@
+// eslint-disable-next-line default-param-last
 export function redditMultiReddits(state = { status: 'unloaded' }, action) {
   switch (action.type) {
     case 'REDDIT_MUTLI_REDDITS':
@@ -9,6 +10,7 @@ export function redditMultiReddits(state = { status: 'unloaded' }, action) {
 }
 
 export function redditBearer(
+  // eslint-disable-next-line default-param-last
   state = { status: 'unloaded', bearer: null },
   action
 ) {
@@ -22,6 +24,7 @@ export function redditBearer(
 }
 
 export function redditFriends(
+  // eslint-disable-next-line default-param-last
   state = { status: 'unloaded', friends: {}, lastUpdated: 0 },
   action
 ) {
@@ -34,6 +37,7 @@ export function redditFriends(
   }
 }
 
+// eslint-disable-next-line default-param-last
 export function redditMe(state = { status: 'unloaded', me: {} }, action) {
   switch (action.type) {
     case 'REDDIT_ME':

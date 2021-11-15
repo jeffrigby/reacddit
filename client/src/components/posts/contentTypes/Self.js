@@ -41,7 +41,7 @@ const cleanLinks = (html) => {
   return rawhtml;
 };
 
-const Self = ({ name, content }) => {
+function Self({ name, content }) {
   const postContext = useContext(PostsContextData);
   // const load = postContext.isLoaded;
 
@@ -116,37 +116,35 @@ const Self = ({ name, content }) => {
   );
 
   return (
-    <>
-      <div className={`self self-${post.kind} self-${post.kind}-${listType}`}>
-        <div ref={selfRef}>
-          <div className={selfHTMLClasses} ref={selfHTMLRef}>
-            {renderedHTML}
-          </div>
-          {showMore && (
-            <div className="self-show-more">
-              <button
-                type="button"
-                className="btn btn-link btn-sm shadow-none p-0"
-                title="Load More"
-                onClick={toggleShow}
-              >
-                {buttonText}
-              </button>
-            </div>
-          )}
+    <div className={`self self-${post.kind} self-${post.kind}-${listType}`}>
+      <div ref={selfRef}>
+        <div className={selfHTMLClasses} ref={selfHTMLRef}>
+          {renderedHTML}
         </div>
-        {inlineRendered}
-        {debug && specs && (
-          <code>
-            Self Height: {specs.self}px
-            <br />
-            selfHTML Height: {specs.selfHTML}px
-          </code>
+        {showMore && (
+          <div className="self-show-more">
+            <button
+              type="button"
+              className="btn btn-link btn-sm shadow-none p-0"
+              title="Load More"
+              onClick={toggleShow}
+            >
+              {buttonText}
+            </button>
+          </div>
         )}
       </div>
-    </>
+      {inlineRendered}
+      {debug && specs && (
+        <code>
+          Self Height: {specs.self}px
+          <br />
+          selfHTML Height: {specs.selfHTML}px
+        </code>
+      )}
+    </div>
   );
-};
+}
 
 Self.propTypes = {
   name: PropTypes.string.isRequired,

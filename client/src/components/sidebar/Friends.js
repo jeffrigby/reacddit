@@ -8,7 +8,7 @@ import RedditAPI from '../../reddit/redditAPI';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import { getDiffClassName } from './navHelpers';
 
-const Friends = () => {
+function Friends() {
   const menuID = 'friends';
   const [showFriends, toggleShowFriends] = useState(getMenuStatus(menuID));
   const lastUpdated = useSelector((state) => state.lastUpdated);
@@ -129,7 +129,7 @@ const Friends = () => {
       )}
     </>
   );
-};
+}
 
 Friends.propTypes = {};
 Friends.defaultProps = {};

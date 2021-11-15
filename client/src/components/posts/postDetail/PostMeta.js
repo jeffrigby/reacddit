@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import PostByline from './PostByline';
 import { PostsContextData } from '../../../contexts';
 
-const PostMeta = () => {
+function PostMeta() {
   const postContext = useContext(PostsContextData);
   const { data, kind } = postContext.post;
   const sticky = data.stickied || false;
@@ -19,16 +19,14 @@ const PostMeta = () => {
     <>
       <PostByline data={data} kind={kind} />
       {crossPost && (
-        <>
-          <div>
-            <i className="fas fa-random pe-2" title="Crossposted" />
-            <PostByline data={data.crosspost_parent_list[0]} kind={kind} />
-          </div>
-        </>
+        <div>
+          <i className="fas fa-random pe-2" title="Crossposted" />
+          <PostByline data={data.crosspost_parent_list[0]} kind={kind} />
+        </div>
       )}
       {sticky && <i className="fas fa-sticky-note px-2" title="Sticky" />}
     </>
   );
-};
+}
 
 export default PostMeta;

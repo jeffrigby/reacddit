@@ -6,7 +6,7 @@ import RedditAPI from '../../../reddit/redditAPI';
 
 const classNames = require('classnames');
 
-const PostBylineAuthor = ({ author, flair, isSubmitter }) => {
+function PostBylineAuthor({ author, flair, isSubmitter }) {
   const redditFriends = useSelector((state) => state.redditFriends);
   const dispatch = useDispatch();
 
@@ -30,9 +30,7 @@ const PostBylineAuthor = ({ author, flair, isSubmitter }) => {
     : `remove ${author} from your friends.`;
 
   const authorFlair = flair ? (
-    <>
-      <span className="badge bg-dark">{flair}</span>
-    </>
+    <span className="badge bg-dark">{flair}</span>
   ) : null;
 
   const authorClasses = classNames({
@@ -68,8 +66,8 @@ const PostBylineAuthor = ({ author, flair, isSubmitter }) => {
       </>
     );
 
-  return <>{authorLink}</>;
-};
+  return authorLink;
+}
 
 PostBylineAuthor.propTypes = {
   author: PropTypes.string.isRequired,

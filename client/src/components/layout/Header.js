@@ -9,7 +9,7 @@ import Settings from '../header/settings/Settings';
 import '../../styles/header.scss';
 import PinMenu from '../header/settings/PinMenu';
 
-const Header = () => {
+function Header() {
   const history = useHistory();
   const location = useLocation();
 
@@ -96,7 +96,7 @@ const Header = () => {
       </div>
     </div>
   );
-};
+}
 
 Header.propTypes = {};
 

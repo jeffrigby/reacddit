@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/actions/misc';
 
-const PinMenu = () => {
+function PinMenu() {
   const pinMenuSetting = useSelector((state) => state.siteSettings.pinMenu);
   const dispatch = useDispatch();
 
@@ -27,6 +27,6 @@ const PinMenu = () => {
       <i className="fas fa-thumbtack" />
     </button>
   );
-};
+}
 
 export default PinMenu;

@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import Post from '../postDetail/Post';
 
-const PostsParent = ({ post }) => {
+function PostsParent({ post }) {
   const listingsFilter = useSelector((state) => state.listingsFilter);
   const { listType, comment } = listingsFilter;
 
@@ -54,8 +54,8 @@ const PostsParent = ({ post }) => {
     );
   }
 
-  return <></>;
-};
+  return null;
+}
 
 PostsParent.propTypes = {
   post: PropTypes.object.isRequired,

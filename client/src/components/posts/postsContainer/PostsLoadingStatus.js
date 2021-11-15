@@ -5,7 +5,7 @@ import {
   listingStatus,
 } from '../../../redux/selectors/listingsSelector';
 
-const PostsLoadingStatus = () => {
+function PostsLoadingStatus() {
   const data = useSelector((state) => listingData(state));
   const status = useSelector((state) => listingStatus(state));
 
@@ -38,7 +38,7 @@ const PostsLoadingStatus = () => {
   }
 
   if (!message) {
-    return <></>;
+    return null;
   }
 
   return (
@@ -46,6 +46,6 @@ const PostsLoadingStatus = () => {
       <i className={icon} /> {message}
     </div>
   );
-};
+}
 
 export default memo(PostsLoadingStatus);

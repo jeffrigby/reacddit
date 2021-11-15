@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { PostsContextData } from '../../../contexts';
 
-const IFrame16x9 = ({ content }) => {
+function IFrame16x9({ content }) {
   const postContext = useContext(PostsContextData);
   const load = postContext.isLoaded;
   return (
@@ -23,7 +23,7 @@ const IFrame16x9 = ({ content }) => {
       </div>
     </div>
   );
-};
+}
 
 IFrame16x9.propTypes = {
   content: PropTypes.object.isRequired,

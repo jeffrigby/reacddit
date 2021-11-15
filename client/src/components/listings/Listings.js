@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useParams } from 'react-router';
 import throttle from 'lodash/throttle';
@@ -22,7 +22,7 @@ import { ListingsContextLastExpanded } from '../../contexts';
 
 const queryString = require('query-string');
 
-const Listings = () => {
+function Listings() {
   const location = useLocation();
   const match = useParams();
   const dispatch = useDispatch();
@@ -172,10 +172,13 @@ const Listings = () => {
   });
 
   const locationKey = location.key || 'front';
+  const context = useMemo(
+    () => [lastExpanded, setLastExpanded],
+    [lastExpanded]
+  );
+
   return (
-    <ListingsContextLastExpanded.Provider
-      value={[lastExpanded, setLastExpanded]}
-    >
+    <ListingsContextLastExpanded.Provider value={context}>
       <div className="list-group" id="entries">
         <ListingsHeader />
         <Posts key={locationKey} />
@@ -184,7 +187,7 @@ const Listings = () => {
       <PostsDebug />
     </ListingsContextLastExpanded.Provider>
   );
-};
+}
 
 Listings.propTypes = {};
 

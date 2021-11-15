@@ -46,7 +46,7 @@ function PostsRender({ posts, listType, idxOffset }) {
     );
   }
 
-  return <>{entries}</>;
+  return entries;
 }
 
 PostsRender.propTypes = {

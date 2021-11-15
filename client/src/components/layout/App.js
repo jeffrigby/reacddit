@@ -9,7 +9,7 @@ import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import '../../styles/layout.scss';
 import { hotkeyStatus } from '../../common';
 
-const App = () => {
+function App() {
   const [error, setError] = useState(false);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -93,7 +93,7 @@ const App = () => {
 
   // This is to handle an issue where the account or bearer isn't fetched correctly.
   if (loading || redditBearer.status === 'unloaded') {
-    return <></>;
+    return null;
   }
 
   const menuStatus = pinMenu ? '' : 'hide-menu';
@@ -123,6 +123,6 @@ const App = () => {
       </StrictMode>
     </div>
   );
-};
+}
 
 export default memo(App);

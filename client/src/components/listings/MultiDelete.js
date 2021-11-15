@@ -5,7 +5,7 @@ import { push } from 'connected-react-router';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
-const MultiDelete = ({ multi }) => {
+function MultiDelete({ multi }) {
   const dispatch = useDispatch();
 
   const deleteMulti = async () => {
@@ -20,18 +20,16 @@ const MultiDelete = ({ multi }) => {
   };
 
   return (
-    <>
-      <button
-        className="btn btn-sm btn-danger"
-        type="button"
-        title="Delete Custom Feed"
-        onClick={removeMulti}
-      >
-        <i className="fas fa-trash-alt" />
-      </button>
-    </>
+    <button
+      className="btn btn-sm btn-danger"
+      type="button"
+      title="Delete Custom Feed"
+      onClick={removeMulti}
+    >
+      <i className="fas fa-trash-alt" />
+    </button>
   );
-};
+}
 
 MultiDelete.propTypes = {
   multi: PropTypes.object.isRequired,

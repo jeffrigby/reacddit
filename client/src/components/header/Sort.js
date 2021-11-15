@@ -78,7 +78,7 @@ const iconClasses = {
   old: 'fas fa-history fa-fw',
 };
 
-const Sort = () => {
+function Sort() {
   const me = useSelector((state) => state.redditMe.me);
   const listingsFilter = useSelector((state) => state.listingsFilter);
   const dispatch = useDispatch();
@@ -312,6 +312,6 @@ const Sort = () => {
       <div className="dropdown-menu dropdown-menu-end">{links}</div>
     </div>
   );
-};
+}
 
 export default Sort;

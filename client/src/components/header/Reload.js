@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { listingsFetchRedditNew } from '../../redux/actions/listings';
 import { listingStatus } from '../../redux/selectors/listingsSelector';
 
-const Reload = () => {
+function Reload() {
   const listingsStatus = useSelector((state) => listingStatus(state));
   const stream = useSelector((state) => state.siteSettings.stream);
   const dispatch = useDispatch();
@@ -31,6 +31,6 @@ const Reload = () => {
       </button>
     </div>
   );
-};
+}
 
 export default Reload;

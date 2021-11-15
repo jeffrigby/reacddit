@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/prefer-default-export
 export function siteSettings(
+  // eslint-disable-next-line default-param-last
   state = {
     view: 'expanded',
     debug: false,

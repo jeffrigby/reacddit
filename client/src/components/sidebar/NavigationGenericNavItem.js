@@ -7,7 +7,7 @@ const closeMenu = () => {
   document.body.classList.remove('show-menu');
 };
 
-const NavigationGenericNavItem = (props) => {
+function NavigationGenericNavItem(props) {
   const {
     to,
     text,
@@ -83,7 +83,7 @@ const NavigationGenericNavItem = (props) => {
   }
   const liClassStr = `nav-item${liClass ? ` ${liClass}` : ''}`;
   return <li className={liClassStr}>{navItem}</li>;
-};
+}
 
 NavigationGenericNavItem.propTypes = {
   to: PropTypes.string.isRequired,

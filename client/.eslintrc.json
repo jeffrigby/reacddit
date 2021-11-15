@@ -1,24 +1,11 @@
 {
-  "extends": [
-    "airbnb",
-    "plugin:react/recommended",
-    "prettier"
-  ],
-  "env": {
-    "browser": true,
-    "es2021": true
-  },
-  "globals": {
-    "bootstrap": true,
-    "module": false,
-    "process": false
-  },
+  "extends": ["airbnb", "plugin:react/recommended", "prettier"],
+  "env": { "browser": true, "es2021": true },
+  "globals": { "bootstrap": true, "module": false, "process": false },
   "plugins": ["react", "react-hooks", "jsx-a11y", "prettier"],
   "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    },
+    "ecmaFeatures": { "jsx": true },
     "ecmaVersion": 12,
     "sourceType": "module",
     "requireConfigFile": false
@@ -27,45 +14,27 @@
     "prettier/prettier": "warn",
     "no-param-reassign": [
       "error",
-      {
-        "props": true,
-        "ignorePropertyModificationsFor": ["draft"]
-      }
+      { "props": true, "ignorePropertyModificationsFor": ["draft"] }
     ],
     "strict": ["error", "global"],
     "curly": "warn",
-    "react/destructuring-assignment": [
-      "error",
-      "always",
-      {
-        "ignoreClassFields": true
-      }
-    ],
     "global-require": 0,
-    "no-unused-vars": [
-      "warn",
+    "no-unused-vars": ["warn", { "args": "none" }],
+    "no-unused-expressions": [
+      "error",
+      { "allowShortCircuit": true, "allowTernary": false }
+    ],
+    "import/no-cycle": [2, { "maxDepth": 1 }],
+    "no-unreachable": "warn",
+    "react/forbid-prop-types": 0,
+    "react/function-component-definition": [
+      "off",
       {
-        "args": "none"
+        "namedComponents": "function-expression",
+        "unnamedComponents": "function-expression"
       }
     ],
     "react/jsx-filename-extension": 0,
-    "react/forbid-prop-types": 0,
-    "no-unused-expressions": [
-      "error",
-      {
-        "allowShortCircuit": true,
-        "allowTernary": false
-      }
-    ],
-    "import/no-cycle": [
-      2,
-      {
-        "maxDepth": 1
-      }
-    ],
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
-    "no-unreachable": "warn",
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off"
   }

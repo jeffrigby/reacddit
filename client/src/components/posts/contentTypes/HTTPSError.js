@@ -2,7 +2,7 @@ import { useContext } from 'react';
 // import PropTypes from 'prop-types';
 import { PostsContextData } from '../../../contexts';
 
-const HTTPSError = () => {
+function HTTPSError() {
   const postContext = useContext(PostsContextData);
   const { content } = postContext;
   return (
@@ -16,7 +16,7 @@ const HTTPSError = () => {
       </p>
     </div>
   );
-};
+}
 
 HTTPSError.propTypes = {};
 

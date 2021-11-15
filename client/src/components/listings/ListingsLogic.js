@@ -20,7 +20,7 @@ import {
 } from '../posts/PostsFunctions';
 import { hotkeyStatus } from '../../common';
 
-const ListingsLogic = ({ saved }) => {
+function ListingsLogic({ saved }) {
   // Get Redux Props
   const status = useSelector((state) => listingStatus(state));
   const settings = useSelector((state) => state.siteSettings);
@@ -171,8 +171,8 @@ const ListingsLogic = ({ saved }) => {
     forceDelayedUpdate();
   }, [forceDelayedUpdate, saved]);
 
-  return <></>;
-};
+  return null;
+}
 
 ListingsLogic.propTypes = {
   saved: PropTypes.number,

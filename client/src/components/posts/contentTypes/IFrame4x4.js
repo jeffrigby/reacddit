@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { PostsContextData } from '../../../contexts';
 
-const IFrame4x4 = ({ content }) => {
+function IFrame4x4({ content }) {
   const postContext = useContext(PostsContextData);
   const load = postContext.isLoaded;
   return (
@@ -20,7 +20,7 @@ const IFrame4x4 = ({ content }) => {
       </div>
     </div>
   );
-};
+}
 
 IFrame4x4.propTypes = {
   content: PropTypes.object.isRequired,

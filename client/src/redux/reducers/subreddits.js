@@ -1,4 +1,5 @@
 export function subreddits(
+  // eslint-disable-next-line default-param-last
   state = { status: 'unloaded', subreddits: {} },
   action
 ) {
@@ -30,6 +31,7 @@ export function subreddits(
   }
 }
 
+// eslint-disable-next-line default-param-last
 export function lastUpdated(state = {}, action) {
   switch (action.type) {
     case 'SUBREDDITS_LAST_UPDATED_CLEAR':
@@ -44,6 +46,7 @@ export function lastUpdated(state = {}, action) {
   }
 }
 
+// eslint-disable-next-line default-param-last
 export function lastUpdatedTime(state = 0, action) {
   switch (action.type) {
     case 'SUBREDDITS_LAST_UPDATED_TIME':
@@ -54,6 +57,7 @@ export function lastUpdatedTime(state = 0, action) {
 }
 
 export function subredditsFilter(
+  // eslint-disable-next-line default-param-last
   state = { filterText: '', active: false, activeIndex: 0 },
   action
 ) {

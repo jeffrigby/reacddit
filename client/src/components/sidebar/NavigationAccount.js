@@ -8,7 +8,7 @@ import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 
 const menuID = 'navAccount';
 
-const NavigationAccount = () => {
+function NavigationAccount() {
   const me = useSelector((state) => state.redditMe.me);
   const dispatch = useDispatch();
 
@@ -136,6 +136,6 @@ const NavigationAccount = () => {
       )}
     </div>
   );
-};
+}
 
 export default memo(NavigationAccount);

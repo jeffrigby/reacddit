@@ -11,7 +11,7 @@ function getMeta(url) {
   });
 }
 
-const ImageComp = ({ content }) => {
+function ImageComp({ content }) {
   const postContext = useContext(PostsContextData);
   const load = postContext.isLoaded;
 
@@ -66,7 +66,7 @@ const ImageComp = ({ content }) => {
       </div>
     </div>
   );
-};
+}
 
 ImageComp.propTypes = {
   content: PropTypes.object.isRequired,

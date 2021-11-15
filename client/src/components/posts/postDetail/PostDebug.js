@@ -4,7 +4,7 @@ import { PostsContextData } from '../../../contexts';
 
 const ReactJson = lazy(() => import('react-json-view'));
 
-const PostDebug = ({ renderedContent }) => {
+function PostDebug({ renderedContent }) {
   const postContext = useContext(PostsContextData);
   const { post } = postContext;
   const { data } = post;
@@ -43,7 +43,7 @@ const PostDebug = ({ renderedContent }) => {
       </Suspense>
     </div>
   );
-};
+}
 
 PostDebug.propTypes = {
   renderedContent: PropTypes.object,

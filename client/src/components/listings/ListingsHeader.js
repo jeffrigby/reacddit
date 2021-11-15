@@ -4,7 +4,7 @@ import ListingsHeaderMulti from './ListingsHeaderMulti';
 import { listingStatus } from '../../redux/selectors/listingsSelector';
 import ListingsHeaderError from './ListingsHeaderError';
 
-const ListingsHeader = () => {
+function ListingsHeader() {
   const listType = useSelector((state) => state.listingsFilter?.listType);
   const status = useSelector((state) => listingStatus(state));
 
@@ -20,6 +20,6 @@ const ListingsHeader = () => {
   }
 
   return <div className="list-group-item listings-header">{header}</div>;
-};
+}
 
 export default ListingsHeader;

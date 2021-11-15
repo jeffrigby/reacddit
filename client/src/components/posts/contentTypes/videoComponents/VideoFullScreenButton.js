@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 
-const VideoFullScreenButton = ({ videoRef }) => {
+function VideoFullScreenButton({ videoRef }) {
   /**
    * Toggle full screen
    */
@@ -27,7 +27,7 @@ const VideoFullScreenButton = ({ videoRef }) => {
       <i className="fas fa-expand" />
     </button>
   );
-};
+}
 
 VideoFullScreenButton.propTypes = {
   videoRef: PropTypes.object.isRequired,

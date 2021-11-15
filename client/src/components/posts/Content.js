@@ -14,7 +14,7 @@ import { PostsContextData, PostsContextContent } from '../../contexts';
 import HTTPSError from './contentTypes/HTTPSError';
 import RedditGallery from './contentTypes/RedditGallery';
 
-const Content = ({ content }) => {
+function Content({ content }) {
   const postContext = useContext(PostsContextData);
   const { data } = postContext.post;
 
@@ -78,7 +78,7 @@ const Content = ({ content }) => {
       <div className="content">{contentRendered}</div>
     </PostsContextContent.Provider>
   );
-};
+}
 
 Content.propTypes = {
   content: PropTypes.object,

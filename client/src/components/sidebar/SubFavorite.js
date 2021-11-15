@@ -4,7 +4,7 @@ import produce from 'immer';
 import { subredditsData } from '../../redux/actions/subreddits';
 import RedditAPI from '../../reddit/redditAPI';
 
-const SubFavorite = ({ isFavorite, srName }) => {
+function SubFavorite({ isFavorite, srName }) {
   const me = useSelector((state) => state.redditMe.me);
   const subreddits = useSelector((state) => state.subreddits);
   const dispatch = useDispatch();
@@ -35,7 +35,7 @@ const SubFavorite = ({ isFavorite, srName }) => {
       <i className={favButton} />
     </button>
   );
-};
+}
 
 SubFavorite.propTypes = {
   isFavorite: PropTypes.bool.isRequired,

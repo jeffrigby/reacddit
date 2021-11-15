@@ -4,7 +4,6 @@ import Post from '../posts/postDetail/Post';
 import CommentsMore from './CommentsMore';
 
 function CommentsRender({ posts, listType, linkId }) {
-  // console.log(CommentsRender);
   const renderComment = (comment, idx) => {
     if (comment.kind === 'more') {
       return (
@@ -33,7 +32,7 @@ function CommentsRender({ posts, listType, linkId }) {
     comments = entriesKeys.map((key, idx) => renderComment(posts[key], idx));
   }
 
-  return <>{comments}</>;
+  return comments;
 }
 
 CommentsRender.propTypes = {

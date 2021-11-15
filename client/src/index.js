@@ -36,9 +36,7 @@ if (parsed.login !== undefined) {
 if (parsed.login !== undefined || parsed.logout !== undefined) {
   // Don't render anything if logging out/in.
   ReactDOM.render(
-    <>
-      <div className="app-loading" />
-    </>,
+    <div className="app-loading" />,
     document.getElementById('root')
   );
 } else {

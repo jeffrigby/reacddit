@@ -12,7 +12,7 @@ import PostTimeAgo from './PostTimeAgo';
 import PostCommentLink from './PostCommentLink';
 import PostSubLink from './PostSubLink';
 
-const PostHeader = ({ toggleView, expand, duplicate }) => {
+function PostHeader({ toggleView, expand, duplicate }) {
   const postContext = useContext(PostsContextData);
   const listType = useSelector((state) => state.listingsFilter.listType);
   const params = useParams();
@@ -219,36 +219,34 @@ const PostHeader = ({ toggleView, expand, duplicate }) => {
   }
 
   return (
-    <>
-      <header className="d-flex">
-        {title}
-        {postContext.isLoaded ? (
-          <div className="text-nowrap d-flex actions ms-auto">
-            <PostVote />
-            <PostSave />
-            {expand && (
-              <>
-                {searchLink}
-                {redditLink}
-                {directLink}
-              </>
-            )}
-            <div>
-              <PostExpandContract
-                expand={expand}
-                toggleView={toggleView}
-                kind={kind}
-              />
-            </div>
+    <header className="d-flex">
+      {title}
+      {postContext.isLoaded ? (
+        <div className="text-nowrap d-flex actions ms-auto">
+          <PostVote />
+          <PostSave />
+          {expand && (
+            <>
+              {searchLink}
+              {redditLink}
+              {directLink}
+            </>
+          )}
+          <div>
+            <PostExpandContract
+              expand={expand}
+              toggleView={toggleView}
+              kind={kind}
+            />
           </div>
-        ) : (
-          // eslint-disable-next-line
+        </div>
+      ) : (
+        // eslint-disable-next-line
           <div className="text-nowrap d-flex actions ms-auto offscreen-placeholder" />
-        )}
-      </header>
-    </>
+      )}
+    </header>
   );
-};
+}
 
 PostHeader.propTypes = {
   toggleView: PropTypes.func.isRequired,

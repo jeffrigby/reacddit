@@ -9,7 +9,7 @@ import {
 
 const queryString = require('query-string/index');
 
-const ListingsHeaderSub = () => {
+function ListingsHeaderSub() {
   const about = useSelector((state) => getCurrentSubreddit(state));
   const filter = useSelector((state) => state.listingsFilter);
   const cachedSub = useSelector((state) => getCachedSub(state));
@@ -133,6 +133,6 @@ const ListingsHeaderSub = () => {
       )}
     </>
   );
-};
+}
 
 export default ListingsHeaderSub;

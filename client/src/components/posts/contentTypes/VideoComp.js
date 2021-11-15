@@ -55,7 +55,7 @@ function getBuffers(videoRef) {
   return {};
 }
 
-const VideoComp = ({ link, content }) => {
+function VideoComp({ link, content }) {
   const postContext = useContext(PostsContextData);
   const load = postContext.isLoaded;
   const videoRef = useRef();
@@ -418,7 +418,7 @@ const VideoComp = ({ link, content }) => {
       )}
     </>
   );
-};
+}
 
 VideoComp.propTypes = {
   link: PropTypes.string,
