@@ -28,8 +28,8 @@ function Listings() {
   const dispatch = useDispatch();
   const [lastExpanded, setLastExpanded] = useState('');
 
-  const data = useSelector((state) => listingData(state));
-  const status = useSelector((state) => listingStatus(state));
+  const data = useSelector((state) => listingData(state, location.key));
+  const status = useSelector((state) => listingStatus(state, location.key));
   const settings = useSelector((state) => state.siteSettings);
   const filter = useSelector((state) => state.listingsFilter);
 
@@ -85,7 +85,7 @@ function Listings() {
   useEffect(() => {
     if (!filter.target) return;
     setLastExpanded('');
-    dispatch(listingsFetchEntriesReddit(filter));
+    dispatch(listingsFetchEntriesReddit(filter, location));
   }, [filter, dispatch]);
 
   // Check if I should stream entries
@@ -93,7 +93,7 @@ function Listings() {
     const streamNewPosts = async () => {
       // Don't stream when you scroll down.
       if (window.scrollY > 10) return;
-      dispatch(listingsFetchRedditNew(true));
+      dispatch(listingsFetchRedditNew(location, true));
     };
 
     let streamNewPostsInterval;
@@ -119,7 +119,7 @@ function Listings() {
         !moreLoading.current
       ) {
         moreLoading.current = true;
-        await dispatch(listingsFetchRedditNext());
+        await dispatch(listingsFetchRedditNext(location));
         // Give it a few seconds to render before turning it off to avoid re-renders.
         setTimeout(() => {
           moreLoading.current = false;
@@ -150,7 +150,7 @@ function Listings() {
         switch (pressedKey) {
           case '.':
             window.scrollTo(0, 0);
-            dispatch(listingsFetchRedditNew());
+            dispatch(listingsFetchRedditNew(location));
             break;
           case '/':
             window.scrollTo(0, document.body.scrollHeight);

@@ -1,13 +1,15 @@
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router';
 import {
   listingData,
   listingStatus,
 } from '../../../redux/selectors/listingsSelector';
 
 function PostsLoadingStatus() {
-  const data = useSelector((state) => listingData(state));
-  const status = useSelector((state) => listingStatus(state));
+  const location = useLocation();
+  const data = useSelector((state) => listingData(state, location.key));
+  const status = useSelector((state) => listingStatus(state, location.key));
 
   let message;
   let icon;

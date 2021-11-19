@@ -9,9 +9,8 @@ import {
 } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
-import { push } from 'connected-react-router';
 import throttle from 'lodash/throttle';
-import { useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import Content from '../Content';
 import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
@@ -84,15 +83,23 @@ function Post({ post, duplicate, parent, postName, idx }) {
   const [shouldLoad, setShouldLoad] = useState(false);
   const [onScreen, setOnScreen] = useState({});
   const [showVisToggle, setShowVisToggle] = useState(false);
+
+  const history = useHistory();
+  const location = useLocation();
   const params = useParams();
+
   const postRef = useRef();
   const minHeightRef = useRef();
 
   const siteSettings = useSelector((state) => state.siteSettings);
-  const listingsStatus = useSelector((state) => listingStatus(state));
-  const focused = useSelector((state) => postFocused(state, postName, idx));
+  const listingsStatus = useSelector((state) =>
+    listingStatus(state, location.key)
+  );
+  const focused = useSelector((state) =>
+    postFocused(state, postName, idx, location.key)
+  );
   const actionable = useSelector((state) =>
-    postActionable(state, postName, idx)
+    postActionable(state, postName, idx, location.key)
   );
 
   const dispatch = useDispatch();
@@ -255,7 +262,7 @@ function Post({ post, duplicate, parent, postName, idx }) {
   const gotoDuplicates = useCallback(() => {
     if (!data.is_self) {
       const searchTo = `/duplicates/${data.id}`;
-      dispatch(push(searchTo));
+      history.push(searchTo);
     }
   }, [data.id, data.is_self, dispatch]);
 

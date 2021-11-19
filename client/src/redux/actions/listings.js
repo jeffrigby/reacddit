@@ -1,6 +1,6 @@
 import { batch } from 'react-redux';
 import produce from 'immer';
-import { getLocationKey, keyEntryChildren } from '../../common';
+import { keyEntryChildren } from '../../common';
 import RedditAPI from '../../reddit/redditAPI';
 
 // @todo there's no reason for any of this logic to be in Redux. Move to hooks.
@@ -129,10 +129,17 @@ const subredditAbout = async (filter) => {
   return about.data;
 };
 
-export function listingsFetchEntriesReddit(filters) {
+/**
+ * Get the entries with the given filter.
+ * @param filters - The filter to search
+ * @param location - The page key to track/cache the listings.
+ * @returns {(function(*, *): Promise<void>)|*}
+ */
+export function listingsFetchEntriesReddit(filters, location) {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const locationKey = getLocationKey(currentState);
+
+    const locationKey = location.key || 'front';
 
     try {
       if (
@@ -159,8 +166,7 @@ export function listingsFetchEntriesReddit(filters) {
 
       dispatch(listingsRedditStatus(locationKey, 'loading'));
 
-      const { search } = currentState.router.location;
-      const qs = queryString.parse(search);
+      const qs = queryString.parse(location.search);
       const params = {
         // limit,
         ...qs,
@@ -203,10 +209,15 @@ export function listingsFetchEntriesReddit(filters) {
   };
 }
 
-export function listingsFetchRedditNext() {
+/**
+ * Fetch the next set of entries when the user scrolls to the bottom.
+ * @param location - The location. This is to track/cache per page.
+ * @returns {(function(*, *): Promise<void>)|*}
+ */
+export function listingsFetchRedditNext(location) {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const locationKey = getLocationKey(currentState);
+    const locationKey = location.key || 'front';
     const currentData = currentState.listingsRedditEntries[locationKey];
     if (!currentData) {
       // This can happen when the listing is loaded, but not rendered yet.
@@ -222,7 +233,7 @@ export function listingsFetchRedditNext() {
     dispatch(listingsRedditStatus(locationKey, 'loadingNext'));
 
     try {
-      const { search } = currentState.router.location;
+      const { search } = location;
       const qs = queryString.parse(search);
       const params = {
         ...qs,
@@ -259,10 +270,11 @@ export function listingsFetchRedditNext() {
  * This is for live streaming.
  * @returns {Function}
  */
-export function listingsFetchRedditNew(stream = false) {
+export function listingsFetchRedditNew(location, stream = false) {
   return async (dispatch, getState) => {
     const currentState = getState();
-    const locationKey = getLocationKey(currentState);
+
+    const locationKey = location.key || 'front';
 
     const { children } = currentState.listingsRedditEntries[locationKey];
     const { status } = currentState.listingsRedditStatus[locationKey];
@@ -278,8 +290,7 @@ export function listingsFetchRedditNew(stream = false) {
     dispatch(listingsRedditStatus(locationKey, newStatus));
 
     try {
-      const { search } = currentState.router.location;
-      const qs = queryString.parse(search);
+      const qs = queryString.parse(location.search);
       const params = {
         ...qs,
         limit: 100,

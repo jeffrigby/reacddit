@@ -38,7 +38,7 @@ function PostsRender({ posts, listType, idxOffset }) {
     );
   };
 
-  let entries;
+  let entries = null;
   const entriesKeys = Object.keys(posts);
   if (entriesKeys.length > 0) {
     entries = entriesKeys.map((key, idx) =>

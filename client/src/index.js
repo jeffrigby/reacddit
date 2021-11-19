@@ -2,10 +2,9 @@ import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { ConnectedRouter } from 'connected-react-router';
-import { createBrowserHistory } from 'history';
 import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
+import { BrowserRouter } from 'react-router-dom';
 import configureStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
@@ -59,8 +58,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   const persistedState = loadState();
 
   // Create a history of your choosing (we're using a browser history in this case)
-  const history = createBrowserHistory();
-  const store = configureStore(persistedState, history);
+  const store = configureStore(persistedState);
 
   store.subscribe(
     throttle(() => {
@@ -82,9 +80,9 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   const render = (Component) => {
     ReactDOM.render(
       <Provider store={store}>
-        <ConnectedRouter history={history}>
+        <BrowserRouter>
           <Component />
-        </ConnectedRouter>
+        </BrowserRouter>
       </Provider>,
       document.getElementById('root')
     );

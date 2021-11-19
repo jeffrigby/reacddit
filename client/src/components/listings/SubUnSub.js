@@ -13,7 +13,9 @@ function SubUnSub() {
   const params = useParams();
   const locationKey = location.key || 'front';
 
-  const about = useSelector((state) => getCurrentSubreddit(state));
+  const about = useSelector((state) =>
+    getCurrentSubreddit(state, location.key)
+  );
   const subreddits = useSelector((state) => state.subreddits);
   const redditBearer = useSelector((state) => state.redditBearer);
 

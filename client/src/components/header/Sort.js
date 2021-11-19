@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
 import _isEmpty from 'lodash/isEmpty';
 import { NavLink } from 'react-router-dom';
-import { push } from 'connected-react-router';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router';
+import { useSelector } from 'react-redux';
+import { useHistory, useLocation } from 'react-router';
 import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
@@ -81,8 +80,8 @@ const iconClasses = {
 function Sort() {
   const me = useSelector((state) => state.redditMe.me);
   const listingsFilter = useSelector((state) => state.listingsFilter);
-  const dispatch = useDispatch();
   const location = useLocation();
+  const history = useHistory();
   const { search } = location;
 
   const getIcon = (sort) => <i className={iconClasses[sort]} />;
@@ -133,38 +132,39 @@ function Sort() {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
-          dispatch(push(genLink('hot')));
+          history.push(genLink('hot'));
+          // dispatch(push(genLink('hot')));
           break;
         }
         case 'B': {
-          dispatch(push(genLink('best')));
+          history.push(genLink('best'));
           break;
         }
         case 'N': {
-          dispatch(push(genLink('new')));
+          history.push(genLink('new'));
           break;
         }
         case 'C': {
-          dispatch(push(genLink('controversial')));
+          history.push(genLink('controversial'));
           break;
         }
         case 'R': {
-          dispatch(push(genLink('rising')));
+          history.push(genLink('rising'));
           break;
         }
         case 'T': {
-          dispatch(push(genLink('top')));
+          history.push(genLink('top'));
           break;
         }
         case 'Q': {
           if (listType === 'comments') {
-            dispatch(push(genLink('qa')));
+            history.push(genLink('qa'));
           }
           break;
         }
         case 'O': {
           if (listType === 'comments') {
-            dispatch(push(genLink('old')));
+            history.push(genLink('old'));
           }
           break;
         }

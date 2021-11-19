@@ -1,9 +1,11 @@
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router';
 import { listingStatus } from '../../../redux/selectors/listingsSelector';
 
 function PostsFooter() {
-  const status = useSelector((state) => listingStatus(state));
+  const location = useLocation();
+  const status = useSelector((state) => listingStatus(state, location.key));
 
   let footerStatus = '';
   if (status === 'loadingNext') {

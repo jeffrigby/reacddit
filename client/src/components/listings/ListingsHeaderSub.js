@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router';
 import SubUnSub from './SubUnSub';
 import MultiToggle from './MultiToggle';
 import {
@@ -10,7 +11,11 @@ import {
 const queryString = require('query-string/index');
 
 function ListingsHeaderSub() {
-  const about = useSelector((state) => getCurrentSubreddit(state));
+  const location = useLocation();
+  const about = useSelector((state) =>
+    getCurrentSubreddit(state, location.key)
+  );
+
   const filter = useSelector((state) => state.listingsFilter);
   const cachedSub = useSelector((state) => getCachedSub(state));
 

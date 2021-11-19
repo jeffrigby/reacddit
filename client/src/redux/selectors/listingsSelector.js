@@ -3,7 +3,7 @@ import { createSelector } from 'reselect';
 const listingsStatusSelector = (state) => state.listingsRedditStatus;
 const listingsEntriesSelector = (state) => state.listingsRedditEntries;
 const listingsStateSelector = (state) => state.listingsState;
-const locationKeySelector = (state) => state.router.location.key;
+const locationKeySelector = (state, locationKey) => locationKey;
 
 export const listingData = createSelector(
   [listingsEntriesSelector, locationKeySelector],

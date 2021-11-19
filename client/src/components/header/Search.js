@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router';
-import { push } from 'connected-react-router';
+import { useSelector } from 'react-redux';
+import { useHistory, useLocation } from 'react-router';
 import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
@@ -11,12 +10,12 @@ function Search() {
   const [search, setSearch] = useState('');
 
   const location = useLocation();
+  const history = useHistory();
+
   const listingsFilter = useSelector((state) => state.listingsFilter);
 
   const searchInput = useRef();
   const searchInputParent = useRef();
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const qs = queryString.parse(location.search);
@@ -129,7 +128,7 @@ function Search() {
     const url = getMainSearchURL(q);
     const targetUrl = getTargetUrl();
     const finalUrl = `${targetUrl}${url}`;
-    dispatch(push(finalUrl));
+    history.push(finalUrl);
     searchInput.current.blur();
   };
 
@@ -139,7 +138,7 @@ function Search() {
       return;
     }
     const url = getMainSearchURL(q);
-    dispatch(push(url));
+    history.push(url);
     searchInput.current.blur();
   };
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
 import PropTypes from 'prop-types';
@@ -21,11 +22,14 @@ import {
 import { hotkeyStatus } from '../../common';
 
 function ListingsLogic({ saved }) {
+  const location = useLocation();
   // Get Redux Props
-  const status = useSelector((state) => listingStatus(state));
+  const status = useSelector((state) => listingStatus(state, location.key));
   const settings = useSelector((state) => state.siteSettings);
-  const locationKey = useSelector((state) => state.router.location.key);
-  const listingsCurrentState = useSelector((state) => listingState(state));
+  const locationKey = location.key;
+  const listingsCurrentState = useSelector((state) =>
+    listingState(state, location.key)
+  );
 
   // Keep latest props in a ref.
   const prevState = useRef(listingsCurrentState);

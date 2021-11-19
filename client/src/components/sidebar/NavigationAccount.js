@@ -1,6 +1,6 @@
 import { memo, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { push } from 'connected-react-router';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
@@ -10,9 +10,9 @@ const menuID = 'navAccount';
 
 function NavigationAccount() {
   const me = useSelector((state) => state.redditMe.me);
-  const dispatch = useDispatch();
+  const history = useHistory();
 
-  const urlPush = (url) => dispatch(push(url));
+  const urlPush = (url) => history.push(url);
 
   const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(
     getMenuStatus(menuID, true)

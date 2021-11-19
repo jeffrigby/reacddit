@@ -2,10 +2,10 @@ import { createSelector } from 'reselect';
 import isEmpty from 'lodash/isEmpty';
 
 const currentSubredditSelector = (state) => state.currentSubreddit;
-const locationKeySelector = (state) => state.router.location.key;
 const subredditsSelector = (state) => state.subreddits;
 const listingsFilterSelector = (state) => state.listingsFilter;
 const filterTextSelector = (state) => state.subredditsFilter.filterText;
+const locationKeySelector = (state, locationKey) => locationKey;
 
 export const getCurrentSubreddit = createSelector(
   [currentSubredditSelector, locationKeySelector],

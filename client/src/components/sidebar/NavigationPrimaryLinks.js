@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { push } from 'connected-react-router';
-import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router';
+import { useSelector } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
@@ -14,14 +14,7 @@ function NavigationPrimaryLinks() {
   const sort = useSelector((state) => state.listingsFilter.sort);
   const query = useSelector((state) => state.listingsFilter.qs);
   const subreddits = useSelector((state) => state.subreddits);
-  const dispatch = useDispatch();
-
-  const gotoLink = useCallback(
-    (url) => {
-      dispatch(push(url));
-    },
-    [dispatch]
-  );
+  const history = useHistory();
 
   const lastKeyPressed = useRef('');
 
@@ -48,9 +41,9 @@ function NavigationPrimaryLinks() {
           : '';
 
       const url = randomSubreddit.url + (sort || 'hot') + sortTopQS;
-      return gotoLink(url);
+      return history.push(url);
     },
-    [gotoLink, query, sort, subreddits.subreddits]
+    [query, sort, subreddits.subreddits]
   );
 
   const getLoginUrl = useCallback(() => {
@@ -82,10 +75,10 @@ function NavigationPrimaryLinks() {
         if (lastKeyPressed.current === 'g') {
           switch (key) {
             case 'h':
-              gotoLink('/');
+              history.push('/');
               break;
             case 'p':
-              gotoLink(`/r/popular`);
+              history.push(`/r/popular`);
               break;
             case 'r':
               randomSubPush();
@@ -109,7 +102,7 @@ function NavigationPrimaryLinks() {
     return () => {
       document.removeEventListener('keydown', handleNavPrimaryHotkey);
     };
-  }, [getLoginUrl, gotoLink, me.name, randomSubPush]);
+  }, [getLoginUrl, me.name, randomSubPush]);
 
   const currentSort = sort && sort !== 'relevance' ? sort : '';
   const loginLink = getLoginUrl();

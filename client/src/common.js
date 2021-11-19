@@ -29,11 +29,6 @@ export const hotkeyStatus = () => {
   return !(nodeName === 'INPUT' && activeElement.type === 'text');
 };
 
-export const getLocationKey = (currentState) => {
-  const { key } = currentState.router.location;
-  return key || 'front';
-};
-
 export const pruneObject = (obj, maxKeys, maxAge) =>
   produce(obj, (draft) => {
     const keys = Object.keys(draft);
