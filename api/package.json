@@ -25,6 +25,7 @@
     "querystring": "^0.2.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
+    "serverless-http": "^2.7.0",
     "simple-oauth2": "^4.0.0",
     "uuid": "^8.0.0"
   }

@@ -42,3 +42,4 @@ stats.json
 .env
 
 /.vscode
+/api/.env.serverless

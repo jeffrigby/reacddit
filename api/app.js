@@ -8,8 +8,13 @@ const chalk = require("chalk");
 const { v4: uuidv4 } = require("uuid");
 
 const { ClientCredentials, AuthorizationCode } = require("simple-oauth2");
+const envPath = process.env.ENVFILE ? process.env.ENVFILE : "./.env";
 
-require("dotenv-defaults").config();
+require("dotenv-defaults").config({
+  path: envPath,
+  encoding: "utf8",
+  defaults: "./.env.defaults", // This is new
+});
 
 const {
   REDDIT_CLIENT_ID,
