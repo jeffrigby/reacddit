@@ -29,7 +29,8 @@ function ImageComp({ content }) {
       });
     };
     if (!content.width || !content.height) {
-      getImageHeight();
+      // eslint-disable-next-line no-console
+      getImageHeight().catch((error) => console.error(error));
     }
   }, [content.height, content.src, content.width]);
 
