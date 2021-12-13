@@ -40,7 +40,9 @@ function NavigationPrimaryLinks() {
           ? `?t=${qs.t}`
           : '';
 
-      const url = randomSubreddit.url + (sort || 'hot') + sortTopQS;
+      const newSort = sort && sort !== 'relevance' ? sort : 'hot';
+
+      const url = randomSubreddit.url + newSort + sortTopQS;
       return history.push(url);
     },
     [query, sort, subreddits.subreddits]
