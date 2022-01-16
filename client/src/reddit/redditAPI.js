@@ -87,7 +87,7 @@ class RedditAPI {
   }
 
   /**
-   * Helper funtion to grab the loginURL from the cookie to avoid
+   * Helper function to grab the loginURL from the cookie to avoid
    * @returns string the full URL to login
    */
   // eslint-disable-next-line class-methods-use-this
