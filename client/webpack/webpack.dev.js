@@ -41,6 +41,7 @@ module.exports = {
     },
     allowedHosts: 'all',
     hot: 'only',
+    // https: false,
     liveReload: false,
     webSocketServer: 'ws',
     host,

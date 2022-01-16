@@ -2,7 +2,6 @@ const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const WatchMissingNodeModulesPlugin = require('react-dev-utils/WatchMissingNodeModulesPlugin');
 const Dotenv = require('dotenv-webpack');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const postcssNormalize = require('postcss-normalize');
@@ -293,7 +292,6 @@ module.exports = {
 
     new ModuleNotFoundPlugin(paths.appPath),
 
-    new WatchMissingNodeModulesPlugin(paths.appNodeModules),
     // Generate an asset manifest file with the following content:
     // - "files" key: Mapping of all asset filenames to their corresponding
     //   output file so that tools can pick it up without having to parse

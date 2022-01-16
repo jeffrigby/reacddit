@@ -44,9 +44,9 @@ color-name@~1.1.4:
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
 concurrently@^6.1.0:
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/concurrently/-/concurrently-6.4.0.tgz#5387ee86be435a0eb51c292ade8a00acf479f170"
-  integrity sha512-HZ3D0RTQMH3oS4gvtYj1P+NBc6PzE2McEra6yEFcQKrUQ9HvtTGU4Dbne083F034p+LRb7kWU0tPRNvSGs1UCQ==
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/concurrently/-/concurrently-6.5.1.tgz#4518c67f7ac680cf5c34d5adf399a2a2047edc8c"
+  integrity sha512-FlSwNpGjWQfRwPLXvJ/OgysbBxPkWpiVjy1042b0U7on7S7qwwMIILRj7WTN1mTgqa582bG6NFuScOoh6Zgdag==
   dependencies:
     chalk "^4.1.0"
     date-fns "^2.16.1"
@@ -58,9 +58,9 @@ concurrently@^6.1.0:
     yargs "^16.2.0"
 
 date-fns@^2.16.1:
-  version "2.26.0"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.26.0.tgz#fa45305543c392c4f914e50775fd2a4461e60fbd"
-  integrity sha512-VQI812dRi3cusdY/fhoBKvc6l2W8BPWU1FNVnFH9Nttjx4AFBRzfSVb/Eyc7jBT6e9sg1XtAGsYpBQ6c/jygbg==
+  version "2.27.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.27.0.tgz#e1ff3c3ddbbab8a2eaadbb6106be2929a5a2d92b"
+  integrity sha512-sj+J0Mo2p2X1e306MHq282WS4/A8Pz/95GIFcsPNMPMZVI3EUrAdSv90al1k+p74WGLCruMXk23bfEDZa71X9Q==
 
 emoji-regex@^8.0.0:
   version "8.0.0"
