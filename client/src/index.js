@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
 import { BrowserRouter } from 'react-router-dom';
-import configureStore from './redux/configureStore';
+import configureReduxStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
 import Root from './components/layout/Root';
@@ -58,7 +58,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   const persistedState = loadState();
 
   // Create a history of your choosing (we're using a browser history in this case)
-  const store = configureStore(persistedState);
+  const store = configureReduxStore(persistedState);
 
   store.subscribe(
     throttle(() => {

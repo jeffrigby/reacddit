@@ -1,4 +1,4 @@
-import { createSelector } from 'reselect';
+import { createSelector } from '@reduxjs/toolkit';
 
 const postFocusedSelector = (state, postName, idx, locationKey) => {
   const key = locationKey || 'front';

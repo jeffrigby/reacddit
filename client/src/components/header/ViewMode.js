@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { siteSettings } from '../../redux/actions/misc';
+import { siteSettings } from '../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../common';
 
 function ViewMode() {

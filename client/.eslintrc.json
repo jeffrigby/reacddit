@@ -14,7 +14,7 @@
     "prettier/prettier": "warn",
     "no-param-reassign": [
       "error",
-      { "props": true, "ignorePropertyModificationsFor": ["draft"] }
+      { "props": true, "ignorePropertyModificationsFor": ["state", "draft"] }
     ],
     "strict": ["error", "global"],
     "curly": "warn",

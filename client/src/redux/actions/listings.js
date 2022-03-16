@@ -53,7 +53,7 @@ export function listingsState(key, currentListingsState) {
 }
 
 /**
- * @TODO move to lisitngs componenet.
+ * @TODO move to listings component.
  * @param filters
  * @param params
  * @returns {Promise<{[p: string]: *}>}

@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { siteSettings } from '../../../redux/actions/misc';
+import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 
 function AutoPlay() {
   const autoplay = useSelector((state) => state.siteSettings.autoplay);

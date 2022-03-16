@@ -1,4 +1,4 @@
-import { createSelector } from 'reselect';
+import { createSelector } from '@reduxjs/toolkit';
 import isEmpty from 'lodash/isEmpty';
 
 const currentSubredditSelector = (state) => state.currentSubreddit;

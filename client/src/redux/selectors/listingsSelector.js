@@ -1,4 +1,4 @@
-import { createSelector } from 'reselect';
+import { createSelector } from '@reduxjs/toolkit';
 
 const listingsStatusSelector = (state) => state.listingsRedditStatus;
 const listingsEntriesSelector = (state) => state.listingsRedditEntries;
