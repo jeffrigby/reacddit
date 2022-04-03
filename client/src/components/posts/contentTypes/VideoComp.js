@@ -80,14 +80,6 @@ function VideoComp({ link, content }) {
   const [currentTime, setCurrentTime] = useState(0);
   const [buffer, setBuffer] = useState({ status: 'unloaded', buffers: [] });
 
-  const isMounted = useRef(true);
-  useEffect(
-    () => () => {
-      isMounted.current = false;
-    },
-    []
-  );
-
   useEffect(() => {
     // @todo this seems like a dumb way to handle not firing.
     if (!videoRef.current || autoplay === autoplayState) {
@@ -105,7 +97,7 @@ function VideoComp({ link, content }) {
 
   useEffect(() => {
     const canPlayTimeout = setTimeout(() => {
-      if (!canPlay && load && isMounted.current) {
+      if (!canPlay && load) {
         setLoadError(true);
       }
     }, 5000);
@@ -129,9 +121,7 @@ function VideoComp({ link, content }) {
   );
 
   useEffect(() => {
-    if (isMounted.current) {
-      getSetBuffer();
-    }
+    getSetBuffer();
   }, [getSetBuffer, playing, currentTime, duration, canPlay, canPlayThrough]);
 
   const { width, height, sources } = content;
@@ -189,7 +179,7 @@ function VideoComp({ link, content }) {
 
   const eventWaiting = (e) => {
     setTimeout(() => {
-      if (load && canPlay && isPlaying.current === false && isMounted.current) {
+      if (load && canPlay && isPlaying.current === false) {
         setWaiting(true);
       }
     }, 1000);
@@ -197,9 +187,7 @@ function VideoComp({ link, content }) {
 
   const eventStalled = (e) => {
     setTimeout(() => {
-      if (isMounted.current) {
-        setStalled(true);
-      }
+      setStalled(true);
     }, 250);
   };
 
@@ -225,24 +213,20 @@ function VideoComp({ link, content }) {
       clearTimeout(isPlayingTimeout.current);
       isPlaying.current = true;
       isPlayingTimeout.current = setTimeout(() => {
-        if (isMounted.current) {
-          isPlaying.current = false;
-        }
+        isPlaying.current = false;
       }, 500);
     }
   };
 
   const eventTimeUpdate = (e) => {
-    if (isMounted.current) {
-      trackPlaying();
-      throttledTime(videoRef.current.currentTime);
-      if (stalled) {
-        setStalled(false);
-      }
+    trackPlaying();
+    throttledTime(videoRef.current.currentTime);
+    if (stalled) {
+      setStalled(false);
+    }
 
-      if (waiting) {
-        setWaiting(false);
-      }
+    if (waiting) {
+      setWaiting(false);
     }
   };
 

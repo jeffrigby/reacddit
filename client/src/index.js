@@ -1,6 +1,6 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
@@ -32,12 +32,12 @@ if (parsed.login !== undefined) {
   window.location.href = '/';
 }
 
+const container = document.getElementById('root');
+const root = createRoot(container);
+
 if (parsed.login !== undefined || parsed.logout !== undefined) {
   // Don't render anything if logging out/in.
-  ReactDOM.render(
-    <div className="app-loading" />,
-    document.getElementById('root')
-  );
+  root.render(<div className="app-loading" />);
 } else {
   // Clear the local/session cache. Mostly for debugging or a weird cookie mismatch.
   const cookieToken = cookies.get('token');
@@ -77,18 +77,13 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     }, 1000)
   );
 
-  const render = (Component) => {
-    ReactDOM.render(
-      <Provider store={store}>
-        <BrowserRouter>
-          <Component />
-        </BrowserRouter>
-      </Provider>,
-      document.getElementById('root')
-    );
-  };
-
-  render(Root);
+  root.render(
+    <Provider store={store}>
+      <BrowserRouter>
+        <Root />
+      </BrowserRouter>
+    </Provider>
+  );
 }
 
 serviceWorkerRegister();

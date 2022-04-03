@@ -37,7 +37,6 @@ function useRenderedContent(data, kind, expand) {
   const isRendered = useRef(false);
 
   useEffect(() => {
-    let isMounted = true;
     const getRenderedContent = async () => {
       // This is when there is no body.
       if (data.is_self && !data.selftext) {
@@ -61,17 +60,14 @@ function useRenderedContent(data, kind, expand) {
           getContent.inline[key] = await value;
         });
       }
-      if (isMounted) {
-        setRenderedContent(getContent);
-      }
+
+      setRenderedContent(getContent);
     };
-    if (isMounted && expand && !isRendered.current) {
+    if (expand && !isRendered.current) {
       getRenderedContent();
       isRendered.current = true;
     }
-    return () => {
-      isMounted = false;
-    };
+    return () => {};
   }, [data, expand, kind]);
 
   return { renderedContent };
