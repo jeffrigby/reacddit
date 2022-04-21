@@ -39,6 +39,10 @@ const inlineLinks = (entry, kind) => {
   const renderedLinks = [];
   links.forEach((url) => {
     const cleanUrl = url.replace(/^\(|\)$/g, '');
+
+    // If a match doesn't start with http skip it.
+    if (!cleanUrl.match(/^http/)) return;
+
     const keys = getKeys(cleanUrl);
     if (!keys) return;
 
