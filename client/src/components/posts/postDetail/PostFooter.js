@@ -93,9 +93,7 @@ function PostFooter({
           )}
         </div>
       </footer>
-      {debug && showDebug && renderedContent && (
-        <PostDebug renderedContent={renderedContent} />
-      )}
+      {debug && showDebug && <PostDebug renderedContent={renderedContent} />}
     </>
   );
 }
