@@ -606,7 +606,8 @@ class RedditAPI {
    * @returns {Promise<*>}
    */
   async me() {
-    const me = await this.redditAPI.get('/api/v1/me');
+    // cache buster is to prevent Firefox from caching this request.
+    const me = await this.redditAPI.get(`/api/v1/me?cb=${Date.now()}`);
     return me.data;
   }
 
