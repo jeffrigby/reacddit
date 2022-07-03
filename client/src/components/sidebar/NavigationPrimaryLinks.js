@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
@@ -14,7 +14,7 @@ function NavigationPrimaryLinks() {
   const sort = useSelector((state) => state.listingsFilter.sort);
   const query = useSelector((state) => state.listingsFilter.qs);
   const subreddits = useSelector((state) => state.subreddits);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const lastKeyPressed = useRef('');
 
@@ -43,7 +43,7 @@ function NavigationPrimaryLinks() {
       const newSort = sort && sort !== 'relevance' ? sort : 'hot';
 
       const url = randomSubreddit.url + newSort + sortTopQS;
-      return history.push(url);
+      return navigate(url);
     },
     [query, sort, subreddits.subreddits]
   );
@@ -77,10 +77,10 @@ function NavigationPrimaryLinks() {
         if (lastKeyPressed.current === 'g') {
           switch (key) {
             case 'h':
-              history.push('/');
+              navigate('/');
               break;
             case 'p':
-              history.push(`/r/popular`);
+              navigate(`/r/popular`);
               break;
             case 'r':
               randomSubPush();

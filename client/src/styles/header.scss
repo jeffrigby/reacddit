@@ -56,7 +56,17 @@
 }
 
 .sort-menu {
-  .sort-active .sort-title:before {
+  .active {
+    background-color: white;
+    color: #212529;
+  }
+
+  .sort-active {
+    background-color: #0d6efd;
+    color: white;
+  }
+
+  .subsortlinks .sort-active .sort-title:before {
     content: '> ';
   }
 }

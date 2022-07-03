@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 import { subredditsFilter } from '../../redux/actions/subreddits';
 import { hotkeyStatus } from '../../common';
 
@@ -8,7 +8,7 @@ function FilterReddits() {
   const filterInput = useRef();
   const filter = useSelector((state) => state.subredditsFilter);
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   /**
    * Set the subreddit filter data.
@@ -96,7 +96,7 @@ function FilterReddits() {
             '#sidebar-subreddits .nav-item a.trigger'
           );
           if (trigger && trigger.pathname) {
-            history.push(trigger.pathname);
+            navigate(trigger.pathname);
           }
           document.body.classList.remove('show-menu');
           filterInput.current.blur();

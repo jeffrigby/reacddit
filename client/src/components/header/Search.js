@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
@@ -10,7 +10,7 @@ function Search() {
   const [search, setSearch] = useState('');
 
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const listingsFilter = useSelector((state) => state.listingsFilter);
 
@@ -128,7 +128,7 @@ function Search() {
     const url = getMainSearchURL(q);
     const targetUrl = getTargetUrl();
     const finalUrl = `${targetUrl}${url}`;
-    history.push(finalUrl);
+    navigate(finalUrl);
     searchInput.current.blur();
   };
 
@@ -138,7 +138,7 @@ function Search() {
       return;
     }
     const url = getMainSearchURL(q);
-    history.push(url);
+    navigate(url);
     searchInput.current.blur();
   };
 

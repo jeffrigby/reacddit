@@ -1,18 +1,18 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
 function MultiDelete({ multi }) {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const deleteMulti = async () => {
     await RedditAPI.multiDelete(multi.path);
     dispatch(redditFetchMultis(true));
-    history.push('/');
+    navigate('/');
   };
 
   const removeMulti = () => {

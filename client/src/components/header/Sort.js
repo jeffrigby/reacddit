@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import _isEmpty from 'lodash/isEmpty';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { hotkeyStatus } from '../../common';
 
 const queryString = require('query-string');
@@ -81,7 +81,7 @@ function Sort() {
   const me = useSelector((state) => state.redditMe.me);
   const listingsFilter = useSelector((state) => state.listingsFilter);
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { search } = location;
 
   const getIcon = (sort) => <i className={iconClasses[sort]} />;
@@ -132,39 +132,39 @@ function Sort() {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
-          history.push(genLink('hot'));
+          navigate(genLink('hot'));
           // dispatch(push(genLink('hot')));
           break;
         }
         case 'B': {
-          history.push(genLink('best'));
+          navigate(genLink('best'));
           break;
         }
         case 'N': {
-          history.push(genLink('new'));
+          navigate(genLink('new'));
           break;
         }
         case 'C': {
-          history.push(genLink('controversial'));
+          navigate(genLink('controversial'));
           break;
         }
         case 'R': {
-          history.push(genLink('rising'));
+          navigate(genLink('rising'));
           break;
         }
         case 'T': {
-          history.push(genLink('top'));
+          navigate(genLink('top'));
           break;
         }
         case 'Q': {
           if (listType === 'comments') {
-            history.push(genLink('qa'));
+            navigate(genLink('qa'));
           }
           break;
         }
         case 'O': {
           if (listType === 'comments') {
-            history.push(genLink('old'));
+            navigate(genLink('old'));
           }
           break;
         }
@@ -199,15 +199,16 @@ function Sort() {
     Object.entries(timeCats).forEach(([t, linkString]) => {
       const url = genLink(sort, t);
       const linkKey = `time${sort}${t}`;
-      const active = () => listingsFilter.sort === sort && qs.t === t;
+      const currentSortQs = qs.t || 'day';
+      const active = () => listingsFilter.sort === sort && currentSortQs === t;
+
+      const sortActive = active() ? 'sort-active' : '';
 
       links.push(
         <NavLink
           to={url}
           key={linkKey}
-          className="dropdown-item"
-          activeClassName="sort-active"
-          isActive={active}
+          className={`dropdown-item ${sortActive}`}
         >
           <span className="sort-title ps-3 small">{linkString}</span>
         </NavLink>
@@ -217,8 +218,30 @@ function Sort() {
     return links;
   };
 
+  const isActive = (listType, sort, sortName) => {
+    const qs = queryString.parse(search);
+
+    let active = false;
+
+    switch (listType) {
+      case 'r':
+      case 'm':
+        active = sort === sortName;
+        break;
+      case 'u':
+      case 's':
+      case 'comments':
+        active = qs.sort === sortName;
+        break;
+      default:
+        break;
+    }
+
+    return active;
+  };
+
   const renderLinks = () => {
-    const { listType, target } = listingsFilter;
+    const { listType, target, sort } = listingsFilter;
     let links2render = {};
 
     if (listType === 'r' && target === 'mine') {
@@ -241,19 +264,20 @@ function Sort() {
       if (Object.prototype.hasOwnProperty.call(links2render, key)) {
         const sortName = links2render[key];
         const subLinks = renderTimeSubLinks(sortName);
-        const active = () => listingsFilter.sort === sortName;
 
         const subLinksRendered = !_isEmpty(subLinks) ? (
           <div className="subsortlinks">{subLinks}</div>
         ) : null;
 
+        const active = isActive(listType, sort, sortName);
+
         links.push(
           <div key={sortName}>
             <NavLink
               to={genLink(sortName)}
-              className="dropdown-item d-flex small"
-              activeClassName="active"
-              isActive={active}
+              className={`dropdown-item d-flex small ${
+                active ? 'sort-active' : ''
+              }`}
             >
               <div className="me-auto pe-2 sort-title">
                 {getIcon(sortName)} {sortName}

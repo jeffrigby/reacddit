@@ -10,7 +10,7 @@ import {
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
-import { useHistory, useLocation, useParams } from 'react-router';
+import { useNavigate, useLocation, useParams } from 'react-router';
 import Content from '../Content';
 import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
@@ -80,7 +80,7 @@ function Post({ post, duplicate, parent, postName, idx }) {
   const [onScreen, setOnScreen] = useState({});
   const [showVisToggle, setShowVisToggle] = useState(false);
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
 
@@ -258,7 +258,7 @@ function Post({ post, duplicate, parent, postName, idx }) {
   const gotoDuplicates = useCallback(() => {
     if (!data.is_self) {
       const searchTo = `/duplicates/${data.id}`;
-      history.push(searchTo);
+      navigate(searchTo);
     }
   }, [data.id, data.is_self, dispatch]);
 
