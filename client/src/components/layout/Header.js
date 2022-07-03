@@ -1,4 +1,4 @@
-import { NavLink, useHistory, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import Search from '../header/Search';
 import Sort from '../header/Sort';
 import Reload from '../header/Reload';
@@ -10,7 +10,7 @@ import '../../styles/header.scss';
 import PinMenu from '../header/settings/PinMenu';
 
 function Header() {
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const showMenu = () => {
@@ -51,20 +51,20 @@ function Header() {
     </NavLink>
   );
 
-  const backButton = location.state &&
-    location.state.showBack &&
-    history.length > 2 && (
-      <div>
-        <button
-          className="btn btn-secondary btn-sm me-2"
-          type="button"
-          onClick={() => history.goBack()}
-          title="Go Back"
-        >
-          <i className="fas fa-chevron-left" />
-        </button>
-      </div>
-    );
+  // removed `history.length > 2 &&` when upgrading to react-router v6
+  // @todo do I need to check this?
+  const backButton = location.state && location.state.showBack && (
+    <div>
+      <button
+        className="btn btn-secondary btn-sm me-2"
+        type="button"
+        onClick={() => navigate(-1)}
+        title="Go Back"
+      >
+        <i className="fas fa-chevron-left" />
+      </button>
+    </div>
+  );
 
   return (
     <div className="container-fluid p-0">

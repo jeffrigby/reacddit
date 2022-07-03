@@ -53,7 +53,6 @@ function NavigationGenericNavItem(props) {
             }}
             title={titleNew}
             className={classNames}
-            activeClassName="activeSubreddit"
             onClick={closeMenu}
           >
             {iconString} {text}

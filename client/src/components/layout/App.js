@@ -4,7 +4,7 @@ import ReactTooltip from 'react-tooltip';
 import Navigation from './Navigation';
 import Header from './Header';
 import Help from './Help';
-import Routes from './Routes';
+import Routes from './RedditRoutes';
 import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import '../../styles/layout.scss';
 import { hotkeyStatus } from '../../common';

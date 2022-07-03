@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useParams } from 'react-router';
+import { useLocation } from 'react-router';
 import throttle from 'lodash/throttle';
+import PropTypes from 'prop-types';
 import ListingsLogic from './ListingsLogic';
 import {
   listingsFetchEntriesReddit,
@@ -22,9 +23,8 @@ import { ListingsContextLastExpanded } from '../../contexts';
 
 const queryString = require('query-string');
 
-function Listings() {
+function Listings({ match }) {
   const location = useLocation();
-  const match = useParams();
   const dispatch = useDispatch();
   const [lastExpanded, setLastExpanded] = useState('');
 
@@ -33,7 +33,7 @@ function Listings() {
   const settings = useSelector((state) => state.siteSettings);
   const filter = useSelector((state) => state.listingsFilter);
 
-  const { listType, target, sort, user, userType, multi, postName, comment } =
+  const { listType, sort, target, user, userType, multi, postName, comment } =
     match;
 
   // Set title for detail pages
@@ -189,10 +189,12 @@ function Listings() {
   );
 }
 
-Listings.propTypes = {};
+Listings.propTypes = {
+  match: PropTypes.object.isRequired,
+};
 
 Listings.defaultProps = {
-  settings: { debug: false, view: 'expanded' },
+  // settings: { debug: false, view: 'expanded' },
 };
 
 export default Listings;
