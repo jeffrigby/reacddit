@@ -1,6 +1,7 @@
-const { app } = require("./app");
-const http = require("http");
+import app from "./app.js";
+import { createServer } from "http";
+import dotenv from "dotenv-defaults";
 
-require("dotenv-defaults").config();
+dotenv.config();
 
-http.createServer(app.callback()).listen(process.env.PORT);
+createServer(app.callback()).listen(process.env.PORT);

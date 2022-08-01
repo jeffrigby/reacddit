@@ -1,16 +1,17 @@
-const Koa = require("koa");
-const Router = require("koa-router");
-const session = require("koa-session");
-const rp = require("request-promise");
-const crypto = require("crypto");
-const logger = require("koa-logger");
-const chalk = require("chalk");
-const { v4: uuidv4 } = require("uuid");
+import Koa from "koa";
+import Router from "koa-router";
+import session from "koa-session";
+import rp from "request-promise";
+import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+import logger from "koa-logger";
+import chalk from "chalk";
+import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv-defaults";
 
-const { ClientCredentials, AuthorizationCode } = require("simple-oauth2");
+import { ClientCredentials, AuthorizationCode } from "simple-oauth2";
 const envPath = process.env.ENVFILE ? process.env.ENVFILE : "./.env";
 
-require("dotenv-defaults").config({
+dotenv.config({
   path: envPath,
   encoding: "utf8",
   defaults: "./.env.defaults", // This is new
@@ -29,6 +30,8 @@ const {
 } = process.env;
 
 const debugEnabled = DEBUG === "1" || DEBUG === "true" || false;
+
+const red = chalk.red;
 
 function checkEnvErrors() {
   const env_errors = [];
@@ -61,7 +64,7 @@ function checkEnvErrors() {
 
   if (env_errors.length > 0) {
     env_errors.forEach((value) => {
-      console.log(chalk.red(`.env ERROR: ${value}`));
+      console.log(red(`.env ERROR: ${value}`));
     });
     process.exit(1);
   }
@@ -112,9 +115,9 @@ const client = new ClientCredentials(oauth2Config);
  * @returns {{iv: string, token: string}}
  */
 const encryptToken = (token) => {
-  const iv = crypto.randomBytes(16);
+  const iv = randomBytes(16);
   const tokenString = JSON.stringify(token);
-  const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(SALT), iv);
+  const cipher = createCipheriv("aes-256-cbc", Buffer.from(SALT), iv);
   let encrypted = cipher.update(tokenString);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return { iv: iv.toString("hex"), token: encrypted.toString("hex") };
@@ -135,11 +138,7 @@ const decryptToken = (encryptedToken) => {
   }
   const iv = Buffer.from(encryptedToken.iv, "hex");
   const encryptedText = Buffer.from(encryptedToken.token, "hex");
-  const decipher = crypto.createDecipheriv(
-    "aes-256-cbc",
-    Buffer.from(SALT),
-    iv
-  );
+  const decipher = createDecipheriv("aes-256-cbc", Buffer.from(SALT), iv);
   let decrypted = decipher.update(encryptedText);
   decrypted = Buffer.concat([decrypted, decipher.final()]);
   return JSON.parse(decrypted.toString());
@@ -524,4 +523,4 @@ router.get("/api/logout", async (ctx, next) => {
 
 app.use(router.routes()).use(router.allowedMethods());
 
-module.exports = { app };
+export default app;
