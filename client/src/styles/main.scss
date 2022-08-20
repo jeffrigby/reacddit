@@ -31,12 +31,12 @@ body {
   cursor: pointer;
 }
 
-div {
-  -webkit-user-select: none; /* Safari 3.1+ */
-  -moz-user-select: none; /* Firefox 2+ */
-  -ms-user-select: none; /* IE 10+ */
-  user-select: none; /* Standard syntax */
-}
+//div {
+//  -webkit-user-select: none; /* Safari 3.1+ */
+//  -moz-user-select: none; /* Firefox 2+ */
+//  -ms-user-select: none; /* IE 10+ */
+//  user-select: none; /* Standard syntax */
+//}
 
 .offscreen-placeholder:after {
   content: '\00A0\00A0\00A0\00A0';
