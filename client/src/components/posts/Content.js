@@ -61,7 +61,7 @@ function Content({ content }) {
         contentRendered = <Twitter tweetId={content.id} />;
         break;
       case 'httpserror':
-        contentRendered = <HTTPSError />;
+        contentRendered = <HTTPSError content={content} />;
         break;
       case 'redditGallery':
         contentRendered = <RedditGallery content={content} />;

@@ -9,6 +9,8 @@ Parameters:
   EnvFile:
     Type: String
     Default: ".env.serverless"
+  AllowOrigins:
+    Type: String
 
 Globals:
   Function:
@@ -32,13 +34,7 @@ Resources:
           Properties:
             Path: /{all+}
             Method: get
-#            CorsConfiguration:
-#              AllowOrigins:
-#                - "https://mydomain.com"
-#              AllowHeaders:
-#                - x-apigateway-header
-#              AllowMethods:
-#                - GET
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

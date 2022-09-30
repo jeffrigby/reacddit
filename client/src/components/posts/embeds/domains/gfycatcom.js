@@ -16,22 +16,22 @@ import parse from 'url-parse';
 //   return cachedItem ? JSON.parse(cachedItem) : null;
 // };
 
-const getInfo = async (id) => {
-  // const cache = getCache(id);
-  // if (cache) {
-  //   return cache;
-  // }
-  const url = `https://api.gfycat.com/v1/gfycats/${id}`;
-  const response = await fetch(url);
-  const json = await response.json();
+// const getInfo = async (id) => {
+//   // const cache = getCache(id);
+//   // if (cache) {
+//   //   return cache;
+//   // }
+//   const url = `https://api.gfycat.com/v1/gfycats/${id}`;
+//   const response = await fetch(url);
+//   const json = await response.json();
+//
+//   if (response.status !== 200) {
+//     return false;
+//   }
+//   return json.gfyItem;
+// };
 
-  if (response.status !== 200) {
-    return false;
-  }
-  return json.gfyItem;
-};
-
-const render = async (entry) => {
+const render = (entry) => {
   const parsedUrl = parse(entry.url, true);
   const cleanID = parsedUrl.pathname
     .replace(/^\/|\/$/g, '')
@@ -39,43 +39,59 @@ const render = async (entry) => {
     .split('/')
     .pop()
     .split('-')[0];
+  const url = `https://gfycat.com/ifr/${cleanID}`;
 
-  // Get info directly from gfycat
-  const apiInfo = await getInfo(cleanID);
-  if (!apiInfo) {
-    return {
-      type: 'self',
-      html: '<p>Error: GFYCat link not found.</p>',
-      inline: [],
-    };
-  }
-
-  const sources = [
-    { type: 'video/mp4', src: apiInfo.mp4Url },
-    { type: 'video/webm', src: apiInfo.webmUrl },
-    { type: 'video/mp4', src: apiInfo.mobileUrl },
-  ];
-
-  const videoContent = {
-    width: apiInfo.width,
-    height: apiInfo.height,
-    sources,
-    id: cleanID,
-    type: 'video',
-    thumb: apiInfo.thumb100PosterUrl,
-    hasAudio: apiInfo.hasAudio,
+  return {
+    type: 'iframe16x9',
+    src: url,
   };
-
-  const iframe = `https://gfycat.com/ifr${parsedUrl.pathname}`;
-
-  const content = {
-    ...videoContent,
-    iframe,
-    apiInfo,
-  };
-
-  return content;
 };
+
+// const render = async (entry) => {
+//   const parsedUrl = parse(entry.url, true);
+//   const cleanID = parsedUrl.pathname
+//     .replace(/^\/|\/$/g, '')
+//     .split('.')[0]
+//     .split('/')
+//     .pop()
+//     .split('-')[0];
+//
+//   // Get info directly from gfycat
+//   const apiInfo = await getInfo(cleanID);
+//   if (!apiInfo) {
+//     return {
+//       type: 'self',
+//       html: '<p>Error: GFYCat link not found.</p>',
+//       inline: [],
+//     };
+//   }
+//
+//   const sources = [
+//     { type: 'video/mp4', src: apiInfo.mp4Url },
+//     { type: 'video/webm', src: apiInfo.webmUrl },
+//     { type: 'video/mp4', src: apiInfo.mobileUrl },
+//   ];
+//
+//   const videoContent = {
+//     width: apiInfo.width,
+//     height: apiInfo.height,
+//     sources,
+//     id: cleanID,
+//     type: 'video',
+//     thumb: apiInfo.thumb100PosterUrl,
+//     hasAudio: apiInfo.hasAudio,
+//   };
+//
+//   const iframe = `https://gfycat.com/ifr${parsedUrl.pathname}`;
+//
+//   const content = {
+//     ...videoContent,
+//     iframe,
+//     apiInfo,
+//   };
+//
+//   return content;
+// };
 
 export default render;
 

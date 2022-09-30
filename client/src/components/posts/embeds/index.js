@@ -110,6 +110,12 @@ const nonSSLFallback = (content, entry) => {
   return content;
 };
 
+/**
+ * Get the content for a post.
+ * @param keys {Object} - The keys to use for the content.
+ * @param entry {Object} - The entry to get the content for.
+ * @returns {Promise<{allow: *, renderFunction: string, src: *, type: string}|{}|{renderFunction: string, sources: ([{src, type: string}]|*[]), thumb: *, width: never, id: never, type: string, height: never}|{renderFunction: string, src: (*), type: string}|{renderFunction: string, media: [], type: string}|{[p: string]: *}>}
+ */
 const getContent = async (keys, entry) => {
   // is this a gallery?
   if (entry.is_gallery) {
@@ -204,6 +210,13 @@ const getContent = async (keys, entry) => {
   return {};
 };
 
+/**
+ * Get the content for a post.
+ * @param entry {Object} - The entry to get the content for.
+ * @param kind {string} - The kind of entry. (t1, t3, etc)
+ * @returns {Promise<{renderFunction: string, src: (*), type: string}|(*&{type: string})|{src}|*|{allow: *, renderFunction: string, src: *, type: string}|{}|{renderFunction: string, sources: ({src, type: string}[]|*[]), thumb: *, width: never, id: never, type: string, height: never}|{renderFunction: string, src: *, type: string}|{renderFunction: string, media: [], type: string}|{[p: string]: *}|null>}
+ * @constructor
+ */
 const RenderContent = async (entry, kind) => {
   try {
     if (kind === 't1') {
@@ -215,6 +228,10 @@ const RenderContent = async (entry, kind) => {
         content.inlineLinks = commentInlineLinks.renderedLinks;
       }
       return content;
+    }
+
+    if (!entry.domain) {
+      return null;
     }
 
     const keys = getKeys(entry.domain);
@@ -230,7 +247,8 @@ const RenderContent = async (entry, kind) => {
 
     return nonSSLFallback(content, entry);
   } catch (e) {
-    // console.log(e);
+    // eslint-disable-next-line no-console
+    console.error(e);
   }
   return null;
 };
