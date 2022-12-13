@@ -1,14 +1,15 @@
 import Koa from "koa";
 import Router from "koa-router";
 import session from "koa-session";
-import rp from "request-promise";
-import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import logger from "koa-logger";
 import chalk from "chalk";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv-defaults";
 
-import { ClientCredentials, AuthorizationCode } from "simple-oauth2";
+import { AuthorizationCode, ClientCredentials } from "simple-oauth2";
+import axios from "axios";
+
 const envPath = process.env.ENVFILE ? process.env.ENVFILE : "./.env";
 
 dotenv.config({
@@ -88,25 +89,33 @@ const CONFIG = {
    (default is false) */,
 };
 
-const oauth2Config = {
-  client: {
-    id: REDDIT_CLIENT_ID,
-    secret: REDDIT_CLIENT_SECRET,
-  },
-  auth: {
-    authorizeHost: "https://ssl.reddit.com",
-    authorizePath: "/api/v1/authorize",
-    tokenHost: "https://ssl.reddit.com",
-    tokenPath: "/api/v1/access_token",
-    revokePath: "/api/v1/revoke_token",
-  },
+const redditClient = {
+  id: REDDIT_CLIENT_ID,
+  secret: REDDIT_CLIENT_SECRET,
 };
 
 const scope =
   REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save";
 
-const oauth2 = new AuthorizationCode(oauth2Config);
-const client = new ClientCredentials(oauth2Config);
+const oauth2 = new AuthorizationCode({
+  client: redditClient,
+  auth: {
+    tokenHost: "https://ssl.reddit.com",
+    authorizeHost: "https://ssl.reddit.com",
+    tokenPath: "/api/v1/access_token",
+    authorizePath: "/api/v1/authorize",
+    revokePath: "/api/v1/revoke_token",
+  },
+});
+
+const client = new ClientCredentials({
+  client: redditClient,
+  auth: {
+    tokenHost: "https://ssl.reddit.com",
+    tokenPath: "/api/v1/access_token",
+    revokePath: "/api/v1/revoke_token",
+  },
+});
 
 /**
  * Encrypt the token for storage in the cookie. The IV is
@@ -219,20 +228,23 @@ const getAnonToken = async () => {
 };
 
 const revokeToken = async (token, tokenType) => {
-  const options = {
-    method: "POST",
-    uri: "https://www.reddit.com/api/v1/revoke_token",
-    form: {
-      token,
-      token_type_hint: tokenType,
-    },
-    auth: {
-      user: REDDIT_CLIENT_ID,
-      pass: REDDIT_CLIENT_SECRET,
-    },
-  };
   try {
-    await rp(options);
+    await axios.post(
+      "https://www.reddit.com/api/v1/revoke_token",
+      {
+        token,
+        token_type_hint: tokenType,
+      },
+      {
+        auth: {
+          username: REDDIT_CLIENT_ID,
+          password: REDDIT_CLIENT_SECRET,
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
     return true;
   } catch (error) {
     console.log("Revoke Token error", error.message);
@@ -246,31 +258,29 @@ const revokeToken = async (token, tokenType) => {
  * @returns {Promise<*>}
  */
 const getRefreshToken = async (refreshToken) => {
-  const options = {
-    method: "POST",
-    uri: "https://www.reddit.com/api/v1/access_token",
-    form: {
-      grant_type: "refresh_token",
-      refresh_token: refreshToken,
-    },
-    auth: {
-      user: REDDIT_CLIENT_ID,
-      pass: REDDIT_CLIENT_SECRET,
-    },
-    headers: {
-      /* 'content-type': 'application/x-www-form-urlencoded' */
-      // Is set automatically
-    },
-  };
   try {
-    const newToken = await rp(options);
-    const tokenJson = JSON.parse(newToken);
+    // User axios to get the token
+    const newToken = await axios.post(
+      "https://www.reddit.com/api/v1/access_token",
+      {
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      },
+      {
+        auth: {
+          username: REDDIT_CLIENT_ID,
+          password: REDDIT_CLIENT_SECRET,
+        },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
     const AccessToken = {
-      token: tokenJson,
+      token: newToken.data,
     };
-    console.log(tokenJson, "tokenJson");
-    const tokenParsed = addExtraInfo(AccessToken);
-    return tokenParsed;
+    console.log(newToken.data, "tokenJson");
+    return addExtraInfo(AccessToken);
   } catch (error) {
     console.log("Access Token error", error.message);
     return false;
