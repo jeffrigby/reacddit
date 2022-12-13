@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
+import queryString from 'query-string';
 import { hotkeyStatus } from '../../common';
-
-const queryString = require('query-string');
 
 function Search() {
   const [focused, setFocused] = useState(false);

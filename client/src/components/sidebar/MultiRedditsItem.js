@@ -2,12 +2,11 @@ import { memo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
+import queryString from 'query-string';
 import _trimEnd from 'lodash/trimEnd';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsSubs from './MultiRedditsSubs';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-
-const queryString = require('query-string');
 
 function MultiRedditsItem({ item }) {
   const { path } = item.data;

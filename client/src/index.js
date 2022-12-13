@@ -5,14 +5,13 @@ import { Provider } from 'react-redux';
 import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
 import { BrowserRouter } from 'react-router-dom';
+import queryString from 'query-string';
 import configureReduxStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/main.scss';
 import Root from './components/layout/Root';
 import { register as serviceWorkerRegister } from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
-
-const queryString = require('query-string');
 
 const { hash, search } = window.location;
 

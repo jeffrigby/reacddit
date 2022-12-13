@@ -1,14 +1,13 @@
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
+import queryString from 'query-string';
 import SubUnSub from './SubUnSub';
 import MultiToggle from './MultiToggle';
 import {
   getCurrentSubreddit,
   getCachedSub,
 } from '../../redux/selectors/subredditSelectors';
-
-const queryString = require('query-string/index');
 
 function ListingsHeaderSub() {
   const location = useLocation();

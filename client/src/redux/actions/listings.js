@@ -1,10 +1,10 @@
 import { batch } from 'react-redux';
+import queryString from 'query-string';
 import produce from 'immer';
 import { keyEntryChildren } from '../../common';
 import RedditAPI from '../../reddit/redditAPI';
 
 // @todo there's no reason for any of this logic to be in Redux. Move to hooks.
-const queryString = require('query-string');
 
 export function listingsFilter(listFilter) {
   return {

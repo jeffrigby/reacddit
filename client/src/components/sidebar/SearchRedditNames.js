@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
+import queryString from 'query-string';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
-
-const queryString = require('query-string');
 
 function SearchRedditNames({ filterText }) {
   const over18 = useSelector((state) => state.redditMe.me.over_18);

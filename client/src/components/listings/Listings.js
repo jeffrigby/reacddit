@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
+import queryString from 'query-string';
 import throttle from 'lodash/throttle';
 import PropTypes from 'prop-types';
 import ListingsLogic from './ListingsLogic';
@@ -20,8 +21,6 @@ import PostsDebug from './PostsDebug';
 import '../../styles/listings.scss';
 import Posts from '../posts/postsContainer/Posts';
 import { ListingsContextLastExpanded } from '../../contexts';
-
-const queryString = require('query-string');
 
 function Listings({ match }) {
   const location = useLocation();

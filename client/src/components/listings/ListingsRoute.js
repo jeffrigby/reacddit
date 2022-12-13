@@ -1,10 +1,20 @@
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router';
+import { useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setHistory } from '../../redux/slices/historySlice';
 import Listings from './Listings';
 import NotFound404 from '../../NotFound404';
 
 function ListingsRoute({ overrides, validations }) {
   const match = useParams();
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setHistory(location));
+  }, [location.pathname]);
 
   const overrideMatch = { ...match, ...overrides };
 

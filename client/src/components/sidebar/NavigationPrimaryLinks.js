@@ -1,12 +1,11 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
+import queryString from 'query-string';
 import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
-
-const queryString = require('query-string/index');
 
 function NavigationPrimaryLinks() {
   const me = useSelector((state) => state.redditMe.me);

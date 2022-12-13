@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useParams } from 'react-router';
+import queryString from 'query-string';
 import {
   listingData,
   listingState,
 } from '../../redux/selectors/listingsSelector';
-
-const queryString = require('query-string/index');
 
 function PostsDebug() {
   const [closed, setClosed] = useState(true);

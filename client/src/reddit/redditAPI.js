@@ -1,7 +1,6 @@
 import axios from 'axios';
 import cookies from 'js-cookie';
-
-const queryString = require('query-string');
+import queryString from 'query-string';
 
 /* eslint class-methods-use-this: ["error", { "exceptMethods": ["getToken"] }] */
 

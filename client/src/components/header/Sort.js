@@ -1,11 +1,10 @@
 import { useEffect } from 'react';
+import queryString from 'query-string';
 import _isEmpty from 'lodash/isEmpty';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
 import { hotkeyStatus } from '../../common';
-
-const queryString = require('query-string');
 
 const catsSearch = {
   R: 'relevance',

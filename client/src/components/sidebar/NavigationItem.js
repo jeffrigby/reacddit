@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
+import queryString from 'query-string';
 import _trim from 'lodash/trim';
 import _trimEnd from 'lodash/trimEnd';
 import { formatDistanceToNow } from 'date-fns';
@@ -7,8 +8,6 @@ import { useLocation } from 'react-router-dom';
 import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
-
-const queryString = require('query-string');
 
 const getLastUpdated = (lastUpdated, subreddit) => {
   if (subreddit.name === undefined) return 0;
