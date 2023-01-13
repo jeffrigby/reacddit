@@ -4,11 +4,11 @@ import { PostsContextData } from '../../../contexts';
 
 function IFrame4x4({ content }) {
   const postContext = useContext(PostsContextData);
-  const load = postContext.isLoaded;
+  const { isLoaded } = postContext;
   return (
     <div className="media-cont">
       <div className="embed-container media-cont">
-        {load && (
+        {isLoaded && (
           <iframe
             src={content.src}
             scrolling="no"

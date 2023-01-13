@@ -4,7 +4,8 @@ import { PostsContextData } from '../../../contexts';
 
 function PostMeta() {
   const postContext = useContext(PostsContextData);
-  const { data, kind } = postContext.post;
+  const { post } = postContext;
+  const { data, kind } = post;
   const sticky = data.stickied || false;
 
   const crossPost =

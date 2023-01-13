@@ -4,10 +4,10 @@ import { PostsContextData } from '../../../contexts';
 
 function Thumb({ content }) {
   const postContext = useContext(PostsContextData);
-  const load = postContext.isLoaded;
+  const { isLoaded } = postContext;
 
   let img;
-  if (load) {
+  if (isLoaded) {
     img = (
       <img
         src={content.thumbnail}

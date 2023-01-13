@@ -15,7 +15,8 @@ function PostFooter({
   const postContext = useContext(PostsContextData);
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { data, kind } = postContext.post;
+  const { post, isLoaded } = postContext;
+  const { data, kind } = post;
 
   const copyID = (comp) => {
     const id = comp.target.textContent;
@@ -68,7 +69,7 @@ function PostFooter({
     ) : null;
   }
 
-  if (!postContext.isLoaded) {
+  if (!isLoaded) {
     return (
       <footer className="d-flex clearfix align-middle mt-1 offscreen-placeholder" />
     );

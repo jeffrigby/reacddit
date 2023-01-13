@@ -60,7 +60,8 @@ function PostVote() {
   const bearer = useSelector((state) => state.redditBearer);
 
   const postContext = useContext(PostsContextData);
-  const { data } = postContext.post;
+  const { post } = postContext;
+  const { data } = post;
   const actionable = useContext(PostsContextActionable);
 
   const [ups, setUps] = useState(data.ups);

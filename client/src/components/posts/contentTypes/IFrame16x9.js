@@ -4,12 +4,12 @@ import { PostsContextData } from '../../../contexts';
 
 function IFrame16x9({ content }) {
   const postContext = useContext(PostsContextData);
-  const load = postContext.isLoaded;
+  const { isLoaded } = postContext;
   return (
     <div className="media-cont black-bg">
       <div className="media-contain-width">
         <div className="ratio ratio-16x9 black-bg">
-          {load && (
+          {isLoaded && (
             <iframe
               src={content.src}
               scrolling="no"

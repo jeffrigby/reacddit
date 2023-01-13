@@ -7,7 +7,8 @@ import redditAPI from '../../../reddit/redditAPI';
 function PostSave() {
   const bearer = useSelector((state) => state.redditBearer);
   const postContext = useContext(PostsContextData);
-  const { data } = postContext.post;
+  const { post } = postContext;
+  const { data } = post;
   const actionable = useContext(PostsContextActionable);
 
   const [saved, setSaved] = useState(data.saved);

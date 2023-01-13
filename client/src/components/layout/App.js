@@ -1,6 +1,5 @@
 import { memo, StrictMode, useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ReactTooltip from 'react-tooltip';
 import Navigation from './Navigation';
 import Header from './Header';
 import Help from './Help';
@@ -118,7 +117,6 @@ function App() {
         </main>
 
         <Help />
-        <ReactTooltip effect="solid" html place="right" />
         <div id="menu-overlay" />
       </StrictMode>
     </div>

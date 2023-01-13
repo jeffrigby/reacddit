@@ -16,7 +16,8 @@ import RedditGallery from './contentTypes/RedditGallery';
 
 function Content({ content }) {
   const postContext = useContext(PostsContextData);
-  const { data } = postContext.post;
+  const { post, isLoaded } = postContext;
+  const { data } = post;
 
   const { name, url } = data;
 
@@ -44,9 +45,7 @@ function Content({ content }) {
         contentRendered = <IFrame16x9 content={content} />;
         break;
       case 'imgur_album':
-        contentRendered = (
-          <ImgurAlbum content={content} load={postContext.isLoaded} />
-        );
+        contentRendered = <ImgurAlbum content={content} load={isLoaded} />;
         break;
       case 'thumb':
         contentRendered = <Thumb content={content} />;

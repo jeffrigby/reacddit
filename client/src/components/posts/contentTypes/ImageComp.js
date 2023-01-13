@@ -13,7 +13,7 @@ function getMeta(url) {
 
 function ImageComp({ content }) {
   const postContext = useContext(PostsContextData);
-  const load = postContext.isLoaded;
+  const { isLoaded } = postContext;
 
   const [dimensions, setDimensions] = useState({
     width: content.width,
@@ -56,13 +56,15 @@ function ImageComp({ content }) {
     imgClass += ` ${content.class}`;
   }
 
-  const title = load === true ? content.title : 'placeholder';
+  const title = isLoaded === true ? content.title : 'placeholder';
 
   return (
     <div className="ratio-bg media-cont">
       <div style={contStyle} className="ratio-container">
         <div style={ratioStyle} className="ratio embed-responsive loading-icon">
-          {load && <img src={content.src} alt={title} className={imgClass} />}
+          {isLoaded && (
+            <img src={content.src} alt={title} className={imgClass} />
+          )}
         </div>
       </div>
     </div>

@@ -2,9 +2,11 @@ import { memo, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
+import { Tooltip } from 'react-tooltip';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
+import 'react-tooltip/dist/react-tooltip.css';
 
 const menuID = 'navAccount';
 
@@ -81,60 +83,63 @@ function NavigationAccount() {
   `;
 
   return (
-    <div id="sidebar-nav_account">
-      <div className="sidebar-heading d-flex text-muted show-cursor">
-        <span className="me-1" onClick={toggleShowMenu} role="presentation">
-          <i className={caretClass} /> {me.name}
-        </span>
-        <span>
-          <i
-            className="fas fa-info-circle"
-            data-tip={accountInfo}
-            id="nav-user-info"
-          />
-        </span>
-        <span className="ms-auto">
-          <NavigationGenericNavItem
-            to={`${process.env.API_PATH}/logout`}
-            text=""
-            title="Logout"
-            isStatic
-            noLi
-            iconClass="fas fa-sign-out-alt m-0 p-0"
-            classes="m-0 p-0"
-          />
-        </span>
+    <>
+      <div id="sidebar-nav_account">
+        <div className="sidebar-heading d-flex text-muted show-cursor">
+          <span className="me-1" onClick={toggleShowMenu} role="presentation">
+            <i className={caretClass} /> {me.name}
+          </span>
+          <span>
+            <i
+              className="fas fa-info-circle"
+              data-tooltip-html={accountInfo}
+              id="nav-user-info"
+            />
+          </span>
+          <span className="ms-auto">
+            <NavigationGenericNavItem
+              to={`${process.env.API_PATH}/logout`}
+              text=""
+              title="Logout"
+              isStatic
+              noLi
+              iconClass="fas fa-sign-out-alt m-0 p-0"
+              classes="m-0 p-0"
+            />
+          </span>
+        </div>
+        {showNavAccountMenu && (
+          <ul className="nav flex-column">
+            <Friends />
+            <NavigationGenericNavItem
+              to={`/user/${me.name}/posts`}
+              text="Posts"
+              title="Show My Submitted Posts"
+              iconClass="far fa-file"
+            />
+            <NavigationGenericNavItem
+              to={`/user/${me.name}/upvoted`}
+              text="Upvoted"
+              title="Show My Upvoted Posts"
+              iconClass="far fa-thumbs-up"
+            />
+            <NavigationGenericNavItem
+              to={`/user/${me.name}/downvoted`}
+              text="Downvoted"
+              title="Show My Downvoted Posts"
+              iconClass="far fa-thumbs-down"
+            />
+            <NavigationGenericNavItem
+              to={`/user/${me.name}/saved`}
+              text="Saved"
+              title="Show My Saved Posts"
+              iconClass="far fa-bookmark"
+            />
+          </ul>
+        )}
       </div>
-      {showNavAccountMenu && (
-        <ul className="nav flex-column">
-          <Friends />
-          <NavigationGenericNavItem
-            to={`/user/${me.name}/posts`}
-            text="Posts"
-            title="Show My Submitted Posts"
-            iconClass="far fa-file"
-          />
-          <NavigationGenericNavItem
-            to={`/user/${me.name}/upvoted`}
-            text="Upvoted"
-            title="Show My Upvoted Posts"
-            iconClass="far fa-thumbs-up"
-          />
-          <NavigationGenericNavItem
-            to={`/user/${me.name}/downvoted`}
-            text="Downvoted"
-            title="Show My Downvoted Posts"
-            iconClass="far fa-thumbs-down"
-          />
-          <NavigationGenericNavItem
-            to={`/user/${me.name}/saved`}
-            text="Saved"
-            title="Show My Saved Posts"
-            iconClass="far fa-bookmark"
-          />
-        </ul>
-      )}
-    </div>
+      <Tooltip effect="solid" html place="bottom" anchorId="nav-user-info" />
+    </>
   );
 }
 

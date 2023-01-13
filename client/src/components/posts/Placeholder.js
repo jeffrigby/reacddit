@@ -6,7 +6,8 @@ import Self from './contentTypes/Self';
 
 function Placeholder() {
   const postContext = useContext(PostsContextData);
-  const { data } = postContext.post;
+  const { post } = postContext;
+  const { data } = post;
 
   const getRatio = (width, height) => {
     const maxHeight = 625;

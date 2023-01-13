@@ -57,7 +57,7 @@ function getBuffers(videoRef) {
 
 function VideoComp({ link, content }) {
   const postContext = useContext(PostsContextData);
-  const load = postContext.isLoaded;
+  const { isLoaded } = postContext;
   const videoRef = useRef();
   const isPlaying = useRef(false);
   const isPlayingTimeout = useRef(null);
@@ -97,14 +97,14 @@ function VideoComp({ link, content }) {
 
   useEffect(() => {
     const canPlayTimeout = setTimeout(() => {
-      if (!canPlay && load) {
+      if (!canPlay && isLoaded) {
         setLoadError(true);
       }
     }, 5000);
     return () => {
       clearTimeout(canPlayTimeout);
     };
-  }, [canPlay, load]);
+  }, [canPlay, isLoaded]);
 
   const getSetBuffer = useMemo(
     () =>
@@ -179,7 +179,7 @@ function VideoComp({ link, content }) {
 
   const eventWaiting = (e) => {
     setTimeout(() => {
-      if (load && canPlay && isPlaying.current === false) {
+      if (isLoaded && canPlay && isPlaying.current === false) {
         setWaiting(true);
       }
     }, 1000);
@@ -251,7 +251,7 @@ function VideoComp({ link, content }) {
   });
 
   let video;
-  if (load === true) {
+  if (isLoaded === true) {
     const videoSources = sources.map((source, idx) => {
       const key = `${videoId}-${idx}`;
       return <source src={source.src} type={source.type} key={key} />;
@@ -293,7 +293,7 @@ function VideoComp({ link, content }) {
     muted ? 'muted' : 'unmuted',
     playing ? 'playing' : 'paused',
     ctrLock ? 'locked' : 'unlocked',
-    load ? 'video-loaded' : 'video-unloaded',
+    isLoaded ? 'video-loaded' : 'video-unloaded',
   ];
 
   let loadingError;
@@ -350,7 +350,7 @@ function VideoComp({ link, content }) {
             </div>
           </div>
         </div>
-        {load && videoRef.current && canPlay && (
+        {isLoaded && videoRef.current && canPlay && (
           <>
             <div className="video-control-bar-cont">
               <VideoControlBar
@@ -389,7 +389,7 @@ function VideoComp({ link, content }) {
           </>
         )}
       </div>
-      {debug && load && (
+      {debug && isLoaded && (
         <VideoDebug
           currentTime={currentTime}
           duration={duration}

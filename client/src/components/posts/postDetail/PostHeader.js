@@ -16,7 +16,8 @@ function PostHeader({ toggleView, expand, duplicate }) {
   const postContext = useContext(PostsContextData);
   const listType = useSelector((state) => state.listingsFilter.listType);
   const params = useParams();
-  const { data, kind } = postContext.post;
+  const { post, isLoaded } = postContext;
+  const { data, kind } = post;
 
   // Is this a comment?
   if (kind === 't1') {
@@ -221,7 +222,7 @@ function PostHeader({ toggleView, expand, duplicate }) {
   return (
     <header className="d-flex">
       {title}
-      {postContext.isLoaded ? (
+      {isLoaded ? (
         <div className="text-nowrap d-flex actions ms-auto">
           <PostVote />
           <PostSave />
@@ -242,7 +243,7 @@ function PostHeader({ toggleView, expand, duplicate }) {
         </div>
       ) : (
         // eslint-disable-next-line
-          <div className="text-nowrap d-flex actions ms-auto offscreen-placeholder" />
+        <div className="text-nowrap d-flex actions ms-auto offscreen-placeholder" />
       )}
     </header>
   );
