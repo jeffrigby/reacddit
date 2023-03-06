@@ -29,7 +29,11 @@ function PostsParent({ post }) {
 
     let commentLinks;
     if (comment) {
-      const parentCommentLink = `${post.data.permalink}${comment}/?context=8&depth=9`;
+      const parentCommentLink = `${post.data.permalink}${comment}/`;
+      const search = {
+        context: 8,
+        depth: 9,
+      };
       commentLinks = (
         <div className="list-actions">
           <Link
@@ -37,7 +41,13 @@ function PostsParent({ post }) {
           >
             View all comments
           </Link>{' '}
-          <Link to={{ pathname: parentCommentLink, state: { showBack: true } }}>
+          <Link
+            to={{
+              pathname: parentCommentLink,
+              search: `?${new URLSearchParams(search).toString()}`,
+              state: { showBack: true },
+            }}
+          >
             Show parent comments
           </Link>
         </div>
