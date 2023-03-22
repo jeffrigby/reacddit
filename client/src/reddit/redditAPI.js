@@ -125,12 +125,7 @@ class RedditAPI {
       params,
     };
 
-    let url = '';
-    if (target) {
-      url = `r/${target}/search`;
-    } else {
-      url = 'search';
-    }
+    const url = target ? `r/${target}/search` : 'search';
 
     const result = await this.redditAPI.get(url, data);
     const query = queryString.stringify(params);
@@ -163,12 +158,10 @@ class RedditAPI {
       params,
     };
 
-    let url = '';
-    if (user === 'me') {
-      url = `me/m/${target}/search`;
-    } else {
-      url = `/user/${user}/m/${target}/search`;
-    }
+    const url =
+      user === 'me'
+        ? `me/m/${target}/search`
+        : `/user/${user}/m/${target}/search`;
 
     const result = await this.redditAPI.get(url, data);
     const query = queryString.stringify(params);
@@ -201,13 +194,7 @@ class RedditAPI {
       params,
     };
 
-    let url = '';
-    if (subreddit) {
-      url = `/r/${subreddit}/${sort}`;
-    } else {
-      url = sort;
-    }
-
+    const url = subreddit ? `/r/${subreddit}/${sort}` : sort;
     const result = await this.redditAPI.get(url, data);
     const query = queryString.stringify(params);
     result.data.requestUrl = `${url}?${query}`;
@@ -595,12 +582,10 @@ class RedditAPI {
       // sr_detail: false,
       // include_categories: false,
     };
-    const friends = await this.redditAPI.get(
+    return this.redditAPI.get(
       'api/v1/me/friends',
       queryString.stringify(params)
     );
-
-    return friends;
   }
 
   /**
@@ -667,8 +652,7 @@ class RedditAPI {
     const data = {
       params,
     };
-    const moreComments = await this.redditAPI.get(`api/morechildren`, data);
-    return moreComments;
+    return this.redditAPI.get(`api/morechildren`, data);
   }
 }
 
