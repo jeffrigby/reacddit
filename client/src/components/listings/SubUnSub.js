@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
@@ -8,59 +9,95 @@ import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
 import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
 
+/**
+ * Custom hook to handle subreddit subscription
+ * @returns {Function} - Callback function to subscribe to a subreddit
+ */
+function useSubscribe() {
+  const dispatch = useDispatch();
+  return useCallback(
+    async (about, subreddits, locationKey) => {
+      await RedditAPI.subscribe(about.name, 'sub');
+      const newAbout = { ...about, user_is_subscriber: true };
+      dispatch(currentSubreddit(locationKey, newAbout));
+      const newSubreddits = produce(subreddits, (draft) => {
+        draft.subreddits[about.display_name] = newAbout;
+      });
+      dispatch(subredditsData(newSubreddits));
+    },
+    [dispatch]
+  );
+}
+
+/**
+ * Custom hook to handle subreddit unsubscription
+ * @returns {Function} - Callback function to unsubscribe from a subreddit
+ */
+function useUnsubscribe() {
+  const dispatch = useDispatch();
+  return useCallback(
+    async (about, subreddits, locationKey) => {
+      await RedditAPI.subscribe(about.name, 'unsub');
+      const newAbout = { ...about, user_is_subscriber: false };
+      dispatch(currentSubreddit(locationKey, newAbout));
+      const newSubreddits = produce(subreddits, (draft) => {
+        delete draft.subreddits[about.display_name];
+      });
+      dispatch(subredditsData(newSubreddits));
+    },
+    [dispatch]
+  );
+}
+
+/**
+ * SubscribeButton component to handle subscribing and unsubscribing from subreddits
+ * @returns {JSX.Element|null} - Rendered SubscribeButton component or null if conditions not met
+ */
 function SubUnSub() {
   const location = useLocation();
   const params = useParams();
-  const locationKey = location.key || 'front';
 
   const about = useSelector((state) =>
     getCurrentSubreddit(state, location.key)
   );
   const subreddits = useSelector((state) => state.subreddits);
-  const redditBearer = useSelector((state) => state.redditBearer);
+  const { status: bearerStatus } = useSelector((state) => state.redditBearer);
 
-  const dispatch = useDispatch();
+  const subscribe = useSubscribe();
+  const unsubscribe = useUnsubscribe();
+
+  const {
+    user_is_subscriber: userIsSubscriber,
+    display_name_prefixed: displayNamePrefixed,
+  } = about;
+  const locationKey = location.key || 'front';
+  const { target, listType } = params;
+
+  const buttonAction = useCallback(
+    () =>
+      userIsSubscriber
+        ? unsubscribe(about, subreddits, locationKey)
+        : subscribe(about, subreddits, locationKey),
+    [about, subreddits, unsubscribe, subscribe, locationKey]
+  );
 
   if (
     isEmpty(about) ||
-    redditBearer.status !== 'auth' ||
-    (params.target === 'popular' && params.listType === 'r')
+    bearerStatus !== 'auth' ||
+    (target === 'popular' && listType === 'r')
   ) {
     return null;
   }
 
-  const unsubAction = async () => {
-    await RedditAPI.subscribe(about.name, 'unsub');
-    const newAbout = { ...about, user_is_subscriber: false };
-    dispatch(currentSubreddit(locationKey, newAbout));
-
-    const newSubreddits = produce(subreddits, (draft) => {
-      delete draft.subreddits[about.display_name];
-    });
-    dispatch(subredditsData(newSubreddits));
-  };
-
-  const subAction = async () => {
-    await RedditAPI.subscribe(about.name, 'sub');
-    const newAbout = { ...about, user_is_subscriber: true };
-    dispatch(currentSubreddit(locationKey, newAbout));
-    const newSubreddits = produce(subreddits, (draft) => {
-      draft.subreddits[about.display_name] = newAbout;
-    });
-    dispatch(subredditsData(newSubreddits));
-  };
-
-  const buttonAction = about.user_is_subscriber ? unsubAction : subAction;
-
   const iconClass = `fas ${
-    about.user_is_subscriber ? 'fa-minus-circle' : 'fa-plus-circle'
+    userIsSubscriber ? 'fa-minus-circle' : 'fa-plus-circle'
   }`;
 
-  const text = about.user_is_subscriber ? 'Unsubscribe' : 'Subscribe';
+  const text = userIsSubscriber ? 'Unsubscribe' : 'Subscribe';
 
-  const title = `${about.user_is_subscriber ? `${text} From` : `${text} To`} ${
-    about.display_name_prefixed
-  }`;
+  const title = `${
+    userIsSubscriber ? `${text} From` : `${text} To`
+  } ${displayNamePrefixed}`;
 
   return (
     <button
