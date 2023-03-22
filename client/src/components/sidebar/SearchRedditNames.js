@@ -11,23 +11,25 @@ import RedditAPI from '../../reddit/redditAPI';
  * @param showNSFW {boolean} - Whether to include NSFW subreddits
  * @returns {*[]} - An array of subreddit names
  */
-function getSubredditNames(filterText, showNSFW) {
+function useGetSubredditNames(filterText, showNSFW) {
   const [searchResults, setSearchResults] = useState([]);
   useEffect(() => {
     let ignore = false;
     const getResults = async () => {
-      if (filterText) {
-        const results = await RedditAPI.searchSubreddits(filterText, {
-          include_over_18: showNSFW,
-        });
-        if (results.subreddits.length === 0) {
-          setSearchResults([]);
-        } else {
-          const names = results.subreddits.map((value) => value.name);
-          setSearchResults(names);
-        }
-      } else {
+      if (!filterText) {
         setSearchResults([]);
+        return;
+      }
+
+      const results = await RedditAPI.searchSubreddits(filterText, {
+        include_over_18: showNSFW,
+      });
+      if (!ignore) {
+        const { subreddits } = results;
+        const names = subreddits.length
+          ? subreddits.map((value) => value.name)
+          : [];
+        setSearchResults(names);
       }
     };
 
@@ -59,7 +61,7 @@ function SearchRedditNames({ filterText }) {
 
   const initShowSearchResuts = over18 !== undefined ? over18 : false;
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
-  const searchResults = getSubredditNames(filterText, showNSFW);
+  const searchResults = useGetSubredditNames(filterText, showNSFW);
 
   if (!filterText || searchResults.length === 0) {
     return null;
