@@ -5,21 +5,28 @@ import PostSubLink from './PostSubLink';
 import PostCommentLink from './PostCommentLink';
 
 function PostByline({ data, kind }) {
+  const {
+    author,
+    author_flair_text: flair,
+    created_utc: createdUtc,
+    is_submitter: isSubmitter,
+    num_comments: numComments,
+    permalink,
+    subreddit,
+  } = data;
+
   return (
     <>
       <PostBylineAuthor
-        author={data.author}
-        flair={data.author_flair_text}
-        isSubmitter={data.is_submitter}
+        author={author}
+        flair={flair}
+        isSubmitter={isSubmitter}
       />{' '}
-      <PostTimeAgo createdUtc={data.created_utc} />{' '}
+      <PostTimeAgo createdUtc={createdUtc} />{' '}
       {kind === 't3' && (
         <>
-          <PostCommentLink
-            numComments={data.num_comments}
-            permalink={data.permalink}
-          />{' '}
-          <PostSubLink subreddit={data.subreddit} />
+          <PostCommentLink numComments={numComments} permalink={permalink} />{' '}
+          <PostSubLink subreddit={subreddit} />
         </>
       )}
     </>
