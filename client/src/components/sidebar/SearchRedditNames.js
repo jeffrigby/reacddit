@@ -5,6 +5,46 @@ import queryString from 'query-string';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
 
+/**
+ * Get a list of subreddit names that match the filter text
+ * @param filterText {string} - The text to filter the subreddit names
+ * @param showNSFW {boolean} - Whether to include NSFW subreddits
+ * @returns {*[]} - An array of subreddit names
+ */
+function getSubredditNames(filterText, showNSFW) {
+  const [searchResults, setSearchResults] = useState([]);
+  useEffect(() => {
+    let ignore = false;
+    const getResults = async () => {
+      if (filterText) {
+        const results = await RedditAPI.searchSubreddits(filterText, {
+          include_over_18: showNSFW,
+        });
+        if (results.subreddits.length === 0) {
+          setSearchResults([]);
+        } else {
+          const names = results.subreddits.map((value) => value.name);
+          setSearchResults(names);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    };
+
+    getResults();
+    return () => {
+      ignore = true;
+    };
+  }, [filterText, showNSFW]);
+  return searchResults;
+}
+
+/**
+ * Display a list of subreddit names that match the filter text
+ * @param filterText {string} - The text to filter the subreddit names
+ * @returns {JSX.Element|null}
+ * @constructor
+ */
 function SearchRedditNames({ filterText }) {
   const over18 = useSelector((state) => state.redditMe.me.over_18);
   const subreddits = useSelector((state) =>
@@ -18,28 +58,8 @@ function SearchRedditNames({ filterText }) {
   );
 
   const initShowSearchResuts = over18 !== undefined ? over18 : false;
-  const [searchResults, setSearchResults] = useState([]);
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
-
-  useEffect(() => {
-    const getResults = async () => {
-      if (filterText) {
-        const results = await RedditAPI.searchRedditNames(filterText, {
-          include_over_18: showNSFW,
-        });
-        const { names } = results;
-        if (names.length === 0) {
-          setSearchResults('');
-        } else {
-          setSearchResults(names);
-        }
-      } else {
-        setSearchResults([]);
-      }
-    };
-
-    getResults();
-  }, [filterText, showNSFW]);
+  const searchResults = getSubredditNames(filterText, showNSFW);
 
   if (!filterText || searchResults.length === 0) {
     return null;

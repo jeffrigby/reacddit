@@ -29,12 +29,11 @@ class RedditAPI {
   }
 
   static setParams(defaults, options) {
-    // @todo this can be modernized
-    const params = Object.assign(defaults, options);
+    const params = { ...defaults, ...options };
     Object.keys(params).forEach(
-      (key) => (params[key] == null || params[key] === '') && delete params[key]
+      (key) =>
+        (params[key] === null || params[key] === '') && delete params[key]
     );
-
     return params;
   }
 
@@ -326,6 +325,32 @@ class RedditAPI {
 
     const url = `/api/search_reddit_names`;
     const result = await this.redditAPI.get(url, data);
+    return result.data;
+  }
+
+  async searchSubreddits(query, options) {
+    const defaults = {
+      exact: false,
+      include_over_18: false,
+      include_unadvertisable: true,
+      query,
+      raw_json: 1,
+    };
+
+    const data = {
+      params: RedditAPI.setParams(defaults, options),
+    };
+
+    const url = `/api/search_subreddits`;
+    const result = await this.redditAPI.post(
+      url,
+      queryString.stringify(data.params),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }
+    );
     return result.data;
   }
 
