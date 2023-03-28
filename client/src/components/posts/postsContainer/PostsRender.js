@@ -1,50 +1,51 @@
+import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import Post from '../postDetail/Post';
 
 /**
  * This is a component to render a listing of posts.
  * It's extracted so both comments and link post types can call it
- * @param posts - The list of posts from reddit
- * @param listType - The type of list to render.
+ * @param posts {object} - The list of posts from reddit
+ * @param listType {string} - The type of list to render.
+ * @param idxOffset {number} - The offset to use for the index of the post
  * @constructor
  */
 function PostsRender({ posts, listType, idxOffset }) {
-  const links = [];
+  const entries = useMemo(() => {
+    const links = new Set();
 
-  const renderPost = (post, idx) => {
-    const { kind } = post;
-    if (kind === 'more') {
-      return null;
-    }
+    // Remove the "more" posts
+    const filteredPosts = Object.values(posts).filter(
+      (post) => post.kind !== 'more'
+    );
 
-    let duplicate = false;
-    if (kind === 't3') {
-      if (!links.includes(post.data.url) && listType !== 'duplicates') {
-        links.push(post.data.url);
-      } else {
-        // This is a dupe
-        duplicate = true;
+    // Render the posts and find duplicates
+    return filteredPosts.map((post, idx) => {
+      const {
+        kind,
+        data: { name, id, url },
+      } = post;
+
+      let duplicate = false;
+      if (kind === 't3' && listType !== 'duplicates') {
+        if (!links.has(url)) {
+          links.add(url);
+        } else {
+          duplicate = true;
+        }
       }
-    }
 
-    return (
-      <Post
-        postName={post.data.name}
-        idx={idx}
-        post={post}
-        key={post.data.id}
-        duplicate={duplicate}
-      />
-    );
-  };
-
-  let entries = null;
-  const entriesKeys = Object.keys(posts);
-  if (entriesKeys.length > 0) {
-    entries = entriesKeys.map((key, idx) =>
-      renderPost(posts[key], idx + idxOffset)
-    );
-  }
+      return (
+        <Post
+          postName={name}
+          idx={idx + idxOffset}
+          post={post}
+          key={id}
+          duplicate={duplicate}
+        />
+      );
+    });
+  }, [posts, listType, idxOffset]);
 
   return entries;
 }

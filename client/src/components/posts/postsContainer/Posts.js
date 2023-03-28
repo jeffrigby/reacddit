@@ -11,10 +11,11 @@ function Posts() {
   const listType = useSelector((state) => state.listingsFilter.listType);
   const data = useSelector((state) => listingData(state, location.key));
 
-  const entriesObject = data.children;
+  const { children: entriesObject, originalPost } = data;
+
   if (!entriesObject) return <PostsLoadingStatus />;
 
-  const hasParent = data.originalPost && listType.match(/duplicates|comments/);
+  const hasParent = originalPost && listType.match(/duplicates|comments/);
   const idxOffset = hasParent ? 1 : 0;
 
   return (
