@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from 'react';
+import { useContext, useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
@@ -76,10 +76,10 @@ function Self({ name, content }) {
     };
   }, []);
 
-  const toggleShow = () => {
+  const toggleShow = useCallback(() => {
     if (content.expand) return;
-    setShowAll(!showAll);
-  };
+    setShowAll((prevShowAll) => !prevShowAll);
+  }, [content.expand]);
 
   if (!content) {
     return null;

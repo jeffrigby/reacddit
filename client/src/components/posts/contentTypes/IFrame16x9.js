@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { PostsContextData } from '../../../contexts';
 
 function IFrame16x9({ content }) {
-  const postContext = useContext(PostsContextData);
-  const { isLoaded } = postContext;
+  const { isLoaded } = useContext(PostsContextData);
+
   return (
     <div className="media-cont black-bg">
       <div className="media-contain-width">
