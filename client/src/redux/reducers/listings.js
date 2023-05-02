@@ -1,4 +1,4 @@
-import produce from 'immer';
+import { produce } from 'immer';
 import { pruneObject } from '../../common';
 
 const MAX_HISTORY_ITEMS = 7;

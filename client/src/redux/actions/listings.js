@@ -1,6 +1,6 @@
 import { batch } from 'react-redux';
 import queryString from 'query-string';
-import produce from 'immer';
+import { produce } from 'immer';
 import { keyEntryChildren } from '../../common';
 import RedditAPI from '../../reddit/redditAPI';
 

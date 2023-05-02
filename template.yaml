@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  reacddit-api
+
+  Sample SAM template to create a lambda and API gateway to serve the API
+
+Parameters:
+  EnvFile:
+    Type: String
+    Default: ".env.serverless"
+  AllowOrigins:
+    Type: String
+
+Globals:
+  Function:
+    Timeout: 20
+    Environment:
+      Variables:
+        ENVFILE: !Ref EnvFile
+
+Resources:
+  ReacdditAPI:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: serverless-koa.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      Events:
+        GetEvent:
+          Type: Api
+          Properties:
+            Path: /{all+}
+            Method: get
+
+  ReacdditAPIBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  ReacdditAPI:
+    Description: "API Gateway endpoint URL for Prod stage for ReacdditAPI function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/api/"
+  ReacdditAPIFunction:
+    Description: "ReacdditAPI Lambda Function ARN"
+    Value: !GetAtt ReacdditAPI.Arn
+  ReacdditAPIFunctionIamRole:
+    Description: "Implicit IAM Role created for ReacdditAPI function"
+    Value: !GetAtt ReacdditAPI.Arn

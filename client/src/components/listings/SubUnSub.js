@@ -3,7 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import { useParams } from 'react-router-dom';
-import produce from 'immer';
+import { produce } from 'immer';
 import { subredditsData } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';

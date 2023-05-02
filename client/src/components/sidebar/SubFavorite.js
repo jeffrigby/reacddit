@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
-import produce from 'immer';
+import { produce } from 'immer';
 import { subredditsData } from '../../redux/actions/subreddits';
 import RedditAPI from '../../reddit/redditAPI';
 
