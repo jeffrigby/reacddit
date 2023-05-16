@@ -43,3 +43,5 @@ stats.json
 
 /.vscode
 /api/.env.serverless
+/.aws-sam
+/samconfig.toml

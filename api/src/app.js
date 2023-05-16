@@ -3,7 +3,6 @@ import Router from "koa-router";
 import session from "koa-session";
 import logger from "koa-logger";
 import { v4 as uuidv4 } from "uuid";
-import dotenv from "dotenv-defaults";
 import qs from "qs";
 import {
   axiosInstance,
@@ -11,14 +10,6 @@ import {
   encryptToken,
   decryptToken,
 } from "./util.js";
-
-const envPath = process.env.ENVFILE ? process.env.ENVFILE : "./.env";
-
-dotenv.config({
-  path: envPath,
-  encoding: "utf8",
-  defaults: "./.env.defaults", // This is new
-});
 
 const {
   REDDIT_CLIENT_ID,
