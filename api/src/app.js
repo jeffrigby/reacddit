@@ -1,13 +1,16 @@
 import Koa from "koa";
 import Router from "koa-router";
 import session from "koa-session";
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 import logger from "koa-logger";
-import chalk from "chalk";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv-defaults";
-import axios from "axios";
 import qs from "qs";
+import {
+  axiosInstance,
+  checkEnvErrors,
+  encryptToken,
+  decryptToken,
+} from "./util.js";
 
 const envPath = process.env.ENVFILE ? process.env.ENVFILE : "./.env";
 
@@ -19,77 +22,21 @@ dotenv.config({
 
 const {
   REDDIT_CLIENT_ID,
-  REDDIT_CLIENT_SECRET,
   REDDIT_CALLBACK_URI,
   REDDIT_SCOPE,
   CLIENT_PATH,
   SALT,
   SESSION_LENGTH_SECS,
-  PORT,
   DEBUG,
-  ENCRYPTION_ALGORITHM,
-  IV_LENGTH,
 } = process.env;
 
-const axiosInstance = axios.create({
-  baseURL: "https://www.reddit.com",
-  headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
-  },
-  auth: {
-    username: REDDIT_CLIENT_ID,
-    password: REDDIT_CLIENT_SECRET,
-  },
-});
-
 const debugEnabled = DEBUG === "1" || DEBUG === "true" || false;
-
-const red = chalk.red;
-
-function checkEnvErrors() {
-  const checks = [
-    {
-      condition: SALT.length !== 32,
-      message: "The SALT must be exactly 32 characters.",
-    },
-    {
-      condition:
-        !REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET || !REDDIT_CALLBACK_URI,
-      message:
-        "You must enter the REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_CALLBACK_URI from https://www.reddit.com/prefs/apps",
-    },
-    {
-      condition: !Number.isInteger(Number(PORT)) || !(parseInt(PORT) > 0),
-      message: "PORT must be a valid positive integer.",
-    },
-    {
-      condition:
-        !Number.isInteger(Number(SESSION_LENGTH_SECS)) ||
-        !(parseInt(SESSION_LENGTH_SECS) > 0),
-      message: "SESSION_LENGTH_SECS must be a valid positive integer.",
-    },
-    {
-      condition: !CLIENT_PATH,
-      message:
-        "You must set your client path. This is the path to the client app in ../client This is to handle redirects.",
-    },
-  ];
-
-  const errors = checks
-    .filter((check) => check.condition)
-    .map((check) => check.message);
-
-  if (errors.length > 0) {
-    errors.forEach((error) => console.log(red(`.env ERROR: ${error}`)));
-    process.exit(1);
-  }
-}
 
 checkEnvErrors();
 
 const CONFIG = {
   key: "reacddit:sess" /** (string) cookie key (default is koa:sess) */,
-  /** (number || 'session') maxAge in ms (default is 1 days) */
+  /** (number || 'session') maxAge in ms (default is 1 day) */
   /** 'session' will result in a cookie that expires when session/browser is closed */
   /** Warning: If a session cookie is stolen, this cookie will never expire */
   maxAge: SESSION_LENGTH_SECS * 1000,
@@ -105,51 +52,6 @@ const CONFIG = {
 
 const scope =
   REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save";
-
-/**
- * Encrypt the token for storage in the cookie. The IV is
- * unique for every token.
- * @param {object} token The token object
- * @returns {{iv: string, token: string}}
- */
-const encryptToken = (token) => {
-  const iv = randomBytes(parseInt(IV_LENGTH));
-  const tokenString = JSON.stringify(token);
-  const cipher = createCipheriv(ENCRYPTION_ALGORITHM, Buffer.from(SALT), iv);
-  let encrypted = cipher.update(tokenString);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return { iv: iv.toString("hex"), token: encrypted.toString("hex") };
-};
-
-/**
- * Decrypt the session token cookie
- * @param {object} encryptedToken The encrypted token
- * @returns {any|null} The decrypted token or null if the token is invalid
- */
-const decryptToken = (encryptedToken) => {
-  if (
-    !encryptedToken ||
-    encryptedToken.iv === undefined ||
-    encryptedToken.token === undefined
-  ) {
-    return null;
-  }
-  const iv = Buffer.from(encryptedToken.iv, "hex");
-  const encryptedText = Buffer.from(encryptedToken.token, "hex");
-  const decipher = createDecipheriv(
-    ENCRYPTION_ALGORITHM,
-    Buffer.from(SALT),
-    iv
-  );
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  try {
-    return JSON.parse(decrypted.toString());
-  } catch (error) {
-    console.error("Failed to parse decrypted token:", error);
-    return null;
-  }
-};
 
 /**
  * Set the session information
@@ -227,6 +129,8 @@ const addExtraInfoToToken = (token, auth = false) => {
   const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
   const expires = now + token.expires_in - 120;
 
+  console.log({ token, auth });
+
   return {
     ...token,
     expires,
@@ -275,7 +179,7 @@ const revokeToken = async (token, tokenType) => {
  * @param prevToken
  */
 const getRefreshToken = async (prevToken) => {
-  const { refresh_token, auth } = prevToken;
+  const { refresh_token } = prevToken;
 
   const params = new URLSearchParams();
   params.append("grant_type", "refresh_token");
@@ -414,8 +318,8 @@ router.get("/api/callback", async (ctx, next) => {
 
 // Helper function to set the session, cookie and response body
 const setSessionAndRespond = async (token, ctx, type) => {
-  console.log({ token, ctx, type });
   setSessAndCookie(token, ctx);
+  console.log("xyz", token);
   ctx.body = getBearer(token, { type, loginUrl: getLoginUrl(ctx) });
 };
 
@@ -430,7 +334,12 @@ router.get("/api/bearer", async (ctx, next) => {
   if (!token) {
     console.log("ANON TOKEN GRANTED");
     const anonToken = await getAnonToken();
-    await setSessionAndRespond(anonToken, ctx, "new");
+    console.log("ANON TOKEN GRANTED", anonToken);
+    await setSessionAndRespond(
+      addExtraInfoToToken(anonToken.token, false),
+      ctx,
+      "new"
+    );
     return;
   }
 
@@ -449,25 +358,36 @@ router.get("/api/bearer", async (ctx, next) => {
     if (!refreshedTokenResult) {
       console.error("REFRESH TOKEN FAILED. GETTING ANON TOKEN");
       const anonToken = await getAnonToken();
-      await setSessionAndRespond(anonToken, ctx, "new");
+      await setSessionAndRespond(
+        addExtraInfoToToken(anonToken.token),
+        ctx,
+        "new"
+      );
       return;
     }
 
     const newToken = {
       ...refreshedTokenResult,
       refresh_token: token.refresh_token,
-      auth: token.auth,
     };
 
     const message = forceRefresh
       ? "FORCED REFRESH. NEW TOKEN GRANTED"
       : "TOKEN EXPIRED. NEW TOKEN GRANTED";
     console.log(message);
-    await setSessionAndRespond(newToken, ctx, "refresh");
+    await setSessionAndRespond(
+      addExtraInfoToToken(newToken, true),
+      ctx,
+      "refresh"
+    );
   } else {
     console.log("REFRESH ANON TOKEN GRANTED");
     const anonToken = await getAnonToken();
-    await setSessionAndRespond(anonToken.token, ctx, "newanon");
+    await setSessionAndRespond(
+      addExtraInfoToToken(anonToken.token, false),
+      ctx,
+      "newanon"
+    );
   }
 });
 
