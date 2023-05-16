@@ -48,6 +48,18 @@ const CONFIG = {
    The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
   renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
    (default is false) */,
+  encode: (rawData) => {
+    // Use your encryptToken function
+    const encrypted = encryptToken(rawData);
+    // Return a stringified version of the whole encrypted object
+    return JSON.stringify(encrypted);
+  },
+  decode: (stringifiedEncryptedData) => {
+    // Parse the stringified encrypted object
+    const encryptedData = JSON.parse(stringifiedEncryptedData);
+    // Use your decryptToken function
+    return decryptToken(encryptedData);
+  },
 };
 
 const scope =
@@ -59,7 +71,7 @@ const scope =
  * @param ctx
  */
 const setSession = (token, ctx) => {
-  ctx.session.token = encryptToken(token);
+  ctx.session.token = token;
 };
 
 /**
@@ -160,6 +172,12 @@ const getAnonToken = async () => {
   }
 };
 
+/**
+ * Revokes a token
+ * @param token
+ * @param tokenType
+ * @returns {Promise<boolean>}
+ */
 const revokeToken = async (token, tokenType) => {
   try {
     await axiosInstance.post("/api/v1/revoke_token", {
@@ -199,16 +217,31 @@ const getRefreshToken = async (prevToken) => {
 
 /**
  * Generate an object to return.
- * @param {Object} accessToken - The access token object
+ * @param {Object} token - The access token object
  * @param {Object} [params={}] - Optional parameters to include
  * @returns {Object} - Combined object with access token properties and optional parameters
  */
-const getBearer = ({ access_token, expires, auth }, params = {}) => ({
-  accessToken: access_token,
-  expires,
-  auth,
-  ...params,
-});
+const getBearer = (token, params = {}) => {
+  // Check for required properties
+  if (!token.access_token) {
+    throw new Error("Missing access token");
+  }
+  if (!token.expires) {
+    throw new Error("Missing expiry time");
+  }
+  if (token.auth === undefined) {
+    throw new Error("Missing auth");
+  }
+
+  const { access_token, expires, auth } = token;
+
+  return {
+    accessToken: access_token,
+    expires,
+    auth,
+    ...params,
+  };
+};
 
 /**
  * Generate the login URL to return with anon tokens
@@ -319,44 +352,45 @@ router.get("/api/callback", async (ctx, next) => {
 // Helper function to set the session, cookie and response body
 const setSessionAndRespond = async (token, ctx, type) => {
   setSessAndCookie(token, ctx);
-  console.log("xyz", token);
   ctx.body = getBearer(token, { type, loginUrl: getLoginUrl(ctx) });
 };
 
 /**
- * Get a bearer token
+ * Helper function to handle the scenario when there's no token available.
+ * @param {object} ctx - The Koa context
  */
-router.get("/api/bearer", async (ctx, next) => {
-  const token = decryptToken(ctx.session.token);
-  const forceRefresh = ctx.query.refresh !== undefined;
+const getAnonTokenAndSetSession = async (ctx) => {
+  console.log("ANON TOKEN GRANTED");
+  const anonToken = await getAnonToken();
+  await setSessionAndRespond(
+    addExtraInfoToToken(anonToken.token, false),
+    ctx,
+    "new"
+  );
+};
 
-  // Case 1: No existing token. Get an anon token.
-  if (!token) {
-    console.log("ANON TOKEN GRANTED");
-    const anonToken = await getAnonToken();
-    console.log("ANON TOKEN GRANTED", anonToken);
-    await setSessionAndRespond(
-      addExtraInfoToToken(anonToken.token, false),
-      ctx,
-      "new"
-    );
-    return;
-  }
+/**
+ * Helper function to handle the scenario when the token isn't expired.
+ * @param {object} ctx - The Koa context
+ * @param {object} token - The token object
+ */
+const returnCachedTokenAndSetSession = async (ctx, token) => {
+  console.log("CACHED TOKEN RETURNED");
+  await setSessionAndRespond(token, ctx, "cached");
+};
 
-  // Case 2: Token is not expired and no forced refresh.
-  if (!isTokenExpired(token) && !forceRefresh) {
-    const type = token.auth ? "cached" : "cached";
-    console.log("TOKEN NOT EXPIRED. RETURN AS IS");
-    await setSessionAndRespond(token, ctx, type);
-    return;
-  }
-
-  // Case 3: Token expired or forced refresh.
-  // If it's an auth user, refresh the token. If not, get a new anon token.
+/**
+ * Helper function to handle the scenario when the token is expired or refresh is forced.
+ * @param {object} ctx - The Koa context
+ * @param {object} token - The token object
+ * @param {boolean} forceRefresh - The flag that indicates whether the refresh is forced
+ */
+const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
   if (token.refresh_token) {
     const refreshedTokenResult = await getRefreshToken(token);
+
     if (!refreshedTokenResult) {
-      console.error("REFRESH TOKEN FAILED. GETTING ANON TOKEN");
+      console.log("REFRESH TOKEN ERROR. GETTING ANON TOKEN.");
       const anonToken = await getAnonToken();
       await setSessionAndRespond(
         addExtraInfoToToken(anonToken.token),
@@ -381,7 +415,7 @@ router.get("/api/bearer", async (ctx, next) => {
       "refresh"
     );
   } else {
-    console.log("REFRESH ANON TOKEN GRANTED");
+    console.log("NO REFRESH TOKEN. GETTING ANON TOKEN.");
     const anonToken = await getAnonToken();
     await setSessionAndRespond(
       addExtraInfoToToken(anonToken.token, false),
@@ -389,13 +423,37 @@ router.get("/api/bearer", async (ctx, next) => {
       "newanon"
     );
   }
+};
+
+/**
+ * Get a bearer token
+ */
+router.get("/api/bearer", async (ctx, next) => {
+  const token = ctx.session.token;
+  const forceRefresh = ctx.query.refresh !== undefined;
+
+  // Case 1: No existing token. Get an anon token.
+  if (!token) {
+    await getAnonTokenAndSetSession(ctx);
+    return;
+  }
+
+  // Case 2: Token is not expired and no forced refresh.
+  if (!isTokenExpired(token) && !forceRefresh) {
+    await returnCachedTokenAndSetSession(ctx, token);
+    return;
+  }
+
+  // Case 3: Token expired or forced refresh.
+  // If it's an auth user, refresh the token. If not, get a new anon token.
+  await refreshOrGetAnonTokenAndSetSession(ctx, token, forceRefresh);
 });
 
 /**
  * Log a user out by revoking their access and refresh tokens, clearing the session, and deleting the token cookie.
  */
 router.get("/api/logout", async (ctx, next) => {
-  const token = decryptToken(ctx.session.token);
+  const token = ctx.session.token;
 
   if (token) {
     try {
