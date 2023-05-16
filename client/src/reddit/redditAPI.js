@@ -16,7 +16,7 @@ class RedditAPI {
     this.redditAPI.interceptors.request.use(
       async (config) => {
         const newConfig = config;
-        const token = await this.getToken(false);
+        const { token } = await this.getToken(false);
 
         if (token != null) {
           newConfig.headers.Authorization = `Bearer ${token}`;
@@ -45,9 +45,10 @@ class RedditAPI {
     let token = null;
 
     const cookieToken = cookies.get('token');
+    let cookieTokenParsed = {};
 
     if (cookieToken !== undefined) {
-      const cookieTokenParsed = JSON.parse(cookieToken);
+      cookieTokenParsed = JSON.parse(cookieToken);
       const { expires } = cookieTokenParsed;
       const dateTime = Date.now();
       const timestamp = Math.floor(dateTime / 1000);
@@ -57,7 +58,7 @@ class RedditAPI {
         token = 'expired';
       }
     }
-    return token;
+    return { token, cookieTokenParsed };
   }
 
   /**
@@ -68,7 +69,8 @@ class RedditAPI {
    */
   async getToken(reset) {
     // @todo eslint says this should be static, but I need to access it from redux.
-    let token = RedditAPI.getTokenStorage();
+    let { token } = RedditAPI.getTokenStorage();
+    const { cookieTokenParsed } = RedditAPI.getTokenStorage();
 
     if (token === 'expired' || reset === true || token === null) {
       // token expired or forced refresh. Get a new one.
@@ -81,7 +83,7 @@ class RedditAPI {
       localStorage.clear();
       sessionStorage.clear();
     }
-    return token;
+    return { token, cookieTokenParsed };
   }
 
   /**

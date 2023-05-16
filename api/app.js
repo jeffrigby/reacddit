@@ -6,9 +6,8 @@ import logger from "koa-logger";
 import chalk from "chalk";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv-defaults";
-
-import { AuthorizationCode, ClientCredentials } from "simple-oauth2";
 import axios from "axios";
+import qs from "qs";
 
 const envPath = process.env.ENVFILE ? process.env.ENVFILE : "./.env";
 
@@ -28,45 +27,60 @@ const {
   SESSION_LENGTH_SECS,
   PORT,
   DEBUG,
+  ENCRYPTION_ALGORITHM,
+  IV_LENGTH,
 } = process.env;
+
+const axiosInstance = axios.create({
+  baseURL: "https://www.reddit.com",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded",
+  },
+  auth: {
+    username: REDDIT_CLIENT_ID,
+    password: REDDIT_CLIENT_SECRET,
+  },
+});
 
 const debugEnabled = DEBUG === "1" || DEBUG === "true" || false;
 
 const red = chalk.red;
 
 function checkEnvErrors() {
-  const env_errors = [];
-  if (SALT.length !== 32) {
-    env_errors.push("The SALT must be exactly 32 characters.");
-  }
+  const checks = [
+    {
+      condition: SALT.length !== 32,
+      message: "The SALT must be exactly 32 characters.",
+    },
+    {
+      condition:
+        !REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET || !REDDIT_CALLBACK_URI,
+      message:
+        "You must enter the REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_CALLBACK_URI from https://www.reddit.com/prefs/apps",
+    },
+    {
+      condition: !Number.isInteger(Number(PORT)) || !(parseInt(PORT) > 0),
+      message: "PORT must be a valid positive integer.",
+    },
+    {
+      condition:
+        !Number.isInteger(Number(SESSION_LENGTH_SECS)) ||
+        !(parseInt(SESSION_LENGTH_SECS) > 0),
+      message: "SESSION_LENGTH_SECS must be a valid positive integer.",
+    },
+    {
+      condition: !CLIENT_PATH,
+      message:
+        "You must set your client path. This is the path to the client app in ../client This is to handle redirects.",
+    },
+  ];
 
-  if (!REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET || !REDDIT_CALLBACK_URI) {
-    env_errors.push(
-      "You must enter the REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_CALLBACK_URI from https://www.reddit.com/prefs/apps"
-    );
-  }
+  const errors = checks
+    .filter((check) => check.condition)
+    .map((check) => check.message);
 
-  if (!Number.isInteger(Number(PORT)) || !(parseInt(PORT) > 0)) {
-    env_errors.push("PORT must be a valid positive integer.");
-  }
-
-  if (
-    !Number.isInteger(Number(SESSION_LENGTH_SECS)) ||
-    !(parseInt(SESSION_LENGTH_SECS) > 0)
-  ) {
-    env_errors.push("SESSION_LENGTH_SECS must be a valid positive integer.");
-  }
-
-  if (!CLIENT_PATH) {
-    env_errors.push(
-      "You must set your client path. This is the path to the client app in ../client This is to handle redirects."
-    );
-  }
-
-  if (env_errors.length > 0) {
-    env_errors.forEach((value) => {
-      console.log(red(`.env ERROR: ${value}`));
-    });
+  if (errors.length > 0) {
+    errors.forEach((error) => console.log(red(`.env ERROR: ${error}`)));
     process.exit(1);
   }
 }
@@ -89,44 +103,19 @@ const CONFIG = {
    (default is false) */,
 };
 
-const redditClient = {
-  id: REDDIT_CLIENT_ID,
-  secret: REDDIT_CLIENT_SECRET,
-};
-
 const scope =
   REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save";
-
-const oauth2 = new AuthorizationCode({
-  client: redditClient,
-  auth: {
-    tokenHost: "https://ssl.reddit.com",
-    authorizeHost: "https://ssl.reddit.com",
-    tokenPath: "/api/v1/access_token",
-    authorizePath: "/api/v1/authorize",
-    revokePath: "/api/v1/revoke_token",
-  },
-});
-
-const client = new ClientCredentials({
-  client: redditClient,
-  auth: {
-    tokenHost: "https://ssl.reddit.com",
-    tokenPath: "/api/v1/access_token",
-    revokePath: "/api/v1/revoke_token",
-  },
-});
 
 /**
  * Encrypt the token for storage in the cookie. The IV is
  * unique for every token.
- * @param token The token object
+ * @param {object} token The token object
  * @returns {{iv: string, token: string}}
  */
 const encryptToken = (token) => {
-  const iv = randomBytes(16);
+  const iv = randomBytes(parseInt(IV_LENGTH));
   const tokenString = JSON.stringify(token);
-  const cipher = createCipheriv("aes-256-cbc", Buffer.from(SALT), iv);
+  const cipher = createCipheriv(ENCRYPTION_ALGORITHM, Buffer.from(SALT), iv);
   let encrypted = cipher.update(tokenString);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   return { iv: iv.toString("hex"), token: encrypted.toString("hex") };
@@ -134,8 +123,8 @@ const encryptToken = (token) => {
 
 /**
  * Decrypt the session token cookie
- * @param encryptedToken
- * @returns {token_object}
+ * @param {object} encryptedToken The encrypted token
+ * @returns {any|null} The decrypted token or null if the token is invalid
  */
 const decryptToken = (encryptedToken) => {
   if (
@@ -147,10 +136,56 @@ const decryptToken = (encryptedToken) => {
   }
   const iv = Buffer.from(encryptedToken.iv, "hex");
   const encryptedText = Buffer.from(encryptedToken.token, "hex");
-  const decipher = createDecipheriv("aes-256-cbc", Buffer.from(SALT), iv);
+  const decipher = createDecipheriv(
+    ENCRYPTION_ALGORITHM,
+    Buffer.from(SALT),
+    iv
+  );
   let decrypted = decipher.update(encryptedText);
   decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return JSON.parse(decrypted.toString());
+  try {
+    return JSON.parse(decrypted.toString());
+  } catch (error) {
+    console.error("Failed to parse decrypted token:", error);
+    return null;
+  }
+};
+
+/**
+ * Set the session information
+ * @param {object} token
+ * @param ctx
+ */
+const setSession = (token, ctx) => {
+  ctx.session.token = encryptToken(token);
+};
+
+/**
+ * Set the cookie
+ * @param {object} token
+ * @param ctx
+ */
+const setCookie = (token, ctx) => {
+  const cookieStorage = {
+    accessToken: token.access_token,
+    expires: token.expires,
+    auth: token.auth,
+    loginURL: getLoginUrl(ctx),
+  };
+
+  const tokenJson = JSON.stringify(cookieStorage);
+
+  const expireDate = new Date();
+  const expiryTime = expireDate.getTime() + SESSION_LENGTH_SECS * 1000;
+  expireDate.setTime(expiryTime);
+
+  ctx.cookies.set("token", tokenJson, {
+    maxAge: SESSION_LENGTH_SECS * 1000,
+    expires: expireDate,
+    httpOnly: false,
+    secure: true, // or false, depending on your needs
+    overwrite: true,
+  });
 };
 
 /**
@@ -160,47 +195,38 @@ const decryptToken = (encryptedToken) => {
  * @param ctx
  */
 const setSessAndCookie = (token, ctx) => {
-  ctx.session.token = encryptToken(token);
-
-  const cookieStorage = {
-    accessToken: token.access_token,
-    expires: token.expires,
-    loginURL: getLoginUrl(ctx),
-  };
-
-  const tokenJson = JSON.stringify(cookieStorage);
-  const expireDate = new Date();
-  ctx.cookies.set("token", tokenJson, {
-    maxAge: SESSION_LENGTH_SECS * 1000,
-    expires: expireDate.setTime(
-      expireDate.getTime() + SESSION_LENGTH_SECS * 1000
-    ),
-    httpOnly: false,
-    overwrite: true,
-  });
+  try {
+    setSession(token, ctx);
+    setCookie(token, ctx);
+  } catch (error) {
+    console.error("Error setting session and cookie:", error);
+  }
 };
 
 /**
- * Is the token expired? Pad it by 5 minutes.
- * @param token
- * @returns {boolean}
+ * Checks if the token is expired. Pads the expiry time by 5 minutes.
+ * @param {Object} token - The token object
+ * @returns {boolean} - Returns true if the token is expired, false otherwise
  */
-const isExpired = (token) => {
-  if (!token.expires) {
+const isTokenExpired = (token) => {
+  if (!token || !token.expires) {
     return true;
   }
-  const now = Date.now() / 1000;
+  const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
   // Pad it by 5 minutes.
   return token.expires - 300 <= now;
 };
 
-const isAuth = (accessCode) => accessCode.substring(0, 1) !== "-";
-
-const addExtraInfo = (AccessToken) => {
-  const { token } = AccessToken;
-  const now = Date.now() / 1000;
+/**
+ * Adds additional info to the token object
+ * @param {Object} token - The token object
+ * @param {boolean} auth - If the token is authorized
+ * @returns {Object} - The token object with additional info
+ */
+const addExtraInfoToToken = (token, auth = false) => {
+  const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
   const expires = now + token.expires_in - 120;
-  const auth = isAuth(token.access_token);
+
   return {
     ...token,
     expires,
@@ -209,42 +235,33 @@ const addExtraInfo = (AccessToken) => {
 };
 
 /**
- * Get an anon token from reddit
- * @returns {Promise<*>}
+ * Asynchronously requests an anonymous access token from Reddit.
+ *
+ * @throws {Error} If the request to Reddit API fails.
+ * @returns {Promise<Object>} A Promise that resolves to an object representing the access token.
  */
 const getAnonToken = async () => {
-  // Get the access token object for the client
+  // Request parameters
+  const params = new URLSearchParams();
+  params.append("grant_type", "client_credentials");
+  params.append("scope", scope);
+
   try {
-    const tokenParams = {
-      scope,
-    };
-    const anonToken = await client.getToken(tokenParams);
-    const anonTokenParsed = addExtraInfo(anonToken);
-    return anonTokenParsed;
+    const res = await axiosInstance.post("/api/v1/access_token", params);
+    return addExtraInfoToToken({ token: res.data }, false);
   } catch (error) {
-    console.error("Error: Access Token error", error.message, error.get);
-    return false;
+    console.error("Error: Anon Access Token error", error.message);
+    console.error("Error response from Reddit:", error.response.data);
+    throw new Error("Failed to retrieve anonymous access token from Reddit.");
   }
 };
 
 const revokeToken = async (token, tokenType) => {
   try {
-    await axios.post(
-      "https://www.reddit.com/api/v1/revoke_token",
-      {
-        token,
-        token_type_hint: tokenType,
-      },
-      {
-        auth: {
-          username: REDDIT_CLIENT_ID,
-          password: REDDIT_CLIENT_SECRET,
-        },
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
+    await axiosInstance.post("/api/v1/revoke_token", {
+      token,
+      token_type_hint: tokenType,
+    });
     return true;
   } catch (error) {
     console.log("Revoke Token error", error.message);
@@ -254,49 +271,38 @@ const revokeToken = async (token, tokenType) => {
 
 /**
  * Refresh an existing token with the refresh token
- * @param refreshToken
  * @returns {Promise<*>}
+ * @param prevToken
  */
-const getRefreshToken = async (refreshToken) => {
+const getRefreshToken = async (prevToken) => {
+  const { refresh_token, auth } = prevToken;
+
+  const params = new URLSearchParams();
+  params.append("grant_type", "refresh_token");
+  params.append("refresh_token", refresh_token);
+
   try {
     // User axios to get the token
-    const newToken = await axios.post(
-      "https://www.reddit.com/api/v1/access_token",
-      {
-        grant_type: "refresh_token",
-        refresh_token: refreshToken,
-      },
-      {
-        auth: {
-          username: REDDIT_CLIENT_ID,
-          password: REDDIT_CLIENT_SECRET,
-        },
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
-    const AccessToken = {
-      token: newToken.data,
-    };
-    console.log(newToken.data, "tokenJson");
-    return addExtraInfo(AccessToken);
+    const newToken = await axiosInstance.post("/api/v1/access_token", params);
+    // Only auth tokens have a refresh token
+    return addExtraInfoToToken(newToken.data, true);
   } catch (error) {
-    console.log("Access Token error", error.message);
+    console.log("Refresh Access Token error", error.message);
+    console.error(error);
     return false;
   }
 };
 
 /**
  * Generate an object to return.
- * @param accessToken
- * @param params
- * @returns {{expires: (number|*), auth: *, accessToken: *}}
+ * @param {Object} accessToken - The access token object
+ * @param {Object} [params={}] - Optional parameters to include
+ * @returns {Object} - Combined object with access token properties and optional parameters
  */
-const getBearer = (accessToken, params = {}) => ({
-  accessToken: accessToken.access_token,
-  expires: accessToken.expires,
-  auth: accessToken.auth,
+const getBearer = ({ access_token, expires, auth }, params = {}) => ({
+  accessToken: access_token,
+  expires,
+  auth,
   ...params,
 });
 
@@ -308,16 +314,23 @@ const getBearer = (accessToken, params = {}) => ({
 const getLoginUrl = (ctx) => {
   const state = ctx.session.state || uuidv4();
   ctx.session.state = state;
-  const authorizationUri = oauth2.authorizeURL({
+
+  // Construct the query parameters
+  const queryParams = new URLSearchParams({
+    client_id: REDDIT_CLIENT_ID,
+    response_type: "code",
+    state: state,
     redirect_uri: REDDIT_CALLBACK_URI,
-    scope: scope.split(","),
-    state,
     duration: "permanent",
+    scope: scope.split(",").join(" "),
   });
-  return authorizationUri;
+
+  // Construct the full authorization URL
+  return `https://www.reddit.com/api/v1/authorize?${queryParams.toString()}`;
 };
 
 const app = new Koa();
+app.proxy = true;
 
 app.keys = [SALT];
 app.use(session(CONFIG, app));
@@ -335,55 +348,37 @@ const router = new Router();
  */
 router.get("/api/login", (ctx, next) => {
   const authorizationUri = getLoginUrl(ctx);
-  // @todo seems like a dumb way to do this but ¯\ _(ツ)_/¯.
-  // Also only implementing this because the login form constantly breaks for mobile
-  const newAuthUrl =
-    ctx.request.url === "/api/login?mobile"
-      ? authorizationUri.replace("/authorize", "/authorize.compact")
-      : authorizationUri;
-  ctx.redirect(newAuthUrl);
+  ctx.redirect(authorizationUri);
 });
 
 /**
- * Handle the Reddit login once authenticated at Reddit.com
- * set the cookie and forward to the front page.
+ * Get the bearer token
  */
 router.get("/api/callback", async (ctx, next) => {
   const { code, state, error } = ctx.query;
   const savedState = ctx.session.state;
   ctx.session.state = null;
 
-  let message;
-  if (!code || !state) {
-    message = `Code and/or state query strings missing.`;
+  const handleError = (message, status = 500) => {
     console.log(message);
-    ctx.status = 500;
+    ctx.status = status;
     ctx.body = { status: "error", message };
-    return;
+  };
+
+  if (!code || !state) {
+    return handleError("Code and/or state query strings missing.");
   }
 
   if (error) {
-    message = `ERROR RETRIEVING THE TOKEN. ${error}`;
-    console.log(message);
-    ctx.status = 500;
-    ctx.body = { status: "error", message };
-    return;
+    return handleError(`ERROR RETRIEVING THE TOKEN. ${error}`);
   }
 
   if (!savedState) {
-    message = "ERROR: SAVED STATE NOT FOUND.";
-    console.log(message);
-    ctx.status = 500;
-    ctx.body = { status: "error", message };
-    return;
+    return handleError("ERROR: SAVED STATE NOT FOUND.");
   }
 
   if (state !== savedState) {
-    message = "ERROR: THE STATE DOESN'T MATCH.";
-    console.log(message);
-    ctx.status = 500;
-    ctx.body = { status: "error", message };
-    return;
+    return handleError("ERROR: THE STATE DOESN'T MATCH.");
   }
 
   // Everything looks great. Let's try to get the code.
@@ -394,139 +389,112 @@ router.get("/api/callback", async (ctx, next) => {
   };
 
   try {
-    const AccessToken = await oauth2.getToken(options);
-    const { token } = AccessToken;
-    if (token.access_token) {
+    const AccessToken = await axiosInstance.post(
+      "/api/v1/access_token",
+      qs.stringify(options)
+    );
+
+    const { data } = AccessToken;
+    console.log("TOKEN RETRIEVED SUCCESSFULLY.", data);
+
+    if (data.access_token) {
       // we are good.
       console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
-      const accessToken = addExtraInfo(AccessToken);
+      const accessToken = addExtraInfoToToken(data, true);
       setSessAndCookie(accessToken, ctx);
       ctx.redirect(`${CLIENT_PATH}/?login`);
       return;
     }
   } catch (exception) {
-    message = `ACCESS TOKEN ERROR ${exception.message}`;
-    console.error(message);
-    ctx.status = 500;
-    ctx.body = { status: "error", message };
-    return;
+    return handleError(`ACCESS TOKEN ERROR ${exception.message}`);
   }
 
   ctx.body = "callback";
 });
 
+// Helper function to set the session, cookie and response body
+const setSessionAndRespond = async (token, ctx, type) => {
+  console.log({ token, ctx, type });
+  setSessAndCookie(token, ctx);
+  ctx.body = getBearer(token, { type, loginUrl: getLoginUrl(ctx) });
+};
+
 /**
- * Three things can happen
- *  1. No token exists. Get a new anon token
- *  2. The existing token in the session is expired or force refresh is set (?refresh)
- *  3. Refresh the token if auth or get a new anon token.
+ * Get a bearer token
  */
 router.get("/api/bearer", async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
-  debugEnabled && console.log("SESSION", token);
+  const forceRefresh = ctx.query.refresh !== undefined;
 
-  const loginUrl = getLoginUrl(ctx);
-
-  // No existing token. Get an anon token.
+  // Case 1: No existing token. Get an anon token.
   if (!token) {
-    const anonToken = await getAnonToken();
     console.log("ANON TOKEN GRANTED");
-    setSessAndCookie(anonToken, ctx);
-    ctx.body = getBearer(anonToken, { type: "new", loginUrl });
+    const anonToken = await getAnonToken();
+    await setSessionAndRespond(anonToken, ctx, "new");
     return;
   }
 
-  let message;
-
-  // Check if it's expired.
-  const tokenExpired = isExpired(token);
-  if (tokenExpired) {
-    message = `TOKEN EXPIRED ${debugEnabled ? token.access_token : ""} `;
-    console.log(message);
+  // Case 2: Token is not expired and no forced refresh.
+  if (!isTokenExpired(token) && !forceRefresh) {
+    const type = token.auth ? "cached" : "cached";
+    console.log("TOKEN NOT EXPIRED. RETURN AS IS");
+    await setSessionAndRespond(token, ctx, type);
+    return;
   }
 
-  // Force refresh?
-  const forceRefresh = ctx.query.refresh !== undefined;
-  if (forceRefresh) {
-    message = `FORCED REFRESH IS TRUE ${
-      debugEnabled ? token.refresh_token : ""
-    }`;
-    console.log(message);
-  }
+  // Case 3: Token expired or forced refresh.
+  // If it's an auth user, refresh the token. If not, get a new anon token.
+  if (token.refresh_token) {
+    const refreshedTokenResult = await getRefreshToken(token);
+    if (!refreshedTokenResult) {
+      console.error("REFRESH TOKEN FAILED. GETTING ANON TOKEN");
+      const anonToken = await getAnonToken();
+      await setSessionAndRespond(anonToken, ctx, "new");
+      return;
+    }
 
-  // Token is not expired and no forced refresh.
-  if (!tokenExpired && !forceRefresh) {
-    const returnBearer = token.auth
-      ? getBearer(token, { type: "cached" })
-      : getBearer(token, { type: "cached", loginUrl });
-
-    console.log(
-      `TOKEN NOT EXPIRED. RETURN AS IS ${
-        debugEnabled ? token.access_token : ""
-      }`
-    );
-    ctx.body = returnBearer;
-  } else if (token.refresh_token) {
-    // The token is expired or forced refresh.
-    // Auth user. Get an new token with the refresh token.
-    const refreshToken = token.refresh_token;
-    const refreshedTokenResult = await getRefreshToken(refreshToken);
     const newToken = {
       ...refreshedTokenResult,
-      refresh_token: refreshToken,
+      refresh_token: token.refresh_token,
+      auth: token.auth,
     };
 
-    setSessAndCookie(newToken, ctx);
-
-    const returnBody = getBearer(newToken, { type: "refresh" });
-    ctx.body = returnBody;
-
-    newToken.refresh_token = token.refresh_token;
-
-    if (tokenExpired) {
-      message = "TOKEN EXPIRED. NEW TOKEN GRANTED";
-    } else if (forceRefresh) {
-      message = "FORCED REFRESH. NEW TOKEN GRANTED";
-    } else {
-      message = "????";
-    }
-
-    if (debugEnabled) {
-      console.log(message, newToken.access_token);
-    } else {
-      console.log(message);
-    }
+    const message = forceRefresh
+      ? "FORCED REFRESH. NEW TOKEN GRANTED"
+      : "TOKEN EXPIRED. NEW TOKEN GRANTED";
+    console.log(message);
+    await setSessionAndRespond(newToken, ctx, "refresh");
   } else {
-    const anonToken = await getAnonToken();
     console.log("REFRESH ANON TOKEN GRANTED");
-    setSessAndCookie(anonToken, ctx);
-    ctx.body = getBearer(anonToken, { type: "newanon", loginUrl });
-    message = "ANON EXPIRED or FORCED & REFRESH TOKEN GRANTED";
-    if (debugEnabled) {
-      console.log(message, anonToken.access_token);
-    } else {
-      console.log(message);
-    }
+    const anonToken = await getAnonToken();
+    await setSessionAndRespond(anonToken.token, ctx, "newanon");
   }
 });
 
+/**
+ * Log a user out by revoking their access and refresh tokens, clearing the session, and deleting the token cookie.
+ */
 router.get("/api/logout", async (ctx, next) => {
   const token = decryptToken(ctx.session.token);
+
   if (token) {
     try {
-      const accessTokenRevoke = await revokeToken(
-        token.access_token,
-        "access_token"
-      );
-      const refreshTokenRevoke = await revokeToken(
-        token.refresh_token,
-        "refresh_token"
-      );
+      // Revoke the access token and the refresh token in parallel
+      await Promise.all([
+        revokeToken(token.access_token, "access_token"),
+        revokeToken(token.refresh_token, "refresh_token"),
+      ]);
     } catch (error) {
-      console.log("ERROR REVOKING TOKEN: ", error.message, error);
+      // Log the error but do not re-throw it
+      console.error("Error occurred while revoking tokens: ", error);
+      // Even if an error occurred, we still want to clear the session and cookie
     }
+
+    // Clear the session and delete the token cookie
     ctx.session.token = null;
-    ctx.cookies.set("token");
+    ctx.cookies.set("token", null, { overwrite: true });
+
+    // Redirect the user to the logout page
     return ctx.redirect(`${CLIENT_PATH}/?logout`);
   }
 });

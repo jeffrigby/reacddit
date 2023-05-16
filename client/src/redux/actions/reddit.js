@@ -32,23 +32,25 @@ export function redditGetBearer() {
   return async (dispatch, getState) => {
     try {
       const currentState = getState();
-      const bearer = await RedditAPI.getToken(false);
-      const status =
-        bearer === null || bearer.substr(0, 1) === '-' ? 'anon' : 'auth';
+      const { token, cookieTokenParsed } = await RedditAPI.getToken(false);
+      const { auth } = cookieTokenParsed;
+
+      // const status =
+      //   bearer === null || bearer.substr(0, 1) === '-' ? 'anon' : 'auth';
 
       const loginURL = RedditAPI.getLoginUrl();
 
       const result = {
-        bearer,
-        status,
+        bearer: token,
+        status: auth ? 'auth' : 'anon',
         loginURL,
       };
 
       const currentRedditBearer = currentState.redditBearer;
-      if (currentRedditBearer.bearer !== bearer) {
+      if (currentRedditBearer.bearer !== token) {
         dispatch(redditBearer(result));
       }
-      return bearer;
+      return token;
     } catch (e) {
       dispatch(redditBearer({ status: 'error', error: e.toString() }));
     }
