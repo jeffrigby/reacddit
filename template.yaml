@@ -4,9 +4,6 @@ Description: >
   This is a SAM template for the Reacddit Backend.
 
 Parameters:
-  EnvFile:
-    Type: String
-    Default: ".env.serverless"
   Domain:
     Description: Domain name for the API
     Type: String
