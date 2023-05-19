@@ -132,8 +132,6 @@ const addExtraInfoToToken = (token, auth = false) => {
   const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
   const expires = now + token.expires_in - 120;
 
-  console.log({ token, auth });
-
   return {
     ...token,
     expires,
@@ -157,8 +155,12 @@ const getAnonToken = async () => {
     const res = await axiosInstance.post("/api/v1/access_token", params);
     return addExtraInfoToToken({ token: res.data }, false);
   } catch (error) {
-    console.error("Error: Anon Access Token error", error.message);
-    console.error("Error response from Reddit:", error.response.data);
+    if (error?.message) {
+      console.error("Error: Anon Access Token error", error.message);
+    }
+    if (error?.response?.data) {
+      console.error("Error response from Reddit:", error.response.data);
+    }
     throw new Error("Failed to retrieve anonymous access token from Reddit.");
   }
 };
@@ -177,7 +179,7 @@ const revokeToken = async (token, tokenType) => {
     });
     return true;
   } catch (error) {
-    console.log("Revoke Token error", error.message);
+    console.error("Revoke Token error", error.message);
     return false;
   }
 };
@@ -200,8 +202,7 @@ const getRefreshToken = async (prevToken) => {
     // Only auth tokens have a refresh token
     return addExtraInfoToToken(newToken.data, true);
   } catch (error) {
-    console.log("Refresh Access Token error", error.message);
-    console.error(error);
+    console.error("Refresh Access Token error", error.message);
     return false;
   }
 };
@@ -288,7 +289,7 @@ router.get("/api/callback", async (ctx, next) => {
   ctx.session.state = null;
 
   const handleError = (message, status = 500) => {
-    console.log(message);
+    console.error(message);
     ctx.status = status;
     ctx.body = { status: "error", message };
   };
@@ -323,7 +324,7 @@ router.get("/api/callback", async (ctx, next) => {
     );
 
     const { data } = AccessToken;
-    console.log("TOKEN RETRIEVED SUCCESSFULLY.", data);
+    console.log("TOKEN RETRIEVED SUCCESSFULLY.");
 
     if (data.access_token) {
       // we are good.

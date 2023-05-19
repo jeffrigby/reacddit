@@ -16,6 +16,7 @@
     "pm2-restart": "pm2 restart 'reacddit_api'"
   },
   "dependencies": {
+    "@aws-sdk/client-ssm": "^3.335.0",
     "axios": "^1.2.1",
     "chalk": "^5.0.1",
     "dotenv": "^16.0.0",
@@ -26,7 +27,6 @@
     "koa-session": "^6.0.0",
     "qs": "^6.11.1",
     "serverless-http": "^3.0.1",
-    "simple-oauth2": "^5.0.0",
     "uuid": "^9.0.0"
   }
 }

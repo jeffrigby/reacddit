@@ -1,16 +1,36 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
+AWSTemplateFormatVersion: 2010-09-09
+Transform: "AWS::Serverless-2016-10-31"
 Description: >
-  reacddit-api
-
-  Sample SAM template to create a lambda and API gateway to serve the API
+  This is a SAM template for the Reacddit Backend.
 
 Parameters:
   EnvFile:
     Type: String
     Default: ".env.serverless"
-  AllowOrigins:
+  Domain:
+    Description: Domain name for the API
     Type: String
+  ACMCertificateArn:
+    Description: ACM Certificate ARN for the domain name
+    Type: String
+  RedditScope:
+    Type: String
+    Default: "identity,mysubreddits,vote,subscribe,read,history,save"
+  SessionLengthSecs:
+    Type: Number
+    Default: 604800
+  Debug:
+    Type: Number
+    Default: 0
+  EncryptionAlgorithm:
+    Type: String
+    Default: "aes-256-cbc"
+  IvLength:
+    Type: Number
+    Default: 16
+  SSMParamPrefix:
+    Type: String
+    Default: "/reacddit/"
 
 Globals:
   Function:
@@ -26,8 +46,7 @@ Resources:
       CodeUri: api/
       Handler: serverless-koa.handler
       Runtime: nodejs18.x
-      Architectures:
-        - arm64
+      Architectures: [arm64]
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -40,17 +59,35 @@ Resources:
             - X-Api-Key
             - X-Amz-Security-Token
           AllowOrigins:
-            - !Ref AllowOrigins
+            - !Sub https://${Domain}
+      Policies:
+        - VPCAccessPolicy: {}
+        - SSMParameterReadPolicy:
+            ParameterName: /reacddit/*
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParametersByPath
+              Resource:
+                - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${SSMParamPrefix}*"
       Environment:
         Variables:
-          NODE_OPTIONS: --enable-source-maps
+          REDDIT_SCOPE: !Ref RedditScope
+          SESSION_LENGTH_SECS: !Ref SessionLengthSecs
+          DEBUG: !Ref Debug
+          ENCRYPTION_ALGORITHM: !Ref EncryptionAlgorithm
+          IV_LENGTH: !Ref IvLength
+          CLIENT_PATH: !Sub https://${Domain}
+          REDDIT_CALLBACK_URI: !Sub https://${Domain}/api/callback
+          SSM_PREFIX: !Ref SSMParamPrefix
 #    Metadata:
 #      BuildMethod: esbuild
 #      BuildProperties:
 #        Format: esm
 #        Minify: true
-#        Target: "es2020"
-#        Sourcemap: true
+#        Target: "es2022"
+#        Sourcemap: false
+#        External: ["@aws-sdk/client-ssm"]
 #        EntryPoints:
 #          - serverless-koa.js
 
@@ -67,6 +104,75 @@ Resources:
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
 
+  ReacdditAPIBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ReacdditAPIBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowCloudFrontServicePrincipal
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub arn:aws:s3:::${ReacdditAPIBucket}/*
+            Condition:
+              StringEquals:
+                AWS:SourceArn:
+                  - !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}
+
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: OriginAccessControl For ReacdditAPIBucket
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: CloudFront Distribution for ReacdditAPIBucket
+        Aliases:
+          - !Ref Domain
+        HttpVersion: http2and3
+        Origins:
+          - DomainName: !GetAtt ReacdditAPIBucket.DomainName
+            OriginPath: /dist
+            Id: S3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt CloudFrontOAC.Id
+          - DomainName:
+              !Select [2, !Split ["/", !GetAtt ReacdditAPIUrl.FunctionUrl]]
+            Id: APIGatewayOrigin
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: "https-only"
+        Enabled: true
+        DefaultRootObject: index.html
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          Compress: true
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+        CacheBehaviors:
+          - PathPattern: "/api/*"
+            TargetOriginId: APIGatewayOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD, OPTIONS]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+        ViewerCertificate:
+          MinimumProtocolVersion: TLSv1.2_2019
+          AcmCertificateArn: !Ref ACMCertificateArn
+          SslSupportMethod: sni-only
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -76,4 +182,7 @@ Outputs:
     Value: !GetAtt ReacdditAPI.Arn
   ReacdditAPIFunctionIamRole:
     Description: "Implicit IAM Role created for ReacdditAPI function"
-    Value: !GetAtt ReacdditAPI.Arn
+    Value: !GetAtt ReacdditAPIRole.Arn
+  CloudFrontDistribution:
+    Description: "CloudFront Distribution ID"
+    Value: !Ref CloudFrontDistribution
