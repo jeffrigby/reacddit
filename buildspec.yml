@@ -7,12 +7,20 @@ phases:
     commands:
       - node --version
       - npm --version
+      - yarn --version
 
   build:
     commands:
-      - sam build -c -p
+      # Build the backend
+      - sam build -c -p --use-container
+      # Build the frontend
+      - cd client
+      - yarn install
+      # get the .env file from SSM
+      - aws ssm get-parameter --name $ENV_SSM_PARAM --query Parameter.Value --output text > .env.production
+      - yarn build
 
 artifacts:
   files:
     - template.yaml
-    - packaged.yaml
+    - client/dist
