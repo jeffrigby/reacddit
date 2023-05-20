@@ -5,9 +5,11 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - node --version
-      - npm --version
-      - yarn --version
+      - npm update -g npm
+      - npm install -g yarn
+      - node -v
+      - npm -v
+      - yarn -v
 
   build:
     commands:
@@ -23,4 +25,4 @@ phases:
 artifacts:
   files:
     - template.yaml
-    - client/dist
+    - client/dist/**/*
