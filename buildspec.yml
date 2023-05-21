@@ -16,13 +16,14 @@ phases:
       # Build the backend
       - sam build -c -p
       # Copy artifacts from source to build folder
-      - ls -la $CODEBUILD_SRC_DIR
-      - pwd
+      - ls -la $CODEBUILD_SRC_DIR_Embeds
       # Build the frontend
       - cd client
       - yarn install
       # get the .env file from SSM
       - aws ssm get-parameter --name $ENV_SSM_PARAM --query Parameter.Value --output text > .env.production
+      - cat .env.production
+      - cp .env.production .env # needed for the build
       - yarn build
 
 artifacts:
