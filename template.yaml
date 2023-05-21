@@ -100,6 +100,21 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
+      VersioningConfiguration:
+          Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: IntelligentTiering
+            Status: Enabled
+            Transitions:
+              - StorageClass: INTELLIGENT_TIERING
+                TransitionInDays: 30
+            NoncurrentVersionTransitions:
+              - StorageClass: INTELLIGENT_TIERING
+                TransitionInDays: 30
+            NoncurrentVersionExpirationInDays: 90
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
 
   ReacdditAPIBucketPolicy:
     Type: AWS::S3::BucketPolicy

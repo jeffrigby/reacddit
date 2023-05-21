@@ -36,7 +36,8 @@ phases:
   post_build:
     commands:
       # Deploy the frontend to S3
-      - aws s3 cp client/dist $FRONTEND_S3 --recursive
+      - echo "Deploying to S3: $FRONTEND_S3"
+      - aws s3 cp client/dist s3://$FRONTEND_S3/dist --recursive
       - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
       - echo "Clearing Cloudflare Cache"
       - |
