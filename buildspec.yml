@@ -14,7 +14,9 @@ phases:
   build:
     commands:
       # Build the backend
-      - sam build -c -p --use-container
+      - sam build -c -p
+      # Copy artifacts from source to build folder
+      - ls -la $CODEBUILD_SRC_DIR
       # Build the frontend
       - cd client
       - yarn install
