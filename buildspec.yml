@@ -15,8 +15,15 @@ phases:
     commands:
       # Build the backend
       - sam build -c -p
-      # Copy artifacts from source to build folder
-      - ls -la $CODEBUILD_SRC_DIR_Embeds
+      # Copy custom embeds from source to the build folder
+      - |
+        if [ -d "$CODEBUILD_SRC_DIR_Embeds" ]; then
+          # Copy custom embeds from source to the build folder
+          cp -R "$CODEBUILD_SRC_DIR_Embeds"/* client/src/components/posts/embeds/domains_custom/
+          ls -la client/src/components/posts/embeds/domains_custom/
+        else
+          echo "Source directory not found. Skipping copy."
+        fi
       # Build the frontend
       - cd client
       - yarn install
