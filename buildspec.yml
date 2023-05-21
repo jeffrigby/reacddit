@@ -17,6 +17,7 @@ phases:
       - sam build -c -p
       # Copy artifacts from source to build folder
       - ls -la $CODEBUILD_SRC_DIR
+      - pwd
       # Build the frontend
       - cd client
       - yarn install
