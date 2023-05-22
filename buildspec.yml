@@ -33,7 +33,7 @@ phases:
       - cp .env.production .env # needed for the build
       - yarn build
       # Debug: List files in the build directory
-      - ls -la client/dist
+      - ls -la dist
       # Navigate back to the parent directory
       - cd ..
 
