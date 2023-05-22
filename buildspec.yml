@@ -39,5 +39,5 @@ phases:
 
 artifacts:
   files:
-    - template.yaml
+    - .aws-sam/**/*
     - client/dist/**/*
