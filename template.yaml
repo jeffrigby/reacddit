@@ -32,9 +32,6 @@ Parameters:
 Globals:
   Function:
     Timeout: 20
-    Environment:
-      Variables:
-        ENVFILE: !Ref EnvFile
 
 Resources:
   ReacdditAPI:
@@ -77,16 +74,6 @@ Resources:
           CLIENT_PATH: !Sub https://${Domain}
           REDDIT_CALLBACK_URI: !Sub https://${Domain}/api/callback
           SSM_PREFIX: !Ref SSMParamPrefix
-#    Metadata:
-#      BuildMethod: esbuild
-#      BuildProperties:
-#        Format: esm
-#        Minify: true
-#        Target: "es2022"
-#        Sourcemap: false
-#        External: ["@aws-sdk/client-ssm"]
-#        EntryPoints:
-#          - serverless-koa.js
 
   ReacdditAPIBucket:
     Type: AWS::S3::Bucket
@@ -198,3 +185,13 @@ Outputs:
   CloudFrontDistribution:
     Description: "CloudFront Distribution ID"
     Value: !Ref CloudFrontDistribution
+  CloudFrontDomain:
+    Description: "CloudFront Domain"
+    Value: !GetAtt CloudFrontDistribution.DomainName
+  ReacdditAPIBucket:
+    Description: "ReacdditAPI Bucket Name"
+    Value: !Ref ReacdditAPIBucket
+  ReacdditAPIUrl:
+    Description: "ReacdditAPI URL"
+    Value: !GetAtt ReacdditAPIUrl.FunctionUrl
+
