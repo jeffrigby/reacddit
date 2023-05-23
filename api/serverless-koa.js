@@ -1,42 +1,46 @@
-import app from "./src/app.js";
 import serverless from "serverless-http";
-import { GetParametersByPathCommand, SSMClient } from "@aws-sdk/client-ssm";
+import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
+import dotenv from "dotenv-defaults";
 
 const region = process.env.AWS_REGION || "us-east-1";
-const ssmPrefix = process.env.SSM_PREFIX || "/reacddit";
+const ssmEnvName = process.env.ENV_SSM_PARAM || "/reacddit/.env";
 const ssmClient = new SSMClient({ region });
 
-let ssmParameters;
+let ssmEnv;
 
 /**
  * Get SSM parameters from the parameter store
- * @param {string} path - The prefix to the parameters in the parameter store
  * @returns {Promise<Parameter>}
  * @see https://docs.aws.amazon.com/systems-manager/latest/APIReference/API_GetParametersByPath.html
  * @async
+ * @param {string} ssmName - The name of the parameter to get
  */
-async function getSSMParameters(path) {
-  if (!ssmParameters) {
-    const command = new GetParametersByPathCommand({
-      Path: path,
+async function getEnv(ssmName) {
+  if (!ssmEnv) {
+    const param = {
+      Name: ssmName,
       WithDecryption: true,
-    });
-    const response = await ssmClient.send(command);
-    ssmParameters = response.Parameters.reduce((acc, parameter) => {
-      const paramName = parameter.Name.split("/").pop(); // Get last segment of the SSM parameter path
-      acc[paramName] = parameter.Value;
-      return acc;
-    }, {});
+    };
+
+    const response = await ssmClient.send(new GetParameterCommand(param));
+    if (response.Parameter?.Value) {
+      ssmEnv = dotenv.parse(response.Parameter.Value);
+    } else {
+      throw new Error(`Failed to get SSM parameter: ${ssmName}`);
+    }
+  } else {
+    console.log("Using cached SSM parameters");
   }
-  return ssmParameters;
+  return ssmEnv;
 }
 
 export const handler = async (event, context) => {
   try {
-    const parameters = await getSSMParameters(ssmPrefix);
-    process.env.REDDIT_CLIENT_ID = parameters.reddit_client_id;
-    process.env.REDDIT_CLIENT_SECRET = parameters.reddit_client_secret;
-    process.env.SALT = parameters.salt;
+    const envValues = await getEnv(ssmEnvName);
+    for (const key in envValues) {
+      process.env[key] = envValues[key]; // add each key-value pair to process.env
+    }
+    console.log("process.env parameters set", process.env);
   } catch (error) {
     console.error(`Failed to set process.env parameters: ${error}`);
     return {
@@ -47,6 +51,8 @@ export const handler = async (event, context) => {
     };
   }
 
+  // Dynamically import the app after setting the environment variables
+  const { default: app } = await import("./src/app.js");
   const serverlessHandler = serverless(app);
   return serverlessHandler(event, context);
 };

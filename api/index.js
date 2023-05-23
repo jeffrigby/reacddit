@@ -1,15 +1,13 @@
-import dotenv from "dotenv-defaults";
 import { createServer } from "http";
-
-// Load environment variables
-const envPath = process.env.ENVFILE ? process.env.ENVFILE : "./.env";
+import dotenv from "dotenv-defaults";
 
 dotenv.config({
-  path: envPath,
+  path: "./.env",
   encoding: "utf8",
-  defaults: "./.env.defaults", // This is new
+  defaults: "./.env.defaults",
 });
 
-import app from "./src/app.js";
+// Dynamically import the app after setting the environment variables
+const { default: app } = await import("./src/app.js");
 
 createServer(app.callback()).listen(process.env.PORT);

@@ -1,15 +1,6 @@
-import dotenv from "dotenv-defaults";
 import axios from "axios";
 import chalk from "chalk";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
-
-const envPath = process.env.ENVFILE ? process.env.ENVFILE : "./.env";
-
-dotenv.config({
-  path: envPath,
-  encoding: "utf8",
-  defaults: "./.env.defaults", // This is new
-});
 
 const {
   REDDIT_CLIENT_ID,
@@ -51,7 +42,8 @@ export function checkEnvErrors() {
         "You must enter the REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_CALLBACK_URI from https://www.reddit.com/prefs/apps",
     },
     {
-      condition: !Number.isInteger(Number(PORT)) || !(parseInt(PORT) > 0),
+      condition:
+        PORT && (!Number.isInteger(Number(PORT)) || !(parseInt(PORT) > 0)),
       message: "PORT must be a valid positive integer.",
     },
     {

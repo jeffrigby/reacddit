@@ -10,24 +10,9 @@ Parameters:
   ACMCertificateArn:
     Description: ACM Certificate ARN for the domain name
     Type: String
-  RedditScope:
+  ENVSsmParam:
+    Description: SSM Parameter name for the .env file
     Type: String
-    Default: "identity,mysubreddits,vote,subscribe,read,history,save"
-  SessionLengthSecs:
-    Type: Number
-    Default: 604800
-  Debug:
-    Type: Number
-    Default: 0
-  EncryptionAlgorithm:
-    Type: String
-    Default: "aes-256-cbc"
-  IvLength:
-    Type: Number
-    Default: 16
-  SSMParamPrefix:
-    Type: String
-    Default: "/reacddit/"
 
 Globals:
   Function:
@@ -57,23 +42,10 @@ Resources:
       Policies:
         - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
-            ParameterName: /reacddit/*
-        - Statement:
-            - Effect: Allow
-              Action:
-                - ssm:GetParametersByPath
-              Resource:
-                - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${SSMParamPrefix}*"
+            ParameterName: reacddit/*
       Environment:
         Variables:
-          REDDIT_SCOPE: !Ref RedditScope
-          SESSION_LENGTH_SECS: !Ref SessionLengthSecs
-          DEBUG: !Ref Debug
-          ENCRYPTION_ALGORITHM: !Ref EncryptionAlgorithm
-          IV_LENGTH: !Ref IvLength
-          CLIENT_PATH: !Sub https://${Domain}
-          REDDIT_CALLBACK_URI: !Sub https://${Domain}/api/callback
-          SSM_PREFIX: !Ref SSMParamPrefix
+          ENV_SSM_PARAM: !Ref ENVSsmParam
 
   ReacdditAPIBucket:
     Type: AWS::S3::Bucket
