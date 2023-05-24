@@ -13,8 +13,9 @@ phases:
 
   build:
     commands:
-      # Build the backend
+      # Build/package the backend
       - sam build -c -p
+      - sam package --template-file .aws-sam/build/template.yaml --s3-bucket $S3_BUCKET --output-template-file packaged-template.yaml
       # Copy custom embeds from source to the build folder
       - |
         if [ -d "$CODEBUILD_SRC_DIR_Embeds" ]; then
@@ -39,5 +40,5 @@ phases:
 
 artifacts:
   files:
-    - .aws-sam/build/**/*
+    - packaged-template.yaml
     - client/dist/**/*
