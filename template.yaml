@@ -96,7 +96,7 @@ Resources:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
-        Name: OriginAccessControl For ReacdditAPIBucket
+        Name: !Sub "${AWS::StackName} OriginAccessControl For ReacdditAPIBucket"
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
