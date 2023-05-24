@@ -15,6 +15,7 @@ phases:
     commands:
       # Build/package the backend
       - sam build -c -p
+      - echo $S3_BUCKET
       - sam package --template-file .aws-sam/build/template.yaml --s3-bucket $S3_BUCKET --output-template-file packaged-template.yaml
       # Copy custom embeds from source to the build folder
       - |
