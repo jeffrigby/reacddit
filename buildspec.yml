@@ -10,13 +10,15 @@ phases:
       - node -v
       - npm -v
       - yarn -v
+      - # Update the AWS CLI and SAM CLI
+      - pip install --upgrade awscli
+      - pip install --upgrade aws-sam-cli
 
   build:
     commands:
       # Build/package the backend
       - sam build -c -p
-      - echo $S3_BUCKET
-      - sam package --template-file .aws-sam/build/template.yaml --s3-bucket $S3_BUCKET --output-template-file packaged-template.yaml
+      #- sam package --template-file .aws-sam/build/template.yaml --s3-bucket $S3_BUCKET --output-template-file packaged-template.yaml
       # Copy custom embeds from source to the build folder
       - |
         if [ -d "$CODEBUILD_SRC_DIR_Embeds" ]; then
@@ -31,13 +33,23 @@ phases:
       - yarn install
       # get the .env file from SSM
       - aws ssm get-parameter --name $ENV_SSM_PARAM --query Parameter.Value --output text > .env.production
-      - cat .env.production
       - cp .env.production .env # needed for the build
       - yarn build
       # Debug: List files in the build directory
       - ls -la dist
       # Navigate back to the parent directory
       - cd ..
+
+  deploy:
+    commands:
+      # Deploy the backend
+      - sam deploy --stack-name $STACK_NAME --capabilities CAPABILITY_IAM --parameter-overrides Domain=$DOMAIN ACMCertificateArn=$ACM_CERTIFICATE_ARN ENVSsmParam=$ENV_SSM_PARAM
+      # Get the s3 bucket name from the stack output
+      - FRONTEND_S3=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='ReacdditAPIBucket'].OutputValue" --output text)
+      # Get the cloudfront distribution id from the stack output
+      - CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistribution'].OutputValue" --output text)
+      - aws s3 cp client/dist s3://$FRONTEND_S3/dist --recursive
+      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
 
 artifacts:
   files:

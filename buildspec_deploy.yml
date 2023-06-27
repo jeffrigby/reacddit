@@ -1,0 +1,21 @@
+version: 0.2
+
+env:
+  variables:
+    FRONTEND_S3: ""
+    CLOUDFRONT_DISTRIBUTION_ID: ""
+
+phases:
+  post_build:
+    commands:
+      # Deploy the frontend to S3
+      - echo "Deploying to S3"
+      - aws s3 cp client/dist s3://$FRONTEND_S3/dist --recursive
+      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+      - echo "Clearing Cloudflare Cache"
+      - |
+        curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
+        -H "X-Auth-Email: $CLOUDFLARE_EMAIL" \
+        -H "X-Auth-Key: $CLOUDFLARE_API_KEY" \
+        -H "Content-Type: application/json" \
+        --data '{"purge_everything":true}'
