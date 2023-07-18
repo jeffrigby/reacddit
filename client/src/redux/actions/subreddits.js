@@ -69,6 +69,7 @@ const getExpiredTime = (lastPost) => {
  */
 export function subredditsFetchLastUpdated() {
   return (dispatch, getState) => {
+    return;
     const currentState = getState();
     const { subreddits } = currentState.subreddits;
     const { friends } = currentState.redditFriends;
