@@ -43,7 +43,7 @@ phases:
   post_build:
     commands:
       # Deploy the backend
-      - sam deploy --template-file .aws-sam/build/template.yaml --stack-name $STACK_NAME --capabilities CAPABILITY_IAM --parameter-overrides Domain=$DOMAIN ACMCertificateArn=$ACM_CERTIFICATE_ARN ENVSsmParam=$ENV_SSM_PARAM --s3-bucket $S3_BUCKET
+      - sam deploy --template-file .aws-sam/build/template.yaml --stack-name $STACK_NAME --capabilities CAPABILITY_IAM --parameter-overrides Domain=$DOMAIN ACMCertificateArn=$ACM_CERTIFICATE_ARN ENVSsmParam=$ENV_SSM_PARAM --resolve-s3
       # Get the s3 bucket name from the stack output
       - FRONTEND_S3=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='ReacdditAPIBucket'].OutputValue" --output text)
       # Get the cloudfront distribution id from the stack output
