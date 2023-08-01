@@ -1,0 +1,13 @@
+.app-loading {
+  height: 100vh;
+  width: 100%;
+  background-color: rgb(52, 58, 64);
+  color: white;
+}
+.app-loading .landing-icon {
+  background-image: url(../images/reacddit-loading.svg);
+  background-repeat: no-repeat;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+}

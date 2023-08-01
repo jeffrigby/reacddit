@@ -281,7 +281,14 @@ module.exports = {
     }),
 
     new CopyPlugin({
-      patterns: [{ from: `${paths.appPublic}/PWA`, to: paths.pwaFolder }],
+      patterns: [
+        { from: `${paths.appPublic}/PWA`, to: paths.pwaFolder },
+        { from: `${paths.appPublic}/base.css`, to: paths.cssFolder },
+        {
+          from: `${paths.appSrc}/images/reacddit-loading.svg`,
+          to: paths.imagesFolder,
+        },
+      ],
     }),
 
     new CreateFileWebpack({
