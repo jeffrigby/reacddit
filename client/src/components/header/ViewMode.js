@@ -44,6 +44,7 @@ function ViewMode() {
         type="button"
         className={btnClasses}
         title="Condensed View (v)"
+        aria-label="Condensed View"
       >
         <i className="fas fa-compress-arrows-alt" />
       </button>
@@ -53,6 +54,7 @@ function ViewMode() {
         type="button"
         className={btnClasses}
         title="Full View (v)"
+        aria-label="Full View"
       >
         <i className="fas fa-expand-arrows-alt" />
       </button>

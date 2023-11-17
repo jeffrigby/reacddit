@@ -374,6 +374,7 @@ function VideoComp({ link, content }) {
                 } video-controls-toggle`}
                 onClick={() => setControls(!controls)}
                 title="Toggle Browser Video Controls"
+                aria-label="Toggle Browser Video Controls"
               >
                 <i className="fas fa-sliders-h" />
               </button>

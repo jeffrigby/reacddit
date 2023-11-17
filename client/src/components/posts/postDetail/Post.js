@@ -351,6 +351,7 @@ function Post({ post, duplicate, parent, postName, idx }) {
         onClick={() => setHide(!hide)}
         title="Toggle visiblity"
         type="button"
+        aria-label={hide ? 'Show' : 'Hide'}
       >
         <i className={`fas ${hide ? 'fa-eye' : 'fa-eye-slash'}`} />
       </button>

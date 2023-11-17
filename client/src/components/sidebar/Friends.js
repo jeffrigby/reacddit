@@ -80,6 +80,7 @@ function Friends() {
                 removeFriend(f.name)
               }
               title={`Remove ${f.name} from friend's list`}
+              aria-label={`Remove ${f.name} from friend's list`}
             >
               <i className="fas fa-user-minus" />
             </button>
@@ -116,6 +117,7 @@ function Friends() {
               className="btn btn-link btn-sm m-0 p-0 border-0"
               type="button"
               onClick={toggleMenu}
+              aria-label="Show Friends"
             >
               <i className={caretClass} />
             </button>

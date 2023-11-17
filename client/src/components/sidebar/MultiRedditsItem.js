@@ -33,6 +33,7 @@ function MultiRedditsItem({ item }) {
   const navTo = `/me/m/${item.data.name}/${currentSort}`;
 
   const arrowClass = showSubs ? 'down' : 'left';
+  const arrowTitle = showSubs ? 'Hide Subreddits' : 'Show Subreddits';
 
   return (
     <li key={item.data.path} className="nav-item has-child m-0 p-0">
@@ -50,6 +51,7 @@ function MultiRedditsItem({ item }) {
             className="btn btn-link btn-sm m-0 p-0 ps-2 border-0"
             onClick={hideShowSubs}
             type="button"
+            aria-label={arrowTitle}
           >
             <i className={`fas fa-caret-${arrowClass} menu-caret`} />
           </button>

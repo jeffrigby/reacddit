@@ -50,6 +50,7 @@ function PostBylineAuthor({ author, flair, isSubmitter }) {
           type="button"
           onClick={onClick}
           title={title}
+          aria-label={title}
         >
           <i className={`fas ${isFriend ? 'fa-user-minus' : 'fa-user-plus'}`} />
         </button>{' '}

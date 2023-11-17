@@ -31,6 +31,7 @@ function SubFavorite({ isFavorite, srName }) {
       type="button"
       title="Toogle Favorites"
       onClick={toggleFavorite}
+      aria-label="Toggle Favorites"
     >
       <i className={favButton} />
     </button>

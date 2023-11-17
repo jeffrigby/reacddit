@@ -42,6 +42,7 @@ function PostFooter({
         onClick={() => setShowDebug(!showDebug)}
         title="Show debug!"
         type="button"
+        aria-label={showDebug ? 'Hide debug' : 'Show debug'}
       >
         <i className="fas fa-code" />
       </button>
@@ -50,6 +51,9 @@ function PostFooter({
         onClick={() => setShowVisToggle(!showVisToggle)}
         title="Show Visibility Toggle"
         type="button"
+        aria-label={
+          showVisToggle ? 'Hide Visibility Toggle' : 'Show Visibility Toggle'
+        }
       >
         <i className={`fas ${showVisToggle ? 'fa-eye-slash' : 'fa-eye'}`} />
       </button>

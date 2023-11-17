@@ -26,6 +26,7 @@ function MultiDelete({ multi }) {
       type="button"
       title="Delete Custom Feed"
       onClick={removeMulti}
+      aria-label="Delete Custom Feed"
     >
       <i className="fas fa-trash-alt" />
     </button>

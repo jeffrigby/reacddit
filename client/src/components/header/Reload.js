@@ -30,6 +30,7 @@ function Reload() {
         title="Load New Entries"
         onClick={refresh}
         disabled={loading}
+        aria-label="Load New Entries"
       >
         <i className={iconClass} />
       </button>

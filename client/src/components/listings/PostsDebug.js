@@ -75,6 +75,7 @@ function PostsDebug() {
           className="btn btn-primary btn-sm"
           title="Open Debug Info"
           onClick={() => setClosed(false)}
+          aria-label="Open Debug Info"
         >
           <i className="fas fa-bug" />
         </button>

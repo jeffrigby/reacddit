@@ -60,6 +60,7 @@ function Header() {
         type="button"
         onClick={() => navigate(-1)}
         title="Go Back"
+        aria-label="Go Back"
       >
         <i className="fas fa-chevron-left" />
       </button>

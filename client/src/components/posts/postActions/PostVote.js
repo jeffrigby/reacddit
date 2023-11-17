@@ -134,6 +134,7 @@ function PostVote() {
         disabled={disabled}
         onClick={() => vote(-1)}
         title="Vote Down (z)"
+        aria-label="Vote Down"
       >
         <i className={`fa-arrow-alt-circle-down ${downClass}`} />
       </button>

@@ -43,6 +43,7 @@ function MultiRedditsAdd({ setShowAdd, reloadMultis }) {
             data-bs-toggle="dropdown"
             aria-haspopup="true"
             aria-expanded="false"
+            aria-label={visibility ? 'Private' : 'Public'}
           >
             <i className={visibilityIconClass} />
           </button>

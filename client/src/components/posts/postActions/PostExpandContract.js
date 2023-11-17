@@ -21,6 +21,7 @@ function PostExpandContract({ expand, toggleView, kind }) {
       type="button"
       className="btn btn-link btn-sm shadow-none m-0 p-0"
       title={viewTitle}
+      aria-label={viewTitle}
     >
       <i className={viewIcon} />
     </button>

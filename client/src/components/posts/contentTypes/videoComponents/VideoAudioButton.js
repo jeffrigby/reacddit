@@ -27,6 +27,7 @@ function VideoAudioButton({
         className={`${btnClasses} video-audio`}
         onClick={toggleSound}
         title={muteTitle}
+        aria-label={muteTitle}
       >
         <i className={mutedIconClass} />
       </button>
