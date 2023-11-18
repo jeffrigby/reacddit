@@ -1,5 +1,6 @@
-import axios from 'axios';
+import pLimit from 'p-limit';
 import RedditAPI from '../../reddit/redditAPI';
+import { getLastUpdatedWithDelay, shouldUpdate } from './helpers/lastFetched';
 
 export function subredditsStatus(status, message) {
   return {
@@ -38,127 +39,74 @@ export function subredditsClearLastUpdated() {
   };
 }
 
-/**
- * Firgure out when to recheck the last updated post.
- * @param lastPost
- * @returns {*}
- */
-const getExpiredTime = (lastPost) => {
-  if (lastPost === undefined) return 3600;
-  const nowSec = Date.now() / 1000;
-  const timeSinceLastPost = nowSec - lastPost;
-
-  // if the time is below 30m. Expire exactly when it hits 30m
-  if (timeSinceLastPost < 1800) {
-    return lastPost + 1800;
-  }
-
-  // if the time is below 1h. Expire exactly when it hits 1h
-  if (timeSinceLastPost < 3600) {
-    return lastPost + 3600;
-  }
-
-  // Otherwise, check every hour.
-  return nowSec + 3600;
-};
-
+let subredditsFetchLastUpdatedRunning = false;
 /**
  * Fetch the last post for each subreddit and recheck based on when
  * it was last updated.
  * @returns {Function}
  */
 export function subredditsFetchLastUpdated() {
-  return (dispatch, getState) => {
-    return;
-    const currentState = getState();
-    const { subreddits } = currentState.subreddits;
-    const { friends } = currentState.redditFriends;
-    const nowSec = Date.now() / 1000;
-    const createdToGet = [];
-
-    const generateRequest = (listingId, url) => {
-      // look for cache
-      const lastUpdated = currentState.lastUpdated[listingId];
-      if (lastUpdated) {
-        const { expires } = lastUpdated;
-        const expired = nowSec >= expires;
-        if (expired) {
-          createdToGet.push(axios.get(url).catch(() => null));
-        }
-      } else {
-        createdToGet.push(axios.get(url).catch(() => null));
+  return async (dispatch, getState) => {
+    try {
+      if (subredditsFetchLastUpdatedRunning) {
+        return;
       }
-    };
+      subredditsFetchLastUpdatedRunning = true;
+      const currentState = getState();
+      const { subreddits } = currentState.subreddits;
+      const { friends } = currentState.redditFriends;
+      const { lastUpdated } = currentState;
 
-    // Create subreddit requests
-    Object.entries(subreddits).forEach(([key, value]) => {
-      // @todo convert to API? Concerned about rate limit.
-      // Limit is 2 because it occasionally returns nothing when the limit is 1. No idea why.
-      const url = `https://www.reddit.com${value.url}new.json?limit=5`;
-      generateRequest(value.name, url);
-    });
-
-    // Create friends
-    Object.entries(friends).forEach(([key, value]) => {
-      const url = `https://www.reddit.com/user/${value.name}/submitted.json?sort=new&limit=10`;
-      generateRequest(value.id, url);
-    });
-
-    // Nothing to update
-    if (createdToGet.length === 0) {
-      return;
-    }
-
-    // Do 50 at a time.
-    const chunks = [];
-    while (createdToGet.length) {
-      chunks.push(createdToGet.splice(0, 50));
-    }
-
-    // Loop through them and create an object to insert.
-    chunks.forEach(async (value) => {
-      try {
-        const results = await axios
-          .all(value)
-          .then(axios.spread((...args) => args));
-
-        const toUpdate = {};
-        results.forEach((item) => {
-          const listingType = item.config.url.includes('/submitted.json')
-            ? 'friend'
-            : 'subreddit';
-
-          const entry = item.data;
-          // process item
-          if (typeof entry.data.children[0] === 'object') {
-            // Get first non-pinned post
-            let firstNonPinned = {};
-            entry.data.children.some((post) => {
-              if (!post.data.pinned) {
-                firstNonPinned = post.data;
-                return true;
-              }
-              return false;
+      // Create subreddit requests
+      const lookups = [];
+      Object.entries(subreddits).forEach(([key, subreddit]) => {
+        if (shouldUpdate(lastUpdated, subreddit.name)) {
+          // Check if it's a subreddit or a user
+          if (subreddit.url.match(/^\/user\//)) {
+            lookups.push({
+              type: 'friend',
+              path: subreddit.url.replace(/^\/user\/|\/$/g, ''),
+              id: subreddit.name,
             });
-
-            const lastPost = firstNonPinned.created_utc;
-            const listingId =
-              listingType === 'subreddit'
-                ? firstNonPinned.subreddit_id
-                : firstNonPinned.author_fullname;
-            const expires = getExpiredTime(lastPost);
-            toUpdate[listingId] = {
-              lastPost,
-              expires,
-            };
+            return;
           }
-        });
 
+          lookups.push({
+            type: 'subreddit',
+            path: subreddit.url.replace(/^\/r\/|\/$/g, ''),
+            id: subreddit.name,
+          });
+        }
+      });
+
+      // Create friends
+      Object.entries(friends).forEach(([key, friend]) => {
+        if (shouldUpdate(lastUpdated, friend.id)) {
+          lookups.push({ type: 'friend', path: friend.name, id: friend.id });
+        }
+      });
+
+      const fetchWithDelay = async (lookup) => {
+        const { type, path, id } = lookup;
+        const toUpdate = await getLastUpdatedWithDelay(type, path, id, 2, 5);
         dispatch(subredditsLastUpdated(toUpdate));
-      } catch (e) {
-        // console.log(e);
-      }
-    });
+      };
+
+      const limit = pLimit(5);
+      const max = 100;
+      // Limit to max amount
+      const maxLookups = lookups.slice(0, max);
+      const fetchPromises = maxLookups.map((lookup) =>
+        limit(() => fetchWithDelay(lookup))
+      );
+
+      await Promise.all(fetchPromises);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching last updated', e);
+    } finally {
+      subredditsFetchLastUpdatedRunning = false;
+    }
   };
 }
 

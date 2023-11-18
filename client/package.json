@@ -43,6 +43,7 @@
     "js-cookie": "^3.0.0",
     "locutus": "^2.0.11",
     "lodash": "^4.17.15",
+    "p-limit": "^5.0.0",
     "postcss": "^8.3.2",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^7.0.0",

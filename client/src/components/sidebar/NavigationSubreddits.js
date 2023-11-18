@@ -35,7 +35,7 @@ function NavigationSubReddits() {
   }, [dispatch, where]);
 
   /**
-   * Force reload all of the subreddits.
+   * Force reload all the subreddits.
    */
   const reloadSubreddits = useCallback(() => {
     dispatch(subredditsFetchData(true, where));
