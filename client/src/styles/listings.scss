@@ -210,6 +210,16 @@ div#entries {
   color: transparent;
 }
 
+.debug .code-block {
+  background-color: #0E0832;
+  padding: 10px;
+  margin-top: 5px;
+
+  h6 {
+    color: #ffffff;
+  }
+}
+
 #debugInfo {
   position: fixed;
   right: 20px;

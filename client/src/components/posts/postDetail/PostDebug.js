@@ -1,8 +1,9 @@
-import { Suspense, lazy, useContext } from 'react';
+import { Suspense, useContext } from 'react';
 import PropTypes from 'prop-types';
+import JsonView from 'react18-json-view';
+import 'react18-json-view/src/style.css';
+import 'react18-json-view/src/dark.css';
 import { PostsContextData } from '../../../contexts';
-
-const ReactJson = lazy(() => import('react-json-view'));
 
 function PostDebug({ renderedContent }) {
   const postContext = useContext(PostsContextData);
@@ -13,33 +14,25 @@ function PostDebug({ renderedContent }) {
     <div className="debug">
       <Suspense fallback={<div>Loading Debug Info...</div>}>
         {renderedContent && (
-          <ReactJson
-            src={{ ...renderedContent, url: data.url }}
-            name="content"
-            theme="harmonic"
-            sortKeys
-            collapsed
-            quotesOnKeys={false}
-          />
+          <div className="code-block rounded">
+            <h6>Content</h6>
+            <JsonView
+              src={{ ...renderedContent, url: data.url }}
+              dark
+              theme="atom"
+            />
+          </div>
         )}
         {data.preview && (
-          <ReactJson
-            src={data.preview}
-            name="preview"
-            theme="harmonic"
-            sortKeys
-            collapsed
-            quotesOnKeys={false}
-          />
+          <div className="code-block rounded">
+            <h6>Preview</h6>
+            <JsonView src={data.preview} dark theme="atom" />
+          </div>
         )}
-        <ReactJson
-          src={data}
-          name="entry"
-          theme="harmonic"
-          sortKeys
-          collapsed
-          quotesOnKeys={false}
-        />
+        <div className="code-block rounded">
+          <h6>Entry</h6>
+          <JsonView src={data} dark theme="atom" />
+        </div>
       </Suspense>
     </div>
   );
