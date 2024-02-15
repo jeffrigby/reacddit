@@ -188,7 +188,7 @@ function Search() {
     <div id="search" ref={searchInputParent} className={searchClassName}>
       <input
         type="text"
-        className="form-control form-control-dark form-control-sm w-100 py-0"
+        className="form-control form-control-sm w-100 py-0"
         id="search-reddit"
         onFocus={focusSearch}
         onBlur={blurSearch}

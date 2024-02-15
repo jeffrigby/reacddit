@@ -128,7 +128,7 @@ function FilterReddits() {
     >
       <input
         type="text"
-        className="form-control form-control-dark form-control-sm w-100 py-0"
+        className="form-control form-control-sm w-100 py-0"
         onChange={filterReddits}
         onFocus={setFocus}
         onBlur={setBlur}

@@ -8,6 +8,7 @@ import Logo from '../../images/reacddit-menu.png';
 import Settings from '../header/settings/Settings';
 import '../../styles/header.scss';
 import PinMenu from '../header/settings/PinMenu';
+import ToggleTheme from '../header/ToggleTheme';
 
 function Header() {
   const navigate = useNavigate();
@@ -93,6 +94,7 @@ function Header() {
         <Reload />
         <Sort />
         <ViewMode />
+        <ToggleTheme />
         <Settings />
       </div>
     </div>

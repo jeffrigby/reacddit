@@ -40,6 +40,8 @@ function SelfInline({ inline, inlineLinks, name }) {
 
   const inlineKey = `${name}-${inlineIdx}`;
   const inlineLink = resolvedContent[inlineIdx].link;
+  const inlineLinkTrunc =
+    inlineLink.length > 50 ? `${inlineLink.slice(0, 50)}...` : inlineLink;
 
   const inlineRendered = resolvedContent[inlineIdx].content ? (
     <div className="inline-render">
@@ -96,8 +98,13 @@ function SelfInline({ inline, inlineLinks, name }) {
       {inlineRendered}
       <div className="small">
         Source:{' '}
-        <a href={inlineLink} target="_blank" rel="noreferrer">
-          {inlineLink}
+        <a
+          href={inlineLink}
+          target="_blank"
+          rel="noreferrer"
+          title={inlineLink}
+        >
+          {inlineLinkTrunc}
         </a>
       </div>
     </div>

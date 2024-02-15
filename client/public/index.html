@@ -5,6 +5,31 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <title>reacddit</title>
     <meta name="Description" content="Reddit client built with ReactJS." />
+
+    <script>
+      // Apply the theme from localStorage on initial load
+      (function() {
+        try {
+          // Try to retrieve and parse the stored state from localStorage
+          const savedState = localStorage.getItem('state');
+          const state = savedState ? JSON.parse(savedState) : null;
+
+          // Extract the theme from the stored state, defaulting to 'light' if not found
+          const currentTheme = state && state.siteSettings && state.siteSettings.theme ? state.siteSettings.theme : 'light';
+
+          // Apply the theme to the document
+          if (currentTheme === 'dark') {
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-bs-theme');
+          }
+        } catch (error) {
+          // Log or handle potential errors, e.g., corrupted localStorage data
+          console.error('Error applying theme from localStorage:', error);
+        }
+      })();
+    </script>
+
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"

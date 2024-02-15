@@ -1,7 +1,28 @@
+// Colors
+$light-theme-hover-color: #fcf8e3;
+$dark-theme-hover-color: #333333;
+$border-color: rgba(0, 0, 0, 0.125);
+$active-color: #dc3545;
+$inactive-color: #d3d3d3;
+$overlay-bg-color: black;
+
+// Sizes
+$sidebar-width: 14rem;
+
+// Default theme (light)
+:root {
+  --hover-background-color: $light-theme-hover-color; // Light theme color
+}
+
+// Dark theme
+[data-bs-theme='dark'] {
+  --hover-background-color: $dark-theme-hover-color; // Dark theme color
+}
+
 .sidebar {
   transition: 0.3s;
-  width: 14rem;
-  min-width: 14rem;
+  width: $sidebar-width;
+  min-width: $sidebar-width;
   align-items: center;
   padding: 0;
 }
@@ -13,7 +34,7 @@
   z-index: 5;
   height: calc(100vh - 3rem);
   overflow: hidden !important;
-  border-right: 1px solid rgba(0, 0, 0, 0.125);
+  border-right: 1px solid $border-color;
 }
 
 #aside-content {
@@ -35,17 +56,17 @@
       padding: 0;
       width: 100%;
       &.sub-dead {
-        color: #d3d3d3;
+        color: $inactive-color;
       }
       &.sub-stale {
-        color: #d3d3d3;
+        color: $inactive-color;
       }
       &.sub-new,
       &.sub-today {
         font-weight: 600;
       }
       &.active {
-        color: #dc3545 !important;
+        color: $active-color !important;
         font-weight: bold;
       }
       &.mark {
@@ -58,12 +79,6 @@
 
   .nav-link-cont {
     overflow: hidden;
-  }
-
-  .badge {
-    //position: absolute;
-    //right: 2px;
-    //top: 4px;
   }
 
   .sidebar-heading {
@@ -105,7 +120,7 @@
 .hide-menu {
   .sidebar {
     transition: margin-left 0.3s;
-    margin-left: -14rem !important;
+    margin-left: -$sidebar-width !important;
     //display: none !important;
   }
 
@@ -145,7 +160,7 @@
 
 #menu-overlay {
   position: absolute;
-  background-color: black;
+  background-color: $overlay-bg-color;
   width: 100%;
   height: 100%;
   top: 0;
@@ -159,7 +174,7 @@
 .show-menu {
   #menu-overlay {
     transition: margin-left 0.3s;
-    margin-left: 14rem !important;
+    margin-left: $sidebar-width !important;
     display: block;
   }
 }
@@ -171,7 +186,7 @@
 
   .sidebar {
     transition: margin-left 0.3s;
-    margin-left: -14rem !important;
+    margin-left: -$sidebar-width !important;
     //display: none !important;
   }
 
@@ -186,7 +201,6 @@
   .show-menu {
     .sidebar {
       margin-left: 0 !important;
-      //width: 100%;
     }
 
     .close-menu-link {
@@ -195,13 +209,6 @@
 
     .open-menu-link {
       display: none !important;
-    }
-
-    .navbar-brand,
-    .header-main,
-    .search-cont,
-    .sub-un-sub {
-      //display: none !important;
     }
   }
 
@@ -238,8 +245,9 @@
 }
 
 .no-touch {
-  #aside-content .nav-item:hover {
-    background-color: #fcf8e3;
+  #aside-content .nav-item:hover,
+  #sidebar-multis .subnav .nav-item:hover {
+    background-color: var(--hover-background-color);
   }
 
   .friend-li {
@@ -260,9 +268,6 @@
   #sidebar-multis {
     .nav-item:hover {
       background-color: unset;
-    }
-    .subnav .nav-item:hover {
-      background-color: #fcf8e3;
     }
   }
 }

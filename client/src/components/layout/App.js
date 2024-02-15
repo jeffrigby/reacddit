@@ -103,7 +103,7 @@ function App() {
         <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
           <Header />
         </header>
-        <aside className="sidebar bg-light pt-2" id="navigation">
+        <aside className="sidebar pt-2" id="navigation">
           <div id="aside-content" className="h-100 d-flex px-3">
             <Navigation
               redditBearer={redditBearer}

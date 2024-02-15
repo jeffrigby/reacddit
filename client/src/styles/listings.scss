@@ -1,5 +1,6 @@
 div#entries {
   max-width: 1440px;
+  margin: 0 auto;
 
   .react {
     color: #61dafb;
@@ -32,8 +33,8 @@ div#entries {
   }
 
   .media-cont {
-    margin-left: -21px;
-    margin-right: -21px;
+    margin-left: -16px;
+    margin-right: -16px;
     .loading-icon {
       background-image: url(../images/loading_black.gif);
       background-position: center center;
@@ -88,11 +89,11 @@ div#entries {
   }
 
   .listings-header {
-    border-left: 0;
+    //border-left: 0;
   }
 
   div.entry {
-    border-left: 0;
+    //border-left: 0;
 
     &.comment-child,
     .comments-more {
@@ -131,14 +132,14 @@ div#entries {
     }
 
     div.ratio-bg {
-      background-color: black;
+      background-color: rgb(33, 37, 41);
 
       div.ratio-container {
         max-width: 100%;
         margin: 0 auto;
 
         .ratio.loading {
-          background-color: #000000;
+          background-color: rgb(33, 37, 41);
         }
 
         img,
@@ -195,14 +196,36 @@ div#entries {
     background-position: 468px 0;
   }
 }
+
+// Default theme (light)
+:root {
+  --placeholder-start-color: #eeeeee;
+  --placeholder-middle-color: #dddddd;
+  --placeholder-end-color: #eeeeee;
+  --placeholder-background: #f6f7f8;
+}
+
+// Dark theme
+[data-bs-theme='dark'] {
+  --placeholder-start-color: #2c2f33;
+  --placeholder-middle-color: #23272a;
+  --placeholder-end-color: #2c2f33;
+  --placeholder-background: #1d1f22;
+}
+
 .loading-placeholder {
   animation-duration: 1s;
   animation-fill-mode: forwards;
   animation-iteration-count: infinite;
   animation-name: placeHolderShimmer;
   animation-timing-function: linear;
-  background: #f6f7f8;
-  background: linear-gradient(to right, #eeeeee 8%, #dddddd 18%, #eeeeee 33%);
+  background: var(--placeholder-background);
+  background: linear-gradient(
+    to right,
+    var(--placeholder-start-color) 8%,
+    var(--placeholder-middle-color) 18%,
+    var(--placeholder-end-color) 33%
+  );
   background-size: 1000px 104px;
   position: relative;
   overflow: hidden;
@@ -211,7 +234,7 @@ div#entries {
 }
 
 .debug .code-block {
-  background-color: #0E0832;
+  background-color: #0e0832;
   padding: 10px;
   margin-top: 5px;
 
