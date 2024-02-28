@@ -24,7 +24,7 @@ Resources:
     Properties:
       CodeUri: api/
       Handler: serverless-koa.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       Architectures: [arm64]
       FunctionUrlConfig:
         AuthType: NONE
@@ -46,6 +46,27 @@ Resources:
       Environment:
         Variables:
           ENV_SSM_PARAM: !Ref ENVSsmParam
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: true
+        OutExtension:
+          - .js=.mjs
+        Target: "es2022"
+        Sourcemap: true
+        Banner:
+          - js=const require = (await import('node:module')).createRequire(import.meta.url);const __filename = (await import('node:url')).fileURLToPath(import.meta.url);const __dirname = (await import('node:path')).dirname(__filename);
+        EntryPoints:
+          - serverless-koa.js
+        External:
+          - "@aws-sdk/client-sso"
+          - "@aws-sdk/client-sso-oidc"
+          - "@aws-sdk/credential-provider-ini"
+          - "@aws-sdk/credential-provider-process"
+          - "@aws-sdk/credential-provider-sso"
+          - "@aws-sdk/credential-provider-web-identity"
+          - "@aws-sdk/token-providers"
 
   ReacdditAPIBucket:
     Type: AWS::S3::Bucket

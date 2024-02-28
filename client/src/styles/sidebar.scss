@@ -5,18 +5,22 @@ $border-color: rgba(0, 0, 0, 0.125);
 $active-color: #dc3545;
 $inactive-color: #d3d3d3;
 $overlay-bg-color: black;
+$dark-theme-navigation-background-color: rgb(33, 37, 41);
+$light-theme-navigation-background-color: rgb(255, 255, 255);
 
 // Sizes
 $sidebar-width: 14rem;
 
 // Default theme (light)
 :root {
-  --hover-background-color: $light-theme-hover-color; // Light theme color
+  --hover-background-color: #{$light-theme-hover-color};
+  --navigation-background-color: #{$light-theme-navigation-background-color};
 }
 
 // Dark theme
 [data-bs-theme='dark'] {
-  --hover-background-color: $dark-theme-hover-color; // Dark theme color
+  --hover-background-color: #{$dark-theme-hover-color};
+  --navigation-background-color: #{$dark-theme-navigation-background-color};
 }
 
 .sidebar {
@@ -35,6 +39,7 @@ $sidebar-width: 14rem;
   height: calc(100vh - 3rem);
   overflow: hidden !important;
   border-right: 1px solid $border-color;
+  background-color: var(--navigation-background-color, pink);
 }
 
 #aside-content {
@@ -121,7 +126,6 @@ $sidebar-width: 14rem;
   .sidebar {
     transition: margin-left 0.3s;
     margin-left: -$sidebar-width !important;
-    //display: none !important;
   }
 
   #main {
@@ -146,7 +150,6 @@ $sidebar-width: 14rem;
 .show-menu {
   .sidebar {
     margin-left: 0 !important;
-    //width: 100%;
   }
 
   .close-menu-link {
