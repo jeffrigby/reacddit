@@ -1,12 +1,19 @@
 import serverless from "serverless-http";
-import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
+import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
+import { Logger } from "@aws-lambda-powertools/logger";
 import dotenv from "dotenv-defaults";
-
-const region = process.env.AWS_REGION || "us-east-1";
 const ssmEnvName = process.env.ENV_SSM_PARAM || "/reacddit/.env";
-const ssmClient = new SSMClient({ region });
 
-let ssmEnv;
+const logger = new Logger();
+
+const envValues = await getEnv(ssmEnvName);
+setProcessEnv(envValues);
+
+function setProcessEnv(envValues) {
+  for (const key in envValues) {
+    process.env[key] = envValues[key]; // Add each key-value pair to process.env
+  }
+}
 
 /**
  * Get SSM parameters from the parameter store
@@ -16,43 +23,60 @@ let ssmEnv;
  * @param {string} ssmName - The name of the parameter to get
  */
 async function getEnv(ssmName) {
-  if (!ssmEnv) {
-    const param = {
-      Name: ssmName,
-      WithDecryption: true,
-    };
-
-    const response = await ssmClient.send(new GetParameterCommand(param));
-    if (response.Parameter?.Value) {
-      ssmEnv = dotenv.parse(response.Parameter.Value);
-    } else {
-      throw new Error(`Failed to get SSM parameter: ${ssmName}`);
-    }
+  const parameter = await getParameter(ssmName, {
+    maxAge: 3600,
+    decrypt: true,
+  });
+  if (parameter) {
+    return dotenv.parse(parameter);
   } else {
-    console.log("Using cached SSM parameters");
+    throw new Error(`Failed to get SSM parameter: ${ssmName}`);
   }
-  return ssmEnv;
 }
 
 export const handler = async (event, context) => {
-  try {
-    const envValues = await getEnv(ssmEnvName);
-    for (const key in envValues) {
-      process.env[key] = envValues[key]; // add each key-value pair to process.env
-    }
-    console.log("process.env parameters set", process.env);
-  } catch (error) {
-    console.error(`Failed to set process.env parameters: ${error}`);
+  // Append awsRequestId to each log statement
+  logger.appendKeys({
+    awsRequestId: context.awsRequestId,
+  });
+
+  const {
+    REDDIT_CLIENT_ID,
+    REDDIT_CLIENT_SECRET,
+    REDDIT_CALLBACK_URI,
+    REDDIT_SCOPE,
+    CLIENT_PATH,
+  } = process.env;
+
+  // Check if the environment variables are set
+  if (
+    !REDDIT_CLIENT_ID ||
+    !REDDIT_CLIENT_SECRET ||
+    !REDDIT_CALLBACK_URI ||
+    !REDDIT_SCOPE ||
+    !CLIENT_PATH
+  ) {
+    logger.error("Missing environment variables");
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Failed to set process.env parameters",
+        error: "Missing environment variables",
       }),
     };
   }
 
-  // Dynamically import the app after setting the environment variables
-  const { default: app } = await import("./src/app.js");
-  const serverlessHandler = serverless(app);
-  return serverlessHandler(event, context);
+  try {
+    // Dynamically import the app after setting the environment variables
+    const { default: app } = await import("./src/app.js");
+    const serverlessHandler = serverless(app);
+    return serverlessHandler(event, context);
+  } catch (error) {
+    logger.error("Failed to import the app", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({
+        error: "Failed to import the app",
+      }),
+    };
+  }
 };
