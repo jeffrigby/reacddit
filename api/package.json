@@ -16,8 +16,8 @@
     "pm2-restart": "pm2 restart 'reacddit_api'"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^1.18.0",
-    "@aws-lambda-powertools/parameters": "^1.18.0",
+    "@aws-lambda-powertools/logger": "^2.0.2",
+    "@aws-lambda-powertools/parameters": "^2.0.2",
     "@aws-sdk/client-ssm": "^3.514.0",
     "axios": "^1.2.1",
     "chalk": "^5.0.1",
