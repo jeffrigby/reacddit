@@ -3,12 +3,10 @@
   "env": { "browser": true, "es2021": true },
   "globals": { "bootstrap": true, "module": false, "process": false },
   "plugins": ["react", "react-hooks", "jsx-a11y", "prettier"],
-  "parser": "@babel/eslint-parser",
   "parserOptions": {
     "ecmaFeatures": { "jsx": true },
     "ecmaVersion": 12,
-    "sourceType": "module",
-    "requireConfigFile": false
+    "sourceType": "module"
   },
   "rules": {
     "prettier/prettier": "warn",

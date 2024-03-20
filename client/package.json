@@ -13,7 +13,7 @@
   "main": "index.js",
   "scripts": {
     "start": "cross-env NODE_ENV=development webpack serve --mode development --progress --hot",
-    "build": "cross-env NODE_ENV=production webpack --mode production",
+    "build": "cross-env NODE_ENV=production webpack --mode production --stats detailed",
     "profile": "cross-env NODE_ENV=production PROFILE=true webpack --mode production"
   },
   "browserslist": {
@@ -39,6 +39,7 @@
     "date-fns": "^3.2.0",
     "detect-browser": "^5.0.0",
     "dotenv": "^16.0.0",
+    "esbuild-loader": "^4.0.3",
     "immer": "^10.0.1",
     "js-cookie": "^3.0.0",
     "locutus": "^2.0.11",

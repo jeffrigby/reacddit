@@ -144,33 +144,19 @@ module.exports = {
           {
             test: /\.(js|mjs|jsx|ts|tsx)$/,
             include: paths.appSrc,
-            loader: require.resolve('babel-loader'),
-            exclude: /(node_modules)/,
+            loader: 'esbuild-loader',
             options: {
-              // This is a feature of `babel-loader` for webpack (not Babel itself).
-              // It enables caching results in ./node_modules/.cache/babel-loader/
-              // directory for faster rebuilds.
-              cacheDirectory: true,
-              // See #6846 for context on why cacheCompression is disabled
-              cacheCompression: false,
-              compact: isEnvProduction,
+              loader: 'jsx',
+              target: 'esnext',
             },
           },
-          // Process any JS outside of the app with Babel.
-          // Unlike the application JS, we only compile the standard ES features.
           {
             test: /\.(js|mjs)$/,
-            exclude: /@babel(?:\/|\\{1,2})runtime/,
-            loader: require.resolve('babel-loader'),
+            // Adjust the exclude pattern to fit your new requirements, if any
+            loader: 'esbuild-loader',
             options: {
-              cacheDirectory: true,
-              // See #6846 for context on why cacheCompression is disabled
-              cacheCompression: false,
-              // Babel sourcemaps are needed for debugging into node_modules
-              // code.  Without the options below, debuggers like VSCode
-              // show incorrect code and set breakpoints on the wrong lines.
-              sourceMaps: shouldUseSourceMap,
-              inputSourceMap: shouldUseSourceMap,
+              loader: 'js',
+              target: 'esnext',
             },
           },
           // "postcss" loader applies autoprefixer to our CSS.
