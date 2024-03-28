@@ -230,14 +230,16 @@ const RenderContent = async (entry, kind) => {
       return content;
     }
 
-    if (!entry.domain) {
+    const { domain, selftext_html: selfTextHtml } = entry;
+
+    if (!domain) {
       return null;
     }
 
-    const keys = getKeys(entry.domain);
+    const keys = getKeys(domain);
     const content = await getContent(keys, entry);
 
-    if (keys.greedyDomain === 'self' && entry.selftext_html) {
+    if (keys.greedyDomain === 'self' && selfTextHtml) {
       const getInline = inlineLinks(entry, kind);
       if (getInline.inline.length > 0) {
         content.inline = getInline.inline;
