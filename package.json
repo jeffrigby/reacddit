@@ -19,8 +19,5 @@
   "devDependencies": {
     "concurrently": "^8.0.1"
   },
-  "dependencies": {
-    "eslint": "^9.0.0",
-    "prettier": "^3.2.5"
-  }
+  "dependencies": {}
 }
