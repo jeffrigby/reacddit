@@ -37,6 +37,4 @@ MultiDelete.propTypes = {
   multi: PropTypes.object.isRequired,
 };
 
-MultiDelete.defaultProps = {};
-
 export default memo(MultiDelete);

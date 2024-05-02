@@ -192,8 +192,4 @@ Listings.propTypes = {
   match: PropTypes.object.isRequired,
 };
 
-Listings.defaultProps = {
-  // settings: { debug: false, view: 'expanded' },
-};
-
 export default Listings;

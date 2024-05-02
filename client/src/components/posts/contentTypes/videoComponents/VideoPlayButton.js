@@ -34,6 +34,4 @@ VideoPlayButton.propTypes = {
   toggleManualStop: PropTypes.func.isRequired,
 };
 
-VideoPlayButton.defaultProps = {};
-
 export default memo(VideoPlayButton);

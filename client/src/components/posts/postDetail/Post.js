@@ -73,7 +73,7 @@ function useRenderedContent(data, kind, expand) {
   return { renderedContent };
 }
 
-function Post({ post, duplicate, parent, postName, idx }) {
+function Post({ post, duplicate = false, parent = false, postName, idx }) {
   const { data, kind } = post;
   const [hide, setHide] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -416,11 +416,6 @@ Post.propTypes = {
   // visible: PropTypes.bool.isRequired,
   duplicate: PropTypes.bool,
   parent: PropTypes.bool,
-};
-
-Post.defaultProps = {
-  duplicate: false,
-  parent: false,
 };
 
 export default memo(Post);

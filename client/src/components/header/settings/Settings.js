@@ -37,6 +37,4 @@ function Settings() {
 
 Settings.propTypes = {};
 
-Settings.defaultProps = {};
-
 export default Settings;

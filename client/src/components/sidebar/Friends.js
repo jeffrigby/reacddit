@@ -134,6 +134,5 @@ function Friends() {
 }
 
 Friends.propTypes = {};
-Friends.defaultProps = {};
 
 export default Friends;

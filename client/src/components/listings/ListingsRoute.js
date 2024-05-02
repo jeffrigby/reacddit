@@ -7,7 +7,7 @@ import { setHistory } from '../../redux/slices/historySlice';
 import Listings from './Listings';
 import NotFound404 from '../../NotFound404';
 
-function ListingsRoute({ overrides, validations }) {
+function ListingsRoute({ overrides = {}, validations = {} }) {
   const match = useParams();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -38,12 +38,6 @@ function ListingsRoute({ overrides, validations }) {
 ListingsRoute.propTypes = {
   overrides: PropTypes.object,
   validations: PropTypes.object,
-};
-
-ListingsRoute.defaultProps = {
-  // settings: { debug: false, view: 'expanded' },
-  overrides: {},
-  validations: {},
 };
 
 export default ListingsRoute;

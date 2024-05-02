@@ -8,7 +8,7 @@ import PostDebug from './PostDebug';
 
 function PostFooter({
   debug,
-  renderedContent,
+  renderedContent = null,
   setShowVisToggle,
   showVisToggle,
 }) {
@@ -108,10 +108,6 @@ PostFooter.propTypes = {
   renderedContent: PropTypes.object,
   showVisToggle: PropTypes.bool.isRequired,
   setShowVisToggle: PropTypes.func.isRequired,
-};
-
-PostFooter.defaultProps = {
-  renderedContent: null,
 };
 
 export default memo(PostFooter);

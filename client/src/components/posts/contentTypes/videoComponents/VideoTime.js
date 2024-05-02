@@ -40,6 +40,4 @@ VideoTime.propTypes = {
   duration: PropTypes.number.isRequired,
 };
 
-VideoTime.defaultProps = {};
-
 export default memo(VideoTime);

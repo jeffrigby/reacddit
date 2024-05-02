@@ -55,7 +55,7 @@ function getBuffers(videoRef) {
   return {};
 }
 
-function VideoComp({ link, content }) {
+function VideoComp({ link = '', content }) {
   const postContext = useContext(PostsContextData);
   const { isLoaded } = postContext;
   const videoRef = useRef();
@@ -408,10 +408,6 @@ function VideoComp({ link, content }) {
 VideoComp.propTypes = {
   link: PropTypes.string,
   content: PropTypes.object.isRequired,
-};
-
-VideoComp.defaultProps = {
-  link: '',
 };
 
 export default memo(VideoComp);

@@ -7,20 +7,19 @@ const closeMenu = () => {
   document.body.classList.remove('show-menu');
 };
 
-function NavigationGenericNavItem(props) {
-  const {
-    to,
-    text,
-    title,
-    isStatic,
-    onClickAction,
-    classes,
-    id,
-    badge,
-    noLi,
-    iconClass,
-    liClass,
-  } = props;
+function NavigationGenericNavItem({
+  to,
+  text,
+  title = null,
+  isStatic = false,
+  onClickAction = null,
+  classes = '',
+  id = '',
+  badge = '',
+  noLi = false,
+  iconClass = '',
+  liClass = '',
+}) {
   const titleNew = title || text;
   let classNames = 'nav-link';
   if (classes) {
@@ -96,18 +95,6 @@ NavigationGenericNavItem.propTypes = {
   isStatic: PropTypes.bool,
   noLi: PropTypes.bool,
   onClickAction: PropTypes.func,
-};
-
-NavigationGenericNavItem.defaultProps = {
-  title: null,
-  onClickAction: null,
-  isStatic: false,
-  noLi: false,
-  classes: '',
-  id: '',
-  badge: '',
-  iconClass: '',
-  liClass: '',
 };
 
 export default NavigationGenericNavItem;

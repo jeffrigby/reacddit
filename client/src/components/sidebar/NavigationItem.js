@@ -85,6 +85,4 @@ NavigationItem.propTypes = {
   trigger: PropTypes.bool.isRequired,
 };
 
-NavigationItem.defaultProps = {};
-
 export default NavigationItem;

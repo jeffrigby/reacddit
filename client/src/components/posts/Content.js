@@ -13,7 +13,7 @@ import { PostsContextData, PostsContextContent } from '../../contexts';
 import HTTPSError from './contentTypes/HTTPSError';
 import RedditGallery from './contentTypes/RedditGallery';
 
-function Content({ content }) {
+function Content({ content = null }) {
   const postContext = useContext(PostsContextData);
   const { post, isLoaded } = postContext;
   const { data } = post;
@@ -77,10 +77,6 @@ function Content({ content }) {
 
 Content.propTypes = {
   content: PropTypes.object,
-};
-
-Content.defaultProps = {
-  content: null,
 };
 
 export default Content;

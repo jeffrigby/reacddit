@@ -120,6 +120,4 @@ function MultiReddits() {
 
 MultiReddits.propTypes = {};
 
-MultiReddits.defaultProps = {};
-
 export default MultiReddits;

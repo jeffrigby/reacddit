@@ -10,8 +10,8 @@ import Post from '../postDetail/Post';
  * @param idxOffset {number} - The offset to use for the index of the post
  * @constructor
  */
-function PostsRender({ posts, listType, idxOffset }) {
-  const entries = useMemo(() => {
+function PostsRender({ posts, listType, idxOffset = 0 }) {
+  return useMemo(() => {
     const links = new Set();
 
     // Remove the "more" posts
@@ -46,18 +46,12 @@ function PostsRender({ posts, listType, idxOffset }) {
       );
     });
   }, [posts, listType, idxOffset]);
-
-  return entries;
 }
 
 PostsRender.propTypes = {
   idxOffset: PropTypes.number,
   posts: PropTypes.object.isRequired,
   listType: PropTypes.string.isRequired,
-};
-
-PostsRender.defaultProps = {
-  idxOffset: 0,
 };
 
 export default PostsRender;

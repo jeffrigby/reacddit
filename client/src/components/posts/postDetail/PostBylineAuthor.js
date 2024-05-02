@@ -6,7 +6,16 @@ import RedditAPI from '../../../reddit/redditAPI';
 
 const classNames = require('classnames');
 
-function PostBylineAuthor({ author, flair, isSubmitter }) {
+/**
+ * Renders the author information and actions for a post.
+ *
+ * @param {string} author - The username of the post author.
+ * @param {string|null} flair - The flair for the post author. Defaults to null.
+ * @param {boolean} isSubmitter - Specifies if the author is also the submitter of the post. Defaults to false.
+ *
+ * @returns {JSX.Element} - The rendered author information and actions.
+ */
+function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
   const redditFriends = useSelector((state) => state.redditFriends);
   const dispatch = useDispatch();
 
@@ -38,47 +47,39 @@ function PostBylineAuthor({ author, flair, isSubmitter }) {
     'is-submitter': isSubmitter,
   });
 
-  const authorLink =
-    author === '[deleted]' ? (
-      <div>
-        <i className="fas fa-user" /> {author}
-      </div>
-    ) : (
-      <>
-        <button
-          className="btn btn-link btn-sm shadow-none"
-          type="button"
-          onClick={onClick}
-          title={title}
-          aria-label={title}
-        >
-          <i className={`fas ${isFriend ? 'fa-user-minus' : 'fa-user-plus'}`} />
-        </button>{' '}
-        <Link
-          to={{
-            pathname: `/user/${author}/posts/new`,
-            state: { showBack: true },
-          }}
-          className={authorClasses}
-        >
-          {author}
-        </Link>{' '}
-        {authorFlair}
-      </>
-    );
-
-  return authorLink;
+  return author === '[deleted]' ? (
+    <div>
+      <i className="fas fa-user" /> {author}
+    </div>
+  ) : (
+    <>
+      <button
+        className="btn btn-link btn-sm shadow-none"
+        type="button"
+        onClick={onClick}
+        title={title}
+        aria-label={title}
+      >
+        <i className={`fas ${isFriend ? 'fa-user-minus' : 'fa-user-plus'}`} />
+      </button>{' '}
+      <Link
+        to={{
+          pathname: `/user/${author}/posts/new`,
+          state: { showBack: true },
+        }}
+        className={authorClasses}
+      >
+        {author}
+      </Link>{' '}
+      {authorFlair}
+    </>
+  );
 }
 
 PostBylineAuthor.propTypes = {
   author: PropTypes.string.isRequired,
   flair: PropTypes.string,
   isSubmitter: PropTypes.bool,
-};
-
-PostBylineAuthor.defaultProps = {
-  flair: null,
-  isSubmitter: false,
 };
 
 export default PostBylineAuthor;

@@ -86,5 +86,4 @@ function PostsDebug() {
 
 PostsDebug.propTypes = {};
 
-PostsDebug.defaultProps = {};
 export default PostsDebug;

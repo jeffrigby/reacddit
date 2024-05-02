@@ -25,6 +25,7 @@
     "import/no-cycle": [2, { "maxDepth": 1 }],
     "no-unreachable": "warn",
     "react/forbid-prop-types": 0,
+    "react/require-default-props": 0,
     "react/function-component-definition": [
       "off",
       {

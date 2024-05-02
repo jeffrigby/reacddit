@@ -43,6 +43,4 @@ SubFavorite.propTypes = {
   srName: PropTypes.string.isRequired,
 };
 
-SubFavorite.defaultProps = {};
-
 export default SubFavorite;

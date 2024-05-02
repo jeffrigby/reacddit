@@ -66,6 +66,4 @@ MultiRedditsItem.propTypes = {
   item: PropTypes.object.isRequired,
 };
 
-MultiRedditsItem.defaultProps = {};
-
 export default memo(MultiRedditsItem);

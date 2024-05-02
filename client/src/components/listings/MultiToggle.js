@@ -111,6 +111,4 @@ MultiToggle.propTypes = {
   srName: PropTypes.string.isRequired,
 };
 
-MultiToggle.defaultProps = {};
-
 export default MultiToggle;

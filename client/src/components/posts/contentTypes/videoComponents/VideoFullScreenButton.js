@@ -34,6 +34,4 @@ VideoFullScreenButton.propTypes = {
   videoRef: PropTypes.object.isRequired,
 };
 
-VideoFullScreenButton.defaultProps = {};
-
 export default memo(VideoFullScreenButton);
