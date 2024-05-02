@@ -1,9 +1,8 @@
 import { useContext } from 'react';
 import PropTypes from 'prop-types';
-import IFrame16x9 from './contentTypes/IFrame16x9';
 import ImageComp from './contentTypes/ImageComp';
 import VideoComp from './contentTypes/VideoComp';
-import IFrame4x4 from './contentTypes/IFrame4x4';
+import IFrame from './contentTypes/IFrame';
 import Thumb from './contentTypes/Thumb';
 import Self from './contentTypes/Self';
 import ImgurAlbum from './contentTypes/ImgurAlbum';
@@ -38,11 +37,8 @@ function Content({ content }) {
       case 'video':
         contentRendered = <VideoComp link={url} content={content} />;
         break;
-      case 'iframe_4x4':
-        contentRendered = <IFrame4x4 content={content} />;
-        break;
-      case 'iframe16x9':
-        contentRendered = <IFrame16x9 content={content} />;
+      case 'iframe':
+        contentRendered = <IFrame content={content} />;
         break;
       case 'imgur_album':
         contentRendered = <ImgurAlbum content={content} load={isLoaded} />;

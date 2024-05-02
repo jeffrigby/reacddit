@@ -7,7 +7,7 @@ const redditMediaEmbed = (entry) => {
     const src = embed.getAttribute('src');
     const allow = embed.getAttribute('allow');
     return {
-      type: 'iframe16x9',
+      type: 'iframe',
       src,
       allow,
     };

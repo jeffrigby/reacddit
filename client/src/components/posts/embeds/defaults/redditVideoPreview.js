@@ -42,7 +42,7 @@ const redditVideoPreview = (entry) => {
     // sources.push({ type: 'application/dash+xml', src: media.dash_url });
     sources.push({ type: 'video/mp4', src: media.fallback_url });
 
-    const videoPreview = {
+    return {
       media,
       width: media.width,
       height: media.height,
@@ -54,8 +54,6 @@ const redditVideoPreview = (entry) => {
       renderFunction: 'redditVideoPreview',
       thumb: poster,
     };
-
-    return videoPreview;
   }
 
   if (entry.preview === undefined) {
@@ -71,7 +69,7 @@ const redditVideoPreview = (entry) => {
 
       const sources = [{ type: 'video/mp4', src: source.url }];
 
-      const videoPreview = {
+      return {
         width: source.width,
         height: source.height,
         id: entry.name,
@@ -79,7 +77,6 @@ const redditVideoPreview = (entry) => {
         sources,
         thumb: poster,
       };
-      return videoPreview;
     }
   }
 

@@ -11,11 +11,11 @@ The filename must be one of the following:
 - The domain name, without any sub domains. Remove the periods as well.
 - The domain name without subdomain or top level domain (com, net, org, etc.)
 
-For example if the entry.domain is gfycat.com. The embed renderer will look for  
+For example if the entry.domain is youtube.com. The embed renderer will look for  
 the following files in this order.
 
-- gfycat.js
-- gfycatcom.js
+- youtube.js
+- youtubecom.js
 
 The content of the file looks something like this:
 
@@ -39,8 +39,7 @@ The function may also return a promise, for API lookups (see gfycat)
 
 - video
 - image
-- iframe16x9
-- iframe4x4
+- iframe
 
 **Video structure:**
 
@@ -58,7 +57,7 @@ const videoPreview = {  width: media.width,
 const imagePreview = {
   type: 'image',
   width: 650, (optional);
-  650, (optional);
+  height: 650, (optional);
   entry.url,
 }
 ````
@@ -67,7 +66,7 @@ const imagePreview = {
 
 ```javascript
 const content = {
-  type: 'iframe16x9', // (or 4x4)
+  type: 'iframe', // (or 4x4)
   src: url,
 };
 ```
