@@ -22,7 +22,7 @@ Resources:
   ReacdditAPI:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: api/
+      CodeUri: ./
       Handler: serverless-koa.handler
       Runtime: nodejs20.x
       Architectures: [arm64]
