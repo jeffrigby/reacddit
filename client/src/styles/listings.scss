@@ -1,5 +1,5 @@
 div#entries {
-  max-width: 1440px;
+  max-width: 1292px;
   margin: 0 auto;
 
   .react {
@@ -41,7 +41,8 @@ div#entries {
       background-repeat: no-repeat;
     }
     .iframe-ratio {
-      max-height: 70vh;
+      max-height: min(80vh, 748px);
+      min-height: 200px;
       margin: 0 auto;
       iframe {
         width: 100%;
