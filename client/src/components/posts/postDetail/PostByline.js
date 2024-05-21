@@ -17,15 +17,21 @@ function PostByline({ data, kind }) {
 
   return (
     <>
-      <PostBylineAuthor
-        author={author}
-        flair={flair}
-        isSubmitter={isSubmitter}
-      />{' '}
-      <PostTimeAgo createdUtc={createdUtc} />{' '}
+      <span className="pe-2">
+        <PostBylineAuthor
+          author={author}
+          flair={flair}
+          isSubmitter={isSubmitter}
+        />
+      </span>
+      <span className="pe-2">
+        <PostTimeAgo createdUtc={createdUtc} />
+      </span>
       {kind === 't3' && (
         <>
-          <PostCommentLink numComments={numComments} permalink={permalink} />{' '}
+          <span className="pe-2">
+            <PostCommentLink numComments={numComments} permalink={permalink} />
+          </span>
           <PostSubLink subreddit={subreddit} />
         </>
       )}

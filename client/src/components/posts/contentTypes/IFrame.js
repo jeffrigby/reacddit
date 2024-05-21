@@ -40,6 +40,7 @@ function IFrame({
             loading={loading}
             style={iframeStyle}
             onLoad={onLoad}
+            scrolling="no"
           />
         )}
       </div>

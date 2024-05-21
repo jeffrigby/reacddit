@@ -18,9 +18,9 @@ function PostTimeAgo({ createdUtc }) {
     .replace(/ /g, '');
 
   return (
-    <span>
+    <>
       <i className="far fa-clock" /> {timeagoshort}
-    </span>
+    </>
   );
 }
 
