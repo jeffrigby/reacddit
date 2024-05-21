@@ -18,6 +18,7 @@ const {
   CLIENT_PATH,
   SALT,
   SESSION_LENGTH_SECS,
+  TOKEN_EXPIRY_PADDING_SECS,
   DEBUG,
 } = process.env;
 
@@ -88,7 +89,7 @@ const setCookie = (token, ctx) => {
     maxAge: SESSION_LENGTH_SECS * 1000,
     expires: expireDate,
     httpOnly: false,
-    secure: true, // or false, depending on your needs
+    secure: true,
     overwrite: true,
   });
 };
@@ -119,7 +120,7 @@ const isTokenExpired = (token) => {
   }
   const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
   // Pad it by 5 minutes.
-  return token.expires - 300 <= now;
+  return token.expires - TOKEN_EXPIRY_PADDING_SECS <= now;
 };
 
 /**
@@ -197,7 +198,6 @@ const getRefreshToken = async (prevToken) => {
   params.append("refresh_token", refresh_token);
 
   try {
-    // User axios to get the token
     const newToken = await axiosInstance.post("/api/v1/access_token", params);
     // Only auth tokens have a refresh token
     return addExtraInfoToToken(newToken.data, true);
@@ -320,7 +320,7 @@ router.get("/api/callback", async (ctx, next) => {
   try {
     const AccessToken = await axiosInstance.post(
       "/api/v1/access_token",
-      qs.stringify(options)
+      qs.stringify(options),
     );
 
     const { data } = AccessToken;
@@ -342,7 +342,7 @@ router.get("/api/callback", async (ctx, next) => {
 });
 
 // Helper function to set the session, cookie and response body
-const setSessionAndRespond = async (token, ctx, type) => {
+const setSessionAndRespond = (token, ctx, type) => {
   setSessAndCookie(token, ctx);
   ctx.body = getBearer(token, { type, loginUrl: getLoginUrl(ctx) });
 };
@@ -354,11 +354,7 @@ const setSessionAndRespond = async (token, ctx, type) => {
 const getAnonTokenAndSetSession = async (ctx) => {
   console.log("ANON TOKEN GRANTED");
   const anonToken = await getAnonToken();
-  await setSessionAndRespond(
-    addExtraInfoToToken(anonToken.token, false),
-    ctx,
-    "new"
-  );
+  setSessionAndRespond(addExtraInfoToToken(anonToken.token, false), ctx, "new");
 };
 
 /**
@@ -387,7 +383,7 @@ const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
       await setSessionAndRespond(
         addExtraInfoToToken(anonToken.token),
         ctx,
-        "new"
+        "new",
       );
       return;
     }
@@ -404,7 +400,7 @@ const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
     await setSessionAndRespond(
       addExtraInfoToToken(newToken, true),
       ctx,
-      "refresh"
+      "refresh",
     );
   } else {
     console.log("NO REFRESH TOKEN. GETTING ANON TOKEN.");
@@ -412,7 +408,7 @@ const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
     await setSessionAndRespond(
       addExtraInfoToToken(anonToken.token, false),
       ctx,
-      "newanon"
+      "newanon",
     );
   }
 };
