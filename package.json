@@ -20,8 +20,5 @@
     "concurrently": "^8.0.1",
     "esbuild": "^0.21.1"
   },
-  "workspaces": [
-    "api"
-  ],
   "dependencies": {}
 }

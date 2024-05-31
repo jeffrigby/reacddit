@@ -12,7 +12,8 @@ const CopyPlugin = require('copy-webpack-plugin');
 const paths = require('./paths');
 
 const imageInlineSizeLimit = parseInt(
-  process.env.IMAGE_INLINE_SIZE_LIMIT || '10000'
+  process.env.IMAGE_INLINE_SIZE_LIMIT || '10000',
+  10
 );
 
 const isEnvDevelopment = process.env.NODE_ENV === 'development';
@@ -94,15 +95,9 @@ module.exports = {
   target: 'web',
 
   optimization: {
-    // Automatically split vendor and commons
-    // https://twitter.com/wSokra/status/969633336732905474
-    // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
     splitChunks: {
       chunks: 'all',
     },
-    // Keep the runtime chunk separated to enable long term caching
-    // https://twitter.com/wSokra/status/969679223278505985
-    // https://github.com/facebook/create-react-app/issues/5358
     runtimeChunk: {
       name: (entrypoint) => `runtime-${entrypoint.name}`,
     },
@@ -115,62 +110,43 @@ module.exports = {
   module: {
     strictExportPresence: true,
     rules: [
-      // // Disable require.ensure as it's not a standard language feature.
-      // { parser: { requireEnsure: false } },
       {
         oneOf: [
-          // TODO: Merge this config once `image/avif` is in the mime-db
-          // https://github.com/jshttp/mime-db
           {
-            test: [/\.avif$/],
-            loader: require.resolve('url-loader'),
-            options: {
-              limit: imageInlineSizeLimit,
-              mimetype: 'image/avif',
-              name: 'static/media/[name].[contenthash:8].[ext]',
+            test: /\.(bmp|gif|jpe?g|png|avif|svg|webp|ico|tiff?)$/,
+            type: 'asset/resource',
+            parser: {
+              dataUrlCondition: {
+                maxSize: imageInlineSizeLimit, // This is equivalent to the limit option in url-loader
+              },
             },
-          },
-          // "url" loader works like "file" loader except that it embeds assets
-          // smaller than specified limit in bytes as data URLs to avoid requests.
-          // A missing `test` is equivalent to a match.
-          {
-            test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
-            loader: require.resolve('url-loader'),
-            options: {
-              limit: imageInlineSizeLimit,
-              name: `${paths.imagesFolder}/[name].[contenthash:8].[ext]`,
+            generator: {
+              filename: `${paths.imagesFolder}/[name].[contenthash:8].[ext]`,
             },
           },
           {
             test: /\.(js|mjs|jsx|ts|tsx)$/,
             include: paths.appSrc,
-            loader: require.resolve('babel-loader'),
+            loader: require.resolve('esbuild-loader'),
             exclude: /(node_modules)/,
             options: {
-              // This is a feature of `babel-loader` for webpack (not Babel itself).
-              // It enables caching results in ./node_modules/.cache/babel-loader/
-              // directory for faster rebuilds.
-              cacheDirectory: true,
-              // See #6846 for context on why cacheCompression is disabled
-              cacheCompression: false,
-              compact: isEnvProduction,
+              loader: 'tsx', // Support both js and ts files
+              target: 'es2022',
+              minify: isEnvProduction,
+              sourcemap: shouldUseSourceMap,
+              jsx: 'automatic',
             },
           },
-          // Process any JS outside of the app with Babel.
-          // Unlike the application JS, we only compile the standard ES features.
           {
             test: /\.(js|mjs)$/,
-            exclude: /@babel(?:\/|\\{1,2})runtime/,
-            loader: require.resolve('babel-loader'),
+            include: paths.appSrc,
+            loader: require.resolve('esbuild-loader'),
             options: {
-              cacheDirectory: true,
-              // See #6846 for context on why cacheCompression is disabled
-              cacheCompression: false,
-              // Babel sourcemaps are needed for debugging into node_modules
-              // code.  Without the options below, debuggers like VSCode
-              // show incorrect code and set breakpoints on the wrong lines.
-              sourceMaps: shouldUseSourceMap,
-              inputSourceMap: shouldUseSourceMap,
+              loader: 'jsx', // Or 'tsx' if you are using TypeScript
+              target: 'es2022',
+              minify: isEnvProduction,
+              sourcemap: shouldUseSourceMap,
+              jsx: 'automatic',
             },
           },
           // "postcss" loader applies autoprefixer to our CSS.
@@ -253,15 +229,17 @@ module.exports = {
           // This loader doesn't use a "test" so it will catch all modules
           // that fall through the other loaders.
           {
-            loader: require.resolve('file-loader'),
-            // Exclude `js` files to keep "css" loader working as it injects
-            // its runtime that would otherwise be processed through "file" loader.
-            // Also exclude `html` and `json` extensions so they get processed
-            // by webpacks internal loaders.
-            exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
-            options: {
-              name: 'static/media/[name].[contenthash:8].[ext]',
+            test: [/\.(bmp|gif|jpe?g|png|avif)$/],
+            type: 'asset',
+            parser: {
+              dataUrlCondition: {
+                maxSize: imageInlineSizeLimit, // This is equivalent to the limit option in url-loader
+              },
             },
+            generator: {
+              filename: 'static/media/[name].[contenthash:8][ext]',
+            },
+            exclude: [/\.(js|mjs|jsx|ts|tsx|html|json)$/],
           },
           // ** STOP ** Are you adding a new loader?
           // Make sure to add the new loader(s) before the "file" loader.

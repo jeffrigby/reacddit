@@ -8,7 +8,6 @@ const noopServiceWorkerMiddleware = require('react-dev-utils/noopServiceWorkerMi
 const ignoredFiles = require('react-dev-utils/ignoredFiles');
 const redirectServedPath = require('react-dev-utils/redirectServedPathMiddleware');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const paths = require('./paths');
 
 const host = process.env.HOST || '0.0.0.0';
@@ -42,7 +41,6 @@ module.exports = {
     allowedHosts: 'all',
     hot: 'only',
     // https: false,
-    liveReload: false,
     webSocketServer: 'ws',
     host,
     client: {
@@ -108,6 +106,5 @@ module.exports = {
     }),
     // new CleanTerminalPlugin(),
     new CaseSensitivePathsPlugin(),
-    new FriendlyErrorsWebpackPlugin(),
   ],
 };
