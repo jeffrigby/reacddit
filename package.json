@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "A Reddit client built in reactjs.",
   "scripts": {
-    "start": "concurrently \"yarn run start-client\"  \"yarn run start-api\"",
-    "start-client": "cd client && yarn start",
-    "build-client": "cd client && yarn run build",
-    "start-api": "cd api && yarn start"
+    "start": "concurrently \"npm run start-client\"  \"npm run start-api\"",
+    "start-client": "cd client && npm start",
+    "build-client": "cd client && npm run build",
+    "start-api": "cd api && yarn start",
+    "outdated-all": "find . -maxdepth 2 -name package.json -execdir npm outdated \\;",
+    "update-all": "find . -maxdepth 2 -name package.json -execdir npm update \\;"
   },
   "keywords": [
     "es6",
