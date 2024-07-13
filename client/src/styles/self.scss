@@ -1,8 +1,10 @@
 div#entries {
   .self {
     position: relative;
+
     p {
       margin-bottom: 0.5rem;
+
       :last-child {
         margin-bottom: 0;
       }
@@ -34,10 +36,12 @@ div#entries {
       max-height: 204px;
     }
 
-    position: relative;
-    overflow: hidden;
-    max-height: 100px;
-    margin: 0;
+    & {
+      position: relative;
+      overflow: hidden;
+      max-height: 100px;
+      margin: 0;
+    }
 
     &.self-fade {
       -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
@@ -51,6 +55,7 @@ div#entries {
       text-overflow: inherit;
       max-height: inherit !important;
     }
+
     * {
       font-size: 1em !important;
     }
