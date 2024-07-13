@@ -67,7 +67,7 @@ export const handler = async (event, context) => {
 
   try {
     // Dynamically import the app after setting the environment variables
-    const { default: app } = await import("./src/app.js");
+    const { default: app } = await import("./src/app.mjs");
     const serverlessHandler = serverless(app);
     return serverlessHandler(event, context);
   } catch (error) {

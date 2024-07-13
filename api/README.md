@@ -62,7 +62,7 @@ DEBUG=0
 You can use PM2, node, or nodemon in development to start the server.
 
 ```bash
-# node index.js
+# node index.mjs
 # nodemon start
-# pm2 index.js --name "reaccddit"
+# pm2 index.mjs --name "reaccddit"
 ```

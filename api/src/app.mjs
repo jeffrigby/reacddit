@@ -2,14 +2,14 @@ import Koa from "koa";
 import Router from "koa-router";
 import session from "koa-session";
 import logger from "koa-logger";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import qs from "qs";
 import {
   axiosInstance,
   checkEnvErrors,
   encryptToken,
   decryptToken,
-} from "./util.js";
+} from "./util.mjs";
 
 const {
   REDDIT_CLIENT_ID,
@@ -241,14 +241,14 @@ const getBearer = (token, params = {}) => {
  * @returns {String}
  */
 const getLoginUrl = (ctx) => {
-  const state = ctx.session.state || uuidv4();
+  const state = ctx.session.state || randomUUID();
   ctx.session.state = state;
 
   // Construct the query parameters
   const queryParams = new URLSearchParams({
     client_id: REDDIT_CLIENT_ID,
     response_type: "code",
-    state: state,
+    state,
     redirect_uri: REDDIT_CALLBACK_URI,
     duration: "permanent",
     scope: scope.split(",").join(" "),

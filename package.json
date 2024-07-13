@@ -6,7 +6,7 @@
     "start": "concurrently \"npm run start-client\"  \"npm run start-api\"",
     "start-client": "cd client && npm start",
     "build-client": "cd client && npm run build",
-    "start-api": "cd api && yarn start",
+    "start-api": "cd api && npm start",
     "outdated-all": "find . -maxdepth 2 -name package.json -execdir npm outdated \\;",
     "update-all": "find . -maxdepth 2 -name package.json -execdir npm update \\;"
   },
@@ -20,7 +20,11 @@
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.0.1",
-    "esbuild": "^0.21.1"
+    "esbuild": "^0.23.0",
+    "prettier": "^3.3.3"
   },
-  "dependencies": {}
+  "workspaces": [
+    "client",
+    "api"
+  ]
 }

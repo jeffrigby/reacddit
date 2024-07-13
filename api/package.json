@@ -5,11 +5,11 @@
   "type": "module",
   "license": "MIT",
   "author": "",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
-    "start": "node index.js",
-    "nodemon": "nodemon index.js",
-    "pm2-start": "pm2 start index.js --name reacddit_api",
+    "start": "node index.mjs",
+    "nodemon": "nodemon index.mjs",
+    "pm2-start": "pm2 start index.mjs --name reacddit_api",
     "pm2-stop": "pm2 stop reacddit_api",
     "pm2-log": "pm2 log reacddit_api",
     "pm2-delete": "pm2 delete reacddit_api",
@@ -28,7 +28,6 @@
     "koa-router": "^12.0.0",
     "koa-session": "^6.0.0",
     "qs": "^6.11.1",
-    "serverless-http": "^3.0.1",
-    "uuid": "^9.0.0"
+    "serverless-http": "^3.0.1"
   }
 }
