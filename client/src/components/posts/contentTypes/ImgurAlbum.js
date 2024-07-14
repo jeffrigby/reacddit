@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import VideoComp from './VideoComp';
+import VideoComp from './videoComponents/VideoComp';
 import Image from './ImageComp';
 
 class ImgurAlbum extends Component {

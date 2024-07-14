@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import PropTypes from 'prop-types';
 import ImageComp from './contentTypes/ImageComp';
-import VideoComp from './contentTypes/VideoComp';
+import VideoComp from './contentTypes/videoComponents/VideoComp';
 import IFrame from './contentTypes/IFrame';
 import Thumb from './contentTypes/Thumb';
 import Self from './contentTypes/Self';

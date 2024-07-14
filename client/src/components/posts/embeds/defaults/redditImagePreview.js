@@ -1,50 +1,44 @@
 import parse from 'url-parse';
 
+const IMAGE_HEIGHT_THRESHOLD = 748;
+const IMAGE_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|avif|svg|bmp|ico)$/i;
+
+const findBestResolution = (resolutions) =>
+  resolutions.find((res) => res.height > IMAGE_HEIGHT_THRESHOLD);
+
+const createImageProps = (base, { width, height, url }) => ({
+  ...base,
+  width,
+  height,
+  src: url,
+});
+
 const redditImagePreview = (entry) => {
-  if (entry.preview !== undefined) {
-    const { resolutions } = entry.preview.images[0];
-    const { source } = entry.preview.images[0];
+  const baseImage = {
+    title: entry.title,
+    type: 'image',
+    renderFunction: 'redditImagePreview',
+  };
 
-    // Loop through the resolutions and find the first one above 625px
-    let bestRes;
-    resolutions.forEach((res, key) => {
-      if (res.height > 625 && !bestRes) {
-        bestRes = res;
-      }
-    });
+  if (entry.preview?.images?.[0]) {
+    const { resolutions, source } = entry.preview.images[0];
 
+    const bestRes = findBestResolution(resolutions);
     if (bestRes) {
-      return {
-        type: 'image',
-        width: bestRes.width,
-        height: bestRes.height,
-        src: bestRes.url,
-        renderFunction: 'redditImagePreview',
-        source,
-      };
+      return createImageProps(baseImage, bestRes);
     }
 
-    // Fallback on the source if a suitable resolution doesn't exist.
     if (source) {
-      return {
-        type: 'image',
-        width: source.width,
-        height: source.height,
-        src: source.url,
-        renderFunction: 'redditImagePreview',
-      };
+      return createImageProps(baseImage, source);
     }
   }
 
-  const parsed = parse(entry.url);
+  const { pathname } = parse(entry.url);
 
-  if (parsed.pathname.match(/\.(jpg|png|gif|jpeg)$/)) {
+  if (IMAGE_EXTENSIONS.test(pathname)) {
     return {
-      type: 'image',
-      // width: 650,
-      // height: 650,
+      ...baseImage,
       src: entry.url,
-      renderFunction: 'redditImagePreview',
     };
   }
 

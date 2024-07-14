@@ -27,7 +27,7 @@ function IFrame({
 
   return (
     <div className="media-cont black-bg">
-      <div className="iframe-ratio" style={style}>
+      <div className="media-ratio" style={style}>
         {isLoaded && (
           <iframe
             src={src}

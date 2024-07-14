@@ -1,6 +1,15 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Renders a video play button.
+ * @param {Object} props - The properties object.
+ * @param {React.Ref} props.videoRef - The video reference.
+ * @param {boolean} props.playing - Indicates whether the video is currently playing.
+ * @param {Function} props.toggleManualStop - Callback function to toggle manual stop.
+ * @returns {JSX.Element} - The video play button component.
+ * @constructor
+ */
 function VideoPlayButton({ videoRef, playing, toggleManualStop }) {
   const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
   const playTitle = playing ? 'Pause' : 'Play';

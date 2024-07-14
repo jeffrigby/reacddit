@@ -10,14 +10,27 @@ import {
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
-import '../../../styles/video.scss';
-import VideoDebug from './videoComponents/VideoDebug';
-import VideoAudioButton from './videoComponents/VideoAudioButton';
-import VideoControlBar from './videoComponents/VideoControlBar';
-import { PostsContextData } from '../../../contexts';
+import '../../../../styles/video.scss';
+import VideoDebug from './VideoDebug';
+import VideoAudioButton from './VideoAudioButton';
+import VideoControlBar from './VideoControlBar';
+import { PostsContextData } from '../../../../contexts';
 
 const classNames = require('classnames');
 
+/**
+ * Extracts the buffer range information of a video.
+ * @param {Ref} videoRef - The reference to the video element.
+ * @param {number} idx - The index of the buffer range.
+ * @returns {Object} - An object containing the buffer range information.
+ *                    The object has the following properties:
+ *                    - start: The start time of the buffer range.
+ *                    - end: The end time of the buffer range.
+ *                    - duration: The duration of the video.
+ *                    - marginLeft: The left margin percentage of the buffer range.
+ *                    - marginRight: The right margin percentage of the buffer range.
+ *                    - range: The index of the buffer range.
+ */
 function extractBuffer(videoRef, idx) {
   const start = videoRef.current.buffered.start(idx);
   const end = videoRef.current.buffered.end(idx);
@@ -33,6 +46,11 @@ function extractBuffer(videoRef, idx) {
   };
 }
 
+/**
+ * Retrieves the buffers of a video element.
+ * @param {Object} videoRef - The reference to the video element.
+ * @returns {Object} - An object containing the status and buffers of the video.
+ */
 function getBuffers(videoRef) {
   if (videoRef.current && videoRef.current.readyState > 2) {
     const bufferLength = videoRef.current.buffered.length;
@@ -55,6 +73,14 @@ function getBuffers(videoRef) {
   return {};
 }
 
+/**
+ * Renders a video player component.
+ * @param {Object} props - The component props.
+ * @param {string} props.link - The link to the video source.
+ * @param {Object} props.content - The video content data.
+ * @returns {JSX.Element} - The video player component.
+ * @constructor
+ */
 function VideoComp({ link = '', content }) {
   const postContext = useContext(PostsContextData);
   const { isLoaded } = postContext;
@@ -125,21 +151,11 @@ function VideoComp({ link = '', content }) {
   }, [getSetBuffer, playing, currentTime, duration, canPlay, canPlayThrough]);
 
   const { width, height, sources } = content;
-  let videoWidth = width;
-  let videoHeight = height;
 
-  // Size down if needed
-  const maxHeight = 625;
-  if (height > maxHeight) {
-    videoWidth = (width * maxHeight) / height;
-    videoHeight = maxHeight;
-  }
+  const contStyle = {};
+  contStyle.aspectRatio = `${width}/${height}`;
+  contStyle.maxHeight = height < 740 ? height : undefined;
 
-  const finalWidth =
-    videoHeight > 800 ? (videoWidth * 800) / videoHeight : videoWidth;
-  const contStyle = { width: `${finalWidth}px` };
-  const ratio = (videoHeight / videoWidth) * 100;
-  const ratioStyle = { paddingBottom: `${ratio}%` };
   const videoId = `video-${content.id}`;
 
   // In a const so I can pass it to the play button
@@ -290,6 +306,7 @@ function VideoComp({ link = '', content }) {
   const videoContainerClass = [
     'video-container',
     'media-cont',
+    'black-bg',
     muted ? 'muted' : 'unmuted',
     playing ? 'playing' : 'paused',
     ctrLock ? 'locked' : 'unlocked',
@@ -339,17 +356,10 @@ function VideoComp({ link = '', content }) {
             <div>{loadingError}</div>
           </div>
         )}
-        <div className="ratio-bg">
-          <div style={contStyle} className="ratio-container">
-            <div
-              style={ratioStyle}
-              className="ratio embed-responsive loading-icon"
-            >
-              {video}
-              {!canPlay && loadError}
-            </div>
-          </div>
+        <div style={contStyle} className="media-ratio">
+          {video}
         </div>
+        {!canPlay && loadError}
         {isLoaded && videoRef.current && canPlay && (
           <>
             <div className="video-control-bar-cont">
