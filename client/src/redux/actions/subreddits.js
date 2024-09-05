@@ -54,7 +54,6 @@ export function subredditsFetchLastUpdated() {
       subredditsFetchLastUpdatedRunning = true;
       const currentState = getState();
       const { subreddits } = currentState.subreddits;
-      const { friends } = currentState.redditFriends;
       const { lastUpdated } = currentState;
 
       // Create subreddit requests
@@ -76,13 +75,6 @@ export function subredditsFetchLastUpdated() {
             path: subreddit.url.replace(/^\/r\/|\/$/g, ''),
             id: subreddit.name,
           });
-        }
-      });
-
-      // Create friends
-      Object.entries(friends).forEach(([key, friend]) => {
-        if (shouldUpdate(lastUpdated, friend.id)) {
-          lookups.push({ type: 'friend', path: friend.name, id: friend.id });
         }
       });
 

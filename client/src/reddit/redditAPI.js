@@ -551,17 +551,37 @@ class RedditAPI {
   }
 
   /**
+   * Helper function to subcirbe to a subreddit by name.
+   * @param {string} name - The name to subscribe to.
+   * @param {string} [action='sub'] - The action to perform for the subscription.
+   * @returns {Promise<any>} - A Promise that resolves when the subscription is successful.
+   */
+  async sunscribeByName(name, action = 'sub') {
+    return this.subscribe(name, action, 'sr_name');
+  }
+
+  /**
    * Subscribe or unsbscribe from a sub.
-   * @param name - the sr name(s) comma separated
-   * @param action - sub or unsub
+   * @param {string} name - the sr name(s) comma separated
+   * @param {('sub' | 'unsub')} action - Subscribe or unsubscribe
+   * @param {('sr' | 'sr_name')} type - Is the name an ID or a full name?
    * @returns {Promise<*>}
    */
-  async subscribe(name, action = 'sub') {
-    const params = {
-      sr: name,
-      action,
-      // skip_initial_defaults: false,
-    };
+  async subscribe(name, action = 'sub', type = 'sr') {
+    const validActions = ['sub', 'unsub'];
+    const validTypes = ['sr', 'sr_name'];
+
+    if (!validActions.includes(action)) {
+      throw new Error('Invalid action passed to subscribe');
+    }
+
+    if (!validTypes.includes(type)) {
+      throw new Error('Invalid type passed to subscribe');
+    }
+
+    const params = { action };
+    params[type] = name;
+
     const subscribe = await this.redditAPI.post(
       '/api/subscribe',
       queryString.stringify(params)
@@ -570,7 +590,7 @@ class RedditAPI {
   }
 
   /**
-   * Get the user's friend list.
+   * Get the user's friend list. DEPRECATED
    * @param options - params to send
    * @returns {Promise<*>}
    */
@@ -591,7 +611,7 @@ class RedditAPI {
   }
 
   /**
-   * remove a friend
+   * remove a friend DEPRECATED
    * @param name - the name of the friend to remove.
    * @returns {Promise<*>}
    */
@@ -600,15 +620,25 @@ class RedditAPI {
   }
 
   /**
-   * add a friend
+   * add a friend DEPRECATED
    * @param name - the name of the friend to remove.
    * @returns {Promise<*>}
    */
-  addFriend(name) {
-    const data = { name };
+  async addFriend(name) {
+    const data = { name, note: null };
     return this.redditAPI.put(`/api/v1/me/friends/${name}`, data, {
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  /**
+   * Follow/unfollow a user on Reddit.
+   * @param {string} name - The username of the user to follow.
+   * @param {('sub' | 'unsub')} action - The action to perform. Defaults to 'sub'. Can be 'sub' or 'unsub'.
+   * @returns {Promise<any>} - A promise that resolves to the API response data.
+   */
+  async followUser(name, action = 'sub') {
+    return this.subscribe(name, action, 'sr_name');
   }
 
   /**

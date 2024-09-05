@@ -1,10 +1,12 @@
+import { useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { redditFetchFriends } from '../../../redux/actions/reddit';
-import RedditAPI from '../../../reddit/redditAPI';
+import { produce } from 'immer';
+import classNames from 'classnames';
 
-const classNames = require('classnames');
+import RedditAPI from '../../../reddit/redditAPI';
+import { subredditsData } from '../../../redux/actions/subreddits';
 
 /**
  * Renders the author information and actions for a post.
@@ -16,34 +18,55 @@ const classNames = require('classnames');
  * @returns {JSX.Element} - The rendered author information and actions.
  */
 function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
-  const redditFriends = useSelector((state) => state.redditFriends);
   const dispatch = useDispatch();
+  const subreddits = useSelector((state) => state.subreddits);
 
-  const removeFriend = async (name) => {
-    await RedditAPI.removeFriend(name);
-    dispatch(redditFetchFriends(true));
+  const authorSub = useMemo(() => `u_${author.toLowerCase()}`, [author]);
+  const isFollowed = useMemo(
+    () =>
+      !!(
+        subreddits &&
+        subreddits.subreddits &&
+        subreddits.subreddits[authorSub]
+      ),
+    [subreddits, authorSub]
+  );
+
+  const [isFollowing, setIsFollowing] = useState(isFollowed);
+
+  useEffect(() => {
+    setIsFollowing(isFollowed);
+  }, [isFollowed]);
+
+  const unfollowUser = async (name) => {
+    await RedditAPI.followUser(name, 'unsub');
+    setIsFollowing(false);
+    const newSubreddits = produce(subreddits, (draft) => {
+      delete draft.subreddits[authorSub];
+    });
+    dispatch(subredditsData(newSubreddits));
   };
 
-  const addFriend = async (name) => {
-    await RedditAPI.addFriend(name);
-    dispatch(redditFetchFriends(true));
+  const followUser = async (name) => {
+    await RedditAPI.followUser(name, 'sub');
+    setIsFollowing(true);
+    const subredditAbout = await RedditAPI.subredditAbout(authorSub);
+    const newSubreddits = produce(subreddits, (draft) => {
+      draft.subreddits[authorSub] = subredditAbout.data;
+    });
+    dispatch(subredditsData(newSubreddits));
   };
 
-  const { friends } = redditFriends;
-  const friendList = Object.keys(friends);
-  const isFriend = friendList.includes(author.toLowerCase());
-
-  const onClick = () => (isFriend ? removeFriend(author) : addFriend(author));
-  const title = !isFriend
-    ? `add ${author} to your friends.`
-    : `remove ${author} from your friends.`;
+  const onClick = () =>
+    isFollowing ? unfollowUser(authorSub) : followUser(authorSub);
+  const title = !isFollowing ? `follow ${author}` : `unfollow ${author}`;
 
   const authorFlair = flair ? (
     <span className="badge bg-dark">{flair}</span>
   ) : null;
 
   const authorClasses = classNames({
-    'is-friend': isFriend,
+    'is-followed': isFollowing,
     'is-submitter': isSubmitter,
   });
 
@@ -60,7 +83,9 @@ function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
         title={title}
         aria-label={title}
       >
-        <i className={`fas ${isFriend ? 'fa-user-minus' : 'fa-user-plus'}`} />
+        <i
+          className={`fas ${isFollowing ? 'fa-user-minus' : 'fa-user-plus'}`}
+        />
       </button>{' '}
       <Link
         to={{

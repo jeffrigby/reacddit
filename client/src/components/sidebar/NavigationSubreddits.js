@@ -115,6 +115,10 @@ function NavigationSubReddits() {
 
     itemsArray.forEach((sub) => {
       const trigger = filter.activeIndex === pos && filterActive;
+      const { subreddit_type: subredditType } = sub;
+      if (subredditType === 'user') {
+        return;
+      }
       navItems.push(
         <NavigationItem item={sub} key={sub.name} trigger={trigger} />
       );

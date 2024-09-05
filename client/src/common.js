@@ -12,7 +12,7 @@ export const getAllMenus = () => {
 /**
  * Updates the status of a menu item in the menus object and saves the updated menus object in localStorage.
  * @param {string} menuID - The ID of the menu item to update.
- * @param {string} status - The new status of the menu item.
+ * @param {boolean} status - The new status of the menu item.
  * @returns {undefined}
  */
 export const setMenuStatus = (menuID, status) => {

@@ -23,20 +23,6 @@ export function redditBearer(
   }
 }
 
-export function redditFriends(
-  // eslint-disable-next-line default-param-last
-  state = { status: 'unloaded', friends: {}, lastUpdated: 0 },
-  action
-) {
-  switch (action.type) {
-    case 'REDDIT_FRIENDS':
-      return action.friends;
-
-    default:
-      return state;
-  }
-}
-
 // eslint-disable-next-line default-param-last
 export function redditMe(state = { status: 'unloaded', me: {} }, action) {
   switch (action.type) {

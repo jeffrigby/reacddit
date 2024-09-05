@@ -1,103 +1,122 @@
-import { Fragment, useState, useEffect } from 'react';
-// import PropTypes from 'prop-types';
+import React, { useMemo, useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
-import { redditFetchFriends } from '../../redux/actions/reddit';
+import { produce } from 'immer';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import RedditAPI from '../../reddit/redditAPI';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import { getDiffClassName } from './navHelpers';
+import { subredditsData } from '../../redux/actions/subreddits';
 
-function Friends() {
-  const menuID = 'friends';
-  const [showFriends, toggleShowFriends] = useState(getMenuStatus(menuID));
+// Constants
+const MENU_ID = 'friends';
+const INVALID_STATUSES = ['loading', 'unloaded', 'error'];
+
+// Custom hook for friends logic
+function useFriends() {
+  const [showFriends, setShowFriends] = useState(getMenuStatus(MENU_ID));
   const lastUpdated = useSelector((state) => state.lastUpdated);
-  const redditFriends = useSelector((state) => state.redditFriends);
+  const subreddits = useSelector((state) => state.subreddits);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (showFriends) {
-      // Get a fresh listing.
-      dispatch(redditFetchFriends(true));
-    } else {
-      // Get from the cache. This is mostly to support
-      // Marking friends in post listing.
-      dispatch(redditFetchFriends());
-    }
-  }, [dispatch, showFriends]);
+  const toggleShowFriends = useCallback(() => {
+    const newShowFriends = !showFriends;
+    setShowFriends(newShowFriends);
+    setMenuStatus(MENU_ID, newShowFriends);
+  }, [showFriends]);
 
-  const removeFriend = async (id) => {
-    await RedditAPI.removeFriend(id);
-    dispatch(redditFetchFriends(true));
+  const unfollowUser = useCallback(
+    async (name) => {
+      const nameLower = name.toLowerCase();
+      try {
+        await RedditAPI.followUser(nameLower, 'unsub');
+        const newSubreddits = produce(subreddits, (draft) => {
+          delete draft.subreddits[nameLower];
+        });
+        dispatch(subredditsData(newSubreddits));
+      } catch (error) {
+        // eslint-disable-next-line
+        console.error(`Error unfollowing user ${name}:`, error);
+      }
+    },
+    [subreddits, dispatch]
+  );
+
+  return {
+    showFriends,
+    toggleShowFriends,
+    lastUpdated,
+    subreddits,
+    unfollowUser,
   };
+}
 
-  if (redditFriends.status === 'unloaded') return null;
+function Friends() {
+  const {
+    showFriends,
+    toggleShowFriends,
+    lastUpdated,
+    subreddits,
+    unfollowUser,
+  } = useFriends();
 
-  const { friends } = redditFriends;
+  const friendItems = useMemo(() => {
+    if (INVALID_STATUSES.includes(subreddits.status)) {
+      return null;
+    }
 
-  if (!Object.keys(friends).length) {
+    return Object.values(subreddits.subreddits)
+      .filter((item) => item.subreddit_type === 'user')
+      .map(({ url, id, display_name: displayName, title }) => {
+        const link = `${url}posts?sort=new`;
+        const friendLastUpdated = lastUpdated[`t5_${id}`]?.lastPost || 0;
+        const classNameStr = getDiffClassName(friendLastUpdated, false);
+        const badge = classNameStr.includes('sub-new') ? 'New' : null;
+        const cleanDisplayName = displayName.replace('u_', '');
+        const timeago =
+          friendLastUpdated !== 0
+            ? formatDistanceToNow(friendLastUpdated * 1000)
+            : '';
+
+        return (
+          <li key={id} className="nav-item d-flex friend-li">
+            <div className="me-auto d-flex w-100">
+              <NavigationGenericNavItem
+                to={link}
+                text={cleanDisplayName}
+                id={id}
+                classes={classNameStr}
+                title={`${cleanDisplayName} Posts${timeago ? ` - updated ${timeago} ago` : ''}`}
+                badge={badge}
+                noLi
+              />
+            </div>
+            <div className="friend-actions">
+              <button
+                className="btn-link"
+                type="button"
+                onClick={() => {
+                  // eslint-disable-next-line
+                  if (
+                    window.confirm(`Remove ${cleanDisplayName} from friends?`)
+                  ) {
+                    unfollowUser(displayName);
+                  }
+                }}
+                title={`Remove ${displayName} from friend's list`}
+                aria-label={`Remove ${displayName} from friend's list`}
+              >
+                <i className="fas fa-user-minus" aria-hidden="true" />
+              </button>
+            </div>
+          </li>
+        );
+      });
+  }, [subreddits, lastUpdated, unfollowUser]);
+
+  if (!friendItems || friendItems.length === 0) {
     return null;
   }
-
-  const navItems = [];
-  Object.values(friends).forEach((f) => {
-    const link = `/user/${f.name}/posts?sort=new`;
-    const friendLastUpdated = lastUpdated[f.id]
-      ? lastUpdated[f.id].lastPost
-      : 0;
-
-    let title = `${f.name} Posts`;
-
-    const classNameStr = getDiffClassName(friendLastUpdated, false);
-    const badge = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;
-
-    if (friendLastUpdated !== 0) {
-      const timeago = formatDistanceToNow(friendLastUpdated * 1000);
-      title += ` - updated ${timeago} ago`;
-    }
-
-    navItems.push(
-      <Fragment key={f.id}>
-        <li className="nav-item d-flex friend-li">
-          <div className="me-auto d-flex w-100">
-            <NavigationGenericNavItem
-              to={link}
-              text={f.name}
-              id={f.id}
-              classes={classNameStr}
-              title={title}
-              badge={badge}
-              noLi
-            />
-          </div>
-          <div className="friend-actions">
-            <button
-              className="btn-link"
-              type="button"
-              onClick={() =>
-                // eslint-disable-next-line
-                window.confirm(`Remove ${f.name} from friends?`) &&
-                removeFriend(f.name)
-              }
-              title={`Remove ${f.name} from friend's list`}
-              aria-label={`Remove ${f.name} from friend's list`}
-            >
-              <i className="fas fa-user-minus" />
-            </button>
-          </div>
-        </li>
-      </Fragment>
-    );
-  });
-
-  const caretClass = showFriends
-    ? 'fas fa-caret-down menu-caret'
-    : 'fas fa-caret-left menu-caret';
-
-  const toggleMenu = () => {
-    toggleShowFriends(!showFriends);
-    setMenuStatus(menuID, !showFriends);
-  };
 
   return (
     <>
@@ -116,23 +135,24 @@ function Friends() {
             <button
               className="btn btn-link btn-sm m-0 p-0 border-0"
               type="button"
-              onClick={toggleMenu}
-              aria-label="Show Friends"
+              onClick={toggleShowFriends}
+              aria-label={showFriends ? 'Hide Friends' : 'Show Friends'}
             >
-              <i className={caretClass} />
+              <i
+                className={`fas fa-caret-${showFriends ? 'down' : 'left'} menu-caret`}
+                aria-hidden="true"
+              />
             </button>
           </div>
         </div>
       </li>
       {showFriends && (
         <li className="friends">
-          <ul className="nav subnav ps-2">{navItems}</ul>
+          <ul className="nav subnav ps-2">{friendItems}</ul>
         </li>
       )}
     </>
   );
 }
 
-Friends.propTypes = {};
-
-export default Friends;
+export default React.memo(Friends);
