@@ -96,8 +96,8 @@ function Friends() {
                 className="btn-link"
                 type="button"
                 onClick={() => {
-                  // eslint-disable-next-line
                   if (
+                    // eslint-disable-next-line
                     window.confirm(`Remove ${cleanDisplayName} from friends?`)
                   ) {
                     unfollowUser(displayName);
