@@ -3,7 +3,8 @@ $light-theme-hover-color: #fcf8e3;
 $dark-theme-hover-color: #333333;
 $border-color: rgba(0, 0, 0, 0.125);
 $active-color: #dc3545;
-$inactive-color: #d3d3d3;
+$light-inactive-color: #d3d3d3;
+$dark-inactive-color: #6c757d;
 $overlay-bg-color: black;
 $dark-theme-navigation-background-color: rgb(33, 37, 41);
 $light-theme-navigation-background-color: rgb(255, 255, 255);
@@ -15,12 +16,14 @@ $sidebar-width: 14rem;
 :root {
   --hover-background-color: #{$light-theme-hover-color};
   --navigation-background-color: #{$light-theme-navigation-background-color};
+  --inactive-color: #{$light-inactive-color};
 }
 
 // Dark theme
 [data-bs-theme='dark'] {
   --hover-background-color: #{$dark-theme-hover-color};
   --navigation-background-color: #{$dark-theme-navigation-background-color};
+  --inactive-color: #{$dark-inactive-color};
 }
 
 .sidebar {
@@ -61,10 +64,10 @@ $sidebar-width: 14rem;
       padding: 0;
       width: 100%;
       &.sub-dead {
-        color: $inactive-color;
+        color: var(--inactive-color);
       }
       &.sub-stale {
-        color: $inactive-color;
+        color: var(--inactive-color);
       }
       &.sub-new,
       &.sub-today {
