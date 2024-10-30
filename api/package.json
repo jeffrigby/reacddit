@@ -7,8 +7,7 @@
   "author": "",
   "main": "index.mjs",
   "scripts": {
-    "start": "node index.mjs",
-    "nodemon": "nodemon index.mjs",
+    "start": "nodemon index.mjs",
     "pm2-start": "pm2 start index.mjs --name reacddit_api",
     "pm2-stop": "pm2 stop reacddit_api",
     "pm2-log": "pm2 log reacddit_api",
@@ -25,9 +24,17 @@
     "dotenv-defaults": "^5.0.0",
     "koa": "^2.6.2",
     "koa-logger": "^3.2.0",
-    "koa-router": "^12.0.0",
+    "koa-router": "^13.0.1",
     "koa-session": "^6.0.0",
+    "nodemon": "^3.1.4",
+    "pm2": "^5.4.2",
     "qs": "^6.11.1",
     "serverless-http": "^3.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.10.0",
+    "eslint": "^9.10.0",
+    "globals": "^15.9.0",
+    "prettier": "^3.3.3"
   }
 }
