@@ -24,7 +24,7 @@ Resources:
     Properties:
       CodeUri: ./
       Handler: serverless-koa.handler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Architectures: [arm64]
       FunctionUrlConfig:
         AuthType: NONE
