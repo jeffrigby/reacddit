@@ -146,15 +146,16 @@ function NavigationPrimaryLinks() {
         isStatic
         iconClass="fas fa-bug"
       />
-      <NavigationGenericNavItem
-        to="/hotkeys"
-        text="Hotkeys"
-        title="Show Hotkeys"
-        iconClass="fas fa-keyboard"
-        liClass="no-touch"
-        onClickAction={openHotkeys}
-        isStatic
-      />
+      {!isMobile && (
+        <NavigationGenericNavItem
+          to="/hotkeys"
+          text="Hotkeys"
+          title="Show Hotkeys"
+          iconClass="fas fa-keyboard"
+          onClickAction={openHotkeys}
+          isStatic
+        />
+      )}
     </ul>
   );
 }

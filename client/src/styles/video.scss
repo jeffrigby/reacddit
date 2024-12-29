@@ -40,12 +40,14 @@
     &.unmuted .video-audio {
       visibility: hidden;
       opacity: 0;
-      transition: visibility 0s 0.25s, opacity 0.25s linear;
+      transition:
+        visibility 0s 0.25s,
+        opacity 0.25s linear;
     }
     &.muted .video-audio,
     &.paused .video-play {
       visibility: visible;
-      opacity: 1.0;
+      opacity: 1;
     }
   }
 
@@ -53,8 +55,10 @@
     .video-ctr,
     &.unmuted .video-audio {
       visibility: visible;
-      opacity: 1.0;
-      transition: visibility 0s 0.25s, opacity 0.25s linear;
+      opacity: 1;
+      transition:
+        visibility 0s 0.25s,
+        opacity 0.25s linear;
     }
   }
 
@@ -133,12 +137,14 @@
         visibility: hidden;
         opacity: 0;
         color: white;
-        transition: visibility 0s 0.25s, opacity 0.25s linear;
+        transition:
+          visibility 0s 0.25s,
+          opacity 0.25s linear;
       }
       &:hover {
         .audio-disabled {
           visibility: visible;
-          opacity: 1.0;
+          opacity: 1;
         }
       }
     }
@@ -182,19 +188,21 @@
         visibility: hidden;
         opacity: 0;
         color: white;
-        transition: visibility 0s 0.25s, opacity 0.25s linear;
+        transition:
+          visibility 0s 0.25s,
+          opacity 0.25s linear;
       }
       &:hover {
         .audio-disabled {
           visibility: visible;
-          opacity: 1.0;
+          opacity: 1;
         }
       }
     }
   }
 }
 
-.no-touch {
+@media (hover: hover) and (pointer: fine) {
   .video-container {
     position: relative;
 
@@ -202,8 +210,10 @@
       .video-ctr,
       &.unmuted .video-audio {
         visibility: visible;
-        opacity: 1.0;
-        transition: visibility 0s 0.25s, opacity 0.25s linear;
+        opacity: 1;
+        transition:
+          visibility 0s 0.25s,
+          opacity 0.25s linear;
       }
     }
   }

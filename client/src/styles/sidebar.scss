@@ -250,7 +250,7 @@ $sidebar-width: 14rem;
   }
 }
 
-.no-touch {
+@media (hover: hover) and (pointer: fine) {
   #aside-content .nav-item:hover,
   #sidebar-multis .subnav .nav-item:hover {
     background-color: var(--hover-background-color);

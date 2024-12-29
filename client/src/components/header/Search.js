@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
+import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
 import { hotkeyStatus } from '../../common';
 
@@ -218,8 +219,7 @@ function Search() {
               onClick={searchTarget}
               disabled={!search}
             >
-              Search in /r/{listingsFilter.target}{' '}
-              <span className="no-touch">⏎</span>
+              Search in /r/{listingsFilter.target} {!isMobile && <>⏎</>}
             </button>
           )}
           <button
@@ -228,7 +228,7 @@ function Search() {
             onClick={searchEverywhere}
             disabled={!search}
           >
-            Search Everywhere <span className="no-touch">⇧⏎</span>
+            Search Everywhere {!isMobile && <>⇧⏎</>}
           </button>
         </div>
       )}

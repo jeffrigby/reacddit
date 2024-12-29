@@ -89,7 +89,7 @@ body.search-active {
   }
 }
 
-.touch {
+@media (hover: none) and (pointer: coarse) {
   .menu-shortcut {
     display: none;
   }

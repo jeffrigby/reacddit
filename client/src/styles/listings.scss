@@ -266,14 +266,14 @@ div#entries {
 }
 
 /** Specific settings for touch devices **/
-.touch {
+@media (hover: none) and (pointer: coarse) {
   .actions {
     font-size: 1rem;
   }
 }
 
 /** Specific settings for Desktop **/
-.no-phone {
+@media (hover: hover) and (pointer: fine) {
   .actionable {
     // background-color: rgb(245, 245, 245);
   }
