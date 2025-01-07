@@ -18,5 +18,11 @@
   "background_color": "#343a40",
   "display": "standalone",
   "orientation": "portrait",
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "scope": "/",
+  "display_override": ["window-controls-overlay"],
   "start_url": "/?pwa=1"
 }

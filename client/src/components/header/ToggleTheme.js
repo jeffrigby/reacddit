@@ -7,10 +7,12 @@ function ToggleTheme() {
   const siteSettingsTheme = useSelector((state) => state.siteSettings.theme);
 
   useEffect(() => {
-    document.documentElement.setAttribute(
-      'data-bs-theme',
-      siteSettingsTheme === 'dark' ? 'dark' : ''
-    );
+    if (!siteSettingsTheme) {
+      document.documentElement.setAttribute(
+        'data-bs-theme',
+        siteSettingsTheme === 'dark' ? 'dark' : ''
+      );
+    }
   }, [siteSettingsTheme]);
 
   const toggleTheme = () => {

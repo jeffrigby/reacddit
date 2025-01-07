@@ -262,6 +262,7 @@ module.exports = {
       patterns: [
         { from: `${paths.appPublic}/PWA`, to: paths.pwaFolder },
         { from: `${paths.appPublic}/base.css`, to: paths.cssFolder },
+        { from: `${paths.appPublic}/init.js`, to: paths.jsFolder },
         {
           from: `${paths.appSrc}/images/reacddit-loading.svg`,
           to: paths.imagesFolder,
