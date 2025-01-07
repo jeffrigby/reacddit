@@ -7,7 +7,7 @@ function ToggleTheme() {
   const siteSettingsTheme = useSelector((state) => state.siteSettings.theme);
 
   useEffect(() => {
-    if (!siteSettingsTheme) {
+    if (siteSettingsTheme) {
       document.documentElement.setAttribute(
         'data-bs-theme',
         siteSettingsTheme === 'dark' ? 'dark' : ''
