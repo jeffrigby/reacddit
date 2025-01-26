@@ -278,36 +278,26 @@
     />
   </head>
   <body>
-    <div id="root">
-      <div class="app-loading d-flex align-content-center h-100">
-        <div class="container h-100">
-          <div class="row align-items-center h-100">
-            <div class="col-6 mx-auto text-center">
-              <div class="landing-icon" id="landing-icon"></div>
-              <noscript
-                ><div>
-                  The internet doesn't work without JS. Turn it on!
-                </div></noscript
-              >
-              <div class="d-none text-center" id="error-loading">
-                Damn. Something isn't right.
-                <div>
-                  <button
-                    class="btn btn-primary m-2"
-                    type="button"
-                    id="force-refresh"
-                  >
-                    Reload
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div id="root">
+    <div
+      id="splash"
+      class="d-flex flex-column justify-content-center align-items-center vh-100 text-white"
+    >
+      <div class="landing-icon mb-3"></div>
+      <noscript>
+        <div>The internet doesn't work without JS. Turn it on!</div>
+      </noscript>
+      <div class="d-none text-center" id="error-loading">
+        <p>Damn. Something isn't right.</p>
+        <button class="btn btn-primary m-2" type="button" id="force-refresh">
+          Reload
+        </button>
       </div>
     </div>
+  </div>
 
-    <script
+
+  <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
