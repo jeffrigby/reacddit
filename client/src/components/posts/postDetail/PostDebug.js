@@ -17,8 +17,8 @@ function PostDebug({ renderedContent = null }) {
           <div className="code-block rounded">
             <h6>Content</h6>
             <JsonView
-              src={{ ...renderedContent, url: data.url }}
               dark
+              src={{ ...renderedContent, url: data.url }}
               theme="atom"
             />
           </div>
@@ -26,12 +26,12 @@ function PostDebug({ renderedContent = null }) {
         {data.preview && (
           <div className="code-block rounded">
             <h6>Preview</h6>
-            <JsonView src={data.preview} dark theme="atom" />
+            <JsonView dark src={data.preview} theme="atom" />
           </div>
         )}
         <div className="code-block rounded">
           <h6>Entry</h6>
-          <JsonView src={data} dark theme="atom" />
+          <JsonView dark src={data} theme="atom" />
         </div>
       </Suspense>
     </div>

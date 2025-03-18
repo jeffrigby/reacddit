@@ -101,8 +101,8 @@ function Placeholder() {
       <div className="content">
         <div className="media-cont">
           <div className="ratio-bg">
-            <div style={contStyle} className="ratio-container">
-              <div style={ratioStyle} className="ratio embed-responsive" />
+            <div className="ratio-container" style={contStyle}>
+              <div className="ratio embed-responsive" style={ratioStyle} />
             </div>
           </div>
         </div>

@@ -14,10 +14,10 @@ function AutoPlay() {
       <div className="form-check">
         <label className="form-check-label" htmlFor="autoPlayCheck">
           <input
-            type="checkbox"
             className="form-check-input"
-            id="autoPlayCheck"
             defaultChecked={autoplay}
+            id="autoPlayCheck"
+            type="checkbox"
             onClick={autoPlayToggle}
           />
           Auto Play Videos

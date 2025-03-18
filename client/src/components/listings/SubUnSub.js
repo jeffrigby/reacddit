@@ -78,7 +78,7 @@ function SubUnSub() {
       userIsSubscriber
         ? unsubscribe(about, subreddits, locationKey)
         : subscribe(about, subreddits, locationKey),
-    [about, subreddits, unsubscribe, subscribe, locationKey]
+    [userIsSubscriber, unsubscribe, about, subreddits, locationKey, subscribe]
   );
 
   if (
@@ -101,9 +101,9 @@ function SubUnSub() {
 
   return (
     <button
-      type="button"
       className="btn btn-primary btn-sm sub-un-sub"
       title={title}
+      type="button"
       onClick={buttonAction}
     >
       <i className={iconClass} /> {text}

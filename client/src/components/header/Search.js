@@ -186,47 +186,47 @@ function Search() {
   const searchClassName = focused ? 'search-focused m-0' : 'm-0';
 
   return (
-    <div id="search" ref={searchInputParent} className={searchClassName}>
+    <div className={searchClassName} id="search" ref={searchInputParent}>
       <input
-        type="text"
         className="form-control form-control-sm w-100 py-0"
         id="search-reddit"
-        onFocus={focusSearch}
-        onBlur={blurSearch}
-        onKeyUp={processSearch}
-        onChange={handleChange}
         placeholder={placeholder}
-        title={title}
-        value={search}
         ref={searchInput}
+        title={title}
+        type="text"
+        value={search}
+        onBlur={blurSearch}
+        onChange={handleChange}
+        onFocus={focusSearch}
+        onKeyUp={processSearch}
       />
       {(focused || search) && (
         <i
-          className="far fa-times-circle form-control-clear"
-          onClick={clearSearch}
-          id="search-clear"
           aria-hidden
-          role="button"
           aria-label="Clear Search Box"
+          className="far fa-times-circle form-control-clear"
+          id="search-clear"
+          role="button"
+          onClick={clearSearch}
         />
       )}
       {focused && !global && (
         <div className="searchToolTip small p-1 mt-1">
           {showTargetSearch && (
             <button
-              type="button"
               className="btn btn-primary btn-sm me-1"
-              onClick={searchTarget}
               disabled={!search}
+              type="button"
+              onClick={searchTarget}
             >
               Search in /r/{listingsFilter.target} {!isMobile && <>⏎</>}
             </button>
           )}
           <button
-            type="button"
             className="btn btn-primary btn-sm"
-            onClick={searchEverywhere}
             disabled={!search}
+            type="button"
+            onClick={searchEverywhere}
           >
             Search Everywhere {!isMobile && <>⇧⏎</>}
           </button>

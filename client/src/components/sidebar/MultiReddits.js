@@ -77,27 +77,27 @@ function MultiReddits() {
           <div className="sidebar-heading d-flex text-muted">
             <span
               className="me-auto show-cursor"
-              onClick={toggleMenu}
               role="presentation"
+              onClick={toggleMenu}
             >
               <i className={caretClass} /> Custom Feeds
             </span>
             {showMenu && (
               <span>
                 <i
-                  className={showAddClass}
-                  onClick={() => setShowAdd(!showAdd)}
-                  role="button"
                   aria-label="Add Custom Feed"
+                  className={showAddClass}
+                  role="button"
                   tabIndex="0"
+                  onClick={() => setShowAdd(!showAdd)}
                   onKeyDown={() => setShowAdd(!showAdd)}
                 />
                 <i
+                  aria-label="Reload Multis"
                   className={spinnerClass}
-                  onClick={reloadMultis}
                   role="button"
                   tabIndex="0"
-                  aria-label="Reload Multis"
+                  onClick={reloadMultis}
                   onKeyDown={reloadMultis}
                 />
               </span>
@@ -105,8 +105,8 @@ function MultiReddits() {
           </div>
           {showAdd && (
             <MultiRedditsAdd
-              setShowAdd={setShowAdd}
               reloadMultis={reloadMultis}
+              setShowAdd={setShowAdd}
             />
           )}
           {showMenu && <ul className={multisClass}>{multis}</ul>}

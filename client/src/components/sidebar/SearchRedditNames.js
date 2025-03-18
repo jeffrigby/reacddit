@@ -98,7 +98,7 @@ function SearchRedditNames({ filterText = '' }) {
       const key = `sr_search_${value}_${idx}`;
       const to = `/r/${value}/${currentSort}`;
       return (
-        <NavigationGenericNavItem to={to} text={value} key={key} id={key} />
+        <NavigationGenericNavItem id={key} key={key} text={value} to={to} />
       );
     });
   }
@@ -115,10 +115,10 @@ function SearchRedditNames({ filterText = '' }) {
   const nsfwButton = !auth ? (
     <div className="pt-1 small">
       <button
-        type="button"
         className="btn btn-dark btn-sm m-0"
-        onClick={toggleNSFW}
         title="Toggle NSFW Results"
+        type="button"
+        onClick={toggleNSFW}
       >
         {nsfwText}
       </button>

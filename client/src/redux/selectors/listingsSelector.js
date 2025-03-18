@@ -9,7 +9,10 @@ export const listingData = createSelector(
   [listingsEntriesSelector, locationKeySelector],
   (entries, locationKey) => {
     const key = locationKey || 'front';
-    return entries[key] || {};
+    if (!entries[key]) {
+      return {};
+    }
+    return entries[key];
   }
 );
 
@@ -17,7 +20,10 @@ export const listingStatus = createSelector(
   [listingsStatusSelector, locationKeySelector],
   (status, locationKey) => {
     const key = locationKey || 'front';
-    return status[key] ? status[key].status : 'unloaded';
+    if (!status[key]) {
+      return 'unloaded';
+    }
+    return status[key].status;
   }
 );
 
@@ -32,6 +38,9 @@ export const listingState = createSelector(
       actionable: null,
       hasError: false,
     };
-    return listingCurrentState[key] || defaults;
+    if (!listingCurrentState[key]) {
+      return defaults;
+    }
+    return listingCurrentState[key];
   }
 );

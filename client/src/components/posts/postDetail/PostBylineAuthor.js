@@ -77,22 +77,22 @@ function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
   ) : (
     <>
       <button
+        aria-label={title}
         className="btn btn-link btn-sm shadow-none"
+        title={title}
         type="button"
         onClick={onClick}
-        title={title}
-        aria-label={title}
       >
         <i
           className={`fas ${isFollowing ? 'fa-user-minus' : 'fa-user-plus'}`}
         />
       </button>{' '}
       <Link
+        className={authorClasses}
         to={{
           pathname: `/user/${author}/posts/new`,
           state: { showBack: true },
         }}
-        className={authorClasses}
       >
         {author}
       </Link>{' '}

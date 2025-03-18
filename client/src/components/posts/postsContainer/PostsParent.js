@@ -44,48 +44,60 @@ function PostsParent({ post }) {
   const listingsFilter = useSelector((state) => state.listingsFilter);
   const { listType, comment } = listingsFilter;
 
-  if (post && listType.match(/duplicates|comments/)) {
-    const {
-      data: { permalink, name, id },
-    } = post;
+  const shouldRenderParent = post && listType.match(/duplicates|comments/);
 
-    const parentPost = useMemo(
-      () => (
-        <Post
-          postName={name}
-          post={post}
-          key={id}
-          duplicate={false}
-          parent
-          idx={0}
-        />
-      ),
-      [post, name, id]
-    );
-
-    let subhead;
-    if (listType === 'comments') {
-      subhead = comment ? 'Comment Thread' : 'Comments';
-    } else {
-      subhead = 'Duplicate/Cross Posts';
+  const parentPost = useMemo(() => {
+    if (!shouldRenderParent) {
+      return null;
     }
 
-    const commentLinks = useMemo(
-      () => (comment ? renderCommentLinks(permalink, comment) : null),
-      [permalink, comment]
-    );
+    const {
+      data: { name, id },
+    } = post;
 
     return (
-      <>
-        {parentPost}
-        <div className="list-title">
-          {subhead} {commentLinks}
-        </div>
-      </>
+      <Post
+        parent
+        duplicate={false}
+        idx={0}
+        key={id}
+        post={post}
+        postName={name}
+      />
     );
+  }, [post, shouldRenderParent]);
+
+  const commentLinks = useMemo(() => {
+    if (!shouldRenderParent || !comment) {
+      return null;
+    }
+
+    const {
+      data: { permalink },
+    } = post;
+
+    return renderCommentLinks(permalink, comment);
+  }, [post, comment, shouldRenderParent]);
+
+  if (!shouldRenderParent) {
+    return null;
   }
 
-  return null;
+  let subhead;
+  if (listType === 'comments') {
+    subhead = comment ? 'Comment Thread' : 'Comments';
+  } else {
+    subhead = 'Duplicate/Cross Posts';
+  }
+
+  return (
+    <>
+      {parentPost}
+      <div className="list-title">
+        {subhead} {commentLinks}
+      </div>
+    </>
+  );
 }
 
 PostsParent.propTypes = {

@@ -35,8 +35,8 @@ function CommentsMore({ moreList, linkId }) {
       <div className="comments-more">
         <Link
           className="btn btn-outline-secondary btn-sm mb-2"
-          to={`/r/${target}/comments/${postName}/${postTitle}/${parantID}`}
           role="button"
+          to={`/r/${target}/comments/${postName}/${postTitle}/${parantID}`}
         >
           Continue This Thread
         </Link>
@@ -45,7 +45,7 @@ function CommentsMore({ moreList, linkId }) {
   }
 
   if (replies) {
-    return <CommentsRender listType="reply" posts={replies} linkId={linkId} />;
+    return <CommentsRender linkId={linkId} listType="reply" posts={replies} />;
   }
 
   // console.log(moreList.data.id, moreList);
@@ -54,9 +54,9 @@ function CommentsMore({ moreList, linkId }) {
     <div className="comments-more ps-2 mt-2">
       <button
         className="btn btn-outline-secondary btn-sm mb-2"
-        onClick={getMoreComments}
-        type="button"
         disabled={loading}
+        type="button"
+        onClick={getMoreComments}
       >
         {loading ? (
           <>Fetchng more comments.</>

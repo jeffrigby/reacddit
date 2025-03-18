@@ -19,9 +19,9 @@ function PinMenu() {
 
   return (
     <button
-      type="button"
-      className={`btn btn-${buttonClass} btn-sm`}
       aria-label="Pin Menu"
+      className={`btn btn-${buttonClass} btn-sm`}
+      type="button"
       onClick={togglePinMenu}
     >
       <i className="fas fa-thumbtack" />

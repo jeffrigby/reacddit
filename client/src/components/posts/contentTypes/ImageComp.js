@@ -31,15 +31,16 @@ const ImageComp = React.memo(({ content }) => {
   );
 
   const fetchImageMetadata = useCallback(async () => {
-    if (aspectRatio) return; // Skip if we already have the aspect ratio
+    if (aspectRatio) {
+      return;
+    } // Skip if we already have the aspect ratio
     try {
       const { width: metaWidth, height: metaHeight } = await getMeta(src);
       setAspectRatio(metaWidth / metaHeight);
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Error loading image:', error);
     }
-  }, [content.src, aspectRatio]);
+  }, [aspectRatio, src]);
 
   useEffect(() => {
     fetchImageMetadata();
@@ -50,17 +51,23 @@ const ImageComp = React.memo(({ content }) => {
       aspectRatio: aspectRatio ? `${aspectRatio}` : undefined,
       maxHeight: height < 740 ? height : undefined,
     }),
-    [aspectRatio]
+    [aspectRatio, height]
   );
 
   const imgClass = content.class ? `${content.class}` : null;
 
-  if (!aspectRatio) return null;
+  if (!aspectRatio) {
+    return null;
+  }
 
   return (
     <div className="media-cont black-bg">
-      <div style={style} className="media-ratio">
-        <img src={isLoaded ? src : ''} alt={title} className={imgClass} />
+      <div className="media-ratio" style={style}>
+        {isLoaded ? (
+          <img alt={title} className={imgClass} src={src} />
+        ) : (
+          <div className="image-placeholder" style={style} />
+        )}
       </div>
     </div>
   );

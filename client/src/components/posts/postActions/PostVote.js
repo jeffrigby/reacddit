@@ -76,7 +76,9 @@ function PostVote() {
 
   const vote = useCallback(
     (dir) => {
-      if (bearer.status !== 'auth') return;
+      if (bearer.status !== 'auth') {
+        return;
+      }
 
       // Check if this has already been voted on
       const newDir = likes === (dir === 1) ? 0 : dir;
@@ -118,23 +120,23 @@ function PostVote() {
   return (
     <div className="vote">
       <button
-        type="button"
         className="btn btn-link btn-sm shadow-none"
         disabled={disabled}
-        onClick={() => vote(1)}
         title="Vote Up (a)"
+        type="button"
+        onClick={() => vote(1)}
       >
         {' '}
         <i className={`fa-arrow-alt-circle-up ${upClass}`} />{' '}
       </button>
       <span>{ups.toLocaleString()}</span>
       <button
-        type="button"
+        aria-label="Vote Down"
         className="btn btn-link btn-sm shadow-none"
         disabled={disabled}
-        onClick={() => vote(-1)}
         title="Vote Down (z)"
-        aria-label="Vote Down"
+        type="button"
+        onClick={() => vote(-1)}
       >
         <i className={`fa-arrow-alt-circle-down ${downClass}`} />
       </button>

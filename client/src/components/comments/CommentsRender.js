@@ -9,19 +9,19 @@ function CommentsRender({ posts, listType, linkId }) {
       return (
         <CommentsMore
           key={comment.data.id}
-          moreList={comment}
           linkId={linkId}
+          moreList={comment}
         />
       );
     }
 
     return (
       <Post
-        postName={comment.data.name}
-        idx={idx}
-        post={comment}
-        key={comment.data.id}
         duplicate={false}
+        idx={idx}
+        key={comment.data.id}
+        post={comment}
+        postName={comment.data.name}
       />
     );
   };

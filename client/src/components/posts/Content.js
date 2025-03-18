@@ -7,11 +7,11 @@ import Thumb from './contentTypes/Thumb';
 import Self from './contentTypes/Self';
 import ImgurAlbum from './contentTypes/ImgurAlbum';
 import RawHTML from './contentTypes/RawHTML';
-import Twitter from './contentTypes/Twitter';
 import Placeholder from './Placeholder';
 import { PostsContextData, PostsContextContent } from '../../contexts';
 import HTTPSError from './contentTypes/HTTPSError';
 import RedditGallery from './contentTypes/RedditGallery';
+import Social from './contentTypes/Social';
 
 function Content({ content = null }) {
   const postContext = useContext(PostsContextData);
@@ -35,7 +35,7 @@ function Content({ content = null }) {
         contentRendered = <ImageComp content={content} />;
         break;
       case 'video':
-        contentRendered = <VideoComp link={url} content={content} />;
+        contentRendered = <VideoComp content={content} link={url} />;
         break;
       case 'iframe':
         contentRendered = <IFrame content={content} />;
@@ -47,13 +47,15 @@ function Content({ content = null }) {
         contentRendered = <Thumb content={content} />;
         break;
       case 'self':
-        contentRendered = <Self name={name} content={content} />;
+        contentRendered = <Self content={content} name={name} />;
         break;
       case 'raw_html':
         contentRendered = <RawHTML content={content} />;
         break;
-      case 'twitter':
-        contentRendered = <Twitter tweetId={content.id} />;
+      case 'social':
+        contentRendered = (
+          <Social network={content.network} url={content.url} />
+        );
         break;
       case 'httpserror':
         contentRendered = <HTTPSError content={content} />;

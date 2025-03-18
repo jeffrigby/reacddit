@@ -39,13 +39,13 @@ function PostsDebug() {
   const router = JSON.stringify({ location, match }, null, 2);
 
   return (
-    <div id="debugInfo" className={`p-2 ${closed && 'closed'}`}>
+    <div className={`p-2 ${closed && 'closed'}`} id="debugInfo">
       {!closed ? (
         <>
           <button
-            type="button"
-            className="close"
             aria-label="Close"
+            className="close"
+            type="button"
             onClick={() => setClosed(true)}
           >
             <span aria-hidden="true">&times;</span>
@@ -71,11 +71,11 @@ function PostsDebug() {
         </>
       ) : (
         <button
-          type="button"
+          aria-label="Open Debug Info"
           className="btn btn-primary btn-sm"
           title="Open Debug Info"
+          type="button"
           onClick={() => setClosed(false)}
-          aria-label="Open Debug Info"
         >
           <i className="fas fa-bug" />
         </button>

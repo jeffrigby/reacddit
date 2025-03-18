@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import ImageGallery from 'react-image-gallery';
-import 'react-image-gallery/styles/scss/image-gallery.scss';
+import 'react-image-gallery/styles/css/image-gallery.css';
 
 function RedditGallery({ content }) {
   const { media } = content;

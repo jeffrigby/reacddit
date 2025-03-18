@@ -41,12 +41,18 @@ const inlineLinks = (entry, kind) => {
     const cleanUrl = url.replace(/^\(|\)$/g, '');
 
     // If a match doesn't start with http skip it.
-    if (!cleanUrl.match(/^http/)) return;
+    if (!cleanUrl.match(/^http/)) {
+      return;
+    }
 
     const keys = getKeys(cleanUrl);
-    if (!keys) return;
+    if (!keys) {
+      return;
+    }
 
-    if (dupes.includes(url)) return;
+    if (dupes.includes(url)) {
+      return;
+    }
     dupes.push(url);
 
     const fakeEntry = {
@@ -95,7 +101,6 @@ const nonSSLFallback = (content, entry) => {
             };
           }
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.error(e);
         }
       }
@@ -128,7 +133,6 @@ const getContent = async (keys, entry) => {
         };
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error(e);
     }
   }
@@ -143,7 +147,6 @@ const getContent = async (keys, entry) => {
         };
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error(e);
     }
   }
@@ -158,7 +161,6 @@ const getContent = async (keys, entry) => {
         };
       }
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error(e);
     }
   }
@@ -175,7 +177,6 @@ const getContent = async (keys, entry) => {
       };
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error(e);
   }
 
@@ -189,7 +190,6 @@ const getContent = async (keys, entry) => {
       };
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error(e);
   }
 
@@ -203,7 +203,6 @@ const getContent = async (keys, entry) => {
       };
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error(e);
   }
 
@@ -249,7 +248,6 @@ const RenderContent = async (entry, kind) => {
 
     return nonSSLFallback(content, entry);
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error(e);
   }
   return null;

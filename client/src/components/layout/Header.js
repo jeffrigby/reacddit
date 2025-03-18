@@ -26,10 +26,10 @@ function Header() {
 
   const menuButton = (
     <button
-      type="button"
-      className="btn btn-secondary btn-sm"
-      onClick={showMenu}
       aria-label="Show Menu"
+      className="btn btn-secondary btn-sm"
+      type="button"
+      onClick={showMenu}
     >
       <i className="fas fa-bars" />
     </button>
@@ -37,9 +37,9 @@ function Header() {
 
   const closeMenuButton = (
     <button
-      type="button"
-      className="btn btn-secondary btn-sm"
       aria-label="Hide Menu"
+      className="btn btn-secondary btn-sm"
+      type="button"
       onClick={hideMenu}
     >
       <i className="fas fa-times" />
@@ -47,8 +47,8 @@ function Header() {
   );
 
   const brand = (
-    <NavLink to="/" className="reacddit-title">
-      <img src={Logo} width={30} height={30} alt="reacddit" />
+    <NavLink className="reacddit-title" to="/">
+      <img alt="reacddit" height={30} src={Logo} width={30} />
     </NavLink>
   );
 
@@ -57,11 +57,11 @@ function Header() {
   const backButton = location.state && location.state.showBack && (
     <div>
       <button
+        aria-label="Go Back"
         className="btn btn-secondary btn-sm me-2"
+        title="Go Back"
         type="button"
         onClick={() => navigate(-1)}
-        title="Go Back"
-        aria-label="Go Back"
       >
         <i className="fas fa-chevron-left" />
       </button>

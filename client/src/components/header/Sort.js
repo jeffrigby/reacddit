@@ -205,9 +205,9 @@ function Sort() {
 
       links.push(
         <NavLink
-          to={url}
-          key={linkKey}
           className={`dropdown-item ${sortActive}`}
+          key={linkKey}
+          to={url}
         >
           <span className="sort-title ps-3 small">{linkString}</span>
         </NavLink>
@@ -273,10 +273,10 @@ function Sort() {
         links.push(
           <div key={sortName}>
             <NavLink
-              to={genLink(sortName)}
               className={`dropdown-item d-flex small ${
                 active ? 'sort-active' : ''
               }`}
+              to={genLink(sortName)}
             >
               <div className="me-auto pe-2 sort-title">
                 {getIcon(sortName)} {sortName}
@@ -323,12 +323,12 @@ function Sort() {
   return (
     <div className="btn-group sort-menu header-button">
       <button
-        type="button"
+        aria-expanded="false"
+        aria-haspopup="true"
+        aria-label="Sort"
         className="btn btn-secondary btn-sm form-control-sm dropdown-toggle sort-button"
         data-bs-toggle="dropdown"
-        aria-haspopup="true"
-        aria-expanded="false"
-        aria-label="Sort"
+        type="button"
       >
         {icon} {currentSort}
       </button>

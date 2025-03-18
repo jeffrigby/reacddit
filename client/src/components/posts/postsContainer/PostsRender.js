@@ -37,11 +37,11 @@ function PostsRender({ posts, listType, idxOffset = 0 }) {
 
       return (
         <Post
-          postName={name}
-          idx={idx + idxOffset}
-          post={post}
-          key={id}
           duplicate={duplicate}
+          idx={idx + idxOffset}
+          key={id}
+          post={post}
+          postName={name}
         />
       );
     });

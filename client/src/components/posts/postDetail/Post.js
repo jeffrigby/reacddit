@@ -8,7 +8,7 @@ import {
   useMemo,
 } from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
 import { useNavigate, useLocation, useParams } from 'react-router';
 import Content from '../Content';
@@ -97,8 +97,6 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
   const actionable = useSelector((state) =>
     postActionable(state, postName, idx, location.key)
   );
-
-  const dispatch = useDispatch();
 
   const [lastExpanded, setLastExpanded] = useContext(
     ListingsContextLastExpanded
@@ -260,7 +258,7 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
       const searchTo = `/duplicates/${data.id}`;
       navigate(searchTo);
     }
-  }, [data.id, data.is_self, dispatch]);
+  }, [data.id, data.is_self, navigate]);
 
   // @todo is there a way around pop up blockers?
   const openReddit = useCallback(() => {
@@ -297,7 +295,7 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
               break;
           }
         } catch (e) {
-          // console.log(e);
+          console.error(e);
         }
       }
     };
@@ -347,11 +345,11 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
   const visibilityToggle = showVisToggle ? (
     <div className="debug-visibility">
       <button
+        aria-label={hide ? 'Show' : 'Hide'}
         className="btn btn-primary btn-sm shadow-none m-0 p-0 me-1"
-        onClick={() => setHide(!hide)}
         title="Toggle visiblity"
         type="button"
-        aria-label={hide ? 'Show' : 'Hide'}
+        onClick={() => setHide(!hide)}
       >
         <i className={`fas ${hide ? 'fa-eye' : 'fa-eye-slash'}`} />
       </button>
@@ -369,36 +367,36 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
       <PostsContextActionable.Provider value={actionable}>
         <div
           className={classArray}
-          key={data.name}
           id={data.name}
-          style={styles}
+          key={data.name}
           ref={postRef}
+          style={styles}
         >
           <div className={`entry-interior entry-interior-${kind}`}>
             {visibilityToggle}
             <PostHeader
-              expand={expand}
-              toggleView={toggleView}
               duplicate={duplicate}
+              expand={expand}
               parent={parent}
+              toggleView={toggleView}
             />
             <div className="entry-after-header">
               {expand && (
                 <>
-                  <Content key={data.id} content={renderedContent} />
+                  <Content content={renderedContent} key={data.id} />
 
                   <PostFooter
                     debug={siteSettings.debug}
                     renderedContent={renderedContent}
-                    showVisToggle={showVisToggle}
                     setShowVisToggle={setShowVisToggle}
+                    showVisToggle={showVisToggle}
                   />
                 </>
               )}
               {isReplies && expand && (
                 <CommentReplyList
-                  replies={data.replies}
                   linkId={data.link_id}
+                  replies={data.replies}
                 />
               )}
             </div>

@@ -46,7 +46,9 @@ function getLastUpdatedEntry(entry) {
  * @returns {*}
  */
 export const getExpiredTime = (lastPost) => {
-  if (lastPost === undefined) return 3600;
+  if (lastPost === undefined) {
+    return 3600;
+  }
   const nowSec = Date.now() / 1000;
   const timeSinceLastPost = nowSec - lastPost;
 
@@ -100,7 +102,6 @@ export async function getLastUpdated(type, path, id) {
     // If it's a 400 error, it's probably a private subreddit. Don't try again.
     const { name, code } = error;
     if (name === 'AxiosError' && code === 'ERR_BAD_REQUEST') {
-      // eslint-disable-next-line no-console
       console.error('Bad Request', { type, path });
       return {
         id,
@@ -108,7 +109,6 @@ export async function getLastUpdated(type, path, id) {
       };
     }
 
-    // eslint-disable-next-line no-console
     console.error('Error fetching last updated', { type, path, error });
     return null; // Continue with other requests even if one fails
   }
@@ -132,7 +132,9 @@ export async function getLastUpdatedWithDelay(
 ) {
   await randomDelay(minSecs, maxSecs);
   const lastUpdatedDate = await getLastUpdated(type, path, id);
-  if (lastUpdatedDate === null) return null;
+  if (lastUpdatedDate === null) {
+    return null;
+  }
   const { lastPost } = lastUpdatedDate;
   const expires = getExpiredTime(lastPost);
   const toUpdate = {};

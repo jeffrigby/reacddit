@@ -23,7 +23,9 @@ function NavigationPrimaryLinks() {
    */
   const randomSubPush = useCallback(
     (e) => {
-      if (e) e.preventDefault();
+      if (e) {
+        e.preventDefault();
+      }
       if (isEmpty(subreddits.subreddits)) {
         return false;
       }
@@ -44,7 +46,7 @@ function NavigationPrimaryLinks() {
       const url = randomSubreddit.url + newSort + sortTopQS;
       return navigate(url);
     },
-    [query, sort, subreddits.subreddits]
+    [navigate, query, sort, subreddits.subreddits]
   );
 
   const getLoginUrl = useCallback(() => {
@@ -62,7 +64,9 @@ function NavigationPrimaryLinks() {
   }, [redditBearer]);
 
   const openHotkeys = (e) => {
-    if (e) e.preventDefault();
+    if (e) {
+      e.preventDefault();
+    }
     const modal = new bootstrap.Modal(document.getElementById('hotkeys'));
     modal.show();
   };
@@ -103,7 +107,7 @@ function NavigationPrimaryLinks() {
     return () => {
       document.removeEventListener('keydown', handleNavPrimaryHotkey);
     };
-  }, [getLoginUrl, me.name, randomSubPush]);
+  }, [getLoginUrl, me.name, navigate, randomSubPush]);
 
   const currentSort = sort && sort !== 'relevance' ? sort : '';
   const loginLink = getLoginUrl();
@@ -112,48 +116,48 @@ function NavigationPrimaryLinks() {
     <ul className="nav flex-column">
       {!me.name && (
         <NavigationGenericNavItem
-          to={loginLink}
-          text="Reddit Login"
-          title="Login to reddit to see your subreddits. ⇧L"
           isStatic
           iconClass="fas fa-sign-in-alt"
+          text="Reddit Login"
+          title="Login to reddit to see your subreddits. ⇧L"
+          to={loginLink}
         />
       )}
       <NavigationGenericNavItem
-        to={`/${currentSort}`}
+        iconClass="fas fa-home"
         text="Front"
         title="Show My Subreddit Posts"
-        iconClass="fas fa-home"
+        to={`/${currentSort}`}
       />
       <NavigationGenericNavItem
-        to={`/r/popular/${currentSort}`}
+        iconClass="fas fa-fire"
         text="Popular"
         title="Popular Posts"
-        iconClass="fas fa-fire"
+        to={`/r/popular/${currentSort}`}
       />
       <NavigationGenericNavItem
-        to="/r/random"
+        isStatic
+        iconClass="fas fa-random"
         text="Random"
         title="Random Subreddit"
-        iconClass="fas fa-random"
+        to="/r/random"
         onClickAction={randomSubPush}
-        isStatic
       />
       <NavigationGenericNavItem
-        to="https://github.com/jeffrigby/reacddit/issues"
-        text="Report Bug"
-        title="Bugs"
         isStatic
         iconClass="fas fa-bug"
+        text="Report Bug"
+        title="Bugs"
+        to="https://github.com/jeffrigby/reacddit/issues"
       />
       {!isMobile && (
         <NavigationGenericNavItem
-          to="/hotkeys"
+          isStatic
+          iconClass="fas fa-keyboard"
           text="Hotkeys"
           title="Show Hotkeys"
-          iconClass="fas fa-keyboard"
+          to="/hotkeys"
           onClickAction={openHotkeys}
-          isStatic
         />
       )}
     </ul>

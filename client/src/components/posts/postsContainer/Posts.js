@@ -13,7 +13,9 @@ function Posts() {
 
   const { children: entriesObject, originalPost } = data;
 
-  if (!entriesObject) return <PostsLoadingStatus />;
+  if (!entriesObject) {
+    return <PostsLoadingStatus />;
+  }
 
   const hasParent = originalPost && listType.match(/duplicates|comments/);
   const idxOffset = hasParent ? 1 : 0;
@@ -23,9 +25,9 @@ function Posts() {
       {hasParent && <PostsParent post={data.originalPost} />}
       <PostsLoadingStatus />
       <PostsRender
-        posts={entriesObject}
-        listType={listType}
         idxOffset={idxOffset}
+        listType={listType}
+        posts={entriesObject}
       />
       <PostsFooter />
     </>

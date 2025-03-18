@@ -44,14 +44,14 @@ function NavigationGenericNavItem({
       <>
         <div className="flex-grow-1 nav-link-cont me-2">
           <NavLink
+            className={classNames}
             id={id}
+            title={titleNew}
             to={{
               pathname: url.pathname,
               search: url.query,
               state: { showBack: true },
             }}
-            title={titleNew}
-            className={classNames}
             onClick={closeMenu}
           >
             {iconString} {text}
@@ -64,9 +64,9 @@ function NavigationGenericNavItem({
     navItem = (
       <>
         <a
+          className={classNames}
           href={trimmedTo}
           title={titleNew}
-          className={classNames}
           onClick={onClickAction}
         >
           {iconString} {text}

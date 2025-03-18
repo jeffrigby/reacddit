@@ -313,7 +313,6 @@ module.exports = {
       cache: true,
       // ESLint class options
       cwd: paths.appPath,
-      resolvePluginsRelativeTo: __dirname,
       emitError: true,
       emitWarning: isEnvDevelopment,
       // failOnWarning: isEnvProduction,

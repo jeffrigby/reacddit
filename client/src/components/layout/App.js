@@ -104,7 +104,7 @@ function App() {
           <Header />
         </header>
         <aside className="sidebar pt-2" id="navigation">
-          <div id="aside-content" className="h-100 d-flex px-3">
+          <div className="h-100 d-flex px-3" id="aside-content">
             <Navigation
               redditBearer={redditBearer}
               subredditsFilter={subredditsFilter}

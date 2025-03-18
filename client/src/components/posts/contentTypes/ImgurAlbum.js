@@ -73,9 +73,9 @@ class ImgurAlbum extends Component {
       <div className="ratio-bg albumEntry">
         <div className="btn-group btn-group-xs albumNav">
           <button
-            type="button"
-            className="btn btn-default shadow-none"
             aria-label="Previous Slide"
+            className="btn btn-default shadow-none"
+            type="button"
             onClick={this.prevSlide}
           >
             <i className="fas fa-backward" />
@@ -84,16 +84,16 @@ class ImgurAlbum extends Component {
             {currentSlide} / {totalSlides}
           </div>
           <button
-            type="button"
-            className="btn btn-default shadow-none"
             aria-label="Next Slide"
+            className="btn btn-default shadow-none"
+            type="button"
             onClick={this.nextSlide}
           >
             <i className="fas fa-forward" />
           </button>
         </div>
-        <div style={contStyle} className="ratio-container">
-          <div style={ratioStyle} className="ratio embed-responsive">
+        <div className="ratio-container" style={contStyle}>
+          <div className="ratio embed-responsive" style={ratioStyle}>
             {render}
           </div>
         </div>

@@ -30,10 +30,10 @@ function CondensePrefs() {
       <div className="mt-2 d-flex">
         <div className="fw-bold mb-1">Default Condense</div>
         <div
-          data-bs-toggle="modal"
-          data-bs-target="#condenseHelp"
-          title="Auto Refresh Info"
           className="ms-auto"
+          data-bs-target="#condenseHelp"
+          data-bs-toggle="modal"
+          title="Auto Refresh Info"
         >
           <i className="fas fa-info-circle" />
         </div>
@@ -41,10 +41,10 @@ function CondensePrefs() {
       <div className="form-check">
         <label className="form-check-label" htmlFor="condenseStickySetting">
           <input
-            type="checkbox"
             className="form-check-input"
-            id="condenseStickySetting"
             defaultChecked={condenseStickySetting}
+            id="condenseStickySetting"
+            type="checkbox"
             onClick={toggleSticky}
           />
           Sticky
@@ -53,10 +53,10 @@ function CondensePrefs() {
       <div className="form-check">
         <label className="form-check-label" htmlFor="condensePinnedSetting">
           <input
-            type="checkbox"
             className="form-check-input"
-            id="condensePinnedSetting"
             defaultChecked={condensePinnedSetting}
+            id="condensePinnedSetting"
+            type="checkbox"
             onClick={togglePinned}
           />
           Pinned
@@ -65,10 +65,10 @@ function CondensePrefs() {
       <div className="form-check">
         <label className="form-check-label" htmlFor="condenseDuplicatesSetting">
           <input
-            type="checkbox"
             className="form-check-input"
-            id="condenseDuplicatesSetting"
             defaultChecked={condenseDuplicatesSetting}
+            id="condenseDuplicatesSetting"
+            type="checkbox"
             onClick={toggleDupe}
           />
           Duplicate

@@ -20,7 +20,7 @@ function AutoRefresh() {
           autoRefreshToggle();
         }
       } catch (e) {
-        // console.log(e);
+        console.error('Error in auto-refresh hotkeys', e);
       }
     }
   };
@@ -38,20 +38,20 @@ function AutoRefresh() {
         <div>
           <label className="form-check-label" htmlFor="autoRefreshCheck">
             <input
-              type="checkbox"
               className="form-check-input"
-              id="autoRefreshCheck"
               defaultChecked={stream}
+              id="autoRefreshCheck"
+              type="checkbox"
               onClick={autoRefreshToggle}
             />
             Auto Refresh
           </label>
         </div>
         <div
-          data-bs-toggle="modal"
-          data-bs-target="#autoRefresh"
-          title="Auto Refresh Info"
           className="ms-auto"
+          data-bs-target="#autoRefresh"
+          data-bs-toggle="modal"
+          title="Auto Refresh Info"
         >
           <i className="fas fa-info-circle" />
         </div>

@@ -72,15 +72,15 @@ function MultiToggle({ srName }) {
     const checked = subNames.includes(srName);
 
     menuItems.push(
-      <div key={key} className="form-check dropdown-item small m-0 p-0">
+      <div className="form-check dropdown-item small m-0 p-0" key={key}>
         <label className="form-check-label w-100" htmlFor={key}>
           <input
             className="form-check-input multi-toggle-input mx-2"
-            type="checkbox"
-            id={key}
             defaultChecked={checked}
-            onChange={addRemove}
+            id={key}
+            type="checkbox"
             value={item.data.path}
+            onChange={addRemove}
           />
           {item.data.display_name}
         </label>
@@ -91,12 +91,12 @@ function MultiToggle({ srName }) {
   return (
     <div className="multi-menu header-button ms-2">
       <button
-        type="button"
+        aria-expanded="false"
+        aria-haspopup="true"
+        aria-label="Multis"
         className="btn btn-primary btn-sm form-control-sm"
         data-bs-toggle="dropdown"
-        aria-haspopup="true"
-        aria-expanded="false"
-        aria-label="Multis"
+        type="button"
       >
         Multis <i className="fas fa-caret-down" />
       </button>

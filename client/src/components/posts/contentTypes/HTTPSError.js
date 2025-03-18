@@ -6,7 +6,7 @@ function HTTPSError({ content }) {
     <div className="self">
       <p>
         <i className="fas fa-exclamation-circle" /> Link is not HTTPS. Click{' '}
-        <a href={src} target="_blank" rel="noreferrer">
+        <a href={src} rel="noreferrer" target="_blank">
           here
         </a>{' '}
         to load the link in a new window.

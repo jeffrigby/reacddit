@@ -10,26 +10,26 @@ function Thumb({ content }) {
   if (isLoaded) {
     img = (
       <img
-        src={content.thumbnail}
-        data-orig={content.thumbnail}
         alt={content.title}
         className="loaded reddit-thumb preload"
+        data-orig={content.thumbnail}
+        src={content.thumbnail}
       />
     );
   } else {
     img = (
       <img
-        src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-        data-orig={content.thumbnail}
         alt="Placeholder"
         className="unloaded reddit-thumb"
+        data-orig={content.thumbnail}
+        src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
       />
     );
   }
 
   return (
     <div>
-      <a href={content.url} target="_blank" rel="noopener noreferrer">
+      <a href={content.url} rel="noopener noreferrer" target="_blank">
         {img}
       </a>
       <div className="no-embed">

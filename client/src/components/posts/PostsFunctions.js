@@ -5,10 +5,14 @@ import isNil from 'lodash/isNil';
  * @param focused
  */
 export const nextEntry = (focused) => {
-  if (isNil(focused)) return;
+  if (isNil(focused)) {
+    return;
+  }
 
   const current = document.getElementById(focused);
-  if (isNil(current)) return;
+  if (isNil(current)) {
+    return;
+  }
 
   const next = current.nextElementSibling;
 
@@ -31,13 +35,17 @@ export const nextEntryCollapsed = (lastExpanded, setLastExpanded) => {
   if (!lastExpanded) {
     const first = document.getElementsByClassName('entry')[0];
     // console.log(first);
-    if (isNil(first)) return null;
+    if (isNil(first)) {
+      return null;
+    }
     setLastExpanded(first.id);
     return first.id;
   }
 
   const current = document.getElementById(lastExpanded);
-  if (isNil(current)) return null;
+  if (isNil(current)) {
+    return null;
+  }
 
   const next = current.nextElementSibling;
   if (next.classList.contains('entry')) {
@@ -53,14 +61,20 @@ export const nextEntryCollapsed = (lastExpanded, setLastExpanded) => {
  * @param focused
  */
 export const prevEntry = (focused) => {
-  if (isNil(focused)) return;
+  if (isNil(focused)) {
+    return;
+  }
 
   const current = document.getElementById(focused);
-  if (isNil(current)) return;
+  if (isNil(current)) {
+    return;
+  }
 
   const prev = current.previousElementSibling;
   // Is this the last one?
-  if (isNil(prev) || !prev.classList.contains('entry')) return;
+  if (isNil(prev) || !prev.classList.contains('entry')) {
+    return;
+  }
 
   const scrollBy = prev.getBoundingClientRect().top - 50;
   window.scrollBy({ top: scrollBy, left: 0 });
@@ -79,7 +93,9 @@ export const prevEntryCollapsed = (lastExpanded, setLastExpanded) => {
   }
 
   const current = document.getElementById(lastExpanded);
-  if (isNil(current)) return null;
+  if (isNil(current)) {
+    return null;
+  }
 
   const prev = current.previousElementSibling;
   if (prev.classList.contains('entry')) {
@@ -102,7 +118,9 @@ export const getCurrentListingState = (
   lastExpanded
 ) => {
   const postsCollection = document.getElementsByClassName('entry');
-  if (postsCollection.length === 0) return {};
+  if (postsCollection.length === 0) {
+    return {};
+  }
   const posts = Array.from(postsCollection);
   let focused = '';
   let actionable = null;

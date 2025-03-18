@@ -26,11 +26,11 @@ function VideoPlayButton({ videoRef, playing, toggleManualStop }) {
 
   return (
     <button
-      type="button"
-      className="btn btn-link shadow-none mx-4 p-0 btn-sm"
-      onClick={playStop}
-      title={playTitle}
       aria-label={playTitle}
+      className="btn btn-link shadow-none mx-4 p-0 btn-sm"
+      title={playTitle}
+      type="button"
+      onClick={playStop}
     >
       <i className={playIconClass} />
     </button>

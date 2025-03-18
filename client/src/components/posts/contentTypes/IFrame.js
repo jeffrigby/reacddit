@@ -30,17 +30,17 @@ function IFrame({
       <div className="media-ratio" style={style}>
         {isLoaded && (
           <iframe
-            src={src}
-            title={title}
-            className="loading-icon"
             allowFullScreen
             allow={allow}
-            sandbox={sandbox}
-            referrerPolicy={referrerPolicy}
+            className="loading-icon"
             loading={loading}
-            style={iframeStyle}
-            onLoad={onLoad}
+            referrerPolicy={referrerPolicy}
+            sandbox={sandbox}
             scrolling="no"
+            src={src}
+            style={iframeStyle}
+            title={title}
+            onLoad={onLoad}
           />
         )}
       </div>

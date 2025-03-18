@@ -65,7 +65,9 @@ export const pruneObject = (obj, maxKeys, maxAge) =>
       const { saved } = draft[key];
       if (saved > 0) {
         const elapsed = Date.now() - saved;
-        if (elapsed > maxAge * 1000) delete draft[key];
+        if (elapsed > maxAge * 1000) {
+          delete draft[key];
+        }
       }
     });
 

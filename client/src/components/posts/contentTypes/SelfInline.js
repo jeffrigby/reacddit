@@ -22,7 +22,9 @@ function SelfInline({ inline, inlineLinks, name }) {
   }, [inline, inlineLinks]);
 
   const totalLinks = resolvedContent.length;
-  if (!totalLinks) return '';
+  if (!totalLinks) {
+    return '';
+  }
 
   const prevEntry = async () => {
     const prevIdx = inlineIdx === 0 ? totalLinks - 1 : inlineIdx - 1;
@@ -62,8 +64,8 @@ function SelfInline({ inline, inlineLinks, name }) {
         <ul className="pagination pagination-sm mb-0">
           <li className="page-item">
             <button
-              className="page-link shadow-none"
               aria-label="Previous"
+              className="page-link shadow-none"
               type="button"
               onClick={prevEntry}
             >
@@ -78,8 +80,8 @@ function SelfInline({ inline, inlineLinks, name }) {
           </li>
           <li className="page-item">
             <button
-              className="page-link shadow-none"
               aria-label="Next"
+              className="page-link shadow-none"
               type="button"
               onClick={nextEntry}
             >
@@ -100,8 +102,8 @@ function SelfInline({ inline, inlineLinks, name }) {
         Source:{' '}
         <a
           href={inlineLink}
-          target="_blank"
           rel="noreferrer"
+          target="_blank"
           title={inlineLink}
         >
           {inlineLinkTrunc}

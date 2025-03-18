@@ -23,11 +23,11 @@ function VideoAudioButton({
   return hasAudio ? (
     <span className="video-audio-cont">
       <button
-        type="button"
-        className={`${btnClasses} video-audio`}
-        onClick={toggleSound}
-        title={muteTitle}
         aria-label={muteTitle}
+        className={`${btnClasses} video-audio`}
+        title={muteTitle}
+        type="button"
+        onClick={toggleSound}
       >
         <i className={mutedIconClass} />
       </button>
@@ -38,7 +38,7 @@ function VideoAudioButton({
         >
           This video probably has audio but Reddit disables it on third-party
           sites though Safari still works (for now). Click{' '}
-          <a href={link} target="_blank" rel="noopener noreferrer">
+          <a href={link} rel="noopener noreferrer" target="_blank">
             here
           </a>{' '}
           load the video on reddit.

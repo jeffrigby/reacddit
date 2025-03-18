@@ -35,7 +35,6 @@ function useFriends() {
         });
         dispatch(subredditsData(newSubreddits));
       } catch (error) {
-        // eslint-disable-next-line
         console.error(`Error unfollowing user ${name}:`, error);
       }
     },
@@ -79,34 +78,33 @@ function Friends() {
             : '';
 
         return (
-          <li key={id} className="nav-item d-flex friend-li">
+          <li className="nav-item d-flex friend-li" key={id}>
             <div className="me-auto d-flex w-100">
               <NavigationGenericNavItem
-                to={link}
-                text={cleanDisplayName}
-                id={id}
-                classes={classNameStr}
-                title={`${cleanDisplayName} Posts${timeago ? ` - updated ${timeago} ago` : ''}`}
-                badge={badge}
                 noLi
+                badge={badge}
+                classes={classNameStr}
+                id={id}
+                text={cleanDisplayName}
+                title={`${cleanDisplayName} Posts${timeago ? ` - updated ${timeago} ago` : ''}`}
+                to={link}
               />
             </div>
             <div className="friend-actions">
               <button
+                aria-label={`Remove ${displayName} from friend's list`}
                 className="btn-link"
+                title={`Remove ${displayName} from friend's list`}
                 type="button"
                 onClick={() => {
                   if (
-                    // eslint-disable-next-line
                     window.confirm(`Remove ${cleanDisplayName} from friends?`)
                   ) {
                     unfollowUser(displayName);
                   }
                 }}
-                title={`Remove ${displayName} from friend's list`}
-                aria-label={`Remove ${displayName} from friend's list`}
               >
-                <i className="fas fa-user-minus" aria-hidden="true" />
+                <i aria-hidden="true" className="fas fa-user-minus" />
               </button>
             </div>
           </li>
@@ -124,23 +122,23 @@ function Friends() {
         <div className="d-flex">
           <div className="me-auto">
             <NavigationGenericNavItem
-              to="/r/friends"
+              noLi
+              iconClass="fas fa-user-friends"
               text="Friends"
               title="Show Friend's Posts"
-              iconClass="fas fa-user-friends"
-              noLi
+              to="/r/friends"
             />
           </div>
           <div>
             <button
+              aria-label={showFriends ? 'Hide Friends' : 'Show Friends'}
               className="btn btn-link btn-sm m-0 p-0 border-0"
               type="button"
               onClick={toggleShowFriends}
-              aria-label={showFriends ? 'Hide Friends' : 'Show Friends'}
             >
               <i
-                className={`fas fa-caret-${showFriends ? 'down' : 'left'} menu-caret`}
                 aria-hidden="true"
+                className={`fas fa-caret-${showFriends ? 'down' : 'left'} menu-caret`}
               />
             </button>
           </div>

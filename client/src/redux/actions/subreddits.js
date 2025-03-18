@@ -94,7 +94,6 @@ export function subredditsFetchLastUpdated() {
 
       await Promise.all(fetchPromises);
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('Error fetching last updated', e);
     } finally {
       subredditsFetchLastUpdatedRunning = false;
@@ -129,7 +128,6 @@ const subredditsAll = async (where, options) => {
 
   const newOptions = options || {};
 
-  /* eslint-disable no-await-in-loop */
   while (init || qsAfter) {
     init = false;
     newOptions.after = qsAfter;

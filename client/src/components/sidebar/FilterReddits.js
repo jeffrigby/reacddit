@@ -127,23 +127,23 @@ function FilterReddits() {
       }`}
     >
       <input
-        type="text"
         className="form-control form-control-sm w-100 py-0"
+        id="subreddit-filter"
+        placeholder="Filter"
+        ref={filterInput}
+        type="text"
+        value={filter.filterText}
+        onBlur={setBlur}
         onChange={filterReddits}
         onFocus={setFocus}
-        onBlur={setBlur}
-        placeholder="Filter"
-        id="subreddit-filter"
-        value={filter.filterText}
-        ref={filterInput}
       />
       {(filter.active || filter.filterText) && (
         <i
-          className="far fa-times-circle form-control-clear filter-clear"
-          onClick={clearSearch}
           aria-hidden
-          role="button"
           aria-label="Clear Filter Box"
+          className="far fa-times-circle form-control-clear filter-clear"
+          role="button"
+          onClick={clearSearch}
         />
       )}
     </div>

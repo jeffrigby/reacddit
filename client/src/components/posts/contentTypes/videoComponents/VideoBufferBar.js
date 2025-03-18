@@ -48,8 +48,8 @@ function VideoBufferBar({ videoRef, buffers, currentTime, duration }) {
       <div
         className="seek-bar"
         ref={seekBar}
-        onClick={triggerSeek}
         role="presentation"
+        onClick={triggerSeek}
       />
       {bars}
       <div className="progress-bar" style={progressBarStyle} />

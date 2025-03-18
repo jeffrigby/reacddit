@@ -6,9 +6,9 @@ function CommentReplyList({ replies, linkId }) {
   const keyedReplies = keyEntryChildren(replies);
   return (
     <CommentsRender
+      linkId={linkId}
       listType="reply"
       posts={keyedReplies.data.children}
-      linkId={linkId}
     />
   );
 }

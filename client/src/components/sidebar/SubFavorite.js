@@ -9,7 +9,9 @@ function SubFavorite({ isFavorite, srName }) {
   const subreddits = useSelector((state) => state.subreddits);
   const dispatch = useDispatch();
 
-  if (!me.name) return null;
+  if (!me.name) {
+    return null;
+  }
 
   const favButton = isFavorite ? 'fas fa-heart' : 'far fa-heart';
 
@@ -27,11 +29,11 @@ function SubFavorite({ isFavorite, srName }) {
 
   return (
     <button
-      className="btn btn-link btn-sm m-0 p-0 me-1 faded"
-      type="button"
-      title="Toogle Favorites"
-      onClick={toggleFavorite}
       aria-label="Toggle Favorites"
+      className="btn btn-link btn-sm m-0 p-0 me-1 faded"
+      title="Toogle Favorites"
+      type="button"
+      onClick={toggleFavorite}
     >
       <i className={favButton} />
     </button>

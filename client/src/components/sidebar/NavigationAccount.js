@@ -86,7 +86,7 @@ function NavigationAccount() {
     <>
       <div id="sidebar-nav_account">
         <div className="sidebar-heading d-flex text-muted show-cursor">
-          <span className="me-1" onClick={toggleShowMenu} role="presentation">
+          <span className="me-1" role="presentation" onClick={toggleShowMenu}>
             <i className={caretClass} /> {me.name}
           </span>
           <span>
@@ -98,13 +98,13 @@ function NavigationAccount() {
           </span>
           <span className="ms-auto">
             <NavigationGenericNavItem
-              to={`${process.env.API_PATH}/logout`}
-              text=""
-              title="Logout"
               isStatic
               noLi
-              iconClass="fas fa-sign-out-alt m-0 p-0"
               classes="m-0 p-0"
+              iconClass="fas fa-sign-out-alt m-0 p-0"
+              text=""
+              title="Logout"
+              to={`${process.env.API_PATH}/logout`}
             />
           </span>
         </div>
@@ -112,33 +112,33 @@ function NavigationAccount() {
           <ul className="nav flex-column">
             <Friends />
             <NavigationGenericNavItem
-              to={`/user/${me.name}/posts`}
+              iconClass="far fa-file"
               text="Posts"
               title="Show My Submitted Posts"
-              iconClass="far fa-file"
+              to={`/user/${me.name}/posts`}
             />
             <NavigationGenericNavItem
-              to={`/user/${me.name}/upvoted`}
+              iconClass="far fa-thumbs-up"
               text="Upvoted"
               title="Show My Upvoted Posts"
-              iconClass="far fa-thumbs-up"
+              to={`/user/${me.name}/upvoted`}
             />
             <NavigationGenericNavItem
-              to={`/user/${me.name}/downvoted`}
+              iconClass="far fa-thumbs-down"
               text="Downvoted"
               title="Show My Downvoted Posts"
-              iconClass="far fa-thumbs-down"
+              to={`/user/${me.name}/downvoted`}
             />
             <NavigationGenericNavItem
-              to={`/user/${me.name}/saved`}
+              iconClass="far fa-bookmark"
               text="Saved"
               title="Show My Saved Posts"
-              iconClass="far fa-bookmark"
+              to={`/user/${me.name}/saved`}
             />
           </ul>
         )}
       </div>
-      <Tooltip effect="solid" html place="bottom" anchorId="nav-user-info" />
+      <Tooltip html anchorId="nav-user-info" effect="solid" place="bottom" />
     </>
   );
 }

@@ -17,25 +17,27 @@ function VideoControlBar({
   buffer,
   toggleManualStop,
 }) {
-  if (!duration) return null;
+  if (!duration) {
+    return null;
+  }
 
   return (
     <>
       <div className="video-bottom-control-cont">
         <div className="video-actions d-flex px-2">
           <VideoPlayButton
-            videoRef={videoRef}
             playing={playing}
             toggleManualStop={toggleManualStop}
-          />
-          <VideoTime duration={duration} currentTime={currentTime} />
-          <VideoAudioButton
-            link={link}
             videoRef={videoRef}
+          />
+          <VideoTime currentTime={currentTime} duration={duration} />
+          <VideoAudioButton
             audioWarning={content.audioWarning}
-            hasAudio={content.hasAudio}
-            muted={muted}
             btnClasses="btn btn-link mx-4 p-0 btn-sm"
+            hasAudio={content.hasAudio}
+            link={link}
+            muted={muted}
+            videoRef={videoRef}
           />
           <div className="ms-auto">
             <VideoFullScreenButton videoRef={videoRef} />
@@ -44,8 +46,8 @@ function VideoControlBar({
       </div>
       <VideoBufferBar
         buffers={buffer}
-        duration={duration}
         currentTime={currentTime}
+        duration={duration}
         videoRef={videoRef}
       />
     </>

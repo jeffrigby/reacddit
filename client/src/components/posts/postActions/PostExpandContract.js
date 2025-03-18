@@ -17,11 +17,11 @@ function PostExpandContract({ expand, toggleView, kind }) {
 
   return (
     <button
-      onClick={toggleView}
-      type="button"
+      aria-label={viewTitle}
       className="btn btn-link btn-sm shadow-none m-0 p-0"
       title={viewTitle}
-      aria-label={viewTitle}
+      type="button"
+      onClick={toggleView}
     >
       <i className={viewIcon} />
     </button>

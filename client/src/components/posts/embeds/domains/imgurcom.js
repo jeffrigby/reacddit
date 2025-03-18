@@ -24,6 +24,7 @@ async function getMP4(id, name, width, height) {
       }
     }
   } catch (e) {
+    console.error(`IMGUR: Error fetching MP4: ${e}`);
     return false;
   }
   return false;
@@ -38,14 +39,19 @@ function cleanPath(pathname) {
 
 function getEmbedId(entry) {
   try {
-    if (!entry.secure_media_embed.content) return false;
+    if (!entry.secure_media_embed.content) {
+      return false;
+    }
     const embeddlySrs = entry.secure_media_embed.content.match(/src="(\S+)" /);
-    if (!embeddlySrs[1]) return false;
+    if (!embeddlySrs[1]) {
+      return false;
+    }
     const embeddlySrsParsed = parse(embeddlySrs[1], true);
     const embedSrc = parse(embeddlySrsParsed.query.image);
     const embedSrcClean = cleanPath(embedSrc.pathname);
     return embedSrcClean.split('.')[0];
   } catch (e) {
+    console.error(`IMGUR: Error getting embed ID: ${e}`);
     // Ignore warning and continue
   }
   return false;
@@ -135,7 +141,6 @@ const render = async (entry) => {
       };
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error(e);
   }
 
@@ -155,7 +160,6 @@ const render = async (entry) => {
       };
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error(e);
   }
 

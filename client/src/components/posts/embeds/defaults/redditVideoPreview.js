@@ -23,6 +23,7 @@ const redditVideoPreview = (entry) => {
   try {
     poster = entry.preview.images[0].source.url;
   } catch (e) {
+    console.error(`redditVideoPreview: Error getting poster`, e);
     // continue
   }
 

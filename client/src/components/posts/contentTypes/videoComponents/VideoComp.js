@@ -270,33 +270,33 @@ function VideoComp({ link = '', content }) {
   if (isLoaded === true) {
     const videoSources = sources.map((source, idx) => {
       const key = `${videoId}-${idx}`;
-      return <source src={source.src} type={source.type} key={key} />;
+      return <source key={key} src={source.src} type={source.type} />;
     });
 
     video = (
       <video
-        autoPlay={autoplay}
-        // preload="auto"
         loop
         muted
         playsInline
+        autoPlay={autoplay}
+        className={videoClasses}
         controls={controls}
         id={videoId}
         key={videoId}
-        onClick={toggleLock}
-        // poster={content.thumb}
-        className={videoClasses}
-        onPlay={eventPlay}
-        onPause={eventPause}
-        onStalled={eventStalled}
+        ref={videoRef}
         onCanPlay={eventCanPlay}
         onCanPlayThrough={eventCanPlayThrough}
-        onWaiting={eventWaiting}
-        onVolumeChange={eventVolumeChange}
-        onTimeUpdate={eventTimeUpdate}
+        onClick={toggleLock}
         onDurationChange={eventDurationChange}
+        onPause={eventPause}
+        onPlay={eventPlay}
         onProgress={eventProgress}
-        ref={videoRef}
+        onStalled={eventStalled}
+        onTimeUpdate={eventTimeUpdate}
+        onVolumeChange={eventVolumeChange}
+        onWaiting={eventWaiting}
+        // poster={content.thumb}
+        // preload="auto"
       >
         {videoSources}
       </video>
@@ -319,7 +319,7 @@ function VideoComp({ link = '', content }) {
       <>
         Video Loading Stalled
         <br />
-        <a href={link} target="_blank" rel="noopener noreferrer">
+        <a href={link} rel="noopener noreferrer" target="_blank">
           Open in new tab.
         </a>
       </>
@@ -329,7 +329,7 @@ function VideoComp({ link = '', content }) {
   }
 
   const directLink = (
-    <a href={link} target="_blank" rel="noopener noreferrer">
+    <a href={link} rel="noopener noreferrer" target="_blank">
       Open in new tab.
     </a>
   );
@@ -356,7 +356,7 @@ function VideoComp({ link = '', content }) {
             <div>{loadingError}</div>
           </div>
         )}
-        <div style={contStyle} className="media-ratio">
+        <div className="media-ratio" style={contStyle}>
           {video}
         </div>
         {!canPlay && loadError}
@@ -364,37 +364,37 @@ function VideoComp({ link = '', content }) {
           <>
             <div className="video-control-bar-cont">
               <VideoControlBar
-                videoRef={videoRef}
-                duration={duration}
-                currentTime={currentTime}
-                playing={playing}
-                muted={muted}
-                content={content}
-                link={link}
                 buffer={buffer}
+                content={content}
+                currentTime={currentTime}
+                duration={duration}
+                link={link}
+                muted={muted}
+                playing={playing}
                 toggleManualStop={toggleManualStop}
+                videoRef={videoRef}
               />
             </div>
 
             <div className="video-controls m-0 p-0">
               <button
-                type="button"
+                aria-label="Toggle Browser Video Controls"
                 className={`${btnClasses} ${
                   controls ? 'ctrl-visible' : 'ctrl-hidden'
                 } video-controls-toggle`}
-                onClick={() => setControls(!controls)}
                 title="Toggle Browser Video Controls"
-                aria-label="Toggle Browser Video Controls"
+                type="button"
+                onClick={() => setControls(!controls)}
               >
                 <i className="fas fa-sliders-h" />
               </button>
               <VideoAudioButton
-                link={link}
-                videoRef={videoRef}
                 audioWarning={content.audioWarning}
-                hasAudio={content.hasAudio}
-                muted={muted}
                 btnClasses={btnClasses}
+                hasAudio={content.hasAudio}
+                link={link}
+                muted={muted}
+                videoRef={videoRef}
               />
             </div>
           </>
@@ -402,11 +402,11 @@ function VideoComp({ link = '', content }) {
       </div>
       {debug && isLoaded && (
         <VideoDebug
-          currentTime={currentTime}
-          duration={duration}
           buffer={buffer}
           canPlay={canPlay}
           canPlayThrough={canPlayThrough}
+          currentTime={currentTime}
+          duration={duration}
           stalled={stalled}
           waiting={waiting}
         />

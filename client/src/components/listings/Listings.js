@@ -47,9 +47,15 @@ function Listings({ match }) {
     const qs = queryString.parse(location.search);
 
     let listingType = listType || 'r';
-    if (listType === 'user') listingType = 'u';
-    if (listType === 'multi') listingType = 'm';
-    if (listType === 'search') listingType = 's';
+    if (listType === 'user') {
+      listingType = 'u';
+    }
+    if (listType === 'multi') {
+      listingType = 'm';
+    }
+    if (listType === 'search') {
+      listingType = 's';
+    }
 
     // Set to best if it's the front page.
     const getSort = sort || qs.sort || (target ? 'hot' : 'best');
@@ -80,9 +86,13 @@ function Listings({ match }) {
     comment,
   ]);
 
+  console.log(location);
+
   // Get new posts if the filter changes.
   useEffect(() => {
-    if (!filter.target) return;
+    if (!filter.target) {
+      return;
+    }
     setLastExpanded('');
     dispatch(listingsFetchEntriesReddit(filter, location));
   }, [filter, dispatch]);
@@ -91,7 +101,9 @@ function Listings({ match }) {
   useEffect(() => {
     const streamNewPosts = async () => {
       // Don't stream when you scroll down.
-      if (window.scrollY > 10) return;
+      if (window.scrollY > 10) {
+        return;
+      }
       dispatch(listingsFetchRedditNew(location, true));
     };
 
@@ -158,7 +170,7 @@ function Listings({ match }) {
             break;
         }
       } catch (e) {
-        // console.log(e);
+        console.error('Error in listing hotkeys', e);
       }
     }
   };

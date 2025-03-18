@@ -25,7 +25,7 @@ function ViewMode() {
           toggleView(action);
         }
       } catch (e) {
-        // console.log(e);
+        console.error('Error in view mode hotkeys', e);
       }
     }
   };
@@ -40,21 +40,21 @@ function ViewMode() {
   const button =
     siteSettingsView === 'expanded' ? (
       <button
-        onClick={() => toggleView('condensed')}
-        type="button"
+        aria-label="Condensed View"
         className={btnClasses}
         title="Condensed View (v)"
-        aria-label="Condensed View"
+        type="button"
+        onClick={() => toggleView('condensed')}
       >
         <i className="fas fa-compress-arrows-alt" />
       </button>
     ) : (
       <button
-        onClick={() => toggleView('expanded')}
-        type="button"
+        aria-label="Full View"
         className={btnClasses}
         title="Full View (v)"
-        aria-label="Full View"
+        type="button"
+        onClick={() => toggleView('expanded')}
       >
         <i className="fas fa-expand-arrows-alt" />
       </button>

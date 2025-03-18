@@ -19,11 +19,11 @@ function VideoFullScreenButton({ videoRef }) {
 
   return (
     <button
-      type="button"
-      className="btn btn-link shadow-none mx-4 p-0 btn-sm"
-      onClick={toggleFullscreen}
-      title="Full Screen"
       aria-label="Full Screen"
+      className="btn btn-link shadow-none mx-4 p-0 btn-sm"
+      title="Full Screen"
+      type="button"
+      onClick={toggleFullscreen}
     >
       <i className="fas fa-expand" />
     </button>

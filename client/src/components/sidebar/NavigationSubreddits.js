@@ -149,10 +149,10 @@ function NavigationSubReddits() {
         <i className="fas fa-exclamation-triangle" /> Error loading subreddits
         <br />
         <button
-          className="astext"
-          onClick={reloadSubredditsClick}
-          type="button"
           aria-label="Reload Subreddits"
+          className="astext"
+          type="button"
+          onClick={reloadSubredditsClick}
         >
           try again.
         </button>
@@ -182,18 +182,18 @@ function NavigationSubReddits() {
       <div className="sidebar-heading d-flex text-muted">
         <span
           className="me-auto show-cursor"
-          onClick={toggleMenu}
           role="presentation"
+          onClick={toggleMenu}
         >
           <i className={caretClass} /> Subreddits
         </span>
         <span>
           <i
-            className={spinnerClass}
-            onClick={reloadSubredditsClick}
-            role="button"
             aria-label="Reload Subreddits"
+            className={spinnerClass}
+            role="button"
             tabIndex="-1"
+            onClick={reloadSubredditsClick}
             onKeyDown={reloadSubredditsClick}
           />
         </span>

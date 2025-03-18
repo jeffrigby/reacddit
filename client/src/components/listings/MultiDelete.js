@@ -16,17 +16,16 @@ function MultiDelete({ multi }) {
   };
 
   const removeMulti = () => {
-    // eslint-disable-next-line no-alert
     window.confirm(`Permanately delete ${multi.name}?`) && deleteMulti();
   };
 
   return (
     <button
-      className="btn btn-sm btn-danger"
-      type="button"
-      title="Delete Custom Feed"
-      onClick={removeMulti}
       aria-label="Delete Custom Feed"
+      className="btn btn-sm btn-danger"
+      title="Delete Custom Feed"
+      type="button"
+      onClick={removeMulti}
     >
       <i className="fas fa-trash-alt" />
     </button>

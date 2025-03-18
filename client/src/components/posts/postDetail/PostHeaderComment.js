@@ -9,7 +9,7 @@ function PostHeaderComment({ expand, toggleView }) {
   return (
     <header className="d-flex">
       <div className="me-2 post-action-expand">
-        <PostExpandContract expand={expand} toggleView={toggleView} kind="t1" />
+        <PostExpandContract expand={expand} kind="t1" toggleView={toggleView} />
       </div>
       <div className="me-auto comment-meta meta">
         <PostMeta />

@@ -16,7 +16,9 @@ function PostSave() {
   const { name } = data;
 
   const triggerSave = useCallback(() => {
-    if (bearer.status !== 'auth') return;
+    if (bearer.status !== 'auth') {
+      return;
+    }
 
     if (saved) {
       redditAPI.unsave(name);
@@ -63,9 +65,9 @@ function PostSave() {
     <div id="entry-save">
       <button
         className="btn btn-link shadow-none btn-sm m-0 p-0"
-        onClick={triggerSave}
-        type="button"
         title={title}
+        type="button"
+        onClick={triggerSave}
       >
         {saveStr}
       </button>

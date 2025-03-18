@@ -10,7 +10,9 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
 
 const getLastUpdated = (lastUpdated, subreddit) => {
-  if (subreddit.name === undefined) return 0;
+  if (subreddit.name === undefined) {
+    return 0;
+  }
 
   return lastUpdated[subreddit.name] ? lastUpdated[subreddit.name].lastPost : 0;
 };
@@ -67,13 +69,13 @@ function NavigationItem({ item, trigger }) {
           </div>
         )}
         <NavigationGenericNavItem
-          to={_trimEnd(href, '/')}
-          text={item.display_name}
-          id={item.id}
-          classes={classNameStr}
-          title={title}
-          badge={subLabel}
           noLi
+          badge={subLabel}
+          classes={classNameStr}
+          id={item.id}
+          text={item.display_name}
+          title={title}
+          to={_trimEnd(href, '/')}
         />
       </div>
     </li>

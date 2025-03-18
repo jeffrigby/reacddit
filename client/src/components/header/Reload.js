@@ -25,12 +25,12 @@ function Reload() {
   return (
     <div className="header-button">
       <button
-        type="button"
-        className={btnClass}
-        title="Load New Entries"
-        onClick={refresh}
-        disabled={loading}
         aria-label="Load New Entries"
+        className={btnClass}
+        disabled={loading}
+        title="Load New Entries"
+        type="button"
+        onClick={refresh}
       >
         <i className={iconClass} />
       </button>

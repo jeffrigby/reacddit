@@ -90,9 +90,9 @@ function PostHeader({ toggleView, expand, duplicate }) {
     searchLink = (
       <div>
         <Link
-          to={{ pathname: searchTo, state: { showBack: true } }}
-          title="Search for other posts linking to this link"
           className={btnClass}
+          title="Search for other posts linking to this link"
+          to={{ pathname: searchTo, state: { showBack: true } }}
         >
           <i className="far fa-copy" />
         </Link>
@@ -102,11 +102,11 @@ function PostHeader({ toggleView, expand, duplicate }) {
     directLink = (
       <div>
         <a
-          href={data.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={btnClass}
           aria-label="Open this link directly"
+          className={btnClass}
+          href={data.url}
+          rel="noopener noreferrer"
+          target="_blank"
           title="Open this link directly"
         >
           <i className="fas fa-link" />
@@ -118,11 +118,11 @@ function PostHeader({ toggleView, expand, duplicate }) {
   const redditLink = (
     <div>
       <a
-        href={`https://reddit.com${data.permalink}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={btnClass}
         aria-label="Open on Reddit"
+        className={btnClass}
+        href={`https://reddit.com${data.permalink}`}
+        rel="noopener noreferrer"
+        target="_blank"
         title="Open on Reddit"
       >
         <i className="fab fa-reddit" />
@@ -134,28 +134,26 @@ function PostHeader({ toggleView, expand, duplicate }) {
   if (listType === 'comments') {
     titleLink = (
       <a
-        href={data.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="list-group-item-heading align-middle"
         aria-label="Title"
-        // eslint-disable-next-line
+        className="list-group-item-heading align-middle"
         dangerouslySetInnerHTML={{ __html: data.title }}
+        href={data.url}
+        rel="noopener noreferrer"
+        target="_blank"
       />
     );
   } else {
     titleLink = (
       <Link
+        aria-label="Title"
+        className="list-group-item-heading align-middle"
+        dangerouslySetInnerHTML={{ __html: data.title }}
         to={{
           pathname: data.permalink,
           state: {
             showBack: true,
           },
         }}
-        className="list-group-item-heading align-middle"
-        aria-label="Title"
-        // eslint-disable-next-line
-        dangerouslySetInnerHTML={{ __html: data.title }}
       />
     );
   }
@@ -186,15 +184,14 @@ function PostHeader({ toggleView, expand, duplicate }) {
         </div>
         <div
           className="flex-grow-1 list-group-item-heading shadow-none align-middle title me-2"
-          onClick={toggleView}
           role="link"
-          title="Click to expand"
           tabIndex={0}
+          title="Click to expand"
+          onClick={toggleView}
           onKeyDown={toggleView}
         >
           <span
             className="fw-bold"
-            // eslint-disable-next-line
             dangerouslySetInnerHTML={{ __html: data.title }}
           />
           {data.is_self && data.selftext && (
@@ -236,13 +233,12 @@ function PostHeader({ toggleView, expand, duplicate }) {
           <div>
             <PostExpandContract
               expand={expand}
-              toggleView={toggleView}
               kind={kind}
+              toggleView={toggleView}
             />
           </div>
         </div>
       ) : (
-        // eslint-disable-next-line
         <div className="text-nowrap d-flex actions ms-auto offscreen-placeholder" />
       )}
     </header>

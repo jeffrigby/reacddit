@@ -20,7 +20,7 @@ function DebugMode() {
           debugToggle();
         }
       } catch (e) {
-        // console.log(e);
+        console.error('Error in debug hotkeys', e);
       }
     }
   };
@@ -36,10 +36,10 @@ function DebugMode() {
     <div className="form-check">
       <label className="form-check-label" htmlFor="debugCheck">
         <input
-          type="checkbox"
           className="form-check-input"
-          id="debugCheck"
           defaultChecked={debug}
+          id="debugCheck"
+          type="checkbox"
           onClick={debugToggle}
         />
         Show Debug Info

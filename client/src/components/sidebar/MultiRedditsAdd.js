@@ -29,36 +29,36 @@ function MultiRedditsAdd({ setShowAdd, reloadMultis }) {
       <div className="text-muted">Add a new custom feed</div>
       <div className="input-group mt-2">
         <input
-          type="text"
-          className="form-control form-control-sm"
           aria-label="Custom Feed Name"
+          className="form-control form-control-sm"
           placeholder="Feed Name"
           ref={nameInput}
+          type="text"
           onChange={checkInput}
         />
         <div className="input-group-append">
           <button
-            className="btn btn-sm btn-outline-secondary dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-haspopup="true"
             aria-expanded="false"
+            aria-haspopup="true"
             aria-label={visibility ? 'Private' : 'Public'}
+            className="btn btn-sm btn-outline-secondary dropdown-toggle"
+            data-bs-toggle="dropdown"
+            type="button"
           >
             <i className={visibilityIconClass} />
           </button>
           <div className="dropdown-menu">
             <button
               className="btn btn-link btn-sm dropdown-item"
-              onClick={() => setVisibility(true)}
               type="button"
+              onClick={() => setVisibility(true)}
             >
               <i className="fas fa-eye-slash" /> Private
             </button>
             <button
               className="btn btn-link btn-sm dropdown-item"
-              onClick={() => setVisibility(false)}
               type="button"
+              onClick={() => setVisibility(false)}
             >
               <i className="fas fa-eye" /> Public
             </button>
@@ -70,15 +70,15 @@ function MultiRedditsAdd({ setShowAdd, reloadMultis }) {
           className="form-control form-control-sm"
           id="multiform-descr"
           placeholder="Description (optional)"
-          rows="3"
           ref={descriptionTextarea}
+          rows="3"
         />
       </div>
       <div className="form-group mt-2">
         <button
           className="btn btn-primary btn-sm me-2"
-          type="button"
           disabled={disabled}
+          type="button"
           onClick={addMulti}
         >
           Add

@@ -31,29 +31,29 @@ function PostFooter({
     <>
       <button
         className="btn btn-link shadow-none m-0 p-0 me-1"
-        onClick={copyID}
         title="Click to copy"
         type="button"
+        onClick={copyID}
       >
         {copied ? 'Copied' : data.name}
       </button>
       <button
+        aria-label={showDebug ? 'Hide debug' : 'Show debug'}
         className="btn btn-link shadow-none m-0 p-0 me-1"
-        onClick={() => setShowDebug(!showDebug)}
         title="Show debug!"
         type="button"
-        aria-label={showDebug ? 'Hide debug' : 'Show debug'}
+        onClick={() => setShowDebug(!showDebug)}
       >
         <i className="fas fa-code" />
       </button>
       <button
-        className="btn btn-link shadow-none m-0 p-0 me-1"
-        onClick={() => setShowVisToggle(!showVisToggle)}
-        title="Show Visibility Toggle"
-        type="button"
         aria-label={
           showVisToggle ? 'Hide Visibility Toggle' : 'Show Visibility Toggle'
         }
+        className="btn btn-link shadow-none m-0 p-0 me-1"
+        title="Show Visibility Toggle"
+        type="button"
+        onClick={() => setShowVisToggle(!showVisToggle)}
       >
         <i className={`fas ${showVisToggle ? 'fa-eye-slash' : 'fa-eye'}`} />
       </button>

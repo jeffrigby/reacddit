@@ -77,7 +77,9 @@ function Self({ name, content }) {
   }, []);
 
   const toggleShow = useCallback(() => {
-    if (content.expand) return;
+    if (content.expand) {
+      return;
+    }
     setShowAll((prevShowAll) => !prevShowAll);
   }, [content.expand]);
 
@@ -86,10 +88,11 @@ function Self({ name, content }) {
   }
 
   const { html } = content;
-  if (!html) return null;
+  if (!html) {
+    return null;
+  }
   const rawhtml = cleanLinks(html);
 
-  // eslint-disable-next-line react/no-danger
   const renderedHTML = <div dangerouslySetInnerHTML={{ __html: rawhtml }} />;
   const inlineRendered = content.inline.length ? (
     <SelfInline
@@ -124,9 +127,9 @@ function Self({ name, content }) {
         {showMore && (
           <div className="self-show-more">
             <button
-              type="button"
               className="btn btn-link btn-sm shadow-none p-0"
               title="Load More"
+              type="button"
               onClick={toggleShow}
             >
               {buttonText}

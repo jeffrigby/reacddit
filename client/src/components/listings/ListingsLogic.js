@@ -84,7 +84,7 @@ function ListingsLogic({ saved = 0 }) {
             break;
         }
       } catch (e) {
-        // console.log(e);
+        console.error('Error in listing hotkeys', e);
       }
     }
   };
@@ -97,10 +97,14 @@ function ListingsLogic({ saved = 0 }) {
   });
 
   const monitorEntries = useCallback(() => {
-    if (!scrollResize.current) return;
+    if (!scrollResize.current) {
+      return;
+    }
 
     const postsCollection = document.getElementsByClassName('entry');
-    if (postsCollection.length === 0) return;
+    if (postsCollection.length === 0) {
+      return;
+    }
     scrollResize.current = false;
 
     const newState = getCurrentListingState(
@@ -143,7 +147,9 @@ function ListingsLogic({ saved = 0 }) {
   const { view } = settings;
 
   useEffect(() => {
-    if (prevView.current === view) return;
+    if (prevView.current === view) {
+      return;
+    }
     forceDelayedUpdate();
     prevView.current = view;
   }, [forceDelayedUpdate, view]);

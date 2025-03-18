@@ -2,12 +2,12 @@ function Help() {
   return (
     <>
       <div
+        aria-hidden="true"
+        aria-labelledby="autoRefreshed"
         className="modal fade"
         id="autoRefresh"
-        tabIndex="-1"
         role="dialog"
-        aria-labelledby="autoRefreshed"
-        aria-hidden="true"
+        tabIndex="-1"
       >
         <div className="modal-dialog modal-sm">
           <div className="modal-content">
@@ -16,10 +16,10 @@ function Help() {
                 Auto Refresh
               </h5>
               <button
-                type="button"
+                aria-label="Close"
                 className="btn-close"
                 data-bs-dismiss="modal"
-                aria-label="Close"
+                type="button"
               />
             </div>
             <div className="modal-body">
@@ -33,12 +33,12 @@ function Help() {
       </div>
 
       <div
+        aria-hidden="true"
+        aria-labelledby="condenseHelp"
         className="modal fade"
         id="condenseHelp"
-        tabIndex="-1"
         role="dialog"
-        aria-labelledby="condenseHelp"
-        aria-hidden="true"
+        tabIndex="-1"
       >
         <div className="modal-dialog modal-sm">
           <div className="modal-content">
@@ -47,10 +47,10 @@ function Help() {
                 Condense By Default
               </h5>
               <button
-                type="button"
+                aria-label="Close"
                 className="btn-close"
                 data-bs-dismiss="modal"
-                aria-label="Close"
+                type="button"
               />
             </div>
             <div className="modal-body">
@@ -62,21 +62,21 @@ function Help() {
       </div>
 
       <div
+        aria-labelledby="keyCommands"
         className="modal fade"
         id="hotkeys"
-        tabIndex="-1"
         role="dialog"
-        aria-labelledby="keyCommands"
+        tabIndex="-1"
       >
         <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">Hotkeys</h5>
               <button
-                type="button"
+                aria-label="Close"
                 className="btn-close"
                 data-bs-dismiss="modal"
-                aria-label="Close"
+                type="button"
               />
             </div>
             <div className="modal-body">

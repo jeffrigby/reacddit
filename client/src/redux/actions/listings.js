@@ -190,7 +190,6 @@ export function listingsFetchEntriesReddit(filters, location) {
         entries.originalPost &&
         (listType === 'duplicates' || listType === 'comments')
       ) {
-        // eslint-disable-next-line
         data.originalPost = entries.originalPost.data.children[0];
       }
 
@@ -202,7 +201,6 @@ export function listingsFetchEntriesReddit(filters, location) {
       const about = await subredditAbout(filters);
       dispatch(currentSubreddit(locationKey, about));
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error(e);
       dispatch(listingsRedditStatus(locationKey, 'error'));
     }
@@ -221,7 +219,7 @@ export function listingsFetchRedditNext(location) {
     const currentData = currentState.listingsRedditEntries[locationKey];
     if (!currentData) {
       // This can happen when the listing is loaded, but not rendered yet.
-      // eslint-disable-next-line no-console
+
       // console.error(
       //   `listingsFetchRedditNext: Can't find the location key in the current state.`,
       //   locationKey
@@ -258,7 +256,6 @@ export function listingsFetchRedditNext(location) {
         dispatch(listingsRedditStatus(locationKey, loaded));
       });
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error(e);
       dispatch(listingsRedditStatus(locationKey, 'error'));
     }
@@ -346,8 +343,7 @@ export function listingsFetchRedditNew(location, stream = false) {
 
       return newChildKeys.length;
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(e);
+      console.error(e);
       dispatch(listingsRedditStatus(locationKey, 'error'));
     }
     return false;

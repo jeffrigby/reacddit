@@ -24,8 +24,8 @@ function ForceRefresh() {
     <div>
       <button
         className="btn btn-primary btn-sm m-0 small w-100"
-        onClick={reload}
         type="button"
+        onClick={reload}
       >
         <small>Load Newest Version</small>
       </button>

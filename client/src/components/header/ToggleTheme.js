@@ -26,11 +26,11 @@ function ToggleTheme() {
   return (
     <div className="header-button">
       <button
-        onClick={toggleTheme}
-        type="button"
+        aria-label={`Enable ${buttonTitle}`}
         className="btn btn-secondary btn-sm"
         title={buttonTitle}
-        aria-label={`Enable ${buttonTitle}`}
+        type="button"
+        onClick={toggleTheme}
       >
         <i className={iconClass} />
       </button>

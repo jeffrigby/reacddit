@@ -122,14 +122,14 @@ function RedditRoutes() {
       generatedRoutes.push(
         <Route
           exact
-          path={path}
-          key={path}
           element={
             <ListingsRoute
-              validations={filteredValidations}
               overrides={overrides}
+              validations={filteredValidations}
             />
           }
+          key={path}
+          path={path}
         />
       );
     });
@@ -138,7 +138,7 @@ function RedditRoutes() {
   return (
     <Routes>
       {generatedRoutes}
-      <Route path="*" key="NotFound404" element={<NotFound404 />} />
+      <Route element={<NotFound404 />} key="NotFound404" path="*" />
     </Routes>
   );
 }

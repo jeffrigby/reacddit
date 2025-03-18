@@ -19,9 +19,9 @@ function VideoDebug({
     <div>
       <div>
         <button
-          onClick={toggleDebug}
-          type="button"
           className="btn btn-link btn-sm m-0 p-0 shadow-none"
+          type="button"
+          onClick={toggleDebug}
         >
           {showDebug ? 'Hide' : 'Show'} Video Debug
         </button>

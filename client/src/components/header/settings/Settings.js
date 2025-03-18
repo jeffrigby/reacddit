@@ -12,12 +12,12 @@ function Settings() {
       tabIndex="0"
     >
       <button
-        type="button"
+        aria-expanded="false"
+        aria-haspopup="true"
+        aria-label="Settings"
         className="btn btn-secondary btn-sm form-control-sm"
         data-bs-toggle="dropdown"
-        aria-haspopup="true"
-        aria-expanded="false"
-        aria-label="Settings"
+        type="button"
       >
         <i className="fas fa-cog" />
       </button>
