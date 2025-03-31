@@ -14,6 +14,7 @@ function ListingsRoute({ overrides = {}, validations = {} }) {
 
   useEffect(() => {
     dispatch(setHistory(location));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   const overrideMatch = { ...match, ...overrides };

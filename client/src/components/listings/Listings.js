@@ -86,8 +86,6 @@ function Listings({ match }) {
     comment,
   ]);
 
-  console.log(location);
-
   // Get new posts if the filter changes.
   useEffect(() => {
     if (!filter.target) {
@@ -95,6 +93,7 @@ function Listings({ match }) {
     }
     setLastExpanded('');
     dispatch(listingsFetchEntriesReddit(filter, location));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, dispatch]);
 
   // Check if I should stream entries
@@ -116,6 +115,7 @@ function Listings({ match }) {
     return () => {
       clearInterval(streamNewPostsInterval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.stream, dispatch]);
 
   const moreLoading = useRef(false);
@@ -151,6 +151,7 @@ function Listings({ match }) {
       window.removeEventListener('resize', loadMoreThrottled, false);
       document.removeEventListener('scroll', loadMoreThrottled, false);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, dispatch]);
 
   // Set some hotkeys
