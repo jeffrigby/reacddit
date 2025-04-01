@@ -5,7 +5,6 @@ import throttle from 'lodash/throttle';
 import SelfInline from './SelfInline';
 import '../../../styles/self.scss';
 import { PostsContextData } from '../../../contexts';
-
 const classNames = require('classnames');
 
 const cleanLinks = (html) => {
@@ -41,7 +40,7 @@ const cleanLinks = (html) => {
   return rawhtml;
 };
 
-function Self({ name, content }) {
+const Self = ({ name, content }) => {
   const postContext = useContext(PostsContextData);
   // const load = postContext.isLoaded;
 
@@ -147,7 +146,7 @@ function Self({ name, content }) {
       )}
     </div>
   );
-}
+};
 
 Self.propTypes = {
   name: PropTypes.string.isRequired,

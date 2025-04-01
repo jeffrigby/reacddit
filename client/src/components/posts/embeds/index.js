@@ -6,7 +6,6 @@ import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
 import redditMediaEmbed from './defaults/redditMediaEmbed';
 import redditGallery from './defaults/redditGallery';
-
 const urlRegex = require('url-regex-safe');
 
 const getKeys = (url) => {

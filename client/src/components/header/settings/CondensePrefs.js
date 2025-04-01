@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 
-function CondensePrefs() {
+const CondensePrefs = () => {
   const condenseStickySetting = useSelector(
     (state) => state.siteSettings.condenseSticky
   );
@@ -76,6 +76,6 @@ function CondensePrefs() {
       </div>
     </>
   );
-}
+};
 
 export default CondensePrefs;

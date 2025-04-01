@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import PostByline from './PostByline';
 import { PostsContextData } from '../../../contexts';
 
-function PostMeta() {
+const PostMeta = () => {
   const postContext = useContext(PostsContextData);
   const { post } = postContext;
   const { data, kind } = post;
@@ -28,6 +28,6 @@ function PostMeta() {
       {sticky && <i className="fas fa-sticky-note px-2" title="Sticky" />}
     </>
   );
-}
+};
 
 export default PostMeta;

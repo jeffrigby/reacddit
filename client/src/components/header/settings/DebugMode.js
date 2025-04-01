@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../../common';
 
-function DebugMode() {
+const DebugMode = () => {
   const debug = useSelector((state) => state.siteSettings.debug);
   const dispatch = useDispatch();
 
@@ -46,6 +46,6 @@ function DebugMode() {
       </label>
     </div>
   );
-}
+};
 
 export default DebugMode;

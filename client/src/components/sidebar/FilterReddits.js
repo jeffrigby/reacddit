@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 import { subredditsFilter } from '../../redux/actions/subreddits';
 import { hotkeyStatus } from '../../common';
 
-function FilterReddits() {
+const FilterReddits = () => {
   const filterInput = useRef();
   const filter = useSelector((state) => state.subredditsFilter);
   const dispatch = useDispatch();
@@ -148,6 +148,6 @@ function FilterReddits() {
       )}
     </div>
   );
-}
+};
 
 export default FilterReddits;

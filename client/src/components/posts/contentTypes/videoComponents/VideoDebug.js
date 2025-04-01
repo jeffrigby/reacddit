@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import PropTypes from 'prop-types';
 
-function VideoDebug({
+const VideoDebug = ({
   currentTime,
   duration,
   canPlay,
@@ -9,7 +9,7 @@ function VideoDebug({
   stalled,
   waiting,
   buffer,
-}) {
+}) => {
   const [showDebug, setShowDebug] = useState(false);
   const toggleDebug = () => {
     setShowDebug(!showDebug);
@@ -47,7 +47,7 @@ function VideoDebug({
       )}
     </div>
   );
-}
+};
 
 VideoDebug.propTypes = {
   currentTime: PropTypes.number.isRequired,

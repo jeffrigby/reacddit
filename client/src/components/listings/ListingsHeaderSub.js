@@ -9,7 +9,7 @@ import {
   getCachedSub,
 } from '../../redux/selectors/subredditSelectors';
 
-function ListingsHeaderSub() {
+const ListingsHeaderSub = () => {
   const location = useLocation();
   const about = useSelector((state) =>
     getCurrentSubreddit(state, location.key)
@@ -137,6 +137,6 @@ function ListingsHeaderSub() {
       )}
     </>
   );
-}
+};
 
 export default ListingsHeaderSub;

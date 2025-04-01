@@ -7,7 +7,7 @@ const closeMenu = () => {
   document.body.classList.remove('show-menu');
 };
 
-function NavigationGenericNavItem({
+const NavigationGenericNavItem = ({
   to,
   text,
   title = null,
@@ -19,7 +19,7 @@ function NavigationGenericNavItem({
   noLi = false,
   iconClass = '',
   liClass = '',
-}) {
+}) => {
   const titleNew = title || text;
   let classNames = 'nav-link';
   if (classes) {
@@ -81,7 +81,7 @@ function NavigationGenericNavItem({
   }
   const liClassStr = `nav-item${liClass ? ` ${liClass}` : ''}`;
   return <li className={liClassStr}>{navItem}</li>;
-}
+};
 
 NavigationGenericNavItem.propTypes = {
   to: PropTypes.string.isRequired,

@@ -7,7 +7,7 @@ import {
   listingState,
 } from '../../redux/selectors/listingsSelector';
 
-function PostsDebug() {
+const PostsDebug = () => {
   const [closed, setClosed] = useState(true);
   const location = useLocation();
   const match = useParams();
@@ -82,7 +82,7 @@ function PostsDebug() {
       )}
     </div>
   );
-}
+};
 
 PostsDebug.propTypes = {};
 

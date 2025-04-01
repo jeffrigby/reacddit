@@ -15,7 +15,6 @@ import VideoDebug from './VideoDebug';
 import VideoAudioButton from './VideoAudioButton';
 import VideoControlBar from './VideoControlBar';
 import { PostsContextData } from '../../../../contexts';
-
 const classNames = require('classnames');
 
 /**
@@ -81,7 +80,7 @@ function getBuffers(videoRef) {
  * @returns {JSX.Element} - The video player component.
  * @constructor
  */
-function VideoComp({ link = '', content }) {
+const VideoComp = ({ link = '', content }) => {
   const postContext = useContext(PostsContextData);
   const { isLoaded } = postContext;
   const videoRef = useRef();
@@ -413,7 +412,7 @@ function VideoComp({ link = '', content }) {
       )}
     </>
   );
-}
+};
 
 VideoComp.propTypes = {
   link: PropTypes.string,

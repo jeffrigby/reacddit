@@ -40,7 +40,7 @@ function renderCommentLinks(permalink, comment) {
  * @returns {JSX.Element|null} - Rendered parent post or null if not needed
  * @constructor
  */
-function PostsParent({ post }) {
+const PostsParent = ({ post }) => {
   const listingsFilter = useSelector((state) => state.listingsFilter);
   const { listType, comment } = listingsFilter;
 
@@ -98,7 +98,7 @@ function PostsParent({ post }) {
       </div>
     </>
   );
-}
+};
 
 PostsParent.propTypes = {
   post: PropTypes.object.isRequired,

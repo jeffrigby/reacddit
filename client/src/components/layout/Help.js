@@ -1,4 +1,4 @@
-function Help() {
+const Help = () => {
   return (
     <>
       <div
@@ -277,6 +277,6 @@ function Help() {
       </div>
     </>
   );
-}
+};
 
 export default Help;

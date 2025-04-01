@@ -4,7 +4,7 @@ import PostTimeAgo from './PostTimeAgo';
 import PostSubLink from './PostSubLink';
 import PostCommentLink from './PostCommentLink';
 
-function PostByline({ data, kind }) {
+const PostByline = ({ data, kind }) => {
   const {
     author,
     author_flair_text: flair,
@@ -37,7 +37,7 @@ function PostByline({ data, kind }) {
       )}
     </>
   );
-}
+};
 
 PostByline.propTypes = {
   data: PropTypes.object.isRequired,

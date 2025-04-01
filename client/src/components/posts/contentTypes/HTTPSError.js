@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-function HTTPSError({ content }) {
+const HTTPSError = ({ content }) => {
   const { src } = content;
   return (
     <div className="self">
@@ -13,7 +13,7 @@ function HTTPSError({ content }) {
       </p>
     </div>
   );
-}
+};
 
 HTTPSError.propTypes = {
   content: PropTypes.object.isRequired,

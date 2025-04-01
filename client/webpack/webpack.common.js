@@ -307,7 +307,7 @@ module.exports = {
     new ESLintPlugin({
       // Plugin options
       extensions: ['js', 'mjs', 'jsx', 'ts', 'tsx'],
-      formatter: require.resolve('react-dev-utils/eslintFormatter'),
+      formatter: 'stylish',
       eslintPath: require.resolve('eslint'),
       context: paths.appSrc,
       cache: true,

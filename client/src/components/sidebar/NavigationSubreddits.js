@@ -9,7 +9,7 @@ import {
 } from '../../redux/actions/subreddits';
 import { getMenuStatus, hotkeyStatus, setMenuStatus } from '../../common';
 
-function NavigationSubReddits() {
+const NavigationSubReddits = () => {
   const [showMenu, setShowMenu] = useState(getMenuStatus('subreddits', true));
   const redditBearer = useSelector((state) => state.redditBearer);
   const subreddits = useSelector((state) => state.subreddits);
@@ -201,6 +201,6 @@ function NavigationSubReddits() {
       {(showMenu || filter.filterText) && content}
     </div>
   );
-}
+};
 
 export default NavigationSubReddits;

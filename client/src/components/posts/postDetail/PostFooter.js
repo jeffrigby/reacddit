@@ -6,12 +6,12 @@ import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
 
-function PostFooter({
+const PostFooter = ({
   debug,
   renderedContent = null,
   setShowVisToggle,
   showVisToggle,
-}) {
+}) => {
   const postContext = useContext(PostsContextData);
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -101,7 +101,7 @@ function PostFooter({
       {debug && showDebug && <PostDebug renderedContent={renderedContent} />}
     </>
   );
-}
+};
 
 PostFooter.propTypes = {
   debug: PropTypes.bool.isRequired,

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router';
 import { listingsFetchRedditNew } from '../../redux/actions/listings';
 import { listingStatus } from '../../redux/selectors/listingsSelector';
 
-function Reload() {
+const Reload = () => {
   const stream = useSelector((state) => state.siteSettings.stream);
   const dispatch = useDispatch();
   const location = useLocation();
@@ -36,6 +36,6 @@ function Reload() {
       </button>
     </div>
   );
-}
+};
 
 export default Reload;

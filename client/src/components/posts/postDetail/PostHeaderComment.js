@@ -5,7 +5,7 @@ import PostMeta from './PostMeta';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 
-function PostHeaderComment({ expand, toggleView }) {
+const PostHeaderComment = ({ expand, toggleView }) => {
   return (
     <header className="d-flex">
       <div className="me-2 post-action-expand">
@@ -20,7 +20,7 @@ function PostHeaderComment({ expand, toggleView }) {
       </div>
     </header>
   );
-}
+};
 
 PostHeaderComment.propTypes = {
   toggleView: PropTypes.func.isRequired,

@@ -27,7 +27,6 @@ import {
   postFocused,
 } from '../../../redux/selectors/postSelectors';
 import CommentReplyList from '../../comments/CommentReplyList';
-
 const classNames = require('classnames');
 
 function useRenderedContent(data, kind, expand) {
@@ -73,7 +72,7 @@ function useRenderedContent(data, kind, expand) {
   return { renderedContent };
 }
 
-function Post({ post, duplicate = false, parent = false, postName, idx }) {
+const Post = ({ post, duplicate = false, parent = false, postName, idx }) => {
   const { data, kind } = post;
   const [hide, setHide] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -405,7 +404,7 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
       </PostsContextActionable.Provider>
     </PostsContextData.Provider>
   );
-}
+};
 
 Post.propTypes = {
   postName: PropTypes.string.isRequired,

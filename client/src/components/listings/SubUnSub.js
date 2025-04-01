@@ -53,7 +53,7 @@ function useUnsubscribe() {
  * SubscribeButton component to handle subscribing and unsubscribing from subreddits
  * @returns {JSX.Element|null} - Rendered SubscribeButton component or null if conditions not met
  */
-function SubUnSub() {
+const SubUnSub = () => {
   const location = useLocation();
   const params = useParams();
 
@@ -109,6 +109,6 @@ function SubUnSub() {
       <i className={iconClass} /> {text}
     </button>
   );
-}
+};
 
 export default SubUnSub;

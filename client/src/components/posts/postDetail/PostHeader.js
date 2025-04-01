@@ -12,7 +12,7 @@ import PostTimeAgo from './PostTimeAgo';
 import PostCommentLink from './PostCommentLink';
 import PostSubLink from './PostSubLink';
 
-function PostHeader({ toggleView, expand, duplicate }) {
+const PostHeader = ({ toggleView, expand, duplicate }) => {
   const postContext = useContext(PostsContextData);
   const listType = useSelector((state) => state.listingsFilter.listType);
   const params = useParams();
@@ -243,7 +243,7 @@ function PostHeader({ toggleView, expand, duplicate }) {
       )}
     </header>
   );
-}
+};
 
 PostHeader.propTypes = {
   toggleView: PropTypes.func.isRequired,

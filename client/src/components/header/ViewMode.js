@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../common';
 
-function ViewMode() {
+const ViewMode = () => {
   const siteSettingsView = useSelector((state) => state.siteSettings.view);
   const dispatch = useDispatch();
 
@@ -61,6 +61,6 @@ function ViewMode() {
     );
 
   return <div className="header-button">{button}</div>;
-}
+};
 
 export default ViewMode;

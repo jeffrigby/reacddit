@@ -5,7 +5,7 @@ import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
 import { hotkeyStatus } from '../../common';
 
-function Search() {
+const Search = () => {
   const [focused, setFocused] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -234,6 +234,6 @@ function Search() {
       )}
     </div>
   );
-}
+};
 
 export default Search;

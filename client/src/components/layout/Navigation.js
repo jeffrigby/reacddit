@@ -8,7 +8,7 @@ import SearchRedditNames from '../sidebar/SearchRedditNames';
 import '../../styles/sidebar.scss';
 import NavigationAccount from '../sidebar/NavigationAccount';
 
-function Navigation({ redditBearer, subredditsFilter }) {
+const Navigation = ({ redditBearer, subredditsFilter }) => {
   const closeMenuIfOpen = () => {
     if (document.body.classList.contains('show-menu')) {
       document.body.classList.remove('show-menu');
@@ -47,7 +47,7 @@ function Navigation({ redditBearer, subredditsFilter }) {
       <div className="my-5 py-3 bottom-spacer" />
     </div>
   );
-}
+};
 
 Navigation.propTypes = {
   redditBearer: PropTypes.object.isRequired,

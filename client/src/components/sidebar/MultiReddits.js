@@ -5,7 +5,7 @@ import MultiRedditsItem from './MultiRedditsItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsAdd from './MultiRedditsAdd';
 
-function MultiReddits() {
+const MultiReddits = () => {
   const menuId = 'multis';
 
   const [loading, setLoading] = useState(true);
@@ -116,7 +116,7 @@ function MultiReddits() {
     return null;
   }
   return null;
-}
+};
 
 MultiReddits.propTypes = {};
 

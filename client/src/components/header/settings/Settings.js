@@ -4,7 +4,7 @@ import AutoPlay from './AutoPlay';
 import DebugMode from './DebugMode';
 import CondensePrefs from './CondensePrefs';
 
-function Settings() {
+const Settings = () => {
   return (
     <div
       className="btn-group settings-menu header-button"
@@ -33,7 +33,7 @@ function Settings() {
       </div>
     </div>
   );
-}
+};
 
 Settings.propTypes = {};
 

@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { siteSettings } from '../../redux/slices/siteSettingsSlice';
 
-function ToggleTheme() {
+const ToggleTheme = () => {
   const dispatch = useDispatch();
   const siteSettingsTheme = useSelector((state) => state.siteSettings.theme);
 
@@ -36,6 +36,6 @@ function ToggleTheme() {
       </button>
     </div>
   );
-}
+};
 
 export default ToggleTheme;

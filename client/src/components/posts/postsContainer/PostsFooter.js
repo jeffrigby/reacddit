@@ -25,11 +25,11 @@ function renderFooterStatus(status) {
   return statusMapping[status] || null;
 }
 
-function PostsFooter() {
+const PostsFooter = () => {
   const location = useLocation();
   const status = useSelector((state) => listingStatus(state, location.key));
   const footerStatus = renderFooterStatus(status);
   return <div className="footer-status p-2">{footerStatus}</div>;
-}
+};
 
 export default memo(PostsFooter);

@@ -7,7 +7,7 @@ import { isMobile } from 'react-device-detect';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
 
-function NavigationPrimaryLinks() {
+const NavigationPrimaryLinks = () => {
   const me = useSelector((state) => state.redditMe.me);
   const redditBearer = useSelector((state) => state.redditBearer);
   const sort = useSelector((state) => state.listingsFilter.sort);
@@ -162,6 +162,6 @@ function NavigationPrimaryLinks() {
       )}
     </ul>
   );
-}
+};
 
 export default NavigationPrimaryLinks;

@@ -8,7 +8,7 @@ import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsSubs from './MultiRedditsSubs';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
-function MultiRedditsItem({ item }) {
+const MultiRedditsItem = ({ item }) => {
   const { path } = item.data;
   const [showSubs, setShowSubs] = useState(getMenuStatus(path));
 
@@ -60,7 +60,7 @@ function MultiRedditsItem({ item }) {
       {showSubs && <MultiRedditsSubs multiRedditSubs={item.data.subreddits} />}
     </li>
   );
-}
+};
 
 MultiRedditsItem.propTypes = {
   item: PropTypes.object.isRequired,

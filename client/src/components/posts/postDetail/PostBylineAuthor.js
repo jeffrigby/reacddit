@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { produce } from 'immer';
 import classNames from 'classnames';
-
 import RedditAPI from '../../../reddit/redditAPI';
 import { subredditsData } from '../../../redux/actions/subreddits';
 
@@ -17,7 +16,7 @@ import { subredditsData } from '../../../redux/actions/subreddits';
  *
  * @returns {JSX.Element} - The rendered author information and actions.
  */
-function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
+const PostBylineAuthor = ({ author, flair = null, isSubmitter = false }) => {
   const dispatch = useDispatch();
   const subreddits = useSelector((state) => state.subreddits);
 
@@ -99,7 +98,7 @@ function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
       {authorFlair}
     </>
   );
-}
+};
 
 PostBylineAuthor.propTypes = {
   author: PropTypes.string.isRequired,

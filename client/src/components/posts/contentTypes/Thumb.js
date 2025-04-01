@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { PostsContextData } from '../../../contexts';
 
-function Thumb({ content }) {
+const Thumb = ({ content }) => {
   const postContext = useContext(PostsContextData);
   const { isLoaded } = postContext;
 
@@ -38,7 +38,7 @@ function Thumb({ content }) {
       </div>
     </div>
   );
-}
+};
 
 Thumb.propTypes = {
   content: PropTypes.object.isRequired,

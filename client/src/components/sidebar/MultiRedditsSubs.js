@@ -22,13 +22,13 @@ const genNavItems = (multiRedditSubs) => {
   return navigationItems;
 };
 
-function MultiRedditsSubs({ multiRedditSubs }) {
+const MultiRedditsSubs = ({ multiRedditSubs }) => {
   if (multiRedditSubs) {
     const navItems = genNavItems(multiRedditSubs);
     return <ul className="nav subnav ps-2">{navItems}</ul>;
   }
   return <div />;
-}
+};
 
 MultiRedditsSubs.propTypes = {
   multiRedditSubs: PropTypes.array.isRequired,

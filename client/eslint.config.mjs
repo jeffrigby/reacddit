@@ -31,8 +31,10 @@ export default defineConfig([
   // Your custom configuration
   {
     plugins: {
+      react,
+      'react-hooks': reactHooks,
       'jsx-a11y': jsxA11Y,
-      prettier: prettier,
+      prettier,
       import: importPlugin,
     },
 
@@ -66,9 +68,14 @@ export default defineConfig([
           ignorePropertyModificationsFor: ['state', 'draft'],
         },
       ],
-      strict: ['error', 'global'],
       curly: 'warn',
-      'no-unused-vars': ['warn', { args: 'none' }],
+      'no-unused-vars': [
+        'warn',
+        {
+          args: 'none',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
       'no-unused-expressions': [
         'error',
         {
@@ -81,8 +88,6 @@ export default defineConfig([
       'react/forbid-prop-types': 'off',
       'react/require-default-props': 'off',
       'react/jsx-filename-extension': 'off',
-      'react-hooks/exhaustive-deps': 'warn',
-      // Modern React rules
       'react/jsx-sort-props': [
         'warn',
         {
@@ -92,10 +97,40 @@ export default defineConfig([
       ],
       'react/jsx-no-constructed-context-values': 'warn',
       'react/no-array-index-key': 'warn',
-      // Additional accessibility rules
+      'react/function-component-definition': [
+        'warn',
+        {
+          namedComponents: 'arrow-function',
+          unnamedComponents: 'arrow-function',
+        },
+      ],
+      'react/destructuring-assignment': ['warn', 'always'],
+      'react/jsx-curly-brace-presence': [
+        'warn',
+        { props: 'never', children: 'never' },
+      ],
       'jsx-a11y/click-events-have-key-events': 'warn',
       'jsx-a11y/no-static-element-interactions': 'warn',
       'jsx-a11y/role-has-required-aria-props': 'warn',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'no-use-before-define': 'error',
+      'no-redeclare': 'error',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'prefer-const': 'warn',
+      'no-var': 'error',
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
+      'import/order': [
+        'warn',
+        {
+          groups: [
+            ['builtin', 'external'],
+            'internal',
+            ['parent', 'sibling', 'index'],
+          ],
+          'newlines-between': 'never',
+        },
+      ],
     },
   },
 ]);

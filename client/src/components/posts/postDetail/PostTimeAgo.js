@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { formatDistanceToNow } from 'date-fns';
 
-function PostTimeAgo({ createdUtc }) {
+const PostTimeAgo = ({ createdUtc }) => {
   const timeago = formatDistanceToNow(createdUtc * 1000);
   // gotta be a better way to do this, but, whatever
   const timeagoshort = timeago
@@ -22,7 +22,7 @@ function PostTimeAgo({ createdUtc }) {
       <i className="far fa-clock" /> {timeagoshort}
     </>
   );
-}
+};
 
 PostTimeAgo.propTypes = {
   createdUtc: PropTypes.number.isRequired,

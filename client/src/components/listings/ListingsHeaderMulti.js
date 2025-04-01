@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import RedditAPI from '../../reddit/redditAPI';
 import MultiDelete from './MultiDelete';
 
-function ListingsHeaderMulti() {
+const ListingsHeaderMulti = () => {
   const [currentMulti, setCurrentMulti] = useState(null);
   const filter = useSelector((state) => state.listingsFilter);
   // const multis = useSelector((state) => state.redditMultiReddits);
@@ -75,6 +75,6 @@ function ListingsHeaderMulti() {
       </div>
     </>
   );
-}
+};
 
 export default ListingsHeaderMulti;

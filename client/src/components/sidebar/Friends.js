@@ -50,7 +50,7 @@ function useFriends() {
   };
 }
 
-function Friends() {
+const Friends = () => {
   const {
     showFriends,
     toggleShowFriends,
@@ -151,6 +151,6 @@ function Friends() {
       )}
     </>
   );
-}
+};
 
 export default React.memo(Friends);

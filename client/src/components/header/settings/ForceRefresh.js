@@ -17,7 +17,7 @@ const reload = () => {
   }, 1000);
 };
 
-function ForceRefresh() {
+const ForceRefresh = () => {
   const debug = useSelector((state) => state.siteSettings.debug);
 
   return (
@@ -41,6 +41,6 @@ function ForceRefresh() {
       )}
     </div>
   );
-}
+};
 
 export default ForceRefresh;

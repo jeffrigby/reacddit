@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../../common';
 
-function AutoRefresh() {
+const AutoRefresh = () => {
   const stream = useSelector((state) => state.siteSettings.stream);
   const dispatch = useDispatch();
 
@@ -58,6 +58,6 @@ function AutoRefresh() {
       </div>
     </div>
   );
-}
+};
 
 export default AutoRefresh;
