@@ -1,10 +1,15 @@
-import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../redux/slices/siteSettingsSlice';
+import { AppDispatch, RootState } from '../../types/redux';
 
-const ToggleTheme = () => {
-  const dispatch = useDispatch();
-  const siteSettingsTheme = useSelector((state) => state.siteSettings.theme);
+type ThemeType = 'dark' | 'light';
+
+function ToggleTheme() {
+  const dispatch = useDispatch<AppDispatch>();
+  const siteSettingsTheme = useSelector(
+    (state: RootState) => state.siteSettings.theme as ThemeType | undefined
+  );
 
   useEffect(() => {
     if (siteSettingsTheme) {
@@ -16,7 +21,7 @@ const ToggleTheme = () => {
   }, [siteSettingsTheme]);
 
   const toggleTheme = () => {
-    const newTheme = siteSettingsTheme === 'dark' ? 'light' : 'dark';
+    const newTheme: ThemeType = siteSettingsTheme === 'dark' ? 'light' : 'dark';
     dispatch(siteSettings({ theme: newTheme }));
   };
 
@@ -36,6 +41,6 @@ const ToggleTheme = () => {
       </button>
     </div>
   );
-};
+}
 
 export default ToggleTheme;

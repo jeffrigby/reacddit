@@ -4,36 +4,48 @@ import { useNavigate, useLocation } from 'react-router';
 import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
 import { hotkeyStatus } from '../../common';
+import { RootState } from '../../types/redux';
 
-const Search = () => {
-  const [focused, setFocused] = useState(false);
-  const [search, setSearch] = useState('');
+interface ListingsFilter {
+  listType: string;
+  target: string;
+  user: string;
+  multi: boolean;
+}
+
+function Search() {
+  const [focused, setFocused] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>('');
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  const listingsFilter = useSelector((state) => state.listingsFilter);
+  const listingsFilter = useSelector<RootState, ListingsFilter>(
+    (state) => state.listingsFilter
+  );
 
-  const searchInput = useRef();
-  const searchInputParent = useRef();
+  const searchInput = useRef<HTMLInputElement>(null);
+  const searchInputParent = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const qs = queryString.parse(location.search);
     const query = qs.q || '';
-    setSearch(query);
+    setSearch(query as string);
   }, [location.search]);
 
   useEffect(() => {
-    const handleSearchHotkey = (event) => {
+    const handleSearchHotkey = (event: KeyboardEvent) => {
       const pressedKey = event.key;
 
       if (hotkeyStatus()) {
         switch (pressedKey) {
           case 'S':
-            searchInput.current.focus();
-            setSearch('');
-            document.body.classList.remove('show-menu');
-            event.preventDefault();
+            if (searchInput.current) {
+              searchInput.current.focus();
+              setSearch('');
+              document.body.classList.remove('show-menu');
+              event.preventDefault();
+            }
             break;
           default:
             break;
@@ -41,9 +53,11 @@ const Search = () => {
       } else if (focused) {
         switch (pressedKey) {
           case 'Escape':
-            searchInput.current.blur();
-            setSearch('');
-            event.preventDefault();
+            if (searchInput.current) {
+              searchInput.current.blur();
+              setSearch('');
+              event.preventDefault();
+            }
             break;
           default:
             break;
@@ -57,13 +71,15 @@ const Search = () => {
     };
   }, [focused]);
 
-  const handleChange = (event) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
   const focusSearch = () => {
     setFocused(true);
-    searchInput.current.select();
+    if (searchInput.current) {
+      searchInput.current.select();
+    }
     document.body.classList.add('search-active');
   };
 
@@ -77,32 +93,35 @@ const Search = () => {
 
   const clearSearch = () => {
     setSearch('');
-    searchInput.current.blur();
+    if (searchInput.current) {
+      searchInput.current.blur();
+    }
   };
 
-  const getCurrentSearchSort = () => {
+  const getCurrentSearchSort = (): { sort: string; t: string | null } => {
     const currentSearch = queryString.parse(location.search);
-    const qs = {};
-    if (currentSearch.sort !== undefined) {
-      qs.sort = currentSearch.sort.match(/^(relevance|new|top)$/)
-        ? currentSearch.sort
-        : 'relevance';
+    const qs: { sort: string; t: string | null } = {
+      sort: 'relevance',
+      t: null,
+    };
 
-      qs.t = currentSearch.t || null;
-    } else {
-      qs.sort = 'relevance';
+    if (currentSearch.sort !== undefined) {
+      const sort = currentSearch.sort as string;
+      qs.sort = sort.match(/^(relevance|new|top)$/) ? sort : 'relevance';
+      qs.t = (currentSearch.t as string) || null;
     }
+
     return qs;
   };
 
-  const getMainSearchURL = (q) => {
+  const getMainSearchURL = (q: string): string => {
     const currentSearch = getCurrentSearchSort();
     const qs = { ...currentSearch, q };
     const qsString = queryString.stringify(qs);
     return `/search?${qsString}`;
   };
 
-  const getTargetUrl = () => {
+  const getTargetUrl = (): string => {
     const { listType, target, user, multi } = listingsFilter;
     if (
       (listType === 'r' || (listType === 's' && !multi)) &&
@@ -120,30 +139,38 @@ const Search = () => {
     return '';
   };
 
-  const searchTarget = () => {
-    const q = searchInput.current.value;
-    if (!q) {
+  const searchTarget = (): void => {
+    if (!searchInput.current || !searchInput.current.value) {
       return;
     }
+
+    const q = searchInput.current.value;
     const url = getMainSearchURL(q);
     const targetUrl = getTargetUrl();
     const finalUrl = `${targetUrl}${url}`;
     navigate(finalUrl);
-    searchInput.current.blur();
+
+    if (searchInput.current) {
+      searchInput.current.blur();
+    }
   };
 
-  const searchEverywhere = () => {
-    const q = searchInput.current.value;
-    if (!q) {
+  const searchEverywhere = (): void => {
+    if (!searchInput.current || !searchInput.current.value) {
       return;
     }
+
+    const q = searchInput.current.value;
     const url = getMainSearchURL(q);
     navigate(url);
-    searchInput.current.blur();
+
+    if (searchInput.current) {
+      searchInput.current.blur();
+    }
   };
 
-  const processSearch = (e) => {
-    const q = e.target.value;
+  const processSearch = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    const q = e.currentTarget.value;
     if (!q) {
       return;
     }
@@ -202,7 +229,7 @@ const Search = () => {
       />
       {(focused || search) && (
         <i
-          aria-hidden
+          aria-hidden="true"
           aria-label="Clear Search Box"
           className="far fa-times-circle form-control-clear"
           id="search-clear"
@@ -234,6 +261,6 @@ const Search = () => {
       )}
     </div>
   );
-};
+}
 
 export default Search;

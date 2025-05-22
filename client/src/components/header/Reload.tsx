@@ -2,12 +2,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import { listingsFetchRedditNew } from '../../redux/actions/listings';
 import { listingStatus } from '../../redux/selectors/listingsSelector';
+import { AppDispatch, RootState } from '../../types/redux';
 
-const Reload = () => {
-  const stream = useSelector((state) => state.siteSettings.stream);
-  const dispatch = useDispatch();
+function Reload() {
+  const stream = useSelector((state: RootState) => state.siteSettings.stream);
+  const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
-  const listingsStatus = useSelector((state) =>
+  const listingsStatus = useSelector((state: RootState) =>
     listingStatus(state, location.key)
   );
 
@@ -17,7 +18,7 @@ const Reload = () => {
     ? 'btn btn-primary btn-sm'
     : 'btn btn-secondary btn-sm';
 
-  const refresh = async () => {
+  const refresh = async (): Promise<void> => {
     window.scrollTo(0, 0);
     await dispatch(listingsFetchRedditNew(location));
   };
@@ -36,6 +37,6 @@ const Reload = () => {
       </button>
     </div>
   );
-};
+}
 
 export default Reload;

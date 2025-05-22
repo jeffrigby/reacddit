@@ -1,26 +1,38 @@
-import { useEffect } from 'react';
+import { useEffect, MouseEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../common';
+import { AppDispatch, RootState } from '../../types/redux';
 
-const ViewMode = () => {
-  const siteSettingsView = useSelector((state) => state.siteSettings.view);
-  const dispatch = useDispatch();
+type ViewModeType = 'expanded' | 'condensed';
+
+function ViewMode() {
+  const siteSettingsView = useSelector(
+    (state: RootState) =>
+      (state.siteSettings.view as ViewModeType) || 'expanded'
+  );
+  const dispatch = useDispatch<AppDispatch>();
 
   const btnClasses = 'btn btn-secondary btn-sm';
 
-  const toggleView = async (view) => {
-    // const currentFocus = document.getElementById(actionable);
+  const toggleView = async (view: ViewModeType): Promise<void> => {
     window.scrollTo(0, 0);
     await dispatch(siteSettings({ view }));
   };
 
-  const hotkeys = (event) => {
+  const handleButtonClick =
+    (view: ViewModeType) =>
+    (e: MouseEvent<HTMLButtonElement>): void => {
+      e.preventDefault();
+      toggleView(view);
+    };
+
+  const hotkeys = (event: KeyboardEvent): void => {
     if (hotkeyStatus()) {
       const pressedKey = event.key;
       try {
         if (pressedKey === 'v') {
-          const action =
+          const action: ViewModeType =
             siteSettingsView === 'expanded' ? 'condensed' : 'expanded';
           toggleView(action);
         }
@@ -35,7 +47,7 @@ const ViewMode = () => {
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  });
+  }, []);
 
   const button =
     siteSettingsView === 'expanded' ? (
@@ -44,7 +56,7 @@ const ViewMode = () => {
         className={btnClasses}
         title="Condensed View (v)"
         type="button"
-        onClick={() => toggleView('condensed')}
+        onClick={handleButtonClick('condensed')}
       >
         <i className="fas fa-compress-arrows-alt" />
       </button>
@@ -54,13 +66,13 @@ const ViewMode = () => {
         className={btnClasses}
         title="Full View (v)"
         type="button"
-        onClick={() => toggleView('expanded')}
+        onClick={handleButtonClick('expanded')}
       >
         <i className="fas fa-expand-arrows-alt" />
       </button>
     );
 
   return <div className="header-button">{button}</div>;
-};
+}
 
 export default ViewMode;

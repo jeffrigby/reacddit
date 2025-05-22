@@ -1,12 +1,29 @@
 import { useEffect } from 'react';
 import queryString from 'query-string';
 import _isEmpty from 'lodash/isEmpty';
-import { NavLink } from 'react-router-dom';
+import { NavLink, To } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
 import { hotkeyStatus } from '../../common';
+import { RootState } from '../../types/redux';
 
-const catsSearch = {
+interface SortCategories {
+  [key: string]: string;
+}
+
+interface IconClasses {
+  [key: string]: string;
+}
+
+interface ListingsFilter {
+  listType: string;
+  target: string;
+  userType?: string;
+  sort?: string;
+  multi?: boolean;
+}
+
+const catsSearch: SortCategories = {
   R: 'relevance',
   T: 'top',
   H: 'hot',
@@ -14,7 +31,7 @@ const catsSearch = {
   C: 'comments',
 };
 
-const catsFront = {
+const catsFront: SortCategories = {
   B: 'best',
   H: 'hot',
   T: 'top',
@@ -23,7 +40,7 @@ const catsFront = {
   R: 'rising',
 };
 
-const catsReddits = {
+const catsReddits: SortCategories = {
   H: 'hot',
   T: 'top',
   N: 'new',
@@ -31,7 +48,7 @@ const catsReddits = {
   R: 'rising',
 };
 
-const catsMultis = {
+const catsMultis: SortCategories = {
   H: 'hot',
   T: 'top',
   N: 'new',
@@ -39,13 +56,13 @@ const catsMultis = {
   R: 'rising',
 };
 
-const catsUsers = {
+const catsUsers: SortCategories = {
   H: 'hot',
   T: 'top',
   N: 'new',
 };
 
-const catsComments = {
+const catsComments: SortCategories = {
   B: 'best',
   T: 'top',
   N: 'new',
@@ -54,7 +71,7 @@ const catsComments = {
   Q: 'qa',
 };
 
-const timeCats = {
+const timeCats: SortCategories = {
   hour: 'past hour',
   day: 'past 24 hour',
   week: 'past week',
@@ -63,7 +80,7 @@ const timeCats = {
   all: 'all time',
 };
 
-const iconClasses = {
+const iconClasses: IconClasses = {
   relevance: 'fas fa-bullseye fa-fw',
   hot: 'fas fa-fire-alt fa-fw',
   best: 'fas fa-award fa-fw',
@@ -76,16 +93,20 @@ const iconClasses = {
   old: 'fas fa-history fa-fw',
 };
 
-const Sort = () => {
-  const me = useSelector((state) => state.redditMe.me);
-  const listingsFilter = useSelector((state) => state.listingsFilter);
+function Sort() {
+  const me = useSelector((state: RootState) => state.redditMe?.me);
+  const listingsFilter = useSelector<RootState, ListingsFilter>(
+    (state) => state.listingsFilter
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const { search } = location;
 
-  const getIcon = (sort) => <i className={iconClasses[sort]} />;
+  const getIcon = (sort: string): JSX.Element => (
+    <i className={iconClasses[sort]} />
+  );
 
-  const genLink = (sort, t) => {
+  const genLink = (sort: string, t?: string): To => {
     const { listType, target, userType } = listingsFilter;
     const qs = queryString.parse(search);
     // add the timeline if requested.
@@ -93,7 +114,12 @@ const Sort = () => {
       qs.t = t;
     }
 
-    const to = {};
+    const to: To = {
+      pathname: '',
+      search: '',
+      state: { showBack: true },
+    };
+
     switch (listType) {
       case 'r':
         to.pathname = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
@@ -120,19 +146,16 @@ const Sort = () => {
       to.search = `?${searchRendered}`;
     }
 
-    to.state = { showBack: true };
-
     return to;
   };
 
-  const handleSortHotkey = (event) => {
+  const handleSortHotkey = (event: KeyboardEvent): void => {
     const { target, listType } = listingsFilter;
     if (hotkeyStatus() && target !== 'friends') {
       const pressedKey = event.key;
       switch (pressedKey) {
         case 'H': {
           navigate(genLink('hot'));
-          // dispatch(push(genLink('hot')));
           break;
         }
         case 'B': {
@@ -180,7 +203,7 @@ const Sort = () => {
     };
   });
 
-  const renderTimeSubLinks = (sort) => {
+  const renderTimeSubLinks = (sort: string): JSX.Element[] | null => {
     const { listType, target } = listingsFilter;
 
     const qs = queryString.parse(search);
@@ -194,11 +217,11 @@ const Sort = () => {
       return null;
     }
 
-    const links = [];
+    const links: JSX.Element[] = [];
     Object.entries(timeCats).forEach(([t, linkString]) => {
       const url = genLink(sort, t);
       const linkKey = `time${sort}${t}`;
-      const currentSortQs = qs.t || 'day';
+      const currentSortQs = (qs.t as string) || 'day';
       const active = () => listingsFilter.sort === sort && currentSortQs === t;
 
       const sortActive = active() ? 'sort-active' : '';
@@ -217,7 +240,11 @@ const Sort = () => {
     return links;
   };
 
-  const isActive = (listType, sort, sortName) => {
+  const isActive = (
+    listType: string,
+    sort: string | undefined,
+    sortName: string
+  ): boolean => {
     const qs = queryString.parse(search);
 
     let active = false;
@@ -239,9 +266,9 @@ const Sort = () => {
     return active;
   };
 
-  const renderLinks = () => {
+  const renderLinks = (): JSX.Element[] => {
     const { listType, target, sort } = listingsFilter;
-    let links2render = {};
+    let links2render: SortCategories = {};
 
     if (listType === 'r' && target === 'mine') {
       links2render = { ...catsFront };
@@ -257,9 +284,9 @@ const Sort = () => {
       links2render = { ...catsUsers };
     }
 
-    const links = [];
+    const links: JSX.Element[] = [];
 
-    Object.keys(links2render).forEach((key, index) => {
+    Object.keys(links2render).forEach((key) => {
       if (Object.prototype.hasOwnProperty.call(links2render, key)) {
         const sortName = links2render[key];
         const subLinks = renderTimeSubLinks(sortName);
@@ -294,9 +321,10 @@ const Sort = () => {
 
   const { listType, sort, target } = listingsFilter;
   if (target === 'friends' || listType === 'duplicates') {
-    return false;
+    return null;
   }
-  let currentSort;
+
+  let currentSort: string;
   switch (listType) {
     case 'r':
     case 'm':
@@ -304,7 +332,7 @@ const Sort = () => {
       break;
     case 's': {
       const searchParsed = queryString.parse(search);
-      currentSort = searchParsed.sort || 'relevance';
+      currentSort = (searchParsed.sort as string) || 'relevance';
       break;
     }
     case 'comments':
@@ -335,6 +363,6 @@ const Sort = () => {
       <div className="dropdown-menu dropdown-menu-end">{links}</div>
     </div>
   );
-};
+}
 
 export default Sort;

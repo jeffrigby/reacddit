@@ -2,16 +2,23 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../../common';
+import { AppDispatch, RootState } from '../../../types/redux';
 
-const DebugMode = () => {
-  const debug = useSelector((state) => state.siteSettings.debug);
-  const dispatch = useDispatch();
+interface DebugModeProps {
+  className?: string;
+}
+
+function DebugMode({ className = '' }: DebugModeProps) {
+  const debug = useSelector(
+    (state: RootState) => state.siteSettings.debug ?? false
+  );
+  const dispatch = useDispatch<AppDispatch>();
 
   const debugToggle = () => {
     dispatch(siteSettings({ debug: !debug }));
   };
 
-  const hotkeys = (event) => {
+  const hotkeys = (event: KeyboardEvent) => {
     if (hotkeyStatus()) {
       const pressedKey = event.key;
       try {
@@ -30,10 +37,10 @@ const DebugMode = () => {
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  });
+  }, []);
 
   return (
-    <div className="form-check">
+    <div className={`form-check ${className}`.trim()}>
       <label className="form-check-label" htmlFor="debugCheck">
         <input
           className="form-check-input"
@@ -46,6 +53,6 @@ const DebugMode = () => {
       </label>
     </div>
   );
-};
+}
 
 export default DebugMode;
