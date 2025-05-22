@@ -66,7 +66,7 @@
     "redux-immutable-state-invariant": "^2.1.0",
     "regenerator-runtime": "^0.14.0",
     "resolve-url-loader": "^5.0.0",
-    "tldts": "^6.0.1",
+    "tldts": "^7.0.1",
     "url-parse": "^1.4.7",
     "url-regex-safe": "^4.0.0",
     "web-vitals": "^4.0.0",
