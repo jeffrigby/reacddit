@@ -5,6 +5,7 @@ import type { To } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
+import type { JSX } from 'react/jsx-runtime';
 import type { RootState } from '@/types/redux';
 import type { ListingsFilter } from '@/types/listings';
 import { hotkeyStatus } from '../../common';
@@ -208,7 +209,7 @@ function Sort() {
       return null;
     }
 
-    const links = [];
+    const links: JSX.Element[] = [];
     Object.entries(timeCats).forEach(([t, linkString]) => {
       const url = genLink(sort, t);
       const linkKey = `time${sort}${t}`;
@@ -275,7 +276,7 @@ function Sort() {
       links2render = { ...catsUsers };
     }
 
-    const links = [];
+    const links: JSX.Element[] = [];
 
     Object.keys(links2render).forEach((key) => {
       if (Object.prototype.hasOwnProperty.call(links2render, key)) {

@@ -47,6 +47,7 @@ function ViewMode() {
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteSettingsView]);
 
   const button =

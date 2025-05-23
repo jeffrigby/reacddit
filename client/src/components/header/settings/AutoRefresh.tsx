@@ -1,18 +1,19 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../../common';
 
 function AutoRefresh() {
-  const stream = useSelector((state) => state.siteSettings.stream);
-  const dispatch = useDispatch();
+  const stream = useSelector((state: RootState) => state.siteSettings.stream);
+  const dispatch = useDispatch<AppDispatch>();
 
   const autoRefreshToggle = () => {
     window.scrollTo(0, 0);
     dispatch(siteSettings({ stream: !stream }));
   };
 
-  const hotkeys = (event) => {
+  const hotkeys = (event: KeyboardEvent) => {
     if (hotkeyStatus()) {
       const pressedKey = event.key;
       try {
@@ -30,7 +31,8 @@ function AutoRefresh() {
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="auto-refresh">
@@ -38,11 +40,11 @@ function AutoRefresh() {
         <div>
           <label className="form-check-label" htmlFor="autoRefreshCheck">
             <input
+              checked={stream}
               className="form-check-input"
-              defaultChecked={stream}
               id="autoRefreshCheck"
               type="checkbox"
-              onClick={autoRefreshToggle}
+              onChange={autoRefreshToggle}
             />
             Auto Refresh
           </label>

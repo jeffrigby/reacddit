@@ -37,17 +37,18 @@ function DebugMode({ className = '' }: DebugModeProps) {
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className={`form-check ${className}`.trim()}>
       <label className="form-check-label" htmlFor="debugCheck">
         <input
+          checked={debug}
           className="form-check-input"
-          defaultChecked={debug}
           id="debugCheck"
           type="checkbox"
-          onClick={debugToggle}
+          onChange={debugToggle}
         />
         Show Debug Info
       </label>

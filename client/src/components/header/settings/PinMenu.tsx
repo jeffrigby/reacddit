@@ -1,14 +1,15 @@
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 
 function PinMenu() {
-  const pinMenuSetting = useSelector((state) => state.siteSettings.pinMenu);
-  const dispatch = useDispatch();
+  const pinMenuSetting = useSelector(
+    (state: RootState) => state.siteSettings.pinMenu
+  );
+  const dispatch = useDispatch<AppDispatch>();
 
   const togglePinMenu = () => {
-    if (!pinMenuSetting === false) {
-      // This means pin was turned off
-      // @TODO move this into a component. It's confusing.
+    if (pinMenuSetting) {
       document.body.classList.remove('show-menu');
       document.body.classList.add('hide-menu');
     }

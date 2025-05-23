@@ -6,11 +6,7 @@ import CondensePrefs from './CondensePrefs';
 
 function Settings() {
   return (
-    <div
-      className="btn-group settings-menu header-button"
-      role="button"
-      tabIndex="0"
-    >
+    <div className="btn-group settings-menu header-button" tabIndex={0}>
       <button
         aria-expanded="false"
         aria-haspopup="true"
@@ -34,7 +30,5 @@ function Settings() {
     </div>
   );
 }
-
-Settings.propTypes = {};
 
 export default Settings;

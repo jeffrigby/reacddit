@@ -1,24 +1,23 @@
 import { useSelector } from 'react-redux';
+import type { RootState } from '@/types/redux';
 import { unregister } from '../../../serviceWorkerRegistration';
 
 /* global BUILDTIME */
 
-// I'm not sure how well this works.
 const reload = () => {
   if (caches) {
-    // Service worker cache should be cleared with caches.delete()
     caches.keys().then((names) => {
       names.forEach((name) => caches.delete(name));
     });
   }
   unregister();
   setTimeout(() => {
-    window.location.reload(true);
+    window.location.reload();
   }, 1000);
 };
 
 function ForceRefresh() {
-  const debug = useSelector((state) => state.siteSettings.debug);
+  const debug = useSelector((state: RootState) => state.siteSettings.debug);
 
   return (
     <div>
