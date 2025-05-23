@@ -21,7 +21,7 @@ import {
 } from '../posts/PostsFunctions';
 import { hotkeyStatus } from '../../common';
 
-const ListingsLogic = ({ saved = 0 }) => {
+function ListingsLogic({ saved = 0 }) {
   const location = useLocation();
   // Get Redux Props
   const status = useSelector((state) => listingStatus(state, location.key));
@@ -182,7 +182,7 @@ const ListingsLogic = ({ saved = 0 }) => {
   }, [forceDelayedUpdate, saved]);
 
   return null;
-};
+}
 
 ListingsLogic.propTypes = {
   saved: PropTypes.number,

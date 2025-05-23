@@ -29,7 +29,7 @@ EmbedErrorBoundary.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-const Social = ({ url, network }) => {
+function Social({ url, network }) {
   const renderEmbed = () => {
     switch (network) {
       case 'x':
@@ -44,7 +44,7 @@ const Social = ({ url, network }) => {
   };
 
   return <EmbedErrorBoundary>{renderEmbed()}</EmbedErrorBoundary>;
-};
+}
 
 Social.propTypes = {
   url: PropTypes.string.isRequired,

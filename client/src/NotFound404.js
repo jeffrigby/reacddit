@@ -1,4 +1,4 @@
-const NotFound404 = () => {
+function NotFound404() {
   return (
     <div className="m-2 d-flex">
       <div className="mt-2 alert alert-warning w-100" role="alert">
@@ -10,6 +10,6 @@ const NotFound404 = () => {
       </div>
     </div>
   );
-};
+}
 
 export default NotFound404;

@@ -3,8 +3,8 @@
  */
 import App from './App';
 
-const Root = () => {
+function Root() {
   return <App />;
-};
+}
 
 export default Root;

@@ -16,7 +16,7 @@ import { subredditsData } from '../../../redux/actions/subreddits';
  *
  * @returns {JSX.Element} - The rendered author information and actions.
  */
-const PostBylineAuthor = ({ author, flair = null, isSubmitter = false }) => {
+function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
   const dispatch = useDispatch();
   const subreddits = useSelector((state) => state.subreddits);
 
@@ -98,7 +98,7 @@ const PostBylineAuthor = ({ author, flair = null, isSubmitter = false }) => {
       {authorFlair}
     </>
   );
-};
+}
 
 PostBylineAuthor.propTypes = {
   author: PropTypes.string.isRequired,

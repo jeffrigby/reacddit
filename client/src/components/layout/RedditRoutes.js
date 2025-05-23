@@ -110,7 +110,7 @@ const filterValidations = (args, validations) =>
       {}
     );
 
-const RedditRoutes = () => {
+function RedditRoutes() {
   const generatedRoutes = [];
   routes.forEach((route) => {
     const { paths, overrides, validations } = route;
@@ -141,6 +141,6 @@ const RedditRoutes = () => {
       <Route element={<NotFound404 />} key="NotFound404" path="*" />
     </Routes>
   );
-};
+}
 
 export default RedditRoutes;

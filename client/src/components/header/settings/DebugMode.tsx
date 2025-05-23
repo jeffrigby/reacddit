@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../../common';
-import { AppDispatch, RootState } from '../../../types/redux';
 
 interface DebugModeProps {
   className?: string;

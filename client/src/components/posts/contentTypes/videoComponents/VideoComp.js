@@ -80,7 +80,7 @@ function getBuffers(videoRef) {
  * @returns {JSX.Element} - The video player component.
  * @constructor
  */
-const VideoComp = ({ link = '', content }) => {
+function VideoComp({ link = '', content }) {
   const postContext = useContext(PostsContextData);
   const { isLoaded } = postContext;
   const videoRef = useRef();
@@ -412,7 +412,7 @@ const VideoComp = ({ link = '', content }) => {
       )}
     </>
   );
-};
+}
 
 VideoComp.propTypes = {
   link: PropTypes.string,

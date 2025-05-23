@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
 
-const AutoPlay = () => {
+function AutoPlay() {
   const autoplay = useSelector((state) => state.siteSettings.autoplay);
   const dispatch = useDispatch();
 
@@ -25,6 +25,6 @@ const AutoPlay = () => {
       </div>
     </div>
   );
-};
+}
 
 export default AutoPlay;

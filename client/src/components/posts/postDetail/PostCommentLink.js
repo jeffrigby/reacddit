@@ -15,7 +15,7 @@ function abbr(value) {
   return newValue;
 }
 
-const PostCommentLink = ({ numComments, permalink }) => {
+function PostCommentLink({ numComments, permalink }) {
   // const commentCount = parseFloat(numComments).toLocaleString('en');
   const commentCount = abbr(parseFloat(numComments));
   return (
@@ -30,7 +30,7 @@ const PostCommentLink = ({ numComments, permalink }) => {
       <i className="far fa-comment" /> {commentCount}
     </Link>
   );
-};
+}
 
 PostCommentLink.propTypes = {
   numComments: PropTypes.number.isRequired,

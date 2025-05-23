@@ -10,7 +10,7 @@ import Post from '../postDetail/Post';
  * @param idxOffset {number} - The offset to use for the index of the post
  * @constructor
  */
-const PostsRender = ({ posts, listType, idxOffset = 0 }) => {
+function PostsRender({ posts, listType, idxOffset = 0 }) {
   return useMemo(() => {
     const links = new Set();
 
@@ -46,7 +46,7 @@ const PostsRender = ({ posts, listType, idxOffset = 0 }) => {
       );
     });
   }, [posts, listType, idxOffset]);
-};
+}
 
 PostsRender.propTypes = {
   idxOffset: PropTypes.number,

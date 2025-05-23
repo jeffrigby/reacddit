@@ -8,7 +8,7 @@ import CommentsRender from './CommentsRender';
 const arrayToObject = (arr, keyField) =>
   Object.assign({}, ...arr.map((item) => ({ [item.data[keyField]]: item })));
 
-const CommentsMore = ({ moreList, linkId }) => {
+function CommentsMore({ moreList, linkId }) {
   const { count, children } = moreList.data;
   const [replies, setReplies] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ const CommentsMore = ({ moreList, linkId }) => {
       </button>
     </div>
   );
-};
+}
 
 CommentsMore.propTypes = {
   linkId: PropTypes.string.isRequired,

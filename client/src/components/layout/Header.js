@@ -10,7 +10,7 @@ import '../../styles/header.scss';
 import PinMenu from '../header/settings/PinMenu';
 import ToggleTheme from '../header/ToggleTheme';
 
-const Header = () => {
+function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -99,7 +99,7 @@ const Header = () => {
       </div>
     </div>
   );
-};
+}
 
 Header.propTypes = {};
 

@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { keyEntryChildren } from '../../common';
 import CommentsRender from './CommentsRender';
 
-const CommentReplyList = ({ replies, linkId }) => {
+function CommentReplyList({ replies, linkId }) {
   const keyedReplies = keyEntryChildren(replies);
   return (
     <CommentsRender
@@ -11,7 +11,7 @@ const CommentReplyList = ({ replies, linkId }) => {
       posts={keyedReplies.data.children}
     />
   );
-};
+}
 
 CommentReplyList.propTypes = {
   linkId: PropTypes.string.isRequired,

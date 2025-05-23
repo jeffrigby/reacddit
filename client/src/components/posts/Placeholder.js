@@ -4,7 +4,7 @@ import { PostsContextData } from '../../contexts';
 import renderSelf from './embeds/domains/self';
 import Self from './contentTypes/Self';
 
-const Placeholder = () => {
+function Placeholder() {
   const postContext = useContext(PostsContextData);
   const { post } = postContext;
   const { data } = post;
@@ -111,7 +111,7 @@ const Placeholder = () => {
   }
 
   return <div className="content" />;
-};
+}
 
 Placeholder.propTypes = {};
 

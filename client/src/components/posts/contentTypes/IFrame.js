@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { PostsContextData } from '../../../contexts';
 
-const IFrame = ({
+function IFrame({
   content: {
     src,
     width = 16,
@@ -14,7 +14,7 @@ const IFrame = ({
     iframeStyle = {},
     onLoad = () => {},
   },
-}) => {
+}) {
   const postContext = useContext(PostsContextData);
   const { title } = postContext.post.data;
 
@@ -46,7 +46,7 @@ const IFrame = ({
       </div>
     </div>
   );
-};
+}
 
 IFrame.propTypes = {
   content: PropTypes.shape({

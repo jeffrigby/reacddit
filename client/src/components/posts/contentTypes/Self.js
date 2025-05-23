@@ -40,7 +40,7 @@ const cleanLinks = (html) => {
   return rawhtml;
 };
 
-const Self = ({ name, content }) => {
+function Self({ name, content }) {
   const postContext = useContext(PostsContextData);
   // const load = postContext.isLoaded;
 
@@ -146,7 +146,7 @@ const Self = ({ name, content }) => {
       )}
     </div>
   );
-};
+}
 
 Self.propTypes = {
   name: PropTypes.string.isRequired,

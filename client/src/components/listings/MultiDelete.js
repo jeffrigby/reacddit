@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
-const MultiDelete = ({ multi }) => {
+function MultiDelete({ multi }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -30,7 +30,7 @@ const MultiDelete = ({ multi }) => {
       <i className="fas fa-trash-alt" />
     </button>
   );
-};
+}
 
 MultiDelete.propTypes = {
   multi: PropTypes.object.isRequired,

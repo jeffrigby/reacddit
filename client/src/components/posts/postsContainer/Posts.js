@@ -6,7 +6,7 @@ import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
 import PostsParent from './PostsParent';
 
-const Posts = () => {
+function Posts() {
   const location = useLocation();
   const listType = useSelector((state) => state.listingsFilter.listType);
   const data = useSelector((state) => listingData(state, location.key));
@@ -32,6 +32,6 @@ const Posts = () => {
       <PostsFooter />
     </>
   );
-};
+}
 
 export default Posts;

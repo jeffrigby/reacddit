@@ -56,7 +56,7 @@ const getNewState = (dir, ups, likes) => {
   return newState;
 };
 
-const PostVote = () => {
+function PostVote() {
   const bearer = useSelector((state) => state.redditBearer);
 
   const postContext = useContext(PostsContextData);
@@ -142,6 +142,6 @@ const PostVote = () => {
       </button>
     </div>
   );
-};
+}
 
 export default memo(PostVote);

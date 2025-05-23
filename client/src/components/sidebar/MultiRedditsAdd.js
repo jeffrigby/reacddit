@@ -2,7 +2,7 @@ import { createRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import RedditAPI from '../../reddit/redditAPI';
 
-const MultiRedditsAdd = ({ setShowAdd, reloadMultis }) => {
+function MultiRedditsAdd({ setShowAdd, reloadMultis }) {
   const nameInput = createRef();
   const descriptionTextarea = createRef();
 
@@ -93,7 +93,7 @@ const MultiRedditsAdd = ({ setShowAdd, reloadMultis }) => {
       </div>
     </div>
   );
-};
+}
 
 MultiRedditsAdd.propTypes = {
   setShowAdd: PropTypes.func.isRequired,

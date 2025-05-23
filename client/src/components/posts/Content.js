@@ -13,7 +13,7 @@ import HTTPSError from './contentTypes/HTTPSError';
 import RedditGallery from './contentTypes/RedditGallery';
 import Social from './contentTypes/Social';
 
-const Content = ({ content = null }) => {
+function Content({ content = null }) {
   const postContext = useContext(PostsContextData);
   const { post, isLoaded } = postContext;
   const { data } = post;
@@ -75,7 +75,7 @@ const Content = ({ content = null }) => {
       <div className="content">{contentRendered}</div>
     </PostsContextContent.Provider>
   );
-};
+}
 
 Content.propTypes = {
   content: PropTypes.object,

@@ -1,7 +1,7 @@
 import { memo, useRef } from 'react';
 import PropTypes from 'prop-types';
 
-const VideoBufferBar = ({ videoRef, buffers, currentTime, duration }) => {
+function VideoBufferBar({ videoRef, buffers, currentTime, duration }) {
   const seek = (time) => {
     if (videoRef.current) {
       // eslint-disable-next-line no-param-reassign
@@ -55,7 +55,7 @@ const VideoBufferBar = ({ videoRef, buffers, currentTime, duration }) => {
       <div className="progress-bar" style={progressBarStyle} />
     </div>
   );
-};
+}
 
 VideoBufferBar.propTypes = {
   videoRef: PropTypes.object.isRequired,

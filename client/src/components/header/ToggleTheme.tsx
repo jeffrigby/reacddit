@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '../../redux/slices/siteSettingsSlice';
-import { AppDispatch, RootState } from '../../types/redux';
 
 type ThemeType = 'dark' | 'light';
 

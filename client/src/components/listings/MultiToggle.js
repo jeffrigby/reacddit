@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
-const MultiToggle = ({ srName }) => {
+function MultiToggle({ srName }) {
   const multiRef = createRef();
 
   const about = useSelector((state) => state.currentSubreddit);
@@ -105,7 +105,7 @@ const MultiToggle = ({ srName }) => {
       </div>
     </div>
   );
-};
+}
 
 MultiToggle.propTypes = {
   srName: PropTypes.string.isRequired,

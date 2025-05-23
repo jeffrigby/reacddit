@@ -8,7 +8,7 @@ import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
 import '../../styles/layout.scss';
 import { hotkeyStatus } from '../../common';
 
-const App = () => {
+function App() {
   const [error, setError] = useState(false);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -121,6 +121,6 @@ const App = () => {
       </StrictMode>
     </div>
   );
-};
+}
 
 export default memo(App);

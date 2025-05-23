@@ -50,7 +50,7 @@ function getStatusInfo(status, data) {
   }
 }
 
-const PostsLoadingStatus = () => {
+function PostsLoadingStatus() {
   const location = useLocation();
   const data = useSelector((state) => listingData(state, location.key));
   const status = useSelector((state) => listingStatus(state, location.key));
@@ -69,6 +69,6 @@ const PostsLoadingStatus = () => {
       <i className={icon} /> {message}
     </div>
   );
-};
+}
 
 export default memo(PostsLoadingStatus);

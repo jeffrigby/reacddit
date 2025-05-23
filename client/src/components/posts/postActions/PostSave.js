@@ -4,7 +4,7 @@ import { PostsContextActionable, PostsContextData } from '../../../contexts';
 import { hotkeyStatus } from '../../../common';
 import redditAPI from '../../../reddit/redditAPI';
 
-const PostSave = () => {
+function PostSave() {
   const bearer = useSelector((state) => state.redditBearer);
   const postContext = useContext(PostsContextData);
   const { post } = postContext;
@@ -73,6 +73,6 @@ const PostSave = () => {
       </button>
     </div>
   );
-};
+}
 
 export default memo(PostSave);

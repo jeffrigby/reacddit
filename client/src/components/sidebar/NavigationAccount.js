@@ -10,7 +10,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 
 const menuID = 'navAccount';
 
-const NavigationAccount = () => {
+function NavigationAccount() {
   const me = useSelector((state) => state.redditMe.me);
   const navigate = useNavigate();
 
@@ -141,6 +141,6 @@ const NavigationAccount = () => {
       <Tooltip html anchorId="nav-user-info" effect="solid" place="bottom" />
     </>
   );
-};
+}
 
 export default memo(NavigationAccount);

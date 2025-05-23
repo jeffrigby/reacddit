@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 
-const ListingsHeaderError = () => {
+function ListingsHeaderError() {
   const target = useSelector((state) => state.listingsFilter?.target);
 
   return (
@@ -10,6 +10,6 @@ const ListingsHeaderError = () => {
       </div>
     </div>
   );
-};
+}
 
 export default ListingsHeaderError;

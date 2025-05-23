@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 
-const PostExpandContract = ({ expand, toggleView, kind }) => {
+function PostExpandContract({ expand, toggleView, kind }) {
   let viewIcon;
   if (kind === 't1') {
     viewIcon = expand
@@ -26,7 +26,7 @@ const PostExpandContract = ({ expand, toggleView, kind }) => {
       <i className={viewIcon} />
     </button>
   );
-};
+}
 
 PostExpandContract.propTypes = {
   expand: PropTypes.bool.isRequired,

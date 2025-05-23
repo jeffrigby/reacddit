@@ -5,7 +5,7 @@ import 'react18-json-view/src/style.css';
 import 'react18-json-view/src/dark.css';
 import { PostsContextData } from '../../../contexts';
 
-const PostDebug = ({ renderedContent = null }) => {
+function PostDebug({ renderedContent = null }) {
   const postContext = useContext(PostsContextData);
   const { post } = postContext;
   const { data } = post;
@@ -36,7 +36,7 @@ const PostDebug = ({ renderedContent = null }) => {
       </Suspense>
     </div>
   );
-};
+}
 
 PostDebug.propTypes = {
   renderedContent: PropTypes.object,

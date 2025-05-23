@@ -1,20 +1,9 @@
 /**
  * Redux type definitions for the Reacddit client
  */
-import { ThunkDispatch } from '@reduxjs/toolkit';
-import { AnyAction } from 'redux';
-
-/**
- * Common interfaces
- */
-export interface ListingsFilter {
-  listType: string;
-  target: string;
-  userType?: string;
-  sort?: string;
-  multi?: boolean;
-  user?: string;
-}
+import type { ThunkDispatch } from '@reduxjs/toolkit';
+import type { AnyAction } from 'redux';
+import type { ListingsFilter } from './listings';
 
 /**
  * Root state type - this will be expanded as we convert more files to TypeScript

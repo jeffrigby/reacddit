@@ -1,14 +1,14 @@
 import { memo } from 'react';
 import PropTypes from 'prop-types';
 
-const VideoAudioButton = ({
+function VideoAudioButton({
   hasAudio,
   audioWarning,
   muted,
   link,
   btnClasses,
   videoRef,
-}) => {
+}) {
   /**
    * Toggle sound on and off
    */
@@ -46,7 +46,7 @@ const VideoAudioButton = ({
       )}
     </span>
   ) : null;
-};
+}
 
 VideoAudioButton.propTypes = {
   audioWarning: PropTypes.bool,

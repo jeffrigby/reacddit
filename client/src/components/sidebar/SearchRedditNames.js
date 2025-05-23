@@ -47,7 +47,7 @@ function useGetSubredditNames(filterText, showNSFW) {
  * @returns {JSX.Element|null}
  * @constructor
  */
-const SearchRedditNames = ({ filterText = '' }) => {
+function SearchRedditNames({ filterText = '' }) {
   const over18 = useSelector((state) => state.redditMe.me.over_18);
   const subreddits = useSelector((state) =>
     state.subreddits.subreddits !== undefined
@@ -134,7 +134,7 @@ const SearchRedditNames = ({ filterText = '' }) => {
       {nsfwButton}
     </div>
   );
-};
+}
 
 SearchRedditNames.propTypes = {
   filterText: PropTypes.string,

@@ -215,7 +215,7 @@ const getContent = async (keys, entry) => {
  * @returns {Promise<{renderFunction: string, src: (*), type: string}|(*&{type: string})|{src}|*|{allow: *, renderFunction: string, src: *, type: string}|{}|{renderFunction: string, sources: ({src, type: string}[]|*[]), thumb: *, width: never, id: never, type: string, height: never}|{renderFunction: string, src: *, type: string}|{renderFunction: string, media: [], type: string}|{[p: string]: *}|null>}
  * @constructor
  */
-const RenderContent = async (entry, kind) => {
+async function RenderContent(entry, kind) {
   try {
     if (kind === 't1') {
       // const getInline = inlineLinks(entry);
@@ -250,6 +250,6 @@ const RenderContent = async (entry, kind) => {
     console.error(e);
   }
   return null;
-};
+}
 
 export default RenderContent;

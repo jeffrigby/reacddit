@@ -1,8 +1,9 @@
-import { useEffect, MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '../../redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '../../common';
-import { AppDispatch, RootState } from '../../types/redux';
 
 type ViewModeType = 'expanded' | 'condensed';
 
@@ -15,19 +16,18 @@ function ViewMode() {
 
   const btnClasses = 'btn btn-secondary btn-sm';
 
-  const toggleView = async (view: ViewModeType): Promise<void> => {
+  const toggleView = async (view: ViewModeType) => {
     window.scrollTo(0, 0);
     await dispatch(siteSettings({ view }));
   };
 
   const handleButtonClick =
-    (view: ViewModeType) =>
-    (e: MouseEvent<HTMLButtonElement>): void => {
+    (view: ViewModeType) => (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       toggleView(view);
     };
 
-  const hotkeys = (event: KeyboardEvent): void => {
+  const hotkeys = (event: KeyboardEvent) => {
     if (hotkeyStatus()) {
       const pressedKey = event.key;
       try {
@@ -47,7 +47,7 @@ function ViewMode() {
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  }, []);
+  }, [siteSettingsView]);
 
   const button =
     siteSettingsView === 'expanded' ? (

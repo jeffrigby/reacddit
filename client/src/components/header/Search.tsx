@@ -3,19 +3,13 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
 import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
+import type { RootState } from '@/types/redux';
+import type { ListingsFilter } from '@/types/listings';
 import { hotkeyStatus } from '../../common';
-import { RootState } from '../../types/redux';
-
-interface ListingsFilter {
-  listType: string;
-  target: string;
-  user: string;
-  multi: boolean;
-}
 
 function Search() {
-  const [focused, setFocused] = useState<boolean>(false);
-  const [search, setSearch] = useState<string>('');
+  const [focused, setFocused] = useState(false);
+  const [search, setSearch] = useState('');
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,7 +23,7 @@ function Search() {
 
   useEffect(() => {
     const qs = queryString.parse(location.search);
-    const query = qs.q || '';
+    const query = qs.q ?? '';
     setSearch(query as string);
   }, [location.search]);
 
@@ -114,14 +108,14 @@ function Search() {
     return qs;
   };
 
-  const getMainSearchURL = (q: string): string => {
+  const getMainSearchURL = (q: string) => {
     const currentSearch = getCurrentSearchSort();
     const qs = { ...currentSearch, q };
     const qsString = queryString.stringify(qs);
     return `/search?${qsString}`;
   };
 
-  const getTargetUrl = (): string => {
+  const getTargetUrl = () => {
     const { listType, target, user, multi } = listingsFilter;
     if (
       (listType === 'r' || (listType === 's' && !multi)) &&
@@ -139,8 +133,8 @@ function Search() {
     return '';
   };
 
-  const searchTarget = (): void => {
-    if (!searchInput.current || !searchInput.current.value) {
+  const searchTarget = () => {
+    if (!searchInput.current?.value) {
       return;
     }
 
@@ -155,8 +149,8 @@ function Search() {
     }
   };
 
-  const searchEverywhere = (): void => {
-    if (!searchInput.current || !searchInput.current.value) {
+  const searchEverywhere = () => {
+    if (!searchInput.current?.value) {
       return;
     }
 
@@ -169,7 +163,7 @@ function Search() {
     }
   };
 
-  const processSearch = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+  const processSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const q = e.currentTarget.value;
     if (!q) {
       return;

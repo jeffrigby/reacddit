@@ -22,7 +22,7 @@ import '../../styles/listings.scss';
 import Posts from '../posts/postsContainer/Posts';
 import { ListingsContextLastExpanded } from '../../contexts';
 
-const Listings = ({ match }) => {
+function Listings({ match }) {
   const location = useLocation();
   const dispatch = useDispatch();
   const [lastExpanded, setLastExpanded] = useState('');
@@ -199,7 +199,7 @@ const Listings = ({ match }) => {
       <PostsDebug />
     </ListingsContextLastExpanded.Provider>
   );
-};
+}
 
 Listings.propTypes = {
   match: PropTypes.object.isRequired,

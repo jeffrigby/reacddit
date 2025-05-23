@@ -3,7 +3,7 @@ import Post from '../posts/postDetail/Post';
 // eslint-disable-next-line import/no-cycle
 import CommentsMore from './CommentsMore';
 
-const CommentsRender = ({ posts, listType, linkId }) => {
+function CommentsRender({ posts, listType, linkId }) {
   const renderComment = (comment, idx) => {
     if (comment.kind === 'more') {
       return (
@@ -33,7 +33,7 @@ const CommentsRender = ({ posts, listType, linkId }) => {
   }
 
   return comments;
-};
+}
 
 CommentsRender.propTypes = {
   linkId: PropTypes.string.isRequired,

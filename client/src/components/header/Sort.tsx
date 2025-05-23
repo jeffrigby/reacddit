@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import queryString from 'query-string';
 import _isEmpty from 'lodash/isEmpty';
-import { NavLink, To } from 'react-router-dom';
+import type { To } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
+import type { RootState } from '@/types/redux';
+import type { ListingsFilter } from '@/types/listings';
 import { hotkeyStatus } from '../../common';
-import { RootState } from '../../types/redux';
 
 interface SortCategories {
   [key: string]: string;
@@ -13,14 +15,6 @@ interface SortCategories {
 
 interface IconClasses {
   [key: string]: string;
-}
-
-interface ListingsFilter {
-  listType: string;
-  target: string;
-  userType?: string;
-  sort?: string;
-  multi?: boolean;
 }
 
 const catsSearch: SortCategories = {
@@ -102,9 +96,7 @@ function Sort() {
   const navigate = useNavigate();
   const { search } = location;
 
-  const getIcon = (sort: string): JSX.Element => (
-    <i className={iconClasses[sort]} />
-  );
+  const getIcon = (sort: string) => <i className={iconClasses[sort]} />;
 
   const genLink = (sort: string, t?: string): To => {
     const { listType, target, userType } = listingsFilter;
@@ -114,10 +106,9 @@ function Sort() {
       qs.t = t;
     }
 
-    const to: To = {
+    const to: { pathname: string; search: string } = {
       pathname: '',
       search: '',
-      state: { showBack: true },
     };
 
     switch (listType) {
@@ -149,7 +140,7 @@ function Sort() {
     return to;
   };
 
-  const handleSortHotkey = (event: KeyboardEvent): void => {
+  const handleSortHotkey = (event: KeyboardEvent) => {
     const { target, listType } = listingsFilter;
     if (hotkeyStatus() && target !== 'friends') {
       const pressedKey = event.key;
@@ -203,7 +194,7 @@ function Sort() {
     };
   });
 
-  const renderTimeSubLinks = (sort: string): JSX.Element[] | null => {
+  const renderTimeSubLinks = (sort: string) => {
     const { listType, target } = listingsFilter;
 
     const qs = queryString.parse(search);
@@ -217,7 +208,7 @@ function Sort() {
       return null;
     }
 
-    const links: JSX.Element[] = [];
+    const links = [];
     Object.entries(timeCats).forEach(([t, linkString]) => {
       const url = genLink(sort, t);
       const linkKey = `time${sort}${t}`;
@@ -244,7 +235,7 @@ function Sort() {
     listType: string,
     sort: string | undefined,
     sortName: string
-  ): boolean => {
+  ) => {
     const qs = queryString.parse(search);
 
     let active = false;
@@ -266,7 +257,7 @@ function Sort() {
     return active;
   };
 
-  const renderLinks = (): JSX.Element[] => {
+  const renderLinks = () => {
     const { listType, target, sort } = listingsFilter;
     let links2render: SortCategories = {};
 
@@ -284,7 +275,7 @@ function Sort() {
       links2render = { ...catsUsers };
     }
 
-    const links: JSX.Element[] = [];
+    const links = [];
 
     Object.keys(links2render).forEach((key) => {
       if (Object.prototype.hasOwnProperty.call(links2render, key)) {
@@ -328,18 +319,18 @@ function Sort() {
   switch (listType) {
     case 'r':
     case 'm':
-      currentSort = sort || 'hot';
+      currentSort = sort ?? 'hot';
       break;
     case 's': {
       const searchParsed = queryString.parse(search);
-      currentSort = (searchParsed.sort as string) || 'relevance';
+      currentSort = (searchParsed.sort as string) ?? 'relevance';
       break;
     }
     case 'comments':
-      currentSort = sort || 'best';
+      currentSort = sort ?? 'best';
       break;
     case 'u':
-      currentSort = sort || 'new';
+      currentSort = sort ?? 'new';
       break;
     default:
       currentSort = 'hot';

@@ -17,7 +17,7 @@ const getLastUpdated = (lastUpdated, subreddit) => {
   return lastUpdated[subreddit.name] ? lastUpdated[subreddit.name].lastPost : 0;
 };
 
-const NavigationItem = ({ item, trigger }) => {
+function NavigationItem({ item, trigger }) {
   const sort = useSelector((state) => state.listingsFilter.sort);
   const me = useSelector((state) => state.redditMe.me);
   const lastUpdated = useSelector((state) =>
@@ -80,7 +80,7 @@ const NavigationItem = ({ item, trigger }) => {
       </div>
     </li>
   );
-};
+}
 
 NavigationItem.propTypes = {
   item: PropTypes.object.isRequired,
