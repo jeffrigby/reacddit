@@ -3,11 +3,14 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import cookies from 'js-cookie';
+import queryString from 'query-string';
 import {
   type MeResponse,
   type TokenData,
   type TokenApiResponse,
   type TokenStorageResult,
+  type FavoriteResponse,
+  type FavoriteBodyParams,
 } from '@/types/redditApi';
 
 // Utility function to clean null/empty values from params
@@ -152,5 +155,37 @@ redditAPI.interceptors.request.use(
 export async function me(): Promise<MeResponse> {
   // Cache buster is to prevent Firefox from caching this request
   const response = await redditAPI.get(`/api/v1/me?cb=${Date.now()}`);
+  return response.data;
+}
+
+/**
+ * Add or remove a subreddit from favorites.
+ * @param makeFavorite - true to favorite, false to unfavorite
+ * @param srName - the subreddit name
+ */
+export async function favorite(
+  makeFavorite: boolean,
+  srName: string
+): Promise<FavoriteResponse> {
+  const data: FavoriteBodyParams = {
+    make_favorite: makeFavorite.toString(),
+    sr_name: srName,
+  };
+
+  const response = await redditAPI.post(
+    '/api/favorite',
+    queryString.stringify(data),
+    {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    }
+  );
+
+  // If the response is not 200, throw an error
+  if (response.status !== 200) {
+    throw new Error(
+      `Failed to ${makeFavorite ? 'favorite' : 'unfavorite'} subreddit: ${srName}`
+    );
+  }
+
   return response.data;
 }

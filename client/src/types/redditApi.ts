@@ -1038,7 +1038,6 @@ export interface SearchSubredditsResponse {
 export interface FavoriteBodyParams {
   make_favorite: boolean | string;
   sr_name: string;
-  api_type: 'json';
 }
 export type FavoriteResponse = ApiResponse;
 
