@@ -1,4 +1,5 @@
 import RedditAPI from '../../reddit/redditAPI';
+import { getLoginUrl, getToken, me } from '../../reddit/redditApiTs';
 
 export function redditMultiReddits(multiReddits) {
   return {
@@ -25,13 +26,13 @@ export function redditGetBearer() {
   return async (dispatch, getState) => {
     try {
       const currentState = getState();
-      const { token, cookieTokenParsed } = await RedditAPI.getToken(false);
+      const { token, cookieTokenParsed } = await getToken(false);
       const { auth } = cookieTokenParsed;
 
       // const status =
       //   bearer === null || bearer.substr(0, 1) === '-' ? 'anon' : 'auth';
 
-      const loginURL = RedditAPI.getLoginUrl();
+      const loginURL = getLoginUrl();
 
       const result = {
         bearer: token,
@@ -80,10 +81,10 @@ export function redditFetchMe(reset) {
         }
       }
 
-      const me = await RedditAPI.me();
+      const meResp = await me();
       const lastUpdated = Date.now();
       const result = {
-        me,
+        me: meResp,
         status: 'loaded',
         lastUpdated,
         id: currentState.redditBearer.bearer,
