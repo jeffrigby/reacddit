@@ -1,18 +1,32 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import { Link, useParams } from 'react-router-dom';
+import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
 import redditAPI from '../../reddit/redditAPI';
-// eslint-disable-next-line import/no-cycle
 import CommentsRender from './CommentsRender';
 
-const arrayToObject = (arr, keyField) =>
+const arrayToObject = <T extends { data: Record<string, unknown> }>(
+  arr: T[],
+  keyField: string
+): Record<string, T> =>
   Object.assign({}, ...arr.map((item) => ({ [item.data[keyField]]: item })));
 
-function CommentsMore({ moreList, linkId }) {
+interface CommentsMoreProps {
+  linkId: string;
+  moreList: Thing<MoreChildrenData>;
+}
+
+function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
   const { count, children } = moreList.data;
-  const [replies, setReplies] = useState(null);
+  const [replies, setReplies] = useState<Record<
+    string,
+    Thing<CommentData> | Thing<MoreChildrenData>
+  > | null>(null);
   const [loading, setLoading] = useState(false);
-  const { target, postName, postTitle } = useParams();
+  const { target, postName, postTitle } = useParams<{
+    target: string;
+    postName: string;
+    postTitle: string;
+  }>();
 
   const getMoreComments = async () => {
     setLoading(true);
@@ -48,8 +62,6 @@ function CommentsMore({ moreList, linkId }) {
     return <CommentsRender linkId={linkId} listType="reply" posts={replies} />;
   }
 
-  // console.log(moreList.data.id, moreList);
-
   return (
     <div className="comments-more ps-2 mt-2">
       <button
@@ -67,10 +79,5 @@ function CommentsMore({ moreList, linkId }) {
     </div>
   );
 }
-
-CommentsMore.propTypes = {
-  linkId: PropTypes.string.isRequired,
-  moreList: PropTypes.object.isRequired,
-};
 
 export default CommentsMore;
