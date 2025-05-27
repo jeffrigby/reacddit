@@ -122,6 +122,10 @@ function Sort() {
           : `/me/m/${target}/${sort}`;
         break;
       case 's':
+        qs.sort = sort;
+        to.pathname =
+          target && target !== 'mine' ? `/r/${target}/search` : '/search';
+        break;
       case 'comments':
       case 'u':
         qs.sort = sort;

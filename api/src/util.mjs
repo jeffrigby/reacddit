@@ -102,7 +102,7 @@ export const decryptToken = (encryptedToken) => {
   const decipher = createDecipheriv(
     ENCRYPTION_ALGORITHM,
     Buffer.from(SALT),
-    iv
+    iv,
   );
   let decrypted = decipher.update(encryptedText);
   decrypted = Buffer.concat([decrypted, decipher.final()]);
