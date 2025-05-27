@@ -185,7 +185,9 @@ describe('Header Components Integration', () => {
       ).toBeInTheDocument();
 
       // Sort should show current sort in button
-      expect(screen.getByRole('button', { name: /sort/i })).toHaveTextContent('top');
+      expect(screen.getByRole('button', { name: /sort/i })).toHaveTextContent(
+        'top'
+      );
     });
 
     it('handles friends listings correctly', () => {
@@ -201,7 +203,9 @@ describe('Header Components Integration', () => {
       });
 
       // Search should show friends placeholder
-      expect(screen.getByPlaceholderText('search in /r/friends')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('search in /r/friends')
+      ).toBeInTheDocument();
 
       // Sort should not render for friends
       expect(
@@ -422,7 +426,7 @@ describe('Header Components Integration', () => {
           name: /load new entries/i,
         });
         expect(reloadButton).toBeDisabled();
-        
+
         // Clean up for next iteration
         unmount();
       });
