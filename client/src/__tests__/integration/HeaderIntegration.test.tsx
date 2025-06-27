@@ -1,8 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
-import { renderWithProviders } from '@/test/utils';
+import { renderWithProviders, mockWindowScrollTo } from '@/test/utils';
+import {
+  mockNavigate,
+  mockUseLocation,
+  mockQueryString,
+  mockHotkeyStatus,
+  mockListingsFetchRedditNew,
+} from '@/test/globalMocks';
 
 // Import the components we're testing together
 import Search from '@/components/header/Search';
@@ -11,75 +18,8 @@ import ViewMode from '@/components/header/ViewMode';
 import ToggleTheme from '@/components/header/ToggleTheme';
 import Reload from '@/components/header/Reload';
 
-// Mock React Router
-const mockNavigate = vi.fn();
-const mockUseLocation = vi.fn();
-
-vi.mock('react-router', () => ({
-  useNavigate: () => mockNavigate,
-  useLocation: () => mockUseLocation(),
-}));
-
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router-dom')>();
-  return {
-    ...actual,
-    NavLink: ({
-      children,
-      to,
-      className,
-    }: {
-      children: React.ReactNode;
-      to: string | { pathname: string; search: string };
-      className?: string;
-    }) => (
-      <a
-        className={className}
-        href={typeof to === 'string' ? to : to.pathname + to.search}
-      >
-        {children}
-      </a>
-    ),
-  };
-});
-
-// Mock external dependencies
-vi.mock('react-device-detect', () => ({
-  isMobile: false,
-}));
-
-vi.mock('@/common', () => ({
-  hotkeyStatus: vi.fn(() => true),
-}));
-
-vi.mock('query-string', () => ({
-  default: {
-    parse: vi.fn(() => ({})),
-    stringify: vi.fn((obj: Record<string, string>) =>
-      Object.entries(obj)
-        .map(([k, v]) => `${k}=${v}`)
-        .join('&')
-    ),
-  },
-  parse: vi.fn(() => ({})),
-  stringify: vi.fn((obj: Record<string, string>) =>
-    Object.entries(obj)
-      .map(([k, v]) => `${k}=${v}`)
-      .join('&')
-  ),
-}));
-
-// Mock Redux actions
-const mockListingsFetchRedditNew = vi.fn();
-vi.mock('@/redux/actions/listings', () => ({
-  listingsFetchRedditNew: () => mockListingsFetchRedditNew,
-}));
-
-// Mock window.scrollTo
-Object.defineProperty(window, 'scrollTo', {
-  value: vi.fn(),
-  writable: true,
-});
+// Set up window.scrollTo mock
+const scrollToMock = mockWindowScrollTo();
 
 // Component that renders multiple header components together
 function HeaderComponents() {
@@ -98,9 +38,8 @@ describe('Header Components Integration', () => {
   const user = userEvent.setup();
 
   beforeEach(() => {
-    vi.clearAllMocks();
-
-    // Default location mock
+    // Global mocks are automatically cleared
+    // Set up default behaviors
     mockUseLocation.mockReturnValue({
       search: '',
       pathname: '/r/reactjs',
@@ -108,6 +47,14 @@ describe('Header Components Integration', () => {
       key: 'test-key',
       hash: '',
     });
+    
+    mockHotkeyStatus.mockReturnValue(true);
+    mockQueryString.parse.mockReturnValue({});
+    mockQueryString.stringify.mockImplementation((obj: Record<string, string>) =>
+      Object.entries(obj)
+        .map(([k, v]) => `${k}=${v}`)
+        .join('&')
+    );
   });
 
   const renderHeaderComponents = (preloadedState: Partial<RootState> = {}) => {
@@ -361,7 +308,7 @@ describe('Header Components Integration', () => {
       });
       await user.click(viewModeButton);
 
-      expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+      expect(scrollToMock).toHaveBeenCalledWith(0, 0);
 
       // User reloads content
       const reloadButton = screen.getByRole('button', {
@@ -369,7 +316,7 @@ describe('Header Components Integration', () => {
       });
       await user.click(reloadButton);
 
-      expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+      expect(scrollToMock).toHaveBeenCalledWith(0, 0);
       expect(mockListingsFetchRedditNew).toHaveBeenCalled();
     });
 
@@ -384,7 +331,7 @@ describe('Header Components Integration', () => {
       });
       document.dispatchEvent(viewModeEvent);
 
-      expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+      expect(scrollToMock).toHaveBeenCalledWith(0, 0);
     });
   });
 

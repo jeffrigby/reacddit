@@ -9,19 +9,11 @@ import {
   createHotkeyEvent,
   simulateRapidClicks,
 } from '@/test/utils';
+import { mockHotkeyStatus } from '@/test/globalMocks';
 import AutoRefresh from './AutoRefresh';
 
 // Create a spy to track dispatched actions
 const dispatchSpy = vi.fn();
-
-// Mock hotkeyStatus
-const mocks = vi.hoisted(() => ({
-  hotkeyStatus: vi.fn(),
-}));
-
-vi.mock('@/common', () => ({
-  hotkeyStatus: mocks.hotkeyStatus,
-}));
 
 describe('AutoRefresh', () => {
   const user = userEvent.setup();
@@ -52,10 +44,10 @@ describe('AutoRefresh', () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Global mocks are automatically cleared
     dispatchSpy.mockClear();
     domMocks = mockDOMMethods();
-    mocks.hotkeyStatus.mockReturnValue(true);
+    mockHotkeyStatus.mockReturnValue(true);
   });
 
   afterEach(() => {
@@ -177,7 +169,7 @@ describe('AutoRefresh', () => {
   describe('Keyboard Shortcuts', () => {
     it('toggles auto refresh when ">" key is pressed and hotkeys are active', () => {
       renderAutoRefresh(false);
-      mocks.hotkeyStatus.mockReturnValue(true);
+      mockHotkeyStatus.mockReturnValue(true);
 
       const keyboardEvent = createHotkeyEvent('>');
       document.dispatchEvent(keyboardEvent);
@@ -193,7 +185,7 @@ describe('AutoRefresh', () => {
 
     it('does not toggle when hotkeys are disabled', () => {
       renderAutoRefresh(false);
-      mocks.hotkeyStatus.mockReturnValue(false);
+      mockHotkeyStatus.mockReturnValue(false);
 
       const keyboardEvent = createHotkeyEvent('>');
       document.dispatchEvent(keyboardEvent);
@@ -204,7 +196,7 @@ describe('AutoRefresh', () => {
 
     it('handles errors in hotkey processing gracefully', () => {
       renderAutoRefresh(false);
-      mocks.hotkeyStatus.mockReturnValue(true);
+      mockHotkeyStatus.mockReturnValue(true);
       dispatchSpy.mockImplementation(() => {
         throw new Error('Redux error');
       });
@@ -224,7 +216,7 @@ describe('AutoRefresh', () => {
 
     it('ignores other key presses', () => {
       renderAutoRefresh(false);
-      mocks.hotkeyStatus.mockReturnValue(true);
+      mockHotkeyStatus.mockReturnValue(true);
 
       const keyboardEvent = createHotkeyEvent('a');
       document.dispatchEvent(keyboardEvent);
@@ -258,7 +250,7 @@ describe('AutoRefresh', () => {
 
     it('handles multiple key events correctly', () => {
       renderAutoRefresh(false);
-      mocks.hotkeyStatus.mockReturnValue(true);
+      mockHotkeyStatus.mockReturnValue(true);
 
       const event1 = createHotkeyEvent('>');
       const event2 = createHotkeyEvent('>');
@@ -391,7 +383,7 @@ describe('AutoRefresh', () => {
 
     it('continues to work after hotkey errors', () => {
       renderAutoRefresh(false);
-      mocks.hotkeyStatus.mockReturnValue(true);
+      mockHotkeyStatus.mockReturnValue(true);
 
       // First call throws error
       dispatchSpy.mockImplementationOnce(() => {

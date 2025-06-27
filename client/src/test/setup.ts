@@ -1,5 +1,7 @@
 // Add DOM matchers for better testing
 import { expect, vi } from 'vitest';
+// Import global mocks
+import './globalMocks.tsx';
 
 declare module 'vitest' {
   interface Assertion<T = any> {

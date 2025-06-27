@@ -1,33 +1,48 @@
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import queryString from 'query-string';
 import _trim from 'lodash/trim';
 import _trimEnd from 'lodash/trimEnd';
 import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
+import type { RootState } from '@/types/redux';
+import type { SubredditData } from '@/types/redditApi';
 import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
 
-const getLastUpdated = (lastUpdated, subreddit) => {
+interface NavigationItemProps {
+  item: SubredditData;
+  trigger: boolean;
+}
+
+interface LastUpdatedState {
+  [key: string]: {
+    lastPost: number;
+  };
+}
+
+function getLastUpdated(
+  lastUpdated: LastUpdatedState,
+  subreddit: SubredditData
+): number {
   if (subreddit.name === undefined) {
     return 0;
   }
 
   return lastUpdated[subreddit.name] ? lastUpdated[subreddit.name].lastPost : 0;
-};
+}
 
-function NavigationItem({ item, trigger }) {
-  const sort = useSelector((state) => state.listingsFilter.sort);
-  const me = useSelector((state) => state.redditMe.me);
-  const lastUpdated = useSelector((state) =>
+function NavigationItem({ item, trigger }: NavigationItemProps) {
+  const sort = useSelector((state: RootState) => state.listingsFilter.sort);
+  const me = useSelector((state: RootState) => state.redditMe.me);
+  const lastUpdated = useSelector((state: RootState) =>
     getLastUpdated(state.lastUpdated, item)
   );
   const location = useLocation();
 
   const query = queryString.parse(location.search);
   const { t } = query;
-  let currentSort = sort || '';
+  let currentSort = sort ?? '';
   switch (currentSort) {
     case 'top':
     case 'controversial':
@@ -81,10 +96,5 @@ function NavigationItem({ item, trigger }) {
     </li>
   );
 }
-
-NavigationItem.propTypes = {
-  item: PropTypes.object.isRequired,
-  trigger: PropTypes.bool.isRequired,
-};
 
 export default NavigationItem;

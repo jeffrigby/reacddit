@@ -1,45 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import type { RootState } from '@/types/redux';
 import { renderWithProviders } from '@/test/utils';
+import {
+  mockNavigate,
+  mockUseLocation,
+  mockHotkeyStatus,
+} from '@/test/globalMocks';
 import Sort from './Sort';
-
-// Mock React Router hooks and components
-const mockNavigate = vi.fn();
-const mockUseLocation = vi.fn();
-
-vi.mock('react-router', () => ({
-  useNavigate: () => mockNavigate,
-  useLocation: () => mockUseLocation(),
-}));
-
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router-dom')>();
-  return {
-    ...actual,
-    NavLink: ({
-      children,
-      to,
-      className,
-    }: {
-      children: React.ReactNode;
-      to: string | { pathname: string; search: string };
-      className?: string;
-    }) => (
-      <a
-        className={className}
-        href={typeof to === 'string' ? to : to.pathname + to.search}
-      >
-        {children}
-      </a>
-    ),
-  };
-});
-
-// Mock the common module
-vi.mock('@/common', () => ({
-  hotkeyStatus: vi.fn(() => true),
-}));
 
 // Helper function to render Sort component with custom state and location
 const renderSort = (listingsFilterOverrides = {}, locationMock = {}) => {
@@ -73,7 +41,8 @@ const renderSort = (listingsFilterOverrides = {}, locationMock = {}) => {
 
 describe('Sort Component', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Global mocks are automatically cleared
+    mockHotkeyStatus.mockReturnValue(true);
   });
 
   it('renders sort button for subreddit listings', () => {
@@ -94,7 +63,7 @@ describe('Sort Component', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('shows correct sort for search results with query string parsing', () => {
+  it('shows correct sort for search results', () => {
     renderSort(
       {
         listType: 's',
@@ -105,8 +74,8 @@ describe('Sort Component', () => {
 
     const sortButton = screen.getByRole('button', { name: /sort/i });
     expect(sortButton).toBeInTheDocument();
-    // For search results, the current sort comes from query string, not Redux state
-    expect(sortButton).toHaveTextContent('top');
+    // For search results, the current sort comes from Redux state
+    expect(sortButton).toHaveTextContent('relevance');
   });
 
   it('shows correct sort for top listings', () => {

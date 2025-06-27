@@ -7,46 +7,11 @@ import {
   mockWindowScrollTo,
   createKeyboardEvent,
 } from '@/test/utils';
+import {
+  mockHotkeyStatus,
+  mockSiteSettings,
+} from '@/test/globalMocks';
 import ViewMode from './ViewMode';
-
-// Mock the common module
-const mockHotkeyStatus = vi.fn();
-vi.mock('@/common', () => ({
-  hotkeyStatus: () => mockHotkeyStatus(),
-}));
-
-// Mock Redux action
-const mockSiteSettings = vi.fn();
-vi.mock('@/redux/slices/siteSettingsSlice', () => ({
-  siteSettings: (payload: { view: 'expanded' | 'condensed' }) => {
-    mockSiteSettings(payload);
-    return { type: 'siteSettings/setSiteSettings', payload };
-  },
-}));
-
-// Mock react-router-dom
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router-dom')>();
-  return {
-    ...actual,
-    NavLink: ({
-      children,
-      to,
-      className,
-    }: {
-      children: React.ReactNode;
-      to: string | { pathname: string; search: string };
-      className?: string;
-    }) => (
-      <a
-        className={className}
-        href={typeof to === 'string' ? to : to.pathname + to.search}
-      >
-        {children}
-      </a>
-    ),
-  };
-});
 
 // Helper function to render ViewMode component with custom state
 const renderViewMode = (
@@ -71,7 +36,7 @@ describe('ViewMode Component', () => {
   let mockScrollTo: ReturnType<typeof mockWindowScrollTo>;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Global mocks are automatically cleared
     mockScrollTo = mockWindowScrollTo();
     mockHotkeyStatus.mockReturnValue(true);
   });

@@ -1,40 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import queryString from 'query-string';
 import type { RootState } from '@/types/redux';
 import { renderWithProviders } from '@/test/utils';
+// Import from global mocks instead of creating local ones
+import {
+  mockNavigate,
+  mockUseLocation,
+  mockQueryString,
+  mockHotkeyStatus,
+} from '@/test/globalMocks';
 import Search from './Search';
-
-// Mock React Router hooks
-const mockNavigate = vi.fn();
-const mockUseLocation = vi.fn();
-
-vi.mock('react-router', () => ({
-  useNavigate: () => mockNavigate,
-  useLocation: () => mockUseLocation(),
-}));
-
-// Mock react-device-detect
-vi.mock('react-device-detect', () => ({
-  isMobile: false,
-}));
-
-// Mock the common module
-const mockHotkeyStatus = vi.fn();
-vi.mock('@/common', () => ({
-  hotkeyStatus: () => mockHotkeyStatus(),
-}));
-
-// Mock query-string
-vi.mock('query-string', () => ({
-  default: {
-    parse: vi.fn(),
-    stringify: vi.fn(),
-  },
-  parse: vi.fn(),
-  stringify: vi.fn(),
-}));
 
 // Helper function to render Search component with custom state and location
 const renderSearch = (
@@ -42,7 +18,7 @@ const renderSearch = (
   locationMock = {},
   queryStringMock = {}
 ) => {
-  // Set up default location mock
+  // Set up default location mock using the global mock
   mockUseLocation.mockReturnValue({
     search: '',
     pathname: '/r/pics',
@@ -52,9 +28,9 @@ const renderSearch = (
     ...locationMock,
   });
 
-  // Mock query-string parse
-  vi.mocked(queryString.parse).mockReturnValue(queryStringMock);
-  vi.mocked(queryString.stringify).mockImplementation(
+  // Mock query-string parse using the global mock
+  mockQueryString.parse.mockReturnValue(queryStringMock);
+  mockQueryString.stringify.mockImplementation(
     (obj: Record<string, string | number | boolean>) => {
       return Object.entries(obj)
         .map(([key, value]) => `${key}=${value}`)
@@ -79,10 +55,11 @@ const renderSearch = (
 
 describe('Search Component', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Global mocks are automatically cleared before each test
+    // Just set up the defaults we need
     mockHotkeyStatus.mockReturnValue(true);
-    vi.mocked(queryString.parse).mockReturnValue({});
-    vi.mocked(queryString.stringify).mockImplementation(
+    mockQueryString.parse.mockReturnValue({});
+    mockQueryString.stringify.mockImplementation(
       (obj: Record<string, string | number | boolean>) => {
         return Object.entries(obj)
           .map(([key, value]) => `${key}=${value}`)
@@ -364,7 +341,7 @@ describe('Search Component', () => {
 
   describe('URL Generation with Query Parameters', () => {
     it('preserves existing sort parameters in search URL', () => {
-      vi.mocked(queryString.parse).mockReturnValue({ sort: 'top', t: 'week' });
+      mockQueryString.parse.mockReturnValue({ sort: 'top', t: 'week' });
       renderSearch(
         { listType: 'r', target: 'pics' },
         { search: '?sort=top&t=week' }
@@ -389,7 +366,7 @@ describe('Search Component', () => {
         hash: '',
       });
 
-      vi.mocked(queryString.parse).mockReturnValue({ q: 'updated' });
+      mockQueryString.parse.mockReturnValue({ q: 'updated' });
 
       rerender(<Search />);
 
