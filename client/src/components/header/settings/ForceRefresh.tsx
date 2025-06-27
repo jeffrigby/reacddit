@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/types/redux';
-import { unregister } from '../../../serviceWorkerRegistration';
+import { unregister } from '@/serviceWorkerRegistration';
 
 /* global BUILDTIME */
 

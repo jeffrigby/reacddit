@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
-import redditAPI from '../../reddit/redditAPI';
+import redditAPI from '@/reddit/redditAPI';
 import CommentsRender from './CommentsRender';
 
 const arrayToObject = <T extends { data: Record<string, unknown> }>(

@@ -4,7 +4,7 @@ import type {
   CommentData,
   MoreChildrenData,
 } from '@/types/redditApi';
-import { keyEntryChildren } from '../../common';
+import { keyEntryChildren } from '@/common';
 import CommentsRender from './CommentsRender';
 
 interface CommentReplyListProps {

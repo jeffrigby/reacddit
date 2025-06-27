@@ -105,6 +105,9 @@ module.exports = {
   resolve: {
     modules: ['src', 'node_modules'],
     extensions: ['*', '.js', '.jsx', '.ts', '.tsx', '.css', '.scss'],
+    alias: {
+      '@': paths.appSrc,
+    },
   },
   resolveLoader: {},
   module: {

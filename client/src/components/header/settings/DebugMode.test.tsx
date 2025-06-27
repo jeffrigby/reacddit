@@ -2,13 +2,13 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
-import DebugMode from './DebugMode';
 import {
   renderWithProviders,
   createTestStore,
   createHotkeyEvent,
   simulateRapidClicks,
-} from '../../../test/utils';
+} from '@/test/utils';
+import DebugMode from './DebugMode';
 
 // Create a spy to track dispatched actions
 const dispatchSpy = vi.fn();
@@ -18,7 +18,7 @@ const mocks = vi.hoisted(() => ({
   hotkeyStatus: vi.fn(),
 }));
 
-vi.mock('../../../common', () => ({
+vi.mock('@/common', () => ({
   hotkeyStatus: mocks.hotkeyStatus,
 }));
 

@@ -2,8 +2,8 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
+import { renderWithProviders, createTestStore } from '@/test/utils';
 import Settings from './Settings';
-import { renderWithProviders, createTestStore } from '../../../test/utils';
 
 // Mock the child components to isolate Settings component testing
 vi.mock('./AutoRefresh', () => ({

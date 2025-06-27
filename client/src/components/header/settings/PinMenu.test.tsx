@@ -2,12 +2,12 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
-import PinMenu from './PinMenu';
 import {
   renderWithProviders,
   createTestStore,
   mockDOMMethods,
-} from '../../../test/utils';
+} from '@/test/utils';
+import PinMenu from './PinMenu';
 
 // Create a spy to track dispatched actions
 const dispatchSpy = vi.fn();

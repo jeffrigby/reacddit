@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/types/redux';
-import { siteSettings } from '../../../redux/slices/siteSettingsSlice';
-import { hotkeyStatus } from '../../../common';
+import { siteSettings } from '@/redux/slices/siteSettingsSlice';
+import { hotkeyStatus } from '@/common';
 
 function AutoRefresh() {
   const stream = useSelector((state: RootState) => state.siteSettings.stream);

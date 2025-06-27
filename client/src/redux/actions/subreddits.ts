@@ -1,8 +1,49 @@
 import pLimit from 'p-limit';
-import RedditAPI from '../../reddit/redditAPI';
+import type { AppDispatch, RootState, SubredditsState } from '@/types/redux';
+import RedditAPI from '@/reddit/redditAPI';
 import { getLastUpdatedWithDelay, shouldUpdate } from './helpers/lastFetched';
 
-export function subredditsStatus(status, message) {
+interface SubredditsStatusAction {
+  type: 'SUBREDDITS_STATUS';
+  status: 'unloaded' | 'loading' | 'loaded' | 'error';
+  message?: string;
+}
+
+interface SubredditsFilterAction {
+  type: 'SUBREDDITS_FILTER';
+  filter: Partial<{
+    filterText: string;
+    active: boolean;
+    activeIndex: number;
+  }>;
+}
+
+interface SubredditsDataAction {
+  type: 'SUBREDDITS_DATA';
+  subreddits: SubredditsState;
+}
+
+interface SubredditsLastUpdatedAction {
+  type: 'SUBREDDITS_LAST_UPDATED';
+  lastUpdated: Record<string, number>;
+}
+
+interface SubredditsClearLastUpdatedAction {
+  type: 'SUBREDDITS_LAST_UPDATED_CLEAR';
+  clear: boolean;
+}
+
+export type SubredditsAction =
+  | SubredditsStatusAction
+  | SubredditsFilterAction
+  | SubredditsDataAction
+  | SubredditsLastUpdatedAction
+  | SubredditsClearLastUpdatedAction;
+
+export function subredditsStatus(
+  status: 'unloaded' | 'loading' | 'loaded' | 'error',
+  message?: string
+): SubredditsStatusAction {
   return {
     type: 'SUBREDDITS_STATUS',
     status,
@@ -10,28 +51,38 @@ export function subredditsStatus(status, message) {
   };
 }
 
-export function subredditsFilter(filter) {
+export function subredditsFilter(
+  filter: Partial<{
+    filterText: string;
+    active: boolean;
+    activeIndex: number;
+  }>
+): SubredditsFilterAction {
   return {
     type: 'SUBREDDITS_FILTER',
     filter,
   };
 }
 
-export function subredditsData(subreddits) {
+export function subredditsData(
+  subreddits: SubredditsState
+): SubredditsDataAction {
   return {
     type: 'SUBREDDITS_DATA',
     subreddits,
   };
 }
 
-export function subredditsLastUpdated(lastUpdated) {
+export function subredditsLastUpdated(
+  lastUpdated: Record<string, number>
+): SubredditsLastUpdatedAction {
   return {
     type: 'SUBREDDITS_LAST_UPDATED',
     lastUpdated,
   };
 }
 
-export function subredditsClearLastUpdated() {
+export function subredditsClearLastUpdated(): SubredditsClearLastUpdatedAction {
   const clear = true;
   return {
     type: 'SUBREDDITS_LAST_UPDATED_CLEAR',
@@ -43,10 +94,9 @@ let subredditsFetchLastUpdatedRunning = false;
 /**
  * Fetch the last post for each subreddit and recheck based on when
  * it was last updated.
- * @returns {Function}
  */
 export function subredditsFetchLastUpdated() {
-  return async (dispatch, getState) => {
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
     try {
       if (subredditsFetchLastUpdatedRunning) {
         return;
@@ -57,7 +107,12 @@ export function subredditsFetchLastUpdated() {
       const { lastUpdated } = currentState;
 
       // Create subreddit requests
-      const lookups = [];
+      const lookups: Array<{
+        type: 'friend' | 'subreddit';
+        path: string;
+        id: string;
+      }> = [];
+
       Object.entries(subreddits).forEach(([key, subreddit]) => {
         if (shouldUpdate(lastUpdated, subreddit.name)) {
           // Check if it's a subreddit or a user
@@ -78,7 +133,7 @@ export function subredditsFetchLastUpdated() {
         }
       });
 
-      const fetchWithDelay = async (lookup) => {
+      const fetchWithDelay = async (lookup: (typeof lookups)[0]) => {
         const { type, path, id } = lookup;
         const toUpdate = await getLastUpdatedWithDelay(type, path, id, 2, 5);
         dispatch(subredditsLastUpdated(toUpdate));
@@ -103,22 +158,20 @@ export function subredditsFetchLastUpdated() {
 
 /**
  * Map the post children ids to the keys.
- * @param children
- * @returns {*}
  */
-const mapSubreddits = (children) =>
+const mapSubreddits = (children: any[]): Record<string, any> =>
   Object.entries(children)
-    .map(([key, value]) => value.data)
+    .map(([key, value]: [string, any]) => value.data)
     .reduce((ac, s) => ({ ...ac, [s.display_name.toLowerCase()]: s }), {});
 
 /**
  * Fetch all the subreddits and concat them together
  * This is because of the 100 sub limit.
- * @param where
- * @param options
- * @returns {Promise<void>}
  */
-const subredditsAll = async (where, options) => {
+const subredditsAll = async (
+  where: string,
+  options?: any
+): Promise<Record<string, any>> => {
   let init = true;
   let qsAfter = null;
   let srs = null;
@@ -149,10 +202,12 @@ const subredditsAll = async (where, options) => {
  *    contributor - subreddits the user is an approved submitter in
  *    moderator - subreddits the user is a moderator of
  *    streams - subscribed to subreddits that contain hosted video links
- * @returns {Function}
  */
-export function subredditsFetchData(reset, where = 'subscriber') {
-  return async (dispatch, getState) => {
+export function subredditsFetchData(
+  reset?: boolean,
+  where: string = 'subscriber'
+) {
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
     try {
       const currentState = getState();
 
@@ -164,7 +219,8 @@ export function subredditsFetchData(reset, where = 'subscriber') {
       ) {
         // Cache for one day
         const subExpired =
-          Date.now() > currentState.subreddits.lastUpdated + 3600 * 24 * 1000;
+          Date.now() >
+          (currentState.subreddits.lastUpdated || 0) + 3600 * 24 * 1000;
         if (currentState.subreddits.status === 'loaded' && !subExpired) {
           dispatch(subredditsFetchLastUpdated());
           return;
@@ -175,7 +231,7 @@ export function subredditsFetchData(reset, where = 'subscriber') {
       dispatch(subredditsStatus('loading'));
       const subreddits = await subredditsAll(where, {});
       const lastUpdated = Date.now();
-      const storeSubs = {
+      const storeSubs: SubredditsState = {
         status: 'loaded',
         subreddits,
         lastUpdated,
@@ -183,7 +239,12 @@ export function subredditsFetchData(reset, where = 'subscriber') {
       await dispatch(subredditsData(storeSubs));
       dispatch(subredditsFetchLastUpdated());
     } catch (e) {
-      dispatch(subredditsStatus('error', e.toString()));
+      dispatch(
+        subredditsStatus(
+          'error',
+          e instanceof Error ? e.toString() : 'Unknown error'
+        )
+      );
     }
   };
 }

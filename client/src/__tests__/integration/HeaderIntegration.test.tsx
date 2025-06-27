@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
-import { renderWithProviders } from '../../test/utils';
+import { renderWithProviders } from '@/test/utils';
 
 // Import the components we're testing together
-import Search from '../../components/header/Search';
-import Sort from '../../components/header/Sort';
-import ViewMode from '../../components/header/ViewMode';
-import ToggleTheme from '../../components/header/ToggleTheme';
-import Reload from '../../components/header/Reload';
+import Search from '@/components/header/Search';
+import Sort from '@/components/header/Sort';
+import ViewMode from '@/components/header/ViewMode';
+import ToggleTheme from '@/components/header/ToggleTheme';
+import Reload from '@/components/header/Reload';
 
 // Mock React Router
 const mockNavigate = vi.fn();
@@ -48,7 +48,7 @@ vi.mock('react-device-detect', () => ({
   isMobile: false,
 }));
 
-vi.mock('../../common', () => ({
+vi.mock('@/common', () => ({
   hotkeyStatus: vi.fn(() => true),
 }));
 
@@ -71,7 +71,7 @@ vi.mock('query-string', () => ({
 
 // Mock Redux actions
 const mockListingsFetchRedditNew = vi.fn();
-vi.mock('../../redux/actions/listings', () => ({
+vi.mock('@/redux/actions/listings', () => ({
   listingsFetchRedditNew: () => mockListingsFetchRedditNew,
 }));
 

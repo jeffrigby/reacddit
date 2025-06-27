@@ -18,7 +18,12 @@
     "outDir": "./dist",
     "baseUrl": "src",
     "paths": {
-      "@/types/*": ["types/*"]
+      "@/*": ["*"],
+      "@/types/*": ["types/*"],
+      "@/redux/*": ["redux/*"],
+      "@/components/*": ["components/*"],
+      "@/common": ["common.js"],
+      "@/test/*": ["test/*"]
     }
   },
   "include": ["src/**/*"],

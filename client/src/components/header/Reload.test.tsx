@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
-import Reload from './Reload';
 import { renderWithProviders } from '@/test/utils';
+import Reload from './Reload';
 
 // Mock React Router hooks
 const mockUseLocation = vi.fn();
@@ -13,7 +13,7 @@ vi.mock('react-router', () => ({
 
 // Mock the listings actions
 const mockListingsFetchRedditNew = vi.fn();
-vi.mock('../../redux/actions/listings', () => ({
+vi.mock('@/redux/actions/listings', () => ({
   listingsFetchRedditNew: () => mockListingsFetchRedditNew,
 }));
 

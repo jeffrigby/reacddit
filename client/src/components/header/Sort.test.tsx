@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import type { RootState } from '@/types/redux';
+import { renderWithProviders } from '@/test/utils';
 import Sort from './Sort';
-import { renderWithProviders } from '../../test/utils';
 
 // Mock React Router hooks and components
 const mockNavigate = vi.fn();
@@ -37,7 +37,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 });
 
 // Mock the common module
-vi.mock('../../common', () => ({
+vi.mock('@/common', () => ({
   hotkeyStatus: vi.fn(() => true),
 }));
 

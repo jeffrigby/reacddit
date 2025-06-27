@@ -4,8 +4,8 @@ import { produce } from 'immer';
 import type { MouseEvent } from 'react';
 import type { RootState, AppDispatch } from '@/types/redux';
 import type { SubredditData } from '@/types/redditApi';
-import { subredditsData } from '../../redux/actions/subreddits';
-import { favorite } from '../../reddit/redditApiTs';
+import { subredditsData } from '@/redux/actions/subreddits';
+import { favorite } from '@/reddit/redditApiTs';
 
 interface SubFavoriteProps {
   isFavorite: boolean;

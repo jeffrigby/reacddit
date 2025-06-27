@@ -2,22 +2,22 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
-import ViewMode from './ViewMode';
 import {
   renderWithProviders,
   mockWindowScrollTo,
   createKeyboardEvent,
-} from '../../test/utils';
+} from '@/test/utils';
+import ViewMode from './ViewMode';
 
 // Mock the common module
 const mockHotkeyStatus = vi.fn();
-vi.mock('../../common', () => ({
+vi.mock('@/common', () => ({
   hotkeyStatus: () => mockHotkeyStatus(),
 }));
 
 // Mock Redux action
 const mockSiteSettings = vi.fn();
-vi.mock('../../redux/slices/siteSettingsSlice', () => ({
+vi.mock('@/redux/slices/siteSettingsSlice', () => ({
   siteSettings: (payload: { view: 'expanded' | 'condensed' }) => {
     mockSiteSettings(payload);
     return { type: 'siteSettings/setSiteSettings', payload };

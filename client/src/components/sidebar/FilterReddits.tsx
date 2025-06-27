@@ -1,28 +1,28 @@
 import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router';
-import { subredditsFilter } from '../../redux/actions/subreddits';
-import { hotkeyStatus } from '../../common';
+import { useNavigate } from 'react-router-dom';
+import type { RootState, AppDispatch } from '@/types/redux';
+import { subredditsFilter } from '@/redux/actions/subreddits';
+import { hotkeyStatus } from '@/common';
 
 function FilterReddits() {
-  const filterInput = useRef();
-  const filter = useSelector((state) => state.subredditsFilter);
-  const dispatch = useDispatch();
+  const filterInput = useRef<HTMLInputElement>(null);
+  const filter = useSelector((state: RootState) => state.subredditsFilter);
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
   /**
    * Set the subreddit filter data.
-   * @param item
-   * @returns {void|*}
    */
-  const filterReddits = (item) => {
-    const filterText = item.target.value;
+  const filterReddits = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const filterText = event.target.value;
     // Always reset the index.
     const activeIndex = 0;
     if (!filterText) {
-      return dispatch(subredditsFilter({ filterText: '', activeIndex }));
+      dispatch(subredditsFilter({ filterText: '', activeIndex }));
+      return;
     }
-    return dispatch(subredditsFilter({ filterText, activeIndex }));
+    dispatch(subredditsFilter({ filterText, activeIndex }));
   };
 
   /**
@@ -38,9 +38,12 @@ function FilterReddits() {
    * Disable the hotkeys when using the filter.
    */
   const setFocus = () => {
-    document.getElementById('aside-content').scrollTop = 0;
+    const asideContent = document.getElementById('aside-content');
+    if (asideContent) {
+      asideContent.scrollTop = 0;
+    }
     const active = true;
-    filterInput.current.select();
+    filterInput.current?.select();
     dispatch(subredditsFilter({ active }));
   };
 
@@ -53,7 +56,7 @@ function FilterReddits() {
     dispatch(subredditsFilter({ active, activeIndex }));
   };
 
-  const handleFilterHotkey = (event) => {
+  const handleFilterHotkey = (event: KeyboardEvent) => {
     const pressedKey = event.key;
     const subLength = document.querySelectorAll(
       '#sidebar-subreddits .nav-item a'
@@ -63,7 +66,7 @@ function FilterReddits() {
       switch (pressedKey) {
         case 'F':
         case 'q':
-          filterInput.current.focus();
+          filterInput.current?.focus();
           document.body.classList.add('show-menu');
           clearSearch();
           event.preventDefault();
@@ -92,18 +95,18 @@ function FilterReddits() {
           break;
         }
         case 'Enter': {
-          const trigger = document.querySelector(
+          const trigger = document.querySelector<HTMLAnchorElement>(
             '#sidebar-subreddits .nav-item a.trigger'
           );
-          if (trigger && trigger.pathname) {
+          if (trigger?.pathname) {
             navigate(trigger.pathname);
           }
           document.body.classList.remove('show-menu');
-          filterInput.current.blur();
+          filterInput.current?.blur();
           break;
         }
         case 'Escape':
-          filterInput.current.blur();
+          filterInput.current?.blur();
           document.body.classList.remove('show-menu');
           clearSearch();
           break;

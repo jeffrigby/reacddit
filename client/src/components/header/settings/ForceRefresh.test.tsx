@@ -2,11 +2,11 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
+import { renderWithProviders, createTestStore } from '@/test/utils';
 import ForceRefresh from './ForceRefresh';
-import { renderWithProviders, createTestStore } from '../../../test/utils';
 
 // Mock the service worker registration
-vi.mock('../../../serviceWorkerRegistration', () => ({
+vi.mock('@/serviceWorkerRegistration', () => ({
   unregister: vi.fn(),
 }));
 
@@ -152,7 +152,7 @@ describe('ForceRefresh', () => {
     });
 
     it('calls service worker unregister when button is clicked', async () => {
-      const { unregister } = await import('../../../serviceWorkerRegistration');
+      const { unregister } = await import('@/serviceWorkerRegistration');
 
       renderForceRefresh();
 
@@ -191,8 +191,6 @@ describe('ForceRefresh', () => {
 
       expect(mockReload).toHaveBeenCalled();
     });
-
-
   });
 
   describe('Debug Mode Integration', () => {
@@ -396,7 +394,7 @@ describe('ForceRefresh', () => {
 
   describe('Integration Tests', () => {
     it('performs complete refresh sequence', async () => {
-      const { unregister } = await import('../../../serviceWorkerRegistration');
+      const { unregister } = await import('@/serviceWorkerRegistration');
 
       renderForceRefresh();
 

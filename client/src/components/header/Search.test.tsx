@@ -3,8 +3,8 @@ import { screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import queryString from 'query-string';
 import type { RootState } from '@/types/redux';
+import { renderWithProviders } from '@/test/utils';
 import Search from './Search';
-import { renderWithProviders } from '../../test/utils';
 
 // Mock React Router hooks
 const mockNavigate = vi.fn();
@@ -22,7 +22,7 @@ vi.mock('react-device-detect', () => ({
 
 // Mock the common module
 const mockHotkeyStatus = vi.fn();
-vi.mock('../../common', () => ({
+vi.mock('@/common', () => ({
   hotkeyStatus: () => mockHotkeyStatus(),
 }));
 

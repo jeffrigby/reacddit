@@ -5,7 +5,7 @@ import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
 import type { RootState } from '@/types/redux';
 import type { ListingsFilter } from '@/types/listings';
-import { hotkeyStatus } from '../../common';
+import { hotkeyStatus } from '@/common';
 
 function Search() {
   const [focused, setFocused] = useState(false);

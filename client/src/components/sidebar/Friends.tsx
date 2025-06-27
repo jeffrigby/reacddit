@@ -1,23 +1,24 @@
-import React, { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
 import { produce } from 'immer';
-import NavigationGenericNavItem from './NavigationGenericNavItem';
-import RedditAPI from '../../reddit/redditAPI';
-import { setMenuStatus, getMenuStatus } from '../../common';
+import RedditAPI from '@/reddit/redditAPI';
+import { setMenuStatus, getMenuStatus } from '@/common';
+import { subredditsData } from '@/redux/actions/subreddits';
+import type { RootState, AppDispatch } from '@/types/redux';
 import { getDiffClassName } from './navHelpers';
-import { subredditsData } from '../../redux/actions/subreddits';
+import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 // Constants
 const MENU_ID = 'friends';
-const INVALID_STATUSES = ['loading', 'unloaded', 'error'];
+const INVALID_STATUSES = ['loading', 'unloaded', 'error'] as const;
 
 // Custom hook for friends logic
 function useFriends() {
   const [showFriends, setShowFriends] = useState(getMenuStatus(MENU_ID));
-  const lastUpdated = useSelector((state) => state.lastUpdated);
-  const subreddits = useSelector((state) => state.subreddits);
-  const dispatch = useDispatch();
+  const lastUpdated = useSelector((state: RootState) => state.lastUpdated);
+  const subreddits = useSelector((state: RootState) => state.subreddits);
+  const dispatch = useDispatch<AppDispatch>();
 
   const toggleShowFriends = useCallback(() => {
     const newShowFriends = !showFriends;
@@ -26,7 +27,7 @@ function useFriends() {
   }, [showFriends]);
 
   const unfollowUser = useCallback(
-    async (name) => {
+    async (name: string) => {
       const nameLower = name.toLowerCase();
       try {
         await RedditAPI.followUser(nameLower, 'unsub');
@@ -68,7 +69,7 @@ function Friends() {
       .filter((item) => item.subreddit_type === 'user')
       .map(({ url, id, display_name: displayName, title }) => {
         const link = `${url}posts?sort=new`;
-        const friendLastUpdated = lastUpdated[`t5_${id}`]?.lastPost || 0;
+        const friendLastUpdated = lastUpdated[`t5_${id}`]?.lastPost ?? 0;
         const classNameStr = getDiffClassName(friendLastUpdated, false);
         const badge = classNameStr.includes('sub-new') ? 'New' : null;
         const cleanDisplayName = displayName.replace('u_', '');
@@ -153,4 +154,4 @@ function Friends() {
   );
 }
 
-export default React.memo(Friends);
+export default Friends;

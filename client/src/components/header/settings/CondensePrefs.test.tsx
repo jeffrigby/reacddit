@@ -2,8 +2,8 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
+import { renderWithProviders, createTestStore } from '@/test/utils';
 import CondensePrefs from './CondensePrefs';
-import { renderWithProviders, createTestStore } from '../../../test/utils';
 
 // Create a spy to track dispatched actions
 const dispatchSpy = vi.fn();

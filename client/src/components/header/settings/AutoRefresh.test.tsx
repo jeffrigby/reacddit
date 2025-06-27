@@ -2,14 +2,14 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { RootState } from '@/types/redux';
-import AutoRefresh from './AutoRefresh';
 import {
   renderWithProviders,
   createTestStore,
   mockDOMMethods,
   createHotkeyEvent,
   simulateRapidClicks,
-} from '../../../test/utils';
+} from '@/test/utils';
+import AutoRefresh from './AutoRefresh';
 
 // Create a spy to track dispatched actions
 const dispatchSpy = vi.fn();
@@ -19,7 +19,7 @@ const mocks = vi.hoisted(() => ({
   hotkeyStatus: vi.fn(),
 }));
 
-vi.mock('../../../common', () => ({
+vi.mock('@/common', () => ({
   hotkeyStatus: mocks.hotkeyStatus,
 }));
 

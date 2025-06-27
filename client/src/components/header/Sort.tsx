@@ -8,7 +8,7 @@ import { useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
 import type { RootState } from '@/types/redux';
 import type { ListingsFilter } from '@/types/listings';
-import { hotkeyStatus } from '../../common';
+import { hotkeyStatus } from '@/common';
 
 interface SortCategories {
   [key: string]: string;
