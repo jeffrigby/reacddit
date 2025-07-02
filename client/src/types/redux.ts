@@ -4,25 +4,20 @@
 import type { ThunkDispatch } from '@reduxjs/toolkit';
 import type { AnyAction } from 'redux';
 import type { ListingsFilter } from './listings';
+import type { SubredditData, AccountData, LabeledMultiData } from './redditApi';
 
 /**
  * Subreddit data as stored in Redux state
+ * Using the proper SubredditData type from Reddit API
  */
-export interface SubredditInfo {
-  display_name: string;
-  url: string;
-  name: string;
-  title?: string;
-  icon_img?: string;
-  [key: string]: any;
-}
+export type SubredditInfo = SubredditData;
 
 /**
  * Subreddits state in Redux
  */
 export interface SubredditsState {
   status: 'unloaded' | 'loading' | 'loaded' | 'error';
-  subreddits: Record<string, SubredditInfo>;
+  subreddits: Record<string, SubredditData>;
   lastUpdated?: number;
   message?: string;
 }
@@ -51,29 +46,29 @@ export interface RootState {
     theme?: string;
     autoRefresh?: boolean;
     view?: 'expanded' | 'condensed';
-    [key: string]: any;
+    [key: string]: unknown;
   };
   listings: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
   reddit: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
   redditBearer: {
     bearer?: string;
     status?: string;
     loginURL?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   redditMe?: {
-    me?: any;
+    me?: AccountData;
     status?: string;
     lastUpdated?: number;
     id?: string;
     error?: string;
   };
   redditMultiReddits?: {
-    multis?: any[];
+    multis?: LabeledMultiData[];
     status?: string;
     lastUpdated?: number;
     error?: string;
@@ -83,10 +78,10 @@ export interface RootState {
   lastUpdated: LastUpdatedState;
   lastUpdatedTime: number;
   history: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
   listingsFilter: ListingsFilter;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

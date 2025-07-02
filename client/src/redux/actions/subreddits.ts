@@ -1,5 +1,6 @@
 import pLimit from 'p-limit';
 import type { AppDispatch, RootState, SubredditsState } from '@/types/redux';
+import type { SubredditData, Thing } from '@/types/redditApi';
 import RedditAPI from '@/reddit/redditAPI';
 import { getLastUpdatedWithDelay, shouldUpdate } from './helpers/lastFetched';
 
@@ -159,9 +160,11 @@ export function subredditsFetchLastUpdated() {
 /**
  * Map the post children ids to the keys.
  */
-const mapSubreddits = (children: any[]): Record<string, any> =>
+const mapSubreddits = (
+  children: Thing<SubredditData>[]
+): Record<string, SubredditData> =>
   Object.entries(children)
-    .map(([key, value]: [string, any]) => value.data)
+    .map(([key, value]: [string, Thing<SubredditData>]) => value.data)
     .reduce((ac, s) => ({ ...ac, [s.display_name.toLowerCase()]: s }), {});
 
 /**
@@ -170,8 +173,8 @@ const mapSubreddits = (children: any[]): Record<string, any> =>
  */
 const subredditsAll = async (
   where: string,
-  options?: any
-): Promise<Record<string, any>> => {
+  options?: Record<string, unknown>
+): Promise<Record<string, SubredditData>> => {
   let init = true;
   let qsAfter = null;
   let srs = null;
@@ -179,7 +182,7 @@ const subredditsAll = async (
 
   // console.log('uncached');
 
-  const newOptions = options || {};
+  const newOptions = options ?? {};
 
   while (init || qsAfter) {
     init = false;
@@ -187,7 +190,7 @@ const subredditsAll = async (
     srs = await RedditAPI.subreddits(where, newOptions);
     const mapped = mapSubreddits(srs.data.children);
     subreddits = { ...mapped, ...subreddits };
-    qsAfter = srs.data.after || null;
+    qsAfter = srs.data.after ?? null;
   }
 
   return subreddits;
@@ -220,7 +223,7 @@ export function subredditsFetchData(
         // Cache for one day
         const subExpired =
           Date.now() >
-          (currentState.subreddits.lastUpdated || 0) + 3600 * 24 * 1000;
+          (currentState.subreddits.lastUpdated ?? 0) + 3600 * 24 * 1000;
         if (currentState.subreddits.status === 'loaded' && !subExpired) {
           dispatch(subredditsFetchLastUpdated());
           return;

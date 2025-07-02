@@ -1,9 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { redditGetBearer } from '../actions/reddit';
 
 const initialState = { status: 'unloaded', bearer: null };
 
-const redditBearerSlice = createSlice({
+export const redditBearerSlice = createSlice({
   name: 'REDDIT_BEARER',
   initialState,
   reducers: {
@@ -15,3 +14,6 @@ const redditBearerSlice = createSlice({
     },
   },
 });
+
+export const { redditGetBearer } = redditBearerSlice.actions;
+export default redditBearerSlice.reducer;
