@@ -29,21 +29,6 @@ This project is undergoing a multi-step modernization:
 - ESLint is configured to warn on Prettier formatting issues
 - Pull requests should have no ESLint warnings or errors
 
-## Testing
-- **Framework**: Vitest with React Testing Library (Jest-free setup)
-- **Commands**: 
-  - `npm test` - Run tests in watch mode
-  - `npm run test:run` - Run tests once
-  - `npm run test:ui` - Run tests with UI dashboard
-  - `npm run test:coverage` - Run tests with coverage report
-- **Test Structure**: Co-located tests preferred (place `.test.tsx` files next to components)
-- **Mocking**: Use Vitest's built-in `vi` mocking utilities, avoid Jest dependencies
-- **React Testing**: Use `@testing-library/react` for component testing with custom render utilities in `src/test/utils.tsx`
-- **Redux Testing**: Integration testing approach - use `renderWithProviders()` with real Redux stores and preloaded state
-- **Router Testing**: Mock React Router hooks and use partial mocking with `importOriginal` for router components
-- **Best Practices**: Test user behavior and component integration rather than implementation details
-- **Testing Guide**: See `docs/VITEST_TESTING_GUIDE.md` for comprehensive testing patterns, best practices, and examples
-- **Test Documentation**: Additional testing strategies and patterns documented in `docs/TEST_STRATEGY.md`
 
 ## TypeScript Guidelines
 - Target ES2023 features

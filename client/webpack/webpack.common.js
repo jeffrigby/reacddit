@@ -255,6 +255,7 @@ module.exports = {
     new Dotenv({
       defaults: true,
       path: paths.dotenv,
+      quiet: true, // Suppress dotenv v17 informational messages
     }),
 
     new webpack.DefinePlugin({

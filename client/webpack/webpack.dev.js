@@ -95,10 +95,8 @@ module.exports = {
   },
   plugins: [
     new ReactRefreshWebpackPlugin({
-      // This is needed when loading through a proxy.
-      overlay: {
-        sockPort: paths.wsPort,
-      },
+      // overlay configuration is simplified in v0.6.0+
+      overlay: true,
     }),
     new HtmlWebpackPlugin({
       inject: true,

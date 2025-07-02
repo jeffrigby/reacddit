@@ -1,30 +1,32 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
-import NavigationItem from './NavigationItem';
-import { filterSubs } from '../../redux/selectors/subredditSelectors';
+import type { SubredditData } from '@/types/redditApi';
+import type { RootState, AppDispatch } from '@/types/redux';
+import { filterSubs } from '@/redux/selectors/subredditSelectors';
 import {
   subredditsFetchData,
   subredditsFetchLastUpdated,
-} from '../../redux/actions/subreddits';
-import { getMenuStatus, hotkeyStatus, setMenuStatus } from '../../common';
+} from '@/redux/actions/subreddits';
+import { getMenuStatus, hotkeyStatus, setMenuStatus } from '@/common';
+import NavigationItem from './NavigationItem';
 
 function NavigationSubReddits() {
   const [showMenu, setShowMenu] = useState(getMenuStatus('subreddits', true));
-  const redditBearer = useSelector((state) => state.redditBearer);
-  const subreddits = useSelector((state) => state.subreddits);
-  const filter = useSelector((state) => state.subredditsFilter);
-  const filteredSubreddits = useSelector((state) => filterSubs(state));
-  const dispatch = useDispatch();
+  const redditBearer = useSelector((state: RootState) => state.redditBearer);
+  const subreddits = useSelector((state: RootState) => state.subreddits);
+  const filter = useSelector((state: RootState) => state.subredditsFilter);
+  const filteredSubreddits = useSelector((state: RootState) =>
+    filterSubs(state)
+  );
+  const dispatch = useDispatch<AppDispatch>();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
 
-  // Fetch initial data.
   useEffect(() => {
     dispatch(subredditsFetchData(false, where));
   }, [redditBearer.status, dispatch, where]);
 
-  // Check for new data every 60 seconds.
   useEffect(() => {
     const checkLastUpdated = setInterval(() => {
       dispatch(subredditsFetchLastUpdated());
@@ -34,24 +36,17 @@ function NavigationSubReddits() {
     };
   }, [dispatch, where]);
 
-  /**
-   * Force reload all the subreddits.
-   */
   const reloadSubreddits = useCallback(() => {
     dispatch(subredditsFetchData(true, where));
   }, [dispatch, where]);
 
   useEffect(() => {
-    /**
-     * Configure the navigation hotkeys.
-     * @param event
-     */
-    const handleSubredditHotkey = (event) => {
+    const handleSubredditHotkey = (event: KeyboardEvent) => {
       const pressedKey = event.key;
 
       if (hotkeyStatus()) {
         switch (pressedKey) {
-          case '®': // alt-r (option)
+          case '®':
             reloadSubreddits();
             break;
           default:
@@ -65,12 +60,8 @@ function NavigationSubReddits() {
     };
   }, [reloadSubreddits]);
 
-  /**
-   * Handle the click on the reload subreddits
-   * @param e
-   */
-  const reloadSubredditsClick = (e) => {
-    e.preventDefault();
+  const reloadSubredditsClick = (event: React.MouseEvent) => {
+    event.preventDefault();
     reloadSubreddits();
   };
 
@@ -79,24 +70,20 @@ function NavigationSubReddits() {
     setShowMenu(!showMenu);
   };
 
-  /**
-   * Generate the subreddit nav items.
-   * @returns {Array}
-   */
   const generateNavItems = () => {
-    const favoritesArray = [];
-    const itemsArray = [];
+    const favoritesArray: SubredditData[] = [];
+    const itemsArray: SubredditData[] = [];
 
     Object.values(filteredSubreddits).forEach((item) => {
       if (item.user_has_favorited) {
-        favoritesArray.push(item);
+        favoritesArray.push(item as SubredditData);
       } else {
-        itemsArray.push(item);
+        itemsArray.push(item as SubredditData);
       }
     });
 
     let pos = 0;
-    const navItems = [];
+    const navItems: React.ReactElement[] = [];
     const filterActive = filter.active && !isEmpty(filter.filterText);
     if (favoritesArray.length) {
       favoritesArray.forEach((sub) => {
@@ -132,7 +119,7 @@ function NavigationSubReddits() {
     ? 'fas fa-caret-down menu-caret'
     : 'fas fa-caret-right menu-caret';
 
-  let content;
+  let content: React.ReactElement | undefined;
   if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
     // content = (
     //   <div className="alert alert-info" id="subreddits-loading" role="alert">
@@ -177,6 +164,12 @@ function NavigationSubReddits() {
     spinnerClass += ' fa-spin';
   }
 
+  const handleReloadKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      reloadSubredditsClick(event as unknown as React.MouseEvent);
+    }
+  };
+
   return (
     <div id="sidebar-subreddits">
       <div className="sidebar-heading d-flex text-muted">
@@ -192,9 +185,9 @@ function NavigationSubReddits() {
             aria-label="Reload Subreddits"
             className={spinnerClass}
             role="button"
-            tabIndex="-1"
+            tabIndex={-1}
             onClick={reloadSubredditsClick}
-            onKeyDown={reloadSubredditsClick}
+            onKeyDown={handleReloadKeyDown}
           />
         </span>
       </div>
