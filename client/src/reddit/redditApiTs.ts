@@ -15,6 +15,10 @@ import {
   type SearchSubredditsPostBody,
   type VoteParams,
   type VoteResponse,
+  type SaveParams,
+  type SaveResponse,
+  type UnsaveParams,
+  type UnsaveResponse,
 } from '@/types/redditApi';
 
 // Utility function to clean null/empty values from params
@@ -249,6 +253,53 @@ export async function vote(
   const response = await redditAPI.post(
     '/api/vote',
     queryString.stringify(params),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Save a post or comment
+ * @param id - The fullname of the content to save (e.g., t3_xxx for posts, t1_xxx for comments)
+ * @param category - Optional category to save the item in
+ * @returns Promise with the API response (typically an empty object on success)
+ */
+export async function save(
+  id: SaveParams['id'],
+  category?: SaveParams['category']
+): Promise<SaveResponse> {
+  const params: SaveParams = { id };
+  if (category) {
+    params.category = category;
+  }
+
+  const response = await redditAPI.post(
+    '/api/save',
+    queryString.stringify(params),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Unsave a post or comment
+ * @param id - The fullname of the content to unsave (e.g., t3_xxx for posts, t1_xxx for comments)
+ * @returns Promise with the API response (typically an empty object on success)
+ */
+export async function unsave(id: UnsaveParams['id']): Promise<UnsaveResponse> {
+  const response = await redditAPI.post(
+    '/api/unsave',
+    queryString.stringify({ id }),
     {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

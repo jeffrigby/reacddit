@@ -531,26 +531,26 @@ class RedditAPI {
    * @param id - the entry to save
    * @returns {Promise<*>}
    */
-  async save(id) {
-    const save = await this.redditAPI.post(
-      '/api/save',
-      queryString.stringify({ id })
-    );
-    return save.data;
-  }
+  // async save(id) {
+  //   const save = await this.redditAPI.post(
+  //     '/api/save',
+  //     queryString.stringify({ id })
+  //   );
+  //   return save.data;
+  // }
 
   /**
    * Unsave an entry
    * @param id - the entry to unsave
    * @returns {Promise<*>}
    */
-  async unsave(id) {
-    const save = await this.redditAPI.post(
-      '/api/unsave',
-      queryString.stringify({ id })
-    );
-    return save.data;
-  }
+  // async unsave(id) {
+  //   const save = await this.redditAPI.post(
+  //     '/api/unsave',
+  //     queryString.stringify({ id })
+  //   );
+  //   return save.data;
+  // }
 
   /**
    * Helper function to subcirbe to a subreddit by name.
@@ -558,9 +558,9 @@ class RedditAPI {
    * @param {string} [action='sub'] - The action to perform for the subscription.
    * @returns {Promise<any>} - A Promise that resolves when the subscription is successful.
    */
-  async sunscribeByName(name, action = 'sub') {
-    return this.subscribe(name, action, 'sr_name');
-  }
+  // async sunscribeByName(name, action = 'sub') {
+  //   return this.subscribe(name, action, 'sr_name');
+  // }
 
   /**
    * Subscribe or unsbscribe from a sub.
