@@ -1,0 +1,176 @@
+{
+  "endpoints": [
+    {
+      "endpoint": "/api/v1/me",
+      "method": "GET",
+      "description": "Get current user account information",
+      "requiresAuth": true,
+      "expectedType": "MeResponse"
+    },
+    {
+      "endpoint": "/api/v1/me/prefs",
+      "method": "GET",
+      "description": "Get user preferences",
+      "requiresAuth": true,
+      "expectedType": "UserPreferences"
+    },
+    {
+      "endpoint": "/api/v1/me/karma",
+      "method": "GET",
+      "description": "Get user karma breakdown",
+      "requiresAuth": true,
+      "expectedType": "UserKarmaResponse"
+    },
+    {
+      "endpoint": "/hot",
+      "method": "GET",
+      "description": "Get hot posts from frontpage",
+      "params": {
+        "limit": 10,
+        "raw_json": 1
+      },
+      "expectedType": "Listing<LinkData>"
+    },
+    {
+      "endpoint": "/new",
+      "method": "GET",
+      "description": "Get new posts from frontpage",
+      "params": {
+        "limit": 10,
+        "raw_json": 1
+      },
+      "expectedType": "Listing<LinkData>"
+    },
+    {
+      "endpoint": "/r/programming/hot",
+      "method": "GET",
+      "description": "Get hot posts from a specific subreddit",
+      "params": {
+        "limit": 5,
+        "raw_json": 1
+      },
+      "expectedType": "Listing<LinkData>"
+    },
+    {
+      "endpoint": "/r/programming/about",
+      "method": "GET",
+      "description": "Get subreddit information",
+      "params": {
+        "raw_json": 1
+      },
+      "expectedType": "Thing<SubredditData>"
+    },
+    {
+      "endpoint": "/api/search_reddit_names",
+      "method": "GET",
+      "description": "Search for subreddits by name",
+      "params": {
+        "query": "javascript",
+        "exact": false,
+        "include_over_18": false
+      },
+      "expectedType": "SearchRedditNamesResponse"
+    },
+    {
+      "endpoint": "/api/info",
+      "method": "GET",
+      "description": "Get information about a thing by ID",
+      "params": {
+        "id": "t5_2fwo",
+        "raw_json": 1
+      },
+      "expectedType": "InfoResponse"
+    },
+    {
+      "endpoint": "/user/spez/about",
+      "method": "GET",
+      "description": "Get user profile information",
+      "params": {
+        "raw_json": 1
+      },
+      "expectedType": "Thing<AccountData>"
+    },
+    {
+      "endpoint": "/subreddits/popular",
+      "method": "GET",
+      "description": "Get popular subreddits",
+      "params": {
+        "limit": 10,
+        "raw_json": 1
+      },
+      "expectedType": "Listing<SubredditData>"
+    },
+    {
+      "endpoint": "/api/v1/collections/subreddit_collections",
+      "method": "GET",
+      "description": "Get subreddit collections",
+      "params": {
+        "sr_fullname": "t5_2fwo"
+      },
+      "requiresAuth": false,
+      "expectedType": "SubredditCollectionsResponse"
+    },
+    {
+      "endpoint": "/api/v1/me/trophies",
+      "method": "GET",
+      "description": "Get user trophies",
+      "requiresAuth": true,
+      "expectedType": "UserTrophiesResponse"
+    },
+    {
+      "endpoint": "/message/inbox",
+      "method": "GET",
+      "description": "Get user inbox messages",
+      "params": {
+        "limit": 5,
+        "raw_json": 1
+      },
+      "requiresAuth": true,
+      "expectedType": "Listing<MessageData>"
+    },
+    {
+      "endpoint": "/api/info",
+      "method": "GET",
+      "description": "Get info about a specific post to verify it exists",
+      "params": {
+        "id": "t3_1lpcc40",
+        "raw_json": 1
+      },
+      "requiresAuth": false,
+      "expectedType": "InfoResponse"
+    },
+    {
+      "endpoint": "/api/vote",
+      "method": "POST",
+      "description": "Upvote a post",
+      "body": {
+        "id": "t3_1lpcc40",
+        "dir": 1
+      },
+      "requiresAuth": true,
+      "expectedType": "VoteResponse"
+    },
+    {
+      "endpoint": "/api/vote",
+      "method": "POST",
+      "description": "Remove vote from a post",
+      "body": {
+        "id": "t3_1lpcc40",
+        "dir": 0
+      },
+      "requiresAuth": true,
+      "expectedType": "VoteResponse"
+    },
+    {
+      "endpoint": "/api/vote",
+      "method": "POST",
+      "description": "Downvote a post",
+      "body": {
+        "id": "t3_1lpcc40",
+        "dir": -1
+      },
+      "requiresAuth": true,
+      "expectedType": "VoteResponse"
+    }
+  ]
+}

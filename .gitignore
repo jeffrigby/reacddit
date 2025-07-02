@@ -45,3 +45,8 @@ stats.json
 /api/.env.serverless
 /.aws-sam
 /samconfig.toml
+
+# Reddit API Tester
+/reddit-api-tester/results/
+/reddit-api-tester/.token-cache.json
+/reddit-api-tester/dist/
