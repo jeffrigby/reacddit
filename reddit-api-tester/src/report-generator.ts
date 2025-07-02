@@ -244,24 +244,83 @@ export class ReportGenerator {
     console.log(`Markdown report saved to: ${filepath}`);
   }
 
-  printSummary(report: TestReport): void {
+  printSummary(report: TestReport, verbose: boolean = false): void {
     console.log('\n📊 Test Summary:');
     console.log(`Total Tests: ${report.summary.totalTests}`);
     console.log(`✅ Successful: ${report.summary.successful}`);
     console.log(`❌ Failed: ${report.summary.failed}`);
     console.log(`⏱️  Average Response Time: ${report.summary.averageResponseTime.toFixed(2)}ms`);
 
+    // Show failed endpoints details
+    const failedEndpoints = report.summary.endpoints.filter(e => !e.success);
+    if (failedEndpoints.length > 0) {
+      console.log('\n❌ Failed Endpoints:');
+      failedEndpoints.forEach(endpoint => {
+        console.log(`  • ${endpoint.method} ${endpoint.endpoint}`);
+        console.log(`    Status: ${endpoint.statusCode || 'N/A'}`);
+        console.log(`    Error: ${endpoint.error || 'Unknown error'}`);
+      });
+    }
+
+    // Show slow endpoints
+    const slowEndpoints = report.summary.endpoints.filter(e => e.responseTime > 2000);
+    if (slowEndpoints.length > 0 && verbose) {
+      console.log('\n🐌 Slow Endpoints (>2s):');
+      slowEndpoints.forEach(endpoint => {
+        console.log(`  • ${endpoint.method} ${endpoint.endpoint}: ${endpoint.responseTime}ms`);
+      });
+    }
+
     if (report.typeValidation) {
       console.log('\n🔍 Type Validation:');
       console.log(`Validated: ${report.typeValidation.totalValidated}`);
       console.log(`Passed: ${report.typeValidation.passedValidation}`);
       console.log(`Failed: ${report.typeValidation.failedValidation}`);
+
+      // Show type validation issues
+      if (report.typeValidation.issues.length > 0) {
+        console.log('\n⚠️  Type Issues:');
+        
+        // Group issues by endpoint
+        const issuesByEndpoint = report.typeValidation.issues.reduce((acc, issue) => {
+          if (!acc[issue.endpoint]) {
+            acc[issue.endpoint] = [];
+          }
+          acc[issue.endpoint].push(issue);
+          return acc;
+        }, {} as Record<string, TypeIssue[]>);
+
+        Object.entries(issuesByEndpoint).forEach(([endpoint, issues]) => {
+          console.log(`\n  ${endpoint}:`);
+          issues.forEach(issue => {
+            const icon = issue.issueType === 'mismatch' ? '🔄' : 
+                        issue.issueType === 'missing' ? '❓' : '➕';
+            console.log(`    ${icon} ${issue.details}`);
+          });
+        });
+      }
     }
 
     if (report.recommendations.length > 0) {
       console.log('\n💡 Recommendations:');
       report.recommendations.forEach(rec => {
         console.log(`  • ${rec}`);
+      });
+    }
+
+    // Show all endpoint results in verbose mode
+    if (verbose) {
+      console.log('\n📋 All Endpoint Results:');
+      console.log('─'.repeat(80));
+      report.summary.endpoints.forEach(endpoint => {
+        const status = endpoint.success ? '✅' : '❌';
+        console.log(`${status} ${endpoint.method} ${endpoint.endpoint}`);
+        console.log(`   Response Time: ${endpoint.responseTime}ms`);
+        console.log(`   Status Code: ${endpoint.statusCode || 'N/A'}`);
+        if (endpoint.error) {
+          console.log(`   Error: ${endpoint.error}`);
+        }
+        console.log('─'.repeat(80));
       });
     }
   }

@@ -125,7 +125,7 @@ async function runTests(options: any) {
 
   // Print summary
   const report = JSON.parse(await fs.readFile(reportPath, 'utf-8'));
-  reportGenerator.printSummary(report);
+  reportGenerator.printSummary(report, options.verbose || false);
 
   // Save raw results if requested
   if (options.saveRaw) {
@@ -152,6 +152,7 @@ program
   .option('-v, --validate-types', 'Validate response types against TypeScript definitions')
   .option('-s, --save-raw', 'Save raw API responses')
   .option('-a, --include-auth', 'Include endpoints that require authentication (will fail with anonymous token)')
+  .option('--verbose', 'Show detailed output for all endpoints')
   .action(runTests);
 
 program

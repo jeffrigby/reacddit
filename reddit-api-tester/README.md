@@ -28,17 +28,31 @@ cp .env.example .env
 
 ## Usage
 
+### Command Structure
+
+The tool uses Commander.js with subcommands. The main command is `npm run test-api` which defaults to the `test` subcommand if none is specified.
+
+**Important**: All flags must come after the subcommand and `--` separator.
+
 ### Basic Testing (Anonymous Token)
 
 ```bash
+# Default - runs all tests with anonymous auth
 npm run test-api
+
+# Equivalent to:
+npm run test-api test
 ```
 
 This will fetch an anonymous token from your API server and test public endpoints.
 
-### Testing with Authentication Token
+### Testing with Reddit Authentication
 
 ```bash
+# Use Reddit OAuth credentials from .env file
+npm run test-api test -- --reddit
+
+# Use specific authentication token
 npm run test-api test -- --token "YOUR_REDDIT_ACCESS_TOKEN"
 ```
 
@@ -48,29 +62,78 @@ npm run test-api test -- --token "YOUR_REDDIT_ACCESS_TOKEN"
 npm run test-api test -- --validate-types
 ```
 
-### Advanced Options
+### Available Commands
 
-```bash
-npm run test-api -- --help
-```
+#### test (default)
+Run API endpoint tests.
 
 Options:
 - `-t, --token <token>`: Use authenticated token instead of anonymous
+- `-r, --reddit`: Use Reddit OAuth credentials from .env
 - `-e, --endpoints <endpoints>`: Comma-separated list of endpoints to test
 - `-v, --validate-types`: Validate response types against TypeScript definitions
 - `-s, --save-raw`: Save raw API responses
 - `-a, --include-auth`: Include endpoints that require authentication
+- `--verbose`: Show detailed output for all endpoints in console
+
+#### clear-cache
+Clear cached authentication tokens.
+
+```bash
+npm run test-api clear-cache
+```
+
+#### auth-test
+Test Reddit authentication with username/password.
+
+```bash
+npm run test-api auth-test -- --username "YOUR_USERNAME" --password "YOUR_PASSWORD"
+```
 
 ### Examples
 
-Test specific endpoints:
+#### Testing Specific Endpoints (Recommended for Development)
+
+When working on a specific function, test only the relevant endpoint(s):
+
 ```bash
-npm run test-api test -- --endpoints "/hot,/new,/api/v1/me"
+# Test a single endpoint
+npm run test-api test -- --endpoints "/r/programming/about"
+
+# Test multiple related endpoints
+npm run test-api test -- --endpoints "/r/programming/about,/r/programming/about/rules"
+
+# Test authenticated endpoint
+npm run test-api test -- --reddit --endpoints "/api/v1/me"
 ```
 
-Test with auth token and type validation:
+#### Full Test Suite
+
+Run all tests when you need comprehensive validation:
+
 ```bash
-npm run test-api test -- --token "YOUR_TOKEN" --validate-types --save-raw
+# All public endpoints
+npm run test-api
+
+# Include auth-required endpoints
+npm run test-api test -- --reddit --include-auth
+```
+
+#### Advanced Testing
+
+Test with type validation and save raw responses:
+```bash
+npm run test-api test -- --reddit --validate-types --save-raw --endpoints "/api/v1/me"
+```
+
+Show detailed console output with verbose mode:
+```bash
+npm run test-api test -- --endpoints "/r/programming/about" --verbose
+```
+
+Debug failed tests by showing response data:
+```bash
+DEBUG=true npm run test-api test -- --reddit --endpoints "/api/v1/me/prefs"
 ```
 
 ## Configuration

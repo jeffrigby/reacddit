@@ -15,10 +15,24 @@ Use this tool whenever you need to:
 
 ```bash
 cd reddit-api-tester
-npm test                    # Test all configured endpoints
-npm test -- --endpoint /api/v1/me  # Test specific endpoint
-npm test -- --reddit        # Use direct Reddit OAuth instead of API server
+
+# Run all tests with anonymous authentication (default)
+npm run test-api
+
+# Run tests with Reddit user authentication
+npm run test-api test -- --reddit
+
+# Test specific endpoint
+npm run test-api test -- --endpoints /api/v1/me
+
+# Include authentication-required endpoints
+npm run test-api test -- --include-auth
+
+# Validate types and save raw responses
+npm run test-api test -- --validate-types --save-raw
 ```
+
+**Note**: The tool uses the `test` subcommand by default if no command is specified, so `npm run test-api` is equivalent to `npm run test-api test`.
 
 ## Authentication Methods
 
@@ -91,6 +105,48 @@ When type mismatches are found:
 2. Full reports are saved to `results/` directory
 3. Use these reports to fix type definitions
 
+## Testing Workflow for Function Migration
+
+When migrating a function from JavaScript to TypeScript:
+
+1. **Add test configurations** for the endpoint in `src/endpoints.json`:
+```json
+{
+  "endpoint": "/r/programming/about",
+  "method": "GET",
+  "description": "Get subreddit information",
+  "params": {
+    "raw_json": 1
+  },
+  "expectedType": "Thing<SubredditData>"
+}
+```
+
+2. **Test ONLY the specific endpoint** you're working on:
+```bash
+# Test a single endpoint (much faster!)
+npm run test-api test -- --endpoints "/r/programming/about"
+
+# Test multiple related endpoints
+npm run test-api test -- --endpoints "/r/programming/about,/r/programming/about/rules"
+
+# Test with authentication if needed
+npm run test-api test -- --reddit --endpoints "/r/programming/about/edit"
+
+# Show detailed output in console (verbose mode)
+npm run test-api test -- --endpoints "/r/programming/about" --verbose
+
+# Debug mode - show response data for failed tests
+DEBUG=true npm run test-api test -- --endpoints "/r/programming/about/traffic"
+```
+
+**Pro tip**: Running all tests takes time and isn't necessary when working on a single function. Always use `--endpoints` to test only what you need.
+
+3. **Check results** in the `results/` directory:
+- `.json` files contain detailed test results
+- `.md` files provide human-readable summaries
+- Look for type mismatches to update TypeScript definitions
+
 ## Common Issues
 
 ### Authentication Failures
@@ -107,6 +163,11 @@ When type mismatches are found:
 - Tool caches tokens to minimize requests
 - Reddit has rate limits on authentication
 - Wait a few minutes if you hit limits
+
+### Command Not Found
+- The tool uses Commander.js with subcommands
+- Main command: `npm run test-api` (runs the `test` subcommand by default)
+- All flags must come after the subcommand: `npm run test-api test -- --reddit`
 
 ## Development
 

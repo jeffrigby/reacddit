@@ -19,6 +19,10 @@ import {
   type SaveResponse,
   type UnsaveParams,
   type UnsaveResponse,
+  type SubredditAboutResponse,
+  type SubredditRulesResponse,
+  type SubredditTrafficResponse,
+  type SubredditSettingsResponse,
 } from '@/types/redditApi';
 
 // Utility function to clean null/empty values from params
@@ -307,5 +311,40 @@ export async function unsave(id: UnsaveParams['id']): Promise<UnsaveResponse> {
     }
   );
 
+  return response.data;
+}
+
+/**
+ * Get information about a subreddit
+ * @param subreddit - The subreddit name (without r/ prefix)
+ * @param type - Optional type of information to retrieve ('edit', 'rules', 'traffic')
+ * @param options - Optional query parameters
+ * @returns Promise with the subreddit information based on the type
+ */
+export async function subredditAbout(
+  subreddit: string,
+  type?: 'edit' | 'rules' | 'traffic',
+  options: { raw_json?: 1 } = {}
+): Promise<
+  | SubredditAboutResponse
+  | SubredditRulesResponse
+  | SubredditTrafficResponse
+  | SubredditSettingsResponse
+> {
+  const defaults = {
+    raw_json: 1 as const,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  let url = `/r/${subreddit}/about`;
+  if (type && ['edit', 'rules', 'traffic'].includes(type)) {
+    url += `/${type}`;
+  }
+
+  const response = await redditAPI.get(url, { params });
   return response.data;
 }

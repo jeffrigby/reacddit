@@ -61,6 +61,35 @@
       "expectedType": "Thing<SubredditData>"
     },
     {
+      "endpoint": "/r/programming/about/rules",
+      "method": "GET",
+      "description": "Get subreddit rules",
+      "params": {
+        "raw_json": 1
+      },
+      "expectedType": "SubredditRulesResponse"
+    },
+    {
+      "endpoint": "/r/programming/about/traffic",
+      "method": "GET",
+      "description": "Get subreddit traffic stats",
+      "params": {
+        "raw_json": 1
+      },
+      "requiresAuth": true,
+      "expectedType": "SubredditTrafficResponse"
+    },
+    {
+      "endpoint": "/r/programming/about/edit",
+      "method": "GET",
+      "description": "Get subreddit settings (mod only)",
+      "params": {
+        "raw_json": 1
+      },
+      "requiresAuth": true,
+      "expectedType": "Thing<SubredditSettingsData>"
+    },
+    {
       "endpoint": "/api/search_reddit_names",
       "method": "GET",
       "description": "Search for subreddits by name",
