@@ -317,31 +317,32 @@ class RedditAPI {
     return result.data;
   }
 
-  async searchSubreddits(query, options) {
-    const defaults = {
-      exact: false,
-      include_over_18: false,
-      include_unadvertisable: true,
-      query,
-      raw_json: 1,
-    };
+  // Moved to TypeScript in redditApiTs.ts
+  // async searchSubreddits(query, options) {
+  //   const defaults = {
+  //     exact: false,
+  //     include_over_18: false,
+  //     include_unadvertisable: true,
+  //     query,
+  //     raw_json: 1,
+  //   };
 
-    const data = {
-      params: RedditAPI.setParams(defaults, options),
-    };
+  //   const data = {
+  //     params: RedditAPI.setParams(defaults, options),
+  //   };
 
-    const url = `/api/search_subreddits`;
-    const result = await this.redditAPI.post(
-      url,
-      queryString.stringify(data.params),
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      }
-    );
-    return result.data;
-  }
+  //   const url = `/api/search_subreddits`;
+  //   const result = await this.redditAPI.post(
+  //     url,
+  //     queryString.stringify(data.params),
+  //     {
+  //       headers: {
+  //         'Content-Type': 'application/x-www-form-urlencoded',
+  //       },
+  //     }
+  //   );
+  //   return result.data;
+  // }
 
   /**
    * Get the logged in users mutlireddits
@@ -432,16 +433,17 @@ class RedditAPI {
     return this.redditAPI.delete(url);
   }
 
-  async favorite(makeFavorite, srName) {
-    const fav = makeFavorite ? 'true' : 'false';
-    const data = {
-      make_favorite: fav,
-      sr_name: srName,
-    };
-    return this.redditAPI.post('/api/favorite', queryString.stringify(data), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
-  }
+  // Moved to TypeScript in redditApiTs.ts
+  // async favorite(makeFavorite, srName) {
+  //   const fav = makeFavorite ? 'true' : 'false';
+  //   const data = {
+  //     make_favorite: fav,
+  //     sr_name: srName,
+  //   };
+  //   return this.redditAPI.post('/api/favorite', queryString.stringify(data), {
+  //     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  //   });
+  // }
 
   /**
    * Get the users subreddits
@@ -641,16 +643,17 @@ class RedditAPI {
     return this.subscribe(name, action, 'sr_name');
   }
 
-  /**
-   * Return reddit user.
-   * Reset the cache
-   * @returns {Promise<*>}
-   */
-  async me() {
-    // cache buster is to prevent Firefox from caching this request.
-    const me = await this.redditAPI.get(`/api/v1/me?cb=${Date.now()}`);
-    return me.data;
-  }
+  // Moved to TypeScript in redditApiTs.ts
+  // /**
+  //  * Return reddit user.
+  //  * Reset the cache
+  //  * @returns {Promise<*>}
+  //  */
+  // async me() {
+  //   // cache buster is to prevent Firefox from caching this request.
+  //   const me = await this.redditAPI.get(`/api/v1/me?cb=${Date.now()}`);
+  //   return me.data;
+  // }
 
   async getComments(target, postName, comment, options) {
     const defaults = {

@@ -110,3 +110,4 @@ The API requires Reddit OAuth2 setup:
 ## Claude Memory Notes
 
 - Always reference the latest documentation for packages using the context7 MCP.
+- For Reddit API testing and type validation, see `/reddit-api-tester/CLAUDE.md`

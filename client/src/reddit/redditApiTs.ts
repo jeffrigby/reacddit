@@ -11,6 +11,10 @@ import {
   type TokenStorageResult,
   type FavoriteResponse,
   type FavoriteBodyParams,
+  type SearchSubredditsResponse,
+  type SearchSubredditsPostBody,
+  type VoteParams,
+  type VoteResponse,
 } from '@/types/redditApi';
 
 // Utility function to clean null/empty values from params
@@ -34,9 +38,7 @@ function isTokenData(data: unknown): data is TokenData {
     typeof data === 'object' &&
     data !== null &&
     'accessToken' in data &&
-    'expires' in data &&
-    typeof (data as TokenData).accessToken === 'string' &&
-    typeof (data as TokenData).expires === 'number'
+    'expires' in data
   );
 }
 
@@ -186,6 +188,73 @@ export async function favorite(
       `Failed to ${makeFavorite ? 'favorite' : 'unfavorite'} subreddit: ${srName}`
     );
   }
+
+  return response.data;
+}
+
+/**
+ * Search for subreddits by query.
+ * @param query - The search query
+ * @param options - Optional search parameters
+ */
+export async function searchSubreddits(
+  query: string,
+  options: Partial<
+    Omit<SearchSubredditsPostBody, 'query' | 'api_type' | 'raw_json'>
+  > = {}
+): Promise<SearchSubredditsResponse> {
+  const defaults: SearchSubredditsPostBody = {
+    query,
+    exact: false,
+    include_over_18: false,
+    include_unadvertisable: true,
+    raw_json: 1,
+    api_type: 'json',
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options
+  );
+
+  const response = await redditAPI.post(
+    '/api/search_subreddits',
+    queryString.stringify(params),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+  );
+
+  return response.data;
+}
+
+/**
+ * Vote on content
+ * @param id - The fullname of the content to vote on (e.g., t3_xxx for posts, t1_xxx for comments)
+ * @param dir - Vote direction: 1 = upvote, -1 = downvote, 0 = remove vote
+ * @returns Promise with the API response (typically an empty object on success)
+ */
+export async function vote(
+  id: VoteParams['id'],
+  dir: VoteParams['dir']
+): Promise<VoteResponse> {
+  const params: VoteParams = {
+    id,
+    dir,
+    rank: 1,
+  };
+
+  const response = await redditAPI.post(
+    '/api/vote',
+    queryString.stringify(params),
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    }
+  );
 
   return response.data;
 }

@@ -1,14 +1,36 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { PostsContextData, PostsContextActionable } from '../../../contexts';
-import { hotkeyStatus } from '../../../common';
-import redditAPI from '../../../reddit/redditAPI';
+import type { MouseEvent } from 'react';
+import type { RootState } from '@/types/redux';
+import type { LinkData } from '@/types/redditApi';
+import { PostsContextData, PostsContextActionable } from '@/contexts';
+import { hotkeyStatus } from '@/common';
+import { vote as voteAPI } from '@/reddit/redditApiTs';
 
-const getNewState = (dir, ups, likes) => {
-  const newState = {
+interface VoteState {
+  ups: number;
+  likes: boolean | null;
+}
+
+interface PostContextData {
+  post: {
+    kind: string;
+    data: LinkData;
+  };
+}
+
+type VoteDirection = -1 | 0 | 1;
+
+function getNewState(
+  dir: VoteDirection,
+  ups: number,
+  likes: boolean | null
+): VoteState {
+  const newState: VoteState = {
     ups,
     likes,
   };
+
   switch (dir) {
     case 1:
       switch (likes) {
@@ -54,18 +76,18 @@ const getNewState = (dir, ups, likes) => {
   }
 
   return newState;
-};
+}
 
 function PostVote() {
-  const bearer = useSelector((state) => state.redditBearer);
+  const bearer = useSelector((state: RootState) => state.redditBearer);
 
-  const postContext = useContext(PostsContextData);
+  const postContext = useContext(PostsContextData) as PostContextData;
   const { post } = postContext;
   const { data } = post;
-  const actionable = useContext(PostsContextActionable);
+  const actionable = useContext(PostsContextActionable) as boolean;
 
   const [ups, setUps] = useState(data.ups);
-  const [likes, setLikes] = useState(data.likes);
+  const [likes, setLikes] = useState<boolean | null>(data.likes ?? null);
 
   const expired = Date.now() / 1000 - data.created_utc;
   const sixmonthSeconds = 182.5 * 86400; // I don't know when reddit exactly cuts it off.
@@ -75,24 +97,32 @@ function PostVote() {
   const downClass = likes === false ? 'fas' : 'far';
 
   const vote = useCallback(
-    (dir) => {
+    async (dir: VoteDirection) => {
       if (bearer.status !== 'auth') {
         return;
       }
 
       // Check if this has already been voted on
-      const newDir = likes === (dir === 1) ? 0 : dir;
+      const newDir: VoteDirection = likes === (dir === 1) ? 0 : dir;
 
-      const newState = getNewState(newDir, ups, likes);
+      const newState = getNewState(newDir, ups, likes ?? null);
       setLikes(newState.likes);
       setUps(newState.ups);
-      redditAPI.vote(data.name, dir);
+
+      try {
+        await voteAPI(data.name, newDir);
+      } catch (error) {
+        // Revert state on error
+        setLikes(likes);
+        setUps(ups);
+        console.error('Vote failed:', error);
+      }
     },
     [bearer.status, data.name, likes, ups]
   );
 
   useEffect(() => {
-    const hotkeys = (event) => {
+    const hotkeys = (event: KeyboardEvent) => {
       const pressedKey = event.key;
 
       if (hotkeyStatus()) {
@@ -117,6 +147,16 @@ function PostVote() {
     return () => document.removeEventListener('keydown', hotkeys);
   }, [actionable, vote]);
 
+  const handleUpvote = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    vote(1);
+  };
+
+  const handleDownvote = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    vote(-1);
+  };
+
   return (
     <div className="vote">
       <button
@@ -124,7 +164,7 @@ function PostVote() {
         disabled={disabled}
         title="Vote Up (a)"
         type="button"
-        onClick={() => vote(1)}
+        onClick={handleUpvote}
       >
         {' '}
         <i className={`fa-arrow-alt-circle-up ${upClass}`} />{' '}
@@ -136,7 +176,7 @@ function PostVote() {
         disabled={disabled}
         title="Vote Down (z)"
         type="button"
-        onClick={() => vote(-1)}
+        onClick={handleDownvote}
       >
         <i className={`fa-arrow-alt-circle-down ${downClass}`} />
       </button>

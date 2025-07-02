@@ -1,65 +1,68 @@
 import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import queryString from 'query-string';
+import { searchSubreddits } from '@/reddit/redditApiTs';
+import type { RootState } from '@/types/redux';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import RedditAPI from '../../reddit/redditAPI';
+
+interface SearchRedditNamesProps {
+  filterText?: string;
+}
 
 /**
  * Get a list of subreddit names that match the filter text
- * @param filterText {string} - The text to filter the subreddit names
- * @param showNSFW {boolean} - Whether to include NSFW subreddits
- * @returns {*[]} - An array of subreddit names
  */
-function useGetSubredditNames(filterText, showNSFW) {
-  const [searchResults, setSearchResults] = useState([]);
+function useGetSubredditNames(filterText: string, showNSFW: boolean): string[] {
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+
   useEffect(() => {
     let ignore = false;
+
     const getResults = async () => {
       if (!filterText) {
         setSearchResults([]);
         return;
       }
 
-      const results = await RedditAPI.searchSubreddits(filterText, {
+      const results = await searchSubreddits(filterText, {
         include_over_18: showNSFW,
       });
+
       if (!ignore) {
         const { subreddits } = results;
         const names = subreddits.length
-          ? subreddits.map((value) => value.name)
+          ? subreddits.map((value) => value.display_name)
           : [];
         setSearchResults(names);
       }
     };
 
     getResults();
+
     return () => {
       ignore = true;
     };
   }, [filterText, showNSFW]);
+
   return searchResults;
 }
 
 /**
  * Display a list of subreddit names that match the filter text
- * @param filterText {string} - The text to filter the subreddit names
- * @returns {JSX.Element|null}
- * @constructor
  */
-function SearchRedditNames({ filterText = '' }) {
-  const over18 = useSelector((state) => state.redditMe.me.over_18);
-  const subreddits = useSelector((state) =>
+function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
+  const over18 = useSelector((state: RootState) => state.redditMe?.me?.over_18);
+  const subreddits = useSelector((state: RootState) =>
     state.subreddits.subreddits !== undefined
       ? Object.keys(state.subreddits.subreddits)
       : []
   );
-  const sort = useSelector((state) => state.listingsFilter.sort);
+  const sort = useSelector((state: RootState) => state.listingsFilter.sort);
   const auth = useSelector(
-    (state) => state.redditBearer.status === 'auth' || false
+    (state: RootState) => state.redditBearer.status === 'auth' || false
   );
 
-  const initShowSearchResuts = over18 !== undefined ? over18 : false;
+  const initShowSearchResuts = over18 ?? false;
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
   const searchResults = useGetSubredditNames(filterText, showNSFW);
 
@@ -68,14 +71,14 @@ function SearchRedditNames({ filterText = '' }) {
   }
 
   // Filter out subscribed reddits
-  const filteredSubs = [];
+  const filteredSubs: string[] = [];
   searchResults.forEach((value) => {
-    if (subreddits.indexOf(value.toLowerCase()) === -1) {
+    if (value && subreddits.indexOf(value.toLowerCase()) === -1) {
       filteredSubs.push(value);
     }
   });
 
-  let currentSort = sort || '';
+  let currentSort = sort ?? '';
   const query = queryString.parse(window.location.search);
   const { t } = query;
 
@@ -92,7 +95,8 @@ function SearchRedditNames({ filterText = '' }) {
     default:
       break;
   }
-  let navItems = [];
+
+  let navItems: React.ReactElement[] = [];
   if (filteredSubs.length > 0) {
     navItems = filteredSubs.map((value, idx) => {
       const key = `sr_search_${value}_${idx}`;
@@ -135,9 +139,5 @@ function SearchRedditNames({ filterText = '' }) {
     </div>
   );
 }
-
-SearchRedditNames.propTypes = {
-  filterText: PropTypes.string,
-};
 
 export default SearchRedditNames;
