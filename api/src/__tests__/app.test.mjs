@@ -1,23 +1,23 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, beforeAll, vi } from "vitest";
 import request from "supertest";
 
-// Use vi.stubEnv to properly mock environment variables before any imports
-vi.stubEnv("REDDIT_CLIENT_ID", "test-client-id");
-vi.stubEnv("REDDIT_CLIENT_SECRET", "test-client-secret");
-vi.stubEnv("REDDIT_USER_AGENT", "test-user-agent");
-vi.stubEnv("REDDIT_CALLBACK_URI", "http://localhost:3001/api/callback");
-vi.stubEnv(
-  "REDDIT_SCOPE",
-  "identity,mysubreddits,vote,subscribe,read,history,save",
-);
-vi.stubEnv("CLIENT_PATH", "http://localhost:3000");
-vi.stubEnv("SALT", "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM");
-vi.stubEnv("SESSION_LENGTH_SECS", "604800");
-vi.stubEnv("TOKEN_EXPIRY_PADDING_SECS", "300");
-vi.stubEnv("PORT", "3001");
-vi.stubEnv("DEBUG", "0");
-vi.stubEnv("ENCRYPTION_ALGORITHM", "aes-256-cbc");
-vi.stubEnv("IV_LENGTH", "16");
+// Set up environment variables before importing the app
+// This follows Vitest best practices for environment variable mocking
+beforeAll(() => {
+  vi.stubEnv("REDDIT_CLIENT_ID", "test-client-id");
+  vi.stubEnv("REDDIT_CLIENT_SECRET", "test-client-secret");
+  vi.stubEnv("REDDIT_USER_AGENT", "test-user-agent");
+  vi.stubEnv("REDDIT_CALLBACK_URI", "http://localhost:3001/api/callback");
+  vi.stubEnv("REDDIT_SCOPE", "identity,mysubreddits,vote,subscribe,read,history,save");
+  vi.stubEnv("CLIENT_PATH", "http://localhost:3000");
+  vi.stubEnv("SALT", "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM");
+  vi.stubEnv("SESSION_LENGTH_SECS", "604800");
+  vi.stubEnv("TOKEN_EXPIRY_PADDING_SECS", "300");
+  vi.stubEnv("PORT", "3001");
+  vi.stubEnv("DEBUG", "0");
+  vi.stubEnv("ENCRYPTION_ALGORITHM", "aes-256-cbc");
+  vi.stubEnv("IV_LENGTH", "16");
+});
 
 // Mock the util module
 vi.mock("../util.mjs", () => {
@@ -404,7 +404,7 @@ describe("API Endpoints", () => {
   });
 
   describe("Security", () => {
-    it("should include CORS headers (even if values are undefined)", async () => {
+    it("should include CORS headers (even if undefined due to env vars)", async () => {
       // Mock successful Reddit API response
       const mockRedditResponse = {
         access_token: "test-token",
@@ -419,7 +419,7 @@ describe("API Endpoints", () => {
         .get("/api/bearer")
         .expect(200);
 
-      // Check that CORS headers are present, even if values are undefined
+      // The CORS headers are set, even if the value is undefined due to env var issues
       expect(response.headers).toHaveProperty("access-control-allow-origin");
       expect(response.headers).toHaveProperty("access-control-allow-methods");
     });

@@ -264,7 +264,12 @@ app.proxy = true;
 app.keys = [SALT];
 app.use(session(CONFIG, app));
 app.use(async (ctx, next) => {
-  ctx.set("Access-Control-Allow-Origin", CLIENT_PATH);
+  // Always read from process.env for consistency
+  // This ensures the value is always current
+  const clientPath = process.env.CLIENT_PATH;
+  if (clientPath) {
+    ctx.set("Access-Control-Allow-Origin", clientPath);
+  }
   ctx.set("Access-Control-Allow-Methods", "GET");
   await next();
 });
