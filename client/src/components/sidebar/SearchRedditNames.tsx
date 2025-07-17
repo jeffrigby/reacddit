@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import queryString from 'query-string';
 import { searchSubreddits } from '@/reddit/redditApiTs';
 import type { RootState } from '@/types/redux';
+import { getSubredditKeys } from '@/redux/selectors/subredditSelectors';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 interface SearchRedditNamesProps {
@@ -31,7 +32,7 @@ function useGetSubredditNames(filterText: string, showNSFW: boolean): string[] {
       if (!ignore) {
         const { subreddits } = results;
         const names = subreddits.length
-          ? subreddits.map((value) => value.display_name)
+          ? subreddits.map((value) => value.name)
           : [];
         setSearchResults(names);
       }
@@ -52,11 +53,7 @@ function useGetSubredditNames(filterText: string, showNSFW: boolean): string[] {
  */
 function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   const over18 = useSelector((state: RootState) => state.redditMe?.me?.over_18);
-  const subreddits = useSelector((state: RootState) =>
-    state.subreddits.subreddits !== undefined
-      ? Object.keys(state.subreddits.subreddits)
-      : []
-  );
+  const subreddits = useSelector(getSubredditKeys);
   const sort = useSelector((state: RootState) => state.listingsFilter.sort);
   const auth = useSelector(
     (state: RootState) => state.redditBearer.status === 'auth' || false
@@ -72,8 +69,9 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
 
   // Filter out subscribed reddits
   const filteredSubs: string[] = [];
+  const lowerCaseSubreddits = subreddits.map((sub) => sub.toLowerCase());
   searchResults.forEach((value) => {
-    if (value && subreddits.indexOf(value.toLowerCase()) === -1) {
+    if (value && lowerCaseSubreddits.indexOf(value.toLowerCase()) === -1) {
       filteredSubs.push(value);
     }
   });
@@ -130,7 +128,7 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   ) : null;
 
   return (
-    <div id="sidebar-subreddits">
+    <div id="sidebar-search-results">
       <div className="sidebar-heading d-flex text-muted">
         <span className="me-auto">Search</span>
       </div>

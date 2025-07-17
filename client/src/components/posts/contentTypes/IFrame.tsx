@@ -1,6 +1,30 @@
 import { useContext } from 'react';
-import PropTypes from 'prop-types';
-import { PostsContextData } from '../../../contexts';
+import type { CSSProperties } from 'react';
+import type { LinkData } from '@/types/redditApi';
+import { PostsContextData } from '@/contexts';
+
+interface IFrameContent {
+  src: string;
+  width?: number;
+  height?: number;
+  allow?: string;
+  sandbox?: string;
+  referrerPolicy?: ReferrerPolicy;
+  loading?: 'lazy' | 'eager';
+  iframeStyle?: CSSProperties;
+  onLoad?: () => void;
+}
+
+interface IFrameProps {
+  content: IFrameContent;
+}
+
+interface PostContextData {
+  post: {
+    data: LinkData;
+  };
+  isLoaded: boolean;
+}
 
 function IFrame({
   content: {
@@ -14,11 +38,11 @@ function IFrame({
     iframeStyle = {},
     onLoad = () => {},
   },
-}) {
-  const postContext = useContext(PostsContextData);
+}: IFrameProps) {
+  const postContext = useContext(PostsContextData) as PostContextData;
   const { title } = postContext.post.data;
 
-  const style = {};
+  const style: CSSProperties = {};
 
   // Default aspect ratio is 16:9
   style.aspectRatio = `${width}/${height}`;
@@ -47,20 +71,5 @@ function IFrame({
     </div>
   );
 }
-
-IFrame.propTypes = {
-  content: PropTypes.shape({
-    src: PropTypes.string.isRequired,
-    width: PropTypes.number,
-    height: PropTypes.number,
-    allow: PropTypes.string,
-    sandbox: PropTypes.string,
-    referrerPolicy: PropTypes.string,
-    loading: PropTypes.string,
-    iframeStyle: PropTypes.object,
-    className: PropTypes.string,
-    onLoad: PropTypes.func,
-  }).isRequired,
-};
 
 export default IFrame;

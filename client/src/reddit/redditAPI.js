@@ -90,11 +90,10 @@ class RedditAPI {
    * Helper function to grab the loginURL from the cookie to avoid
    * @returns string the full URL to login
    */
-  // eslint-disable-next-line class-methods-use-this
-  getLoginUrl() {
-    const { loginURL } = JSON.parse(cookies.get('token'));
-    return loginURL;
-  }
+  // getLoginUrl() {
+  //   const { loginURL } = JSON.parse(cookies.get('token'));
+  //   return loginURL;
+  // }
 
   /**
    *
@@ -299,23 +298,23 @@ class RedditAPI {
     return result.data;
   }
 
-  async searchRedditNames(query, options) {
-    const defaults = {
-      exact: false,
-      include_over_18: true,
-      include_unadvertisable: true,
-      query,
-      raw_json: 1,
-    };
-
-    const data = {
-      params: RedditAPI.setParams(defaults, options),
-    };
-
-    const url = `/api/search_reddit_names`;
-    const result = await this.redditAPI.get(url, data);
-    return result.data;
-  }
+  // async searchRedditNames(query, options) {
+  //   const defaults = {
+  //     exact: false,
+  //     include_over_18: true,
+  //     include_unadvertisable: true,
+  //     query,
+  //     raw_json: 1,
+  //   };
+  //
+  //   const data = {
+  //     params: RedditAPI.setParams(defaults, options),
+  //   };
+  //
+  //   const url = `/api/search_reddit_names`;
+  //   const result = await this.redditAPI.get(url, data);
+  //   return result.data;
+  // }
 
   // Moved to TypeScript in redditApiTs.ts
   // async searchSubreddits(query, options) {
@@ -414,7 +413,7 @@ class RedditAPI {
    */
   async multiAddSubreddit(multiPath, srName) {
     const cleanPath = multiPath.replace(/(^\/|\/$)/g, '');
-    const url = `/api/multi/${cleanPath}/r/${srName}`;
+    const url = `/api/multi/${cleanPath}//r/${srName}`;
     const data = { model: JSON.stringify({ name: srName }) };
     return this.redditAPI.put(url, queryString.stringify(data), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -512,19 +511,19 @@ class RedditAPI {
    *  0 = Remove vote
    * @returns {Promise<*>}
    */
-  async vote(id, dir) {
-    const params = {
-      dir,
-      id,
-      rank: 1,
-    };
-
-    const vote = await this.redditAPI.post(
-      '/api/vote',
-      queryString.stringify(params)
-    );
-    return vote.data;
-  }
+  // async vote(id, dir) {
+  //   const params = {
+  //     dir,
+  //     id,
+  //     rank: 1,
+  //   };
+  //
+  //   const vote = await this.redditAPI.post(
+  //     '/api/vote',
+  //     queryString.stringify(params)
+  //   );
+  //   return vote.data;
+  // }
 
   /**
    * Save an entry
@@ -617,21 +616,21 @@ class RedditAPI {
    * @param name - the name of the friend to remove.
    * @returns {Promise<*>}
    */
-  removeFriend(name) {
-    return this.redditAPI.delete(`/api/v1/me/friends/${name}`);
-  }
+  // removeFriend(name) {
+  //   return this.redditAPI.delete(`/api/v1/me/friends/${name}`);
+  // }
 
   /**
    * add a friend DEPRECATED
    * @param name - the name of the friend to remove.
    * @returns {Promise<*>}
    */
-  async addFriend(name) {
-    const data = { name, note: null };
-    return this.redditAPI.put(`/api/v1/me/friends/${name}`, data, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  // async addFriend(name) {
+  //   const data = { name, note: null };
+  //   return this.redditAPI.put(`/api/v1/me/friends/${name}`, data, {
+  //     headers: { 'Content-Type': 'application/json' },
+  //   });
+  // }
 
   /**
    * Follow/unfollow a user on Reddit.

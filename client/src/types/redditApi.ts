@@ -1070,7 +1070,16 @@ export interface SearchSubredditsPostBody {
   api_type: 'json';
 }
 export interface SearchSubredditsResponse {
-  subreddits: SubredditData[];
+  subreddits: Array<{
+    name: string;
+    active_user_count?: number;
+    icon_img?: string;
+    key_color?: string;
+    subscriber_count?: number;
+    is_chat_post_feature_enabled?: boolean;
+    allow_chat_post_creation?: boolean;
+    allow_images?: boolean;
+  }>;
 }
 
 // Favorites

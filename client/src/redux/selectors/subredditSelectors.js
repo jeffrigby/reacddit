@@ -58,3 +58,14 @@ export const filterSubs = createSelector(
       );
   }
 );
+
+export const getSubredditKeys = createSelector(
+  [subredditsSelector],
+  (subredditsStore) => {
+    const { subreddits } = subredditsStore;
+    if (!subreddits || isEmpty(subreddits)) {
+      return [];
+    }
+    return Object.keys(subreddits);
+  }
+);

@@ -1,13 +1,37 @@
 import { useContext, useState, useRef, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
+import classNames from 'classnames';
+import { PostsContextData } from '@/contexts';
+import type { RootState } from '@/types/redux';
 import SelfInline from './SelfInline';
 import '../../../styles/self.scss';
-import { PostsContextData } from '../../../contexts';
-const classNames = require('classnames');
 
-const cleanLinks = (html) => {
+interface SelfContent {
+  expand?: boolean;
+  html?: string;
+  inline: Array<Promise<unknown>>;
+  inlineLinks: string[];
+}
+
+interface SelfProps {
+  name: string;
+  content: SelfContent;
+}
+
+interface PostContextData {
+  post: {
+    kind: string;
+  };
+  isLoaded: boolean;
+}
+
+interface Dimensions {
+  self?: number;
+  selfHTML?: number;
+}
+
+const cleanLinks = (html: string): string => {
   let rawhtml = html;
   rawhtml = rawhtml
     .replace(
@@ -19,7 +43,7 @@ const cleanLinks = (html) => {
 
   // Shorten all text in anchor tags
   const regex = /<a [^>]+>(https?:\/\/[^>]+)<\/a>/gm;
-  const matches = [];
+  const matches: string[] = [];
   let match = regex.exec(rawhtml);
   while (match !== null) {
     matches.push(match[1]);
@@ -40,22 +64,26 @@ const cleanLinks = (html) => {
   return rawhtml;
 };
 
-function Self({ name, content }) {
-  const postContext = useContext(PostsContextData);
+function Self({ name, content }: SelfProps) {
+  const postContext = useContext(PostsContextData) as PostContextData;
   // const load = postContext.isLoaded;
 
-  const [showAll, setShowAll] = useState(content ? content.expand : false);
-  const [specs, setSpecs] = useState(null);
+  const [showAll, setShowAll] = useState(
+    content ? (content.expand ?? false) : false
+  );
+  const [specs, setSpecs] = useState<Dimensions | null>(null);
 
-  const listType = useSelector((state) => state.listingsFilter.listType);
-  const debug = useSelector((state) => state.siteSettings.debug);
-  const selfRef = useRef();
-  const selfHTMLRef = useRef();
+  const listType = useSelector(
+    (state: RootState) => state.listingsFilter.listType
+  );
+  const debug = useSelector((state: RootState) => state.siteSettings.debugMode);
+  const selfRef = useRef<HTMLDivElement>(null);
+  const selfHTMLRef = useRef<HTMLDivElement>(null);
 
   const { post } = postContext;
 
   const getHeights = () => {
-    const dimensions = {};
+    const dimensions: Dimensions = {};
     if (selfRef.current) {
       dimensions.self = selfRef.current.getBoundingClientRect().height;
     }
@@ -101,7 +129,8 @@ function Self({ name, content }) {
     />
   ) : null;
 
-  const showMore = specs && specs.selfHTML - specs.self > 10;
+  const showMore =
+    specs?.selfHTML && specs.self && specs.selfHTML - specs.self > 10;
   const selfHTMLClasses = classNames('self-html', {
     'self-fade': showMore && !showAll,
     'sf-html-show-all': showAll,
@@ -147,10 +176,5 @@ function Self({ name, content }) {
     </div>
   );
 }
-
-Self.propTypes = {
-  name: PropTypes.string.isRequired,
-  content: PropTypes.object.isRequired,
-};
 
 export default Self;

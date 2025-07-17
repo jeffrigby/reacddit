@@ -1,20 +1,30 @@
 import { memo } from 'react';
-import PropTypes from 'prop-types';
+
+interface VideoAudioButtonProps {
+  hasAudio?: boolean;
+  audioWarning?: boolean;
+  muted: boolean;
+  link?: string;
+  btnClasses: string;
+  videoRef: React.RefObject<HTMLVideoElement>;
+}
 
 function VideoAudioButton({
-  hasAudio,
-  audioWarning,
+  hasAudio = false,
+  audioWarning = false,
   muted,
-  link,
+  link = '',
   btnClasses,
   videoRef,
-}) {
+}: VideoAudioButtonProps) {
   /**
    * Toggle sound on and off
    */
   const toggleSound = () => {
-    // eslint-disable-next-line no-param-reassign
-    videoRef.current.muted = !videoRef.current.muted;
+    if (videoRef.current) {
+      const video = videoRef.current;
+      video.muted = !video.muted;
+    }
   };
 
   const mutedIconClass = `fas ${muted ? 'fa-volume-mute' : 'fa-volume-up'}`;
@@ -47,20 +57,5 @@ function VideoAudioButton({
     </span>
   ) : null;
 }
-
-VideoAudioButton.propTypes = {
-  audioWarning: PropTypes.bool,
-  hasAudio: PropTypes.bool,
-  muted: PropTypes.bool.isRequired,
-  link: PropTypes.string,
-  btnClasses: PropTypes.string.isRequired,
-  videoRef: PropTypes.object.isRequired,
-};
-
-VideoAudioButton.defaultProps = {
-  hasAudio: false,
-  audioWarning: false,
-  link: '',
-};
 
 export default memo(VideoAudioButton);

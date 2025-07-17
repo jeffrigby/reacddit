@@ -1,21 +1,34 @@
 import { memo, useRef } from 'react';
-import PropTypes from 'prop-types';
+import type { BufferData } from './types';
 
-function VideoBufferBar({ videoRef, buffers, currentTime, duration }) {
-  const seek = (time) => {
+interface VideoBufferBarProps {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  buffers: BufferData;
+  duration: number;
+  currentTime: number;
+}
+
+function VideoBufferBar({
+  videoRef,
+  buffers,
+  currentTime,
+  duration,
+}: VideoBufferBarProps) {
+  const seek = (time: number) => {
     if (videoRef.current) {
       // eslint-disable-next-line no-param-reassign
       videoRef.current.currentTime = time;
     }
   };
 
-  const seekBar = useRef();
+  const seekBar = useRef<HTMLDivElement>(null);
 
-  const triggerSeek = (e) => {
+  const triggerSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     // where is this progress bar on the page:
     const percent =
-      (e.pageX - e.target.getBoundingClientRect().left) / e.target.offsetWidth;
+      (e.pageX - e.currentTarget.getBoundingClientRect().left) /
+      e.currentTarget.offsetWidth;
     const seekTime = percent * duration;
     seek(seekTime);
   };
@@ -56,12 +69,5 @@ function VideoBufferBar({ videoRef, buffers, currentTime, duration }) {
     </div>
   );
 }
-
-VideoBufferBar.propTypes = {
-  videoRef: PropTypes.object.isRequired,
-  buffers: PropTypes.object.isRequired,
-  duration: PropTypes.number.isRequired,
-  currentTime: PropTypes.number.isRequired,
-};
 
 export default memo(VideoBufferBar);

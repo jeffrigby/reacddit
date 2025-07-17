@@ -6,56 +6,70 @@ import {
   useMemo,
   useContext,
   useCallback,
+  type SyntheticEvent,
 } from 'react';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
+import classNames from 'classnames';
 import '../../../../styles/video.scss';
 import VideoDebug from './VideoDebug';
 import VideoAudioButton from './VideoAudioButton';
 import VideoControlBar from './VideoControlBar';
 import { PostsContextData } from '../../../../contexts';
-const classNames = require('classnames');
+import type { RootState } from '../../../../types/redux';
+import type { VideoContent, BufferRange, BufferData } from './types';
+
+// Type definitions
+interface VideoCompProps {
+  link?: string;
+  content: VideoContent;
+}
+
+interface PostContextData {
+  isLoaded: boolean;
+  post?: {
+    kind: string;
+  };
+}
 
 /**
  * Extracts the buffer range information of a video.
- * @param {Ref} videoRef - The reference to the video element.
- * @param {number} idx - The index of the buffer range.
- * @returns {Object} - An object containing the buffer range information.
- *                    The object has the following properties:
- *                    - start: The start time of the buffer range.
- *                    - end: The end time of the buffer range.
- *                    - duration: The duration of the video.
- *                    - marginLeft: The left margin percentage of the buffer range.
- *                    - marginRight: The right margin percentage of the buffer range.
- *                    - range: The index of the buffer range.
+ * @param videoRef - The reference to the video element.
+ * @param idx - The index of the buffer range.
+ * @returns An object containing the buffer range information.
  */
-function extractBuffer(videoRef, idx) {
-  const start = videoRef.current.buffered.start(idx);
-  const end = videoRef.current.buffered.end(idx);
-  const marginLeft = (start * 100) / videoRef.current.duration;
-  const marginRight = 100 - (end * 100) / videoRef.current.duration;
+function extractBuffer(
+  videoRef: React.RefObject<HTMLVideoElement>,
+  idx: number
+): BufferRange {
+  const video = videoRef.current;
+  const start = video.buffered.start(idx);
+  const end = video.buffered.end(idx);
+  const marginLeft = (start * 100) / video.duration;
+  const marginRight = 100 - (end * 100) / video.duration;
   return {
     start,
     end,
-    duration: videoRef.current.duration,
+    duration: video.duration,
     marginLeft,
     marginRight,
-    range: idx,
+    range: idx.toString(),
   };
 }
 
 /**
  * Retrieves the buffers of a video element.
- * @param {Object} videoRef - The reference to the video element.
- * @returns {Object} - An object containing the status and buffers of the video.
+ * @param videoRef - The reference to the video element.
+ * @returns An object containing the status and buffers of the video.
  */
-function getBuffers(videoRef) {
+function getBuffers(
+  videoRef: React.RefObject<HTMLVideoElement>
+): Partial<BufferData> {
   if (videoRef.current && videoRef.current.readyState > 2) {
     const bufferLength = videoRef.current.buffered.length;
     let range = 0;
-    let status = 'loading';
-    const buffers = [];
+    let status: BufferData['status'] = 'loading';
+    const buffers: BufferRange[] = [];
     while (range < bufferLength) {
       const bufferedRange = extractBuffer(videoRef, range);
       if (
@@ -74,21 +88,20 @@ function getBuffers(videoRef) {
 
 /**
  * Renders a video player component.
- * @param {Object} props - The component props.
- * @param {string} props.link - The link to the video source.
- * @param {Object} props.content - The video content data.
- * @returns {JSX.Element} - The video player component.
- * @constructor
  */
-function VideoComp({ link = '', content }) {
-  const postContext = useContext(PostsContextData);
+function VideoComp({ link = '', content }: VideoCompProps) {
+  const postContext = useContext(PostsContextData) as PostContextData;
   const { isLoaded } = postContext;
-  const videoRef = useRef();
-  const isPlaying = useRef(false);
-  const isPlayingTimeout = useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const isPlaying = useRef<boolean>(false);
+  const isPlayingTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const debug = useSelector((state) => state.siteSettings.debug);
-  const autoplay = useSelector((state) => state.siteSettings.autoplay);
+  const debug = useSelector(
+    (state: RootState) => state.siteSettings.debug as boolean
+  );
+  const autoplay = useSelector(
+    (state: RootState) => state.siteSettings.autoplay as boolean
+  );
 
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(autoplay);
@@ -103,7 +116,10 @@ function VideoComp({ link = '', content }) {
   const [showLoadError, setLoadError] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [buffer, setBuffer] = useState({ status: 'unloaded', buffers: [] });
+  const [buffer, setBuffer] = useState<BufferData>({
+    status: 'unloaded',
+    buffers: [],
+  });
 
   useEffect(() => {
     // @todo this seems like a dumb way to handle not firing.
@@ -137,9 +153,11 @@ function VideoComp({ link = '', content }) {
         if (buffer.status === 'full') {
           return;
         }
-        const currentBuffers = getBuffers(videoRef);
+        const currentBuffers = getBuffers(
+          videoRef as React.RefObject<HTMLVideoElement>
+        );
         if (currentBuffers.status) {
-          setBuffer(currentBuffers);
+          setBuffer(currentBuffers as BufferData);
         }
       }, 500),
     [buffer.status]
@@ -151,21 +169,25 @@ function VideoComp({ link = '', content }) {
 
   const { width, height, sources } = content;
 
-  const contStyle = {};
+  const contStyle: React.CSSProperties = {};
   contStyle.aspectRatio = `${width}/${height}`;
   contStyle.maxHeight = height < 740 ? height : undefined;
 
   const videoId = `video-${content.id}`;
 
   // In a const so I can pass it to the play button
-  const toggleManualStop = useCallback((state) => {
-    setManualStop(state);
+  const toggleManualStop = useCallback((stopped: boolean) => {
+    setManualStop(stopped);
   }, []);
 
   /**
    * Toggle lock to set the controls
    */
   const toggleLock = useCallback(() => {
+    if (!videoRef.current) {
+      return;
+    }
+
     if (videoRef.current.paused) {
       videoRef.current.play();
       setManualStop(false);
@@ -180,19 +202,17 @@ function VideoComp({ link = '', content }) {
    * Set the muted state if the volume is manually changed.
    */
   const eventVolumeChange = () => {
-    if (videoRef.current.muted) {
-      setMuted(true);
-    } else {
-      setMuted(false);
+    if (videoRef.current) {
+      setMuted(videoRef.current.muted);
     }
   };
 
-  const eventCanPlayThrough = (e) => {
+  const eventCanPlayThrough = (e: SyntheticEvent<HTMLVideoElement>) => {
     setCanPlayThrough(true);
     setStalled(false);
   };
 
-  const eventWaiting = (e) => {
+  const eventWaiting = (e: SyntheticEvent<HTMLVideoElement>) => {
     setTimeout(() => {
       if (isLoaded && canPlay && isPlaying.current === false) {
         setWaiting(true);
@@ -200,13 +220,13 @@ function VideoComp({ link = '', content }) {
     }, 1000);
   };
 
-  const eventStalled = (e) => {
+  const eventStalled = (e: SyntheticEvent<HTMLVideoElement>) => {
     setTimeout(() => {
       setStalled(true);
     }, 250);
   };
 
-  const eventCanPlay = (e) => {
+  const eventCanPlay = (e: SyntheticEvent<HTMLVideoElement>) => {
     setCanPlay(true);
     setStalled(false);
   };
@@ -217,7 +237,7 @@ function VideoComp({ link = '', content }) {
 
   const throttledTime = useMemo(
     () =>
-      throttle((time) => {
+      throttle((time: number) => {
         setCurrentTime(time);
       }, 250),
     []
@@ -225,7 +245,9 @@ function VideoComp({ link = '', content }) {
 
   const trackPlaying = () => {
     if (videoRef.current) {
-      clearTimeout(isPlayingTimeout.current);
+      if (isPlayingTimeout.current) {
+        clearTimeout(isPlayingTimeout.current);
+      }
       isPlaying.current = true;
       isPlayingTimeout.current = setTimeout(() => {
         isPlaying.current = false;
@@ -233,9 +255,11 @@ function VideoComp({ link = '', content }) {
     }
   };
 
-  const eventTimeUpdate = (e) => {
+  const eventTimeUpdate = (e: SyntheticEvent<HTMLVideoElement>) => {
     trackPlaying();
-    throttledTime(videoRef.current.currentTime);
+    if (videoRef.current) {
+      throttledTime(videoRef.current.currentTime);
+    }
     if (stalled) {
       setStalled(false);
     }
@@ -245,16 +269,18 @@ function VideoComp({ link = '', content }) {
     }
   };
 
-  const eventPlay = (e) => {
+  const eventPlay = (e: SyntheticEvent<HTMLVideoElement>) => {
     setPlaying(true);
   };
 
-  const eventPause = (e) => {
+  const eventPause = (e: SyntheticEvent<HTMLVideoElement>) => {
     setPlaying(false);
   };
 
-  const eventDurationChange = (e) => {
-    setDuration(videoRef.current.duration);
+  const eventDurationChange = (e: SyntheticEvent<HTMLVideoElement>) => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration);
+    }
   };
 
   const videoClasses = classNames('loaded', 'preload', {
@@ -371,7 +397,7 @@ function VideoComp({ link = '', content }) {
                 muted={muted}
                 playing={playing}
                 toggleManualStop={toggleManualStop}
-                videoRef={videoRef}
+                videoRef={videoRef as React.RefObject<HTMLVideoElement>}
               />
             </div>
 
@@ -393,7 +419,7 @@ function VideoComp({ link = '', content }) {
                 hasAudio={content.hasAudio}
                 link={link}
                 muted={muted}
-                videoRef={videoRef}
+                videoRef={videoRef as React.RefObject<HTMLVideoElement>}
               />
             </div>
           </>
@@ -413,10 +439,5 @@ function VideoComp({ link = '', content }) {
     </>
   );
 }
-
-VideoComp.propTypes = {
-  link: PropTypes.string,
-  content: PropTypes.object.isRequired,
-};
 
 export default memo(VideoComp);

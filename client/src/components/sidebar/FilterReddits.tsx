@@ -59,7 +59,7 @@ function FilterReddits() {
   const handleFilterHotkey = (event: KeyboardEvent) => {
     const pressedKey = event.key;
     const subLength = document.querySelectorAll(
-      '#sidebar-subreddits .nav-item a'
+      '#sidebar-subreddits .nav-item a, #sidebar-search-results .nav-item a'
     ).length;
 
     if (hotkeyStatus()) {
@@ -96,7 +96,7 @@ function FilterReddits() {
         }
         case 'Enter': {
           const trigger = document.querySelector<HTMLAnchorElement>(
-            '#sidebar-subreddits .nav-item a.trigger'
+            '#sidebar-subreddits .nav-item a.trigger, #sidebar-search-results .nav-item a.trigger'
           );
           if (trigger?.pathname) {
             navigate(trigger.pathname);

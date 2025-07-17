@@ -1,9 +1,17 @@
 import { useContext } from 'react';
-import PropTypes from 'prop-types';
-import { PostsContextData } from '../../../contexts';
+import type { LinkData } from '@/types/redditApi';
+import { PostsContextData } from '@/contexts';
 
-function Thumb({ content }) {
-  const postContext = useContext(PostsContextData);
+interface ThumbProps {
+  content: LinkData;
+}
+
+interface PostContextData {
+  isLoaded: boolean;
+}
+
+function Thumb({ content }: ThumbProps) {
+  const postContext = useContext(PostsContextData) as PostContextData;
   const { isLoaded } = postContext;
 
   let img;
@@ -39,9 +47,5 @@ function Thumb({ content }) {
     </div>
   );
 }
-
-Thumb.propTypes = {
-  content: PropTypes.object.isRequired,
-};
 
 export default Thumb;

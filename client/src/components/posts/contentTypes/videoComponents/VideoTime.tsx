@@ -1,17 +1,23 @@
 import { memo } from 'react';
-import PropTypes from 'prop-types';
 
-function convertSeconds(secs) {
+interface TimeResult {
+  hours: number;
+  minutes: string;
+  seconds: string;
+}
+
+function convertSeconds(secs: number): string {
   const seconds = Math.round(secs);
 
-  const results = {};
-  results.hours = Math.floor(seconds / 60 / 60);
-  results.minutes = Math.floor((seconds / 60) % 60)
-    .toString()
-    .padStart(2, '0');
-  results.seconds = Math.floor(seconds % 60)
-    .toString()
-    .padStart(2, '0');
+  const results: TimeResult = {
+    hours: Math.floor(seconds / 60 / 60),
+    minutes: Math.floor((seconds / 60) % 60)
+      .toString()
+      .padStart(2, '0'),
+    seconds: Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, '0'),
+  };
 
   let timestamp = '';
   if (results.hours > 0) {
@@ -23,7 +29,12 @@ function convertSeconds(secs) {
   return timestamp;
 }
 
-function VideoTime({ currentTime, duration }) {
+interface VideoTimeProps {
+  currentTime: number;
+  duration: number;
+}
+
+function VideoTime({ currentTime, duration }: VideoTimeProps) {
   // Figure out the times
   const durationPretty = convertSeconds(duration);
   const currentTimePretty = currentTime ? convertSeconds(currentTime) : '00:00';
@@ -34,10 +45,5 @@ function VideoTime({ currentTime, duration }) {
     </div>
   );
 }
-
-VideoTime.propTypes = {
-  currentTime: PropTypes.number.isRequired,
-  duration: PropTypes.number.isRequired,
-};
 
 export default memo(VideoTime);

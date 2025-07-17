@@ -1,5 +1,16 @@
+import type { MouseEvent } from 'react';
 import { memo, useState } from 'react';
-import PropTypes from 'prop-types';
+import type { BufferData } from './types';
+
+interface VideoDebugProps {
+  currentTime: number;
+  duration: number;
+  canPlay: boolean;
+  canPlayThrough: boolean;
+  stalled: boolean;
+  waiting: boolean;
+  buffer: BufferData;
+}
 
 function VideoDebug({
   currentTime,
@@ -9,9 +20,10 @@ function VideoDebug({
   stalled,
   waiting,
   buffer,
-}) {
+}: VideoDebugProps) {
   const [showDebug, setShowDebug] = useState(false);
-  const toggleDebug = () => {
+
+  const toggleDebug = (event: MouseEvent<HTMLButtonElement>) => {
     setShowDebug(!showDebug);
   };
 
@@ -48,15 +60,5 @@ function VideoDebug({
     </div>
   );
 }
-
-VideoDebug.propTypes = {
-  currentTime: PropTypes.number.isRequired,
-  duration: PropTypes.number.isRequired,
-  canPlay: PropTypes.bool.isRequired,
-  canPlayThrough: PropTypes.bool.isRequired,
-  stalled: PropTypes.bool.isRequired,
-  waiting: PropTypes.bool.isRequired,
-  buffer: PropTypes.object.isRequired,
-};
 
 export default memo(VideoDebug);

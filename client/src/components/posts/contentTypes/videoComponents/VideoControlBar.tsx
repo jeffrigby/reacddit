@@ -1,10 +1,22 @@
 import { memo } from 'react';
-import PropTypes from 'prop-types';
 import VideoAudioButton from './VideoAudioButton';
 import VideoFullScreenButton from './VideoFullScreenButton';
 import VideoPlayButton from './VideoPlayButton';
 import VideoTime from './VideoTime';
 import VideoBufferBar from './VideoBufferBar';
+import type { VideoContent, BufferData } from './types';
+
+interface VideoControlBarProps {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  duration: number;
+  currentTime: number;
+  playing: boolean;
+  muted: boolean;
+  content: VideoContent;
+  link?: string;
+  buffer: BufferData;
+  toggleManualStop: (stopped: boolean) => void;
+}
 
 function VideoControlBar({
   videoRef,
@@ -13,10 +25,10 @@ function VideoControlBar({
   playing,
   muted,
   content,
-  link,
+  link = '',
   buffer,
   toggleManualStop,
-}) {
+}: VideoControlBarProps) {
   if (!duration) {
     return null;
   }
@@ -53,21 +65,5 @@ function VideoControlBar({
     </>
   );
 }
-
-VideoControlBar.propTypes = {
-  videoRef: PropTypes.object.isRequired,
-  duration: PropTypes.number.isRequired,
-  currentTime: PropTypes.number.isRequired,
-  playing: PropTypes.bool.isRequired,
-  muted: PropTypes.bool.isRequired,
-  content: PropTypes.object.isRequired,
-  link: PropTypes.string,
-  buffer: PropTypes.object.isRequired,
-  toggleManualStop: PropTypes.func.isRequired,
-};
-
-VideoControlBar.defaultProps = {
-  link: '',
-};
 
 export default memo(VideoControlBar);
