@@ -1,5 +1,5 @@
 import Koa from "koa";
-import Router from "koa-router";
+import Router from "@koa/router";
 import session from "koa-session";
 import logger from "koa-logger";
 import { randomUUID } from "crypto";
