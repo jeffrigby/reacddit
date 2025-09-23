@@ -34,7 +34,7 @@
     "nodemon": "^3.1.4",
     "pm2": "^6.0.5",
     "qs": "^6.11.1",
-    "serverless-http": "^3.0.1"
+    "serverless-http": "^4.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.10.0",
