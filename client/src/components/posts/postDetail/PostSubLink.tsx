@@ -1,16 +1,15 @@
-import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-function PostSubLink({ subreddit }) {
+interface PostSubLinkProps {
+  subreddit: string;
+}
+
+function PostSubLink({ subreddit }: PostSubLinkProps): React.JSX.Element {
   return (
     <Link to={{ pathname: `/r/${subreddit}`, state: { showBack: true } }}>
       /r/{subreddit}
     </Link>
   );
 }
-
-PostSubLink.propTypes = {
-  subreddit: PropTypes.string.isRequired,
-};
 
 export default PostSubLink;

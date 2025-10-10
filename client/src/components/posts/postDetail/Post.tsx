@@ -1,3 +1,4 @@
+import type { MouseEvent, KeyboardEvent } from 'react';
 import {
   memo,
   useState,
@@ -7,7 +8,6 @@ import {
   useContext,
   useMemo,
 } from 'react';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
 import { useNavigate, useLocation, useParams } from 'react-router';
@@ -27,26 +27,43 @@ import {
   postFocused,
 } from '../../../redux/selectors/postSelectors';
 import CommentReplyList from '../../comments/CommentReplyList';
+import type { RootState } from '../../../redux/configureStore';
+import type { LinkData, CommentData } from '../../../types/redditApi';
 const classNames = require('classnames');
 
-function useRenderedContent(data, kind, expand) {
-  const [renderedContent, setRenderedContent] = useState(null);
+interface RenderedContent {
+  inline?: Array<Promise<unknown> | unknown>;
+  [key: string]: unknown;
+}
+
+interface UseRenderedContentReturn {
+  renderedContent: RenderedContent | null;
+}
+
+function useRenderedContent(
+  data: LinkData | CommentData,
+  kind: string,
+  expand: boolean
+): UseRenderedContentReturn {
+  const [renderedContent, setRenderedContent] =
+    useState<RenderedContent | null>(null);
 
   // Used for debugging offscreen elements.
   const isRendered = useRef(false);
 
   useEffect(() => {
-    const getRenderedContent = async () => {
+    const getRenderedContent = async (): Promise<void> => {
       // This is when there is no body.
-      if (data.is_self && !data.selftext) {
+      const linkData = data as LinkData;
+      if (linkData.is_self && !linkData.selftext) {
         isRendered.current = true;
         return;
       }
 
       // Get the content from the crosspost
       const getContent =
-        data.crosspost_parent && data.crosspost_parent_list[0]
-          ? await RenderContent(data.crosspost_parent_list[0], 't3')
+        linkData.crosspost_parent && linkData.crosspost_parent_list?.[0]
+          ? await RenderContent(linkData.crosspost_parent_list[0], 't3')
           : await RenderContent(data, kind);
 
       if (!getContent) {
@@ -72,34 +89,48 @@ function useRenderedContent(data, kind, expand) {
   return { renderedContent };
 }
 
-function Post({ post, duplicate = false, parent = false, postName, idx }) {
+interface PostProps {
+  post: { data: LinkData | CommentData; kind: string };
+  duplicate?: boolean;
+  parent?: boolean;
+  postName: string;
+  idx: number;
+}
+
+function Post({
+  post,
+  duplicate = false,
+  parent = false,
+  postName,
+  idx,
+}: PostProps): React.JSX.Element {
   const { data, kind } = post;
   const [hide, setHide] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
-  const [onScreen, setOnScreen] = useState({});
+  const [onScreen, setOnScreen] = useState<boolean>(false);
   const [showVisToggle, setShowVisToggle] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams();
+  const params = useParams<{ listType?: string }>();
 
-  const postRef = useRef();
-  const minHeightRef = useRef();
+  const postRef = useRef<HTMLDivElement>(null);
+  const minHeightRef = useRef<number>();
 
-  const siteSettings = useSelector((state) => state.siteSettings);
-  const listingsStatus = useSelector((state) =>
+  const siteSettings = useSelector((state: RootState) => state.siteSettings);
+  const listingsStatus = useSelector((state: RootState) =>
     listingStatus(state, location.key)
   );
-  const focused = useSelector((state) =>
+  const focused = useSelector((state: RootState) =>
     postFocused(state, postName, idx, location.key)
   );
-  const actionable = useSelector((state) =>
+  const actionable = useSelector((state: RootState) =>
     postActionable(state, postName, idx, location.key)
   );
 
   const [lastExpanded, setLastExpanded] = useContext(
     ListingsContextLastExpanded
-  );
+  ) as [string, (value: string) => void];
 
   // Set observer for loading range.
   useEffect(() => {
@@ -109,7 +140,9 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
       },
       { threshold: 0, rootMargin: '250px 0px 500px 0px' }
     );
-    loadObserver.observe(postRef.current);
+    if (postRef.current) {
+      loadObserver.observe(postRef.current);
+    }
     return () => loadObserver.disconnect();
   }, [postRef]);
 
@@ -119,7 +152,9 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
       (entries) => setOnScreen(entries[0].isIntersecting),
       { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
     );
-    onScreenObs.observe(postRef.current);
+    if (postRef.current) {
+      onScreenObs.observe(postRef.current);
+    }
     return () => onScreenObs.disconnect();
   }, [postRef]);
 
@@ -161,11 +196,12 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
       return true;
     }
 
-    if (data.stickied && siteSettings.condenseSticky && !parent) {
+    const linkData = data as LinkData;
+    if (linkData.stickied && siteSettings.condenseSticky && !parent) {
       return false;
     }
 
-    if (data.pinned && siteSettings.condensePinned && !parent) {
+    if (linkData.pinned && siteSettings.condensePinned && !parent) {
       return false;
     }
 
@@ -175,8 +211,7 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
     return siteSettings.view === 'expanded' || false;
   }, [
     params.listType,
-    data.stickied,
-    data.pinned,
+    data,
     siteSettings.condenseSticky,
     siteSettings.condensePinned,
     siteSettings.condenseDuplicate,
@@ -193,7 +228,7 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
   }, [initView]);
 
   useEffect(() => {
-    let reposInt;
+    let reposInt: NodeJS.Timeout | undefined;
     if (siteSettings.view === 'condensed' && lastExpanded) {
       // Close one that was already open.
       if (expand && data.name !== lastExpanded) {
@@ -203,8 +238,12 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
       }
 
       if (data.name === lastExpanded) {
-        const reposition = () => {
+        const reposition = (): boolean => {
           const lastExpandedPost = document.getElementById(lastExpanded);
+          if (!lastExpandedPost) {
+            return false;
+          }
+
           const { top, bottom } = lastExpandedPost.getBoundingClientRect();
           const bottomPos = bottom - window.innerHeight;
 
@@ -245,7 +284,7 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
   }, [data.name, expand, setLastExpanded, siteSettings.view]);
 
   const toggleView = useCallback(
-    (event) => {
+    (event: MouseEvent | KeyboardEvent) => {
       toggleViewAction();
       event.preventDefault();
     },
@@ -253,11 +292,12 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
   );
 
   const gotoDuplicates = useCallback(() => {
-    if (!data.is_self) {
-      const searchTo = `/duplicates/${data.id}`;
+    const linkData = data as LinkData;
+    if (!linkData.is_self) {
+      const searchTo = `/duplicates/${linkData.id}`;
       navigate(searchTo);
     }
-  }, [data.id, data.is_self, navigate]);
+  }, [data, navigate]);
 
   // @todo is there a way around pop up blockers?
   const openReddit = useCallback(() => {
@@ -265,11 +305,12 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
   }, [data.permalink]);
 
   const openLink = useCallback(() => {
-    window.open(data.url, '_blank');
-  }, [data.url]);
+    const linkData = data as LinkData;
+    window.open(linkData.url, '_blank');
+  }, [data]);
 
   useEffect(() => {
-    const hotkeys = (event) => {
+    const hotkeys = (event: KeyboardEvent): void => {
       if (
         hotkeyStatus() &&
         (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')
@@ -300,12 +341,18 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
     };
 
     if (actionable) {
-      document.addEventListener('keydown', hotkeys);
+      document.addEventListener('keydown', hotkeys as unknown as EventListener);
     } else {
-      document.removeEventListener('keydown', hotkeys);
+      document.removeEventListener(
+        'keydown',
+        hotkeys as unknown as EventListener
+      );
     }
     return () => {
-      document.removeEventListener('keydown', hotkeys);
+      document.removeEventListener(
+        'keydown',
+        hotkeys as unknown as EventListener
+      );
     };
   }, [
     actionable,
@@ -331,15 +378,19 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
     duplicate,
     loaded: shouldLoad,
     'on-screen': onScreen,
-    'comment-child': kind === 't1' && data.depth > 0,
+    'comment-child':
+      kind === 't1' &&
+      (data as CommentData).depth &&
+      (data as CommentData).depth > 0,
   });
 
-  const styles = {};
+  const styles: React.CSSProperties = {};
   if (!isLoaded && minHeightRef.current && expand) {
     styles.minHeight = minHeightRef.current;
   }
 
-  const isReplies = kind === 't1' && data.replies;
+  const commentData = data as CommentData;
+  const isReplies = kind === 't1' && (commentData.replies ?? false);
 
   const visibilityToggle = showVisToggle ? (
     <div className="debug-visibility">
@@ -382,11 +433,14 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
             <div className="entry-after-header">
               {expand && (
                 <>
-                  <Content content={renderedContent} key={data.id} />
+                  <Content
+                    content={renderedContent as Record<string, unknown>}
+                    key={data.id}
+                  />
 
                   <PostFooter
                     debug={siteSettings.debug}
-                    renderedContent={renderedContent}
+                    renderedContent={renderedContent as Record<string, unknown>}
                     setShowVisToggle={setShowVisToggle}
                     showVisToggle={showVisToggle}
                   />
@@ -394,8 +448,8 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
               )}
               {isReplies && expand && (
                 <CommentReplyList
-                  linkId={data.link_id}
-                  replies={data.replies}
+                  linkId={commentData.link_id ?? ''}
+                  replies={commentData.replies}
                 />
               )}
             </div>
@@ -405,14 +459,5 @@ function Post({ post, duplicate = false, parent = false, postName, idx }) {
     </PostsContextData.Provider>
   );
 }
-
-Post.propTypes = {
-  postName: PropTypes.string.isRequired,
-  idx: PropTypes.number.isRequired,
-  post: PropTypes.object.isRequired,
-  // visible: PropTypes.bool.isRequired,
-  duplicate: PropTypes.bool,
-  parent: PropTypes.bool,
-};
 
 export default memo(Post);

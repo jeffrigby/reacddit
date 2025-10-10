@@ -1,7 +1,10 @@
-import PropTypes from 'prop-types';
 import { formatDistanceToNow } from 'date-fns';
 
-function PostTimeAgo({ createdUtc }) {
+interface PostTimeAgoProps {
+  createdUtc: number;
+}
+
+function PostTimeAgo({ createdUtc }: PostTimeAgoProps): React.JSX.Element {
   const timeago = formatDistanceToNow(createdUtc * 1000);
   // gotta be a better way to do this, but, whatever
   const timeagoshort = timeago
@@ -23,9 +26,5 @@ function PostTimeAgo({ createdUtc }) {
     </>
   );
 }
-
-PostTimeAgo.propTypes = {
-  createdUtc: PropTypes.number.isRequired,
-};
 
 export default PostTimeAgo;

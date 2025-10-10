@@ -1,25 +1,36 @@
+import type { MouseEvent } from 'react';
 import { memo, useContext, useState } from 'react';
-import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import copy from 'copy-to-clipboard';
 import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
+import type { LinkData, CommentData } from '../../../types/redditApi';
+
+interface PostFooterProps {
+  debug: boolean;
+  renderedContent?: Record<string, unknown> | null;
+  setShowVisToggle: (show: boolean) => void;
+  showVisToggle: boolean;
+}
 
 function PostFooter({
   debug,
   renderedContent = null,
   setShowVisToggle,
   showVisToggle,
-}) {
-  const postContext = useContext(PostsContextData);
+}: PostFooterProps): React.JSX.Element | null {
+  const postContext = useContext(PostsContextData) as {
+    post: { data: LinkData | CommentData; kind: string };
+    isLoaded: boolean;
+  };
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
 
-  const copyID = (comp) => {
-    const id = comp.target.textContent;
+  const copyID = (comp: MouseEvent<HTMLButtonElement>): void => {
+    const id = comp.currentTarget.textContent || '';
     copy(id);
     setCopied(true);
     setTimeout(() => {
@@ -79,21 +90,23 @@ function PostFooter({
     );
   }
 
+  const linkData = data as LinkData;
+
   return (
     <>
       <footer className="d-flex clearfix align-middle mt-1">
         <div className="me-auto meta">{kind === 't3' && <PostMeta />}</div>
         <div>
           {debug && <span className="ps-3">{debugLinks}</span>}
-          {!data.is_self && data.domain && (
+          {!linkData.is_self && linkData.domain && (
             <Link
               to={{
-                pathname: `/r/${data.subreddit}/search`,
-                search: `?q=site:%22${data.domain}%22`,
+                pathname: `/r/${linkData.subreddit}/search`,
+                search: `?q=site:%22${linkData.domain}%22`,
                 state: { showBack: true },
               }}
             >
-              {data.domain}
+              {linkData.domain}
             </Link>
           )}
         </div>
@@ -102,12 +115,5 @@ function PostFooter({
     </>
   );
 }
-
-PostFooter.propTypes = {
-  debug: PropTypes.bool.isRequired,
-  renderedContent: PropTypes.object,
-  showVisToggle: PropTypes.bool.isRequired,
-  setShowVisToggle: PropTypes.func.isRequired,
-};
 
 export default memo(PostFooter);

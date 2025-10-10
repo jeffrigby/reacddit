@@ -1,12 +1,20 @@
 import { Suspense, useContext } from 'react';
-import PropTypes from 'prop-types';
 import JsonView from 'react18-json-view';
 import 'react18-json-view/src/style.css';
 import 'react18-json-view/src/dark.css';
 import { PostsContextData } from '../../../contexts';
+import type { LinkData, CommentData } from '../../../types/redditApi';
 
-function PostDebug({ renderedContent = null }) {
-  const postContext = useContext(PostsContextData);
+interface PostDebugProps {
+  renderedContent?: Record<string, unknown> | null;
+}
+
+function PostDebug({
+  renderedContent = null,
+}: PostDebugProps): React.JSX.Element {
+  const postContext = useContext(PostsContextData) as {
+    post: { data: LinkData | CommentData };
+  };
   const { post } = postContext;
   const { data } = post;
 
@@ -37,9 +45,5 @@ function PostDebug({ renderedContent = null }) {
     </div>
   );
 }
-
-PostDebug.propTypes = {
-  renderedContent: PropTypes.object,
-};
 
 export default PostDebug;

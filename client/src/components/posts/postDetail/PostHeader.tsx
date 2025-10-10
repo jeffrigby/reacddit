@@ -1,5 +1,5 @@
+import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo, useContext } from 'react';
-import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router';
@@ -11,11 +11,28 @@ import PostHeaderComment from './PostHeaderComment';
 import PostTimeAgo from './PostTimeAgo';
 import PostCommentLink from './PostCommentLink';
 import PostSubLink from './PostSubLink';
+import type { RootState } from '../../../redux/configureStore';
+import type { LinkData } from '../../../types/redditApi';
 
-function PostHeader({ toggleView, expand, duplicate }) {
-  const postContext = useContext(PostsContextData);
-  const listType = useSelector((state) => state.listingsFilter.listType);
-  const params = useParams();
+interface PostHeaderProps {
+  toggleView: (event: MouseEvent | KeyboardEvent) => void;
+  expand: boolean;
+  duplicate: boolean;
+}
+
+function PostHeader({
+  toggleView,
+  expand,
+  duplicate,
+}: PostHeaderProps): React.JSX.Element {
+  const postContext = useContext(PostsContextData) as {
+    post: { data: LinkData; kind: string };
+    isLoaded: boolean;
+  };
+  const listType = useSelector(
+    (state: RootState) => state.listingsFilter.listType
+  );
+  const params = useParams<{ listType?: string; target?: string }>();
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
 
@@ -24,7 +41,7 @@ function PostHeader({ toggleView, expand, duplicate }) {
     return <PostHeaderComment expand={expand} toggleView={toggleView} />;
   }
 
-  let linkFlair = null;
+  let linkFlair: React.JSX.Element | null = null;
   if (data.link_flair_text) {
     const flairLinkQuery = encodeURIComponent(
       `flair:"${data.link_flair_text}"`
@@ -83,8 +100,8 @@ function PostHeader({ toggleView, expand, duplicate }) {
 
   const btnClass = 'btn btn-link btn-sm m-0 p-0 shadow-none';
 
-  let searchLink = '';
-  let directLink = '';
+  let searchLink: React.JSX.Element | string = '';
+  let directLink: React.JSX.Element | string = '';
   if (!data.is_self) {
     const searchTo = `/duplicates/${data.id}`;
     searchLink = (
@@ -130,7 +147,7 @@ function PostHeader({ toggleView, expand, duplicate }) {
     </div>
   );
 
-  let titleLink;
+  let titleLink: React.JSX.Element;
   if (listType === 'comments') {
     titleLink = (
       <a
@@ -244,11 +261,5 @@ function PostHeader({ toggleView, expand, duplicate }) {
     </header>
   );
 }
-
-PostHeader.propTypes = {
-  toggleView: PropTypes.func.isRequired,
-  expand: PropTypes.bool.isRequired,
-  duplicate: PropTypes.bool.isRequired,
-};
 
 export default memo(PostHeader);

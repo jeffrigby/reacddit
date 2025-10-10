@@ -1,11 +1,19 @@
+import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo } from 'react';
-import PropTypes from 'prop-types';
 import PostExpandContract from '../postActions/PostExpandContract';
 import PostMeta from './PostMeta';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 
-function PostHeaderComment({ expand, toggleView }) {
+interface PostHeaderCommentProps {
+  expand: boolean;
+  toggleView: (event: MouseEvent | KeyboardEvent) => void;
+}
+
+function PostHeaderComment({
+  expand,
+  toggleView,
+}: PostHeaderCommentProps): React.JSX.Element {
   return (
     <header className="d-flex">
       <div className="me-2 post-action-expand">
@@ -21,10 +29,5 @@ function PostHeaderComment({ expand, toggleView }) {
     </header>
   );
 }
-
-PostHeaderComment.propTypes = {
-  toggleView: PropTypes.func.isRequired,
-  expand: PropTypes.bool.isRequired,
-};
 
 export default memo(PostHeaderComment);

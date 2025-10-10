@@ -1,33 +1,38 @@
 import { useEffect, useMemo, useState } from 'react';
-import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { produce } from 'immer';
 import classNames from 'classnames';
 import RedditAPI from '../../../reddit/redditAPI';
 import { subredditsData } from '../../../redux/actions/subreddits';
+import type { RootState } from '../../../redux/configureStore';
+
+interface PostBylineAuthorProps {
+  author: string;
+  flair?: string | null;
+  isSubmitter?: boolean;
+}
 
 /**
  * Renders the author information and actions for a post.
  *
- * @param {string} author - The username of the post author.
- * @param {string|null} flair - The flair for the post author. Defaults to null.
- * @param {boolean} isSubmitter - Specifies if the author is also the submitter of the post. Defaults to false.
+ * @param author - The username of the post author.
+ * @param flair - The flair for the post author. Defaults to null.
+ * @param isSubmitter - Specifies if the author is also the submitter of the post. Defaults to false.
  *
- * @returns {JSX.Element} - The rendered author information and actions.
+ * @returns The rendered author information and actions.
  */
-function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
+function PostBylineAuthor({
+  author,
+  flair = null,
+  isSubmitter = false,
+}: PostBylineAuthorProps): React.JSX.Element {
   const dispatch = useDispatch();
-  const subreddits = useSelector((state) => state.subreddits);
+  const subreddits = useSelector((state: RootState) => state.subreddits);
 
   const authorSub = useMemo(() => `u_${author.toLowerCase()}`, [author]);
   const isFollowed = useMemo(
-    () =>
-      !!(
-        subreddits &&
-        subreddits.subreddits &&
-        subreddits.subreddits[authorSub]
-      ),
+    () => !!subreddits?.subreddits?.[authorSub],
     [subreddits, authorSub]
   );
 
@@ -37,7 +42,7 @@ function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
     setIsFollowing(isFollowed);
   }, [isFollowed]);
 
-  const unfollowUser = async (name) => {
+  const unfollowUser = async (name: string): Promise<void> => {
     await RedditAPI.followUser(name, 'unsub');
     setIsFollowing(false);
     const newSubreddits = produce(subreddits, (draft) => {
@@ -46,7 +51,7 @@ function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
     dispatch(subredditsData(newSubreddits));
   };
 
-  const followUser = async (name) => {
+  const followUser = async (name: string): Promise<void> => {
     await RedditAPI.followUser(name, 'sub');
     setIsFollowing(true);
     const subredditAbout = await RedditAPI.subredditAbout(authorSub);
@@ -56,8 +61,14 @@ function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
     dispatch(subredditsData(newSubreddits));
   };
 
-  const onClick = () =>
-    isFollowing ? unfollowUser(authorSub) : followUser(authorSub);
+  const onClick = (): void => {
+    if (isFollowing) {
+      unfollowUser(authorSub);
+    } else {
+      followUser(authorSub);
+    }
+  };
+
   const title = !isFollowing ? `follow ${author}` : `unfollow ${author}`;
 
   const authorFlair = flair ? (
@@ -99,11 +110,5 @@ function PostBylineAuthor({ author, flair = null, isSubmitter = false }) {
     </>
   );
 }
-
-PostBylineAuthor.propTypes = {
-  author: PropTypes.string.isRequired,
-  flair: PropTypes.string,
-  isSubmitter: PropTypes.bool,
-};
 
 export default PostBylineAuthor;
