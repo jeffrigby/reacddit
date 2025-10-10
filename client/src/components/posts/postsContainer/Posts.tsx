@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react';
+import { memo, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import type { RootState } from '../../../types/redux';
@@ -17,21 +18,26 @@ interface ListingDataResponse {
 
 function Posts(): ReactElement {
   const location = useLocation();
-  const listType = useSelector(
-    (state: RootState) => state.listingsFilter.listType
-  );
-  const data = useSelector((state: RootState) =>
-    listingData(state, location.key)
-  ) as ListingDataResponse;
+
+  // Combine selectors to reduce re-renders
+  const { listType, data } = useSelector((state: RootState) => ({
+    listType: state.listingsFilter.listType,
+    data: listingData(state, location.key) as ListingDataResponse,
+  }));
 
   const { children: entriesObject, originalPost } = data;
+
+  // Memoize regex match and derived state (must be before early return)
+  const hasParent = useMemo(
+    () => originalPost && listType.match(/duplicates|comments/),
+    [originalPost, listType]
+  );
+
+  const idxOffset = useMemo(() => (hasParent ? 1 : 0), [hasParent]);
 
   if (!entriesObject) {
     return <PostsLoadingStatus />;
   }
-
-  const hasParent = originalPost && listType.match(/duplicates|comments/);
-  const idxOffset = hasParent ? 1 : 0;
 
   return (
     <>
@@ -47,4 +53,4 @@ function Posts(): ReactElement {
   );
 }
 
-export default Posts;
+export default memo(Posts);

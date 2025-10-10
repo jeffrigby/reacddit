@@ -49,7 +49,11 @@ function PostsParent({ post }: PostsParentProps): ReactElement | null {
   );
   const { listType, comment } = listingsFilter;
 
-  const shouldRenderParent = post && listType.match(/duplicates|comments/);
+  // Memoize regex match to prevent re-execution on every render
+  const shouldRenderParent = useMemo(
+    () => post && listType.match(/duplicates|comments/),
+    [post, listType]
+  );
 
   const parentPost = useMemo(() => {
     if (!shouldRenderParent) {
@@ -57,18 +61,11 @@ function PostsParent({ post }: PostsParentProps): ReactElement | null {
     }
 
     const {
-      data: { name, id },
+      data: { name },
     } = post;
 
     return (
-      <Post
-        parent
-        duplicate={false}
-        idx={0}
-        key={id}
-        post={post}
-        postName={name}
-      />
+      <Post parent duplicate={false} idx={0} post={post} postName={name} />
     );
   }, [post, shouldRenderParent]);
 

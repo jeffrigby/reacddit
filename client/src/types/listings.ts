@@ -9,4 +9,7 @@ export interface ListingsFilter {
   sort?: string;
   multi?: boolean;
   user?: string;
+  comment?: string;
+  qs?: string;
+  postName?: string;
 }

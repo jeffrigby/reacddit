@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
 import Post from '../postDetail/Post';
 
@@ -56,4 +56,4 @@ function PostsRender({
   }, [posts, listType, idxOffset]);
 }
 
-export default PostsRender;
+export default memo(PostsRender);

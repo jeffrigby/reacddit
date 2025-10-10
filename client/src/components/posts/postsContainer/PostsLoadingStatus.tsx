@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import type { RootState } from '../../../types/redux';
@@ -70,15 +70,15 @@ function getStatusInfo(status: string, data: ListingData): StatusInfo | null {
 
 function PostsLoadingStatus(): ReactElement | null {
   const location = useLocation();
-  const data = useSelector((state: RootState) =>
-    listingData(state, location.key)
-  );
-  const status = useSelector((state: RootState) =>
-    listingStatus(state, location.key)
-  );
 
-  // Get the message, icon, and alertType based on the status and data.children
-  const statusInfo = getStatusInfo(status, data);
+  // Combine selectors to reduce re-renders
+  const { data, status } = useSelector((state: RootState) => ({
+    data: listingData(state, location.key),
+    status: listingStatus(state, location.key),
+  }));
+
+  // Memoize statusInfo to prevent recalculation on every render
+  const statusInfo = useMemo(() => getStatusInfo(status, data), [status, data]);
 
   if (!statusInfo) {
     return null;
