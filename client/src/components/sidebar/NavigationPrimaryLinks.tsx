@@ -1,28 +1,39 @@
 import { useEffect, useRef, useCallback } from 'react';
+import type { ReactElement, MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import queryString from 'query-string';
 import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
+import type { RootState } from '@/types/redux';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
 
-function NavigationPrimaryLinks() {
-  const me = useSelector((state) => state.redditMe.me);
-  const redditBearer = useSelector((state) => state.redditBearer);
-  const sort = useSelector((state) => state.listingsFilter.sort);
-  const query = useSelector((state) => state.listingsFilter.qs);
-  const subreddits = useSelector((state) => state.subreddits);
+declare const bootstrap: {
+  Modal: new (element: Element | null) => {
+    show: () => void;
+  };
+};
+
+function NavigationPrimaryLinks(): ReactElement {
+  const me = useSelector((state: RootState) => state.redditMe?.me);
+  const redditBearer = useSelector((state: RootState) => state.redditBearer);
+  const sort = useSelector((state: RootState) => state.listingsFilter.sort);
+  const query = useSelector((state: RootState) => state.listingsFilter.qs);
+  const subreddits = useSelector((state: RootState) => state.subreddits);
   const navigate = useNavigate();
 
-  const lastKeyPressed = useRef('');
+  const lastKeyPressed = useRef<string>('');
 
   /**
    * Load a random subreddit from the current users subscribed reddits.
-   * @returns {*}
+   * @param e - Optional mouse event
+   * @returns Navigation promise or false
    */
   const randomSubPush = useCallback(
-    (e) => {
+    (
+      e?: MouseEvent<HTMLAnchorElement>
+    ): ReturnType<typeof navigate> | false => {
       if (e) {
         e.preventDefault();
       }
@@ -49,7 +60,7 @@ function NavigationPrimaryLinks() {
     [navigate, query, sort, subreddits.subreddits]
   );
 
-  const getLoginUrl = useCallback(() => {
+  const getLoginUrl = useCallback((): string => {
     const { loginURL } = redditBearer;
 
     if (!loginURL) {
@@ -63,16 +74,19 @@ function NavigationPrimaryLinks() {
     return loginURL;
   }, [redditBearer]);
 
-  const openHotkeys = (e) => {
+  function openHotkeys(e?: MouseEvent<HTMLAnchorElement>): void {
     if (e) {
       e.preventDefault();
     }
-    const modal = new bootstrap.Modal(document.getElementById('hotkeys'));
-    modal.show();
-  };
+    const hotkeysElement = document.getElementById('hotkeys');
+    if (hotkeysElement && typeof bootstrap !== 'undefined') {
+      const modal = new bootstrap.Modal(hotkeysElement);
+      modal.show();
+    }
+  }
 
   useEffect(() => {
-    const handleNavPrimaryHotkey = (event) => {
+    function handleNavPrimaryHotkey(event: KeyboardEvent): void {
       const { key } = event;
 
       if (hotkeyStatus()) {
@@ -94,27 +108,27 @@ function NavigationPrimaryLinks() {
         }
 
         if (key === 'L') {
-          window.location.href = me.name
+          window.location.href = me?.name
             ? `${process.env.API_PATH}/logout`
             : getLoginUrl();
         }
 
         lastKeyPressed.current = key;
       }
-    };
+    }
 
     document.addEventListener('keydown', handleNavPrimaryHotkey);
     return () => {
       document.removeEventListener('keydown', handleNavPrimaryHotkey);
     };
-  }, [getLoginUrl, me.name, navigate, randomSubPush]);
+  }, [getLoginUrl, me?.name, navigate, randomSubPush]);
 
   const currentSort = sort && sort !== 'relevance' ? sort : '';
   const loginLink = getLoginUrl();
 
   return (
     <ul className="nav flex-column">
-      {!me.name && (
+      {!me?.name && (
         <NavigationGenericNavItem
           isStatic
           iconClass="fas fa-sign-in-alt"

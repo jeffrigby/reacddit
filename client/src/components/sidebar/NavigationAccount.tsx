@@ -1,8 +1,10 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState, useRef } from 'react';
+import type { ReactElement } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip } from 'react-tooltip';
+import type { RootState } from '@/types/redux';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
@@ -10,74 +12,79 @@ import 'react-tooltip/dist/react-tooltip.css';
 
 const menuID = 'navAccount';
 
-function NavigationAccount() {
-  const me = useSelector((state) => state.redditMe.me);
+function NavigationAccount(): ReactElement {
+  const me = useSelector((state: RootState) => state.redditMe?.me);
   const navigate = useNavigate();
 
-  const urlPush = (url) => navigate(url);
-
-  const [showNavAccountMenu, toggleShowNavAccountMenu] = useState(
+  const [showNavAccountMenu, toggleShowNavAccountMenu] = useState<boolean>(
     getMenuStatus(menuID, true)
   );
 
-  let lastKeyPressed = '';
-  const hotkeys = (event) => {
-    const pressedKey = event.key;
-
-    if (hotkeyStatus()) {
-      // Navigation key commands
-      if (lastKeyPressed === 'g') {
-        // Logged in only
-        if (me.name) {
-          const { name } = me;
-          switch (pressedKey) {
-            case 'f':
-              urlPush('/r/friends');
-              break;
-            case 'u':
-              urlPush(`/user/${name}/upvoted`);
-              break;
-            case 'd':
-              urlPush(`/user/${name}/downvoted`);
-              break;
-            case 'b':
-              urlPush(`/user/${name}/posts`);
-              break;
-            case 's':
-              urlPush(`/user/${name}/saved`);
-              break;
-            default:
-              break;
-          }
-        }
-      }
-
-      lastKeyPressed = pressedKey;
-    }
-  };
+  const lastKeyPressed = useRef<string>('');
 
   useEffect(() => {
+    function hotkeys(event: KeyboardEvent): void {
+      const pressedKey = event.key;
+
+      if (hotkeyStatus()) {
+        // Navigation key commands
+        if (lastKeyPressed.current === 'g') {
+          // Logged in only
+          if (me?.name) {
+            const { name } = me;
+            switch (pressedKey) {
+              case 'f':
+                navigate('/r/friends');
+                break;
+              case 'u':
+                navigate(`/user/${name}/upvoted`);
+                break;
+              case 'd':
+                navigate(`/user/${name}/downvoted`);
+                break;
+              case 'b':
+                navigate(`/user/${name}/posts`);
+                break;
+              case 's':
+                navigate(`/user/${name}/saved`);
+                break;
+              default:
+                break;
+            }
+          }
+        }
+
+        lastKeyPressed.current = pressedKey;
+      }
+    }
+
     document.addEventListener('keydown', hotkeys);
     return () => document.removeEventListener('keydown', hotkeys);
-  });
+    // Only depend on me?.name, not full me object to avoid unnecessary reruns
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.name, navigate]);
 
-  const toggleShowMenu = () => {
+  function toggleShowMenu(): void {
     toggleShowNavAccountMenu(!showNavAccountMenu);
     setMenuStatus(menuID, !showNavAccountMenu);
-  };
+  }
+
+  if (!me?.name) {
+    return null;
+  }
 
   const caretClass = showNavAccountMenu
     ? 'fas fa-caret-down menu-caret'
     : 'fas fa-caret-right menu-caret';
 
-  const karmaTotal = me.link_karma + me.comment_karma;
-  const joinedDate = formatDistanceToNow(me.created_utc * 1000);
+  const karmaTotal = (me.link_karma || 0) + (me.comment_karma || 0);
+  const joinedDate = formatDistanceToNow((me.created_utc || 0) * 1000);
   const accountInfo = `
       ${karmaTotal.toLocaleString()} Karma
       <br />
-      ${me.link_karma.toLocaleString()} Post Karma
+      ${(me.link_karma || 0).toLocaleString()} Post Karma
       <br />
-      ${me.comment_karma.toLocaleString()} Comment Karma
+      ${(me.comment_karma || 0).toLocaleString()} Comment Karma
       <br />
       Joined ${joinedDate} ago
   `;
@@ -138,7 +145,7 @@ function NavigationAccount() {
           </ul>
         )}
       </div>
-      <Tooltip html anchorId="nav-user-info" effect="solid" place="bottom" />
+      <Tooltip html anchorId="nav-user-info" place="bottom" />
     </>
   );
 }

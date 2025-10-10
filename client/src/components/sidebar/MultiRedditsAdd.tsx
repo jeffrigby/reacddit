@@ -1,28 +1,42 @@
-import { createRef, useState } from 'react';
-import PropTypes from 'prop-types';
+import { useRef, useState, useCallback } from 'react';
+import type { ReactElement, ChangeEvent } from 'react';
 import RedditAPI from '../../reddit/redditAPI';
 
-function MultiRedditsAdd({ setShowAdd, reloadMultis }) {
-  const nameInput = createRef();
-  const descriptionTextarea = createRef();
+interface MultiRedditsAddProps {
+  setShowAdd: (show: boolean) => void;
+  reloadMultis: () => void;
+}
 
-  const [visibility, setVisibility] = useState(false);
-  const [disabled, setDisabled] = useState(true);
+function MultiRedditsAdd({
+  setShowAdd,
+  reloadMultis,
+}: MultiRedditsAddProps): ReactElement {
+  const nameInput = useRef<HTMLInputElement>(null);
+  const descriptionTextarea = useRef<HTMLTextAreaElement>(null);
+
+  const [visibility, setVisibility] = useState<boolean>(false);
+  const [disabled, setDisabled] = useState<boolean>(true);
   const visibilityIconClass = visibility ? 'fas fa-eye' : 'fas fa-eye-slash';
 
-  const checkInput = () => {
+  const checkInput = useCallback((_event: ChangeEvent<HTMLInputElement>): void => {
+    if (!nameInput.current) {
+      return;
+    }
     const { value } = nameInput.current;
     setDisabled(value === '');
-  };
+  }, []);
 
-  const addMulti = async () => {
+  const addMulti = useCallback(async (): Promise<void> => {
+    if (!nameInput.current || !descriptionTextarea.current) {
+      return;
+    }
     const name = nameInput.current.value;
     const desc = descriptionTextarea.current.value;
     const visibleStatus = visibility ? 'private' : 'public';
     await RedditAPI.multiAdd(name, desc, visibleStatus);
     setShowAdd(false);
     reloadMultis();
-  };
+  }, [visibility, setShowAdd, reloadMultis]);
 
   return (
     <div className="multireddits-add my-2">
@@ -71,7 +85,7 @@ function MultiRedditsAdd({ setShowAdd, reloadMultis }) {
           id="multiform-descr"
           placeholder="Description (optional)"
           ref={descriptionTextarea}
-          rows="3"
+          rows={3}
         />
       </div>
       <div className="form-group mt-2">
@@ -94,10 +108,5 @@ function MultiRedditsAdd({ setShowAdd, reloadMultis }) {
     </div>
   );
 }
-
-MultiRedditsAdd.propTypes = {
-  setShowAdd: PropTypes.func.isRequired,
-  reloadMultis: PropTypes.func.isRequired,
-};
 
 export default MultiRedditsAdd;

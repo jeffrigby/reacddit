@@ -4,9 +4,9 @@ import Navigation from './Navigation';
 import Header from './Header';
 import Help from './Help';
 import Routes from './RedditRoutes';
-import { redditGetBearer, redditFetchMe } from '../../redux/actions/reddit';
+import { redditGetBearer, redditFetchMe } from '@/redux/actions/reddit';
 import '../../styles/layout.scss';
-import { hotkeyStatus } from '../../common';
+import { hotkeyStatus } from '@/common';
 
 function App() {
   const [error, setError] = useState(false);
