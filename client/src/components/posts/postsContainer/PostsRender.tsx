@@ -1,18 +1,25 @@
+import type { ReactElement } from 'react';
 import { useMemo } from 'react';
-import PropTypes from 'prop-types';
+import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
 import Post from '../postDetail/Post';
+
+interface PostsRenderProps {
+  posts: Record<string, Thing<LinkData | CommentData>>;
+  listType: string;
+  idxOffset?: number;
+}
 
 /**
  * This is a component to render a listing of posts.
  * It's extracted so both comments and link post types can call it
- * @param posts {object} - The list of posts from reddit
- * @param listType {string} - The type of list to render.
- * @param idxOffset {number} - The offset to use for the index of the post
- * @constructor
  */
-function PostsRender({ posts, listType, idxOffset = 0 }) {
+function PostsRender({
+  posts,
+  listType,
+  idxOffset = 0,
+}: PostsRenderProps): ReactElement[] {
   return useMemo(() => {
-    const links = new Set();
+    const links = new Set<string>();
 
     // Remove the "more" posts
     const filteredPosts = Object.values(posts).filter(
@@ -23,13 +30,14 @@ function PostsRender({ posts, listType, idxOffset = 0 }) {
     return filteredPosts.map((post, idx) => {
       const {
         kind,
-        data: { name, id, url },
+        data: { name, id },
       } = post;
 
       let duplicate = false;
       if (kind === 't3' && listType !== 'duplicates') {
-        if (!links.has(url)) {
-          links.add(url);
+        const linkData = post.data as LinkData;
+        if (!links.has(linkData.url)) {
+          links.add(linkData.url);
         } else {
           duplicate = true;
         }
@@ -47,11 +55,5 @@ function PostsRender({ posts, listType, idxOffset = 0 }) {
     });
   }, [posts, listType, idxOffset]);
 }
-
-PostsRender.propTypes = {
-  idxOffset: PropTypes.number,
-  posts: PropTypes.object.isRequired,
-  listType: PropTypes.string.isRequired,
-};
 
 export default PostsRender;

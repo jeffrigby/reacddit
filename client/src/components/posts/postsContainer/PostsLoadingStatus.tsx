@@ -1,20 +1,38 @@
+import type { ReactElement } from 'react';
 import { memo } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
+import type { RootState } from '../../../types/redux';
 import {
   listingData,
   listingStatus,
 } from '../../../redux/selectors/listingsSelector';
 
-// Function to get message, icon, and alertType based on status and data.children
+type ListingStatus =
+  | 'error'
+  | 'loaded'
+  | 'unloaded'
+  | 'loading'
+  | 'loadingNew'
+  | 'loadingNext'
+  | 'loadedAll';
+
+interface StatusInfo {
+  message: string;
+  icon: string;
+  alertType: string;
+}
+
+interface ListingData {
+  children?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * Get the message, icon, and alertType based on the status and data.children
- * @param status {string} - Listing status
- * @param data {object} - Listing data
- * @returns {{alertType: string, icon: string, message: string}|null} - Object with message, icon, and alertType or null if status is not found
  */
-function getStatusInfo(status, data) {
-  switch (status) {
+function getStatusInfo(status: string, data: ListingData): StatusInfo | null {
+  switch (status as ListingStatus) {
     case 'error':
       return {
         message:
@@ -50,10 +68,14 @@ function getStatusInfo(status, data) {
   }
 }
 
-function PostsLoadingStatus() {
+function PostsLoadingStatus(): ReactElement | null {
   const location = useLocation();
-  const data = useSelector((state) => listingData(state, location.key));
-  const status = useSelector((state) => listingStatus(state, location.key));
+  const data = useSelector((state: RootState) =>
+    listingData(state, location.key)
+  );
+  const status = useSelector((state: RootState) =>
+    listingStatus(state, location.key)
+  );
 
   // Get the message, icon, and alertType based on the status and data.children
   const statusInfo = getStatusInfo(status, data);

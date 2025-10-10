@@ -1,16 +1,22 @@
+import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import type { RootState } from '../../../types/redux';
+import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
 import Post from '../postDetail/Post';
+
+interface PostsParentProps {
+  post: Thing<LinkData | CommentData>;
+}
 
 /**
  * This is a component to render the comment links
- * @param permalink {string} - The permalink of the post
- * @param comment {string} - The comment id
- * @returns {JSX.Element} - Rendered comment links
  */
-function renderCommentLinks(permalink, comment) {
+function renderCommentLinks(
+  permalink: string,
+  comment: string
+): ReactElement | null {
   const parentCommentLink = `${permalink}${comment}/`;
   const search = {
     context: 8,
@@ -24,7 +30,7 @@ function renderCommentLinks(permalink, comment) {
       <Link
         to={{
           pathname: parentCommentLink,
-          search: `?${new URLSearchParams(search).toString()}`,
+          search: `?${new URLSearchParams(search as Record<string, string>).toString()}`,
           state: { showBack: true },
         }}
       >
@@ -36,12 +42,11 @@ function renderCommentLinks(permalink, comment) {
 
 /**
  * This is a component to render the parent post for comments and duplicates
- * @param post {object} - The post object
- * @returns {JSX.Element|null} - Rendered parent post or null if not needed
- * @constructor
  */
-function PostsParent({ post }) {
-  const listingsFilter = useSelector((state) => state.listingsFilter);
+function PostsParent({ post }: PostsParentProps): ReactElement | null {
+  const listingsFilter = useSelector(
+    (state: RootState) => state.listingsFilter
+  );
   const { listType, comment } = listingsFilter;
 
   const shouldRenderParent = post && listType.match(/duplicates|comments/);
@@ -83,7 +88,7 @@ function PostsParent({ post }) {
     return null;
   }
 
-  let subhead;
+  let subhead: string;
   if (listType === 'comments') {
     subhead = comment ? 'Comment Thread' : 'Comments';
   } else {
@@ -99,9 +104,5 @@ function PostsParent({ post }) {
     </>
   );
 }
-
-PostsParent.propTypes = {
-  post: PropTypes.object.isRequired,
-};
 
 export default memo(PostsParent);

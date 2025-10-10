@@ -1,15 +1,28 @@
+import type { ReactElement } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
+import type { RootState } from '../../../types/redux';
+import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
 import { listingData } from '../../../redux/selectors/listingsSelector';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
 import PostsParent from './PostsParent';
 
-function Posts() {
+interface ListingDataResponse {
+  children?: Record<string, Thing<LinkData | CommentData>>;
+  originalPost?: Thing<LinkData | CommentData>;
+  [key: string]: unknown;
+}
+
+function Posts(): ReactElement {
   const location = useLocation();
-  const listType = useSelector((state) => state.listingsFilter.listType);
-  const data = useSelector((state) => listingData(state, location.key));
+  const listType = useSelector(
+    (state: RootState) => state.listingsFilter.listType
+  );
+  const data = useSelector((state: RootState) =>
+    listingData(state, location.key)
+  ) as ListingDataResponse;
 
   const { children: entriesObject, originalPost } = data;
 
@@ -22,7 +35,7 @@ function Posts() {
 
   return (
     <>
-      {hasParent && <PostsParent post={data.originalPost} />}
+      {hasParent && originalPost && <PostsParent post={originalPost} />}
       <PostsLoadingStatus />
       <PostsRender
         idxOffset={idxOffset}
