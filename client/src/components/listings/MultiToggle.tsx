@@ -1,21 +1,25 @@
 import { createRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
-function MultiToggle({ srName }) {
-  const multiRef = createRef();
+interface MultiToggleProps {
+  srName: string;
+}
 
-  const about = useSelector((state) => state.currentSubreddit);
-  const multis = useSelector((state) => state.redditMultiReddits);
-  const redditBearer = useSelector((state) => state.redditBearer);
-  const dispatch = useDispatch();
+function MultiToggle({ srName }: MultiToggleProps) {
+  const multiRef = createRef<HTMLDivElement>();
+
+  const about = useAppSelector((state) => state.currentSubreddit);
+  const multis = useAppSelector((state) => state.redditMultiReddits);
+  const redditBearer = useAppSelector((state) => state.redditBearer);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const disableClose = (e) => {
-      if (!e.target.classList.contains('multi-toggle-input')) {
+    const disableClose = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!target.classList.contains('multi-toggle-input')) {
         e.stopPropagation();
       }
     };
@@ -42,7 +46,7 @@ function MultiToggle({ srName }) {
     return null;
   }
 
-  const addRemove = async (e) => {
+  const addRemove = async (e: React.ChangeEvent<HTMLInputElement>) => {
     let rsp = '';
     if (e.target.checked) {
       rsp = await RedditAPI.multiAddSubreddit(e.target.value, srName);
@@ -57,15 +61,15 @@ function MultiToggle({ srName }) {
     }
   };
 
-  const getSubreddits = (subs) => {
-    const subNames = [];
+  const getSubreddits = (subs: Array<{ name: string }>) => {
+    const subNames: string[] = [];
     subs.forEach((sub) => {
       subNames.push(sub.name);
     });
     return subNames;
   };
 
-  const menuItems = [];
+  const menuItems: JSX.Element[] = [];
   multis.multis.forEach((item) => {
     const key = `${item.data.display_name}-${item.data.created}-${srName}`;
     const subNames = getSubreddits(item.data.subreddits);
@@ -106,9 +110,5 @@ function MultiToggle({ srName }) {
     </div>
   );
 }
-
-MultiToggle.propTypes = {
-  srName: PropTypes.string.isRequired,
-};
 
 export default MultiToggle;

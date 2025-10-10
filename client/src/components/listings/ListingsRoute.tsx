@@ -1,16 +1,22 @@
 import { useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useParams } from 'react-router';
-import { useLocation } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useParams, useLocation } from 'react-router';
+import { useAppDispatch } from '@/redux/hooks';
 import { setHistory } from '../../redux/slices/historySlice';
 import Listings from './Listings';
 import NotFound404 from '../../NotFound404';
 
-function ListingsRoute({ overrides = {}, validations = {} }) {
+interface ListingsRouteProps {
+  overrides?: Record<string, string>;
+  validations?: Record<string, string[]>;
+}
+
+function ListingsRoute({
+  overrides = {},
+  validations = {},
+}: ListingsRouteProps) {
   const match = useParams();
   const location = useLocation();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(setHistory(location));
@@ -35,10 +41,5 @@ function ListingsRoute({ overrides = {}, validations = {} }) {
 
   return <Listings match={overrideMatch} />;
 }
-
-ListingsRoute.propTypes = {
-  overrides: PropTypes.object,
-  validations: PropTypes.object,
-};
 
 export default ListingsRoute;

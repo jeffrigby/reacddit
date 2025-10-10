@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation, useParams } from 'react-router';
 import queryString from 'query-string';
+import { useAppSelector } from '@/redux/hooks';
 import {
   listingData,
   listingState,
@@ -12,12 +12,12 @@ function PostsDebug() {
   const location = useLocation();
   const match = useParams();
 
-  const debugEnabled = useSelector((state) => state.siteSettings.debug);
-  const listingsFilter = useSelector((state) => state.listingsFilter);
-  const listingsState = useSelector((state) =>
+  const debugEnabled = useAppSelector((state) => state.siteSettings.debug);
+  const listingsFilter = useAppSelector((state) => state.listingsFilter);
+  const listingsState = useAppSelector((state) =>
     listingState(state, location.key)
   );
-  const data = useSelector((state) => listingData(state, location.key));
+  const data = useAppSelector((state) => listingData(state, location.key));
 
   const { actionable, focused, visible } = listingsState;
 
@@ -83,7 +83,5 @@ function PostsDebug() {
     </div>
   );
 }
-
-PostsDebug.propTypes = {};
 
 export default PostsDebug;

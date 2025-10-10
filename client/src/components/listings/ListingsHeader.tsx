@@ -1,14 +1,14 @@
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
+import { useAppSelector } from '@/redux/hooks';
 import ListingsHeaderSub from './ListingsHeaderSub';
 import ListingsHeaderMulti from './ListingsHeaderMulti';
-import { listingStatus } from '../../redux/selectors/listingsSelector';
 import ListingsHeaderError from './ListingsHeaderError';
+import { listingStatus } from '../../redux/selectors/listingsSelector';
 
 function ListingsHeader() {
-  const listType = useSelector((state) => state.listingsFilter?.listType);
+  const listType = useAppSelector((state) => state.listingsFilter?.listType);
   const location = useLocation();
-  const status = useSelector((state) => listingStatus(state, location.key));
+  const status = useAppSelector((state) => listingStatus(state, location.key));
 
   let header;
   if (status === 'error') {

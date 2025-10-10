@@ -1,12 +1,16 @@
 import { memo } from 'react';
-import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
+import { useAppDispatch } from '@/redux/hooks';
+import type { LabeledMultiData } from '@/types/redditApi';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 
-function MultiDelete({ multi }) {
-  const dispatch = useDispatch();
+interface MultiDeleteProps {
+  multi: LabeledMultiData;
+}
+
+function MultiDelete({ multi }: MultiDeleteProps) {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const deleteMulti = async () => {
@@ -31,9 +35,5 @@ function MultiDelete({ multi }) {
     </button>
   );
 }
-
-MultiDelete.propTypes = {
-  multi: PropTypes.object.isRequired,
-};
 
 export default memo(MultiDelete);

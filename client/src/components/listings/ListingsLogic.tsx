@@ -1,9 +1,8 @@
 import { useEffect, useRef, useCallback, useContext } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
-import PropTypes from 'prop-types';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { listingsState } from '../../redux/actions/listings';
 import {
   listingState,
@@ -21,13 +20,17 @@ import {
 } from '../posts/PostsFunctions';
 import { hotkeyStatus } from '../../common';
 
-function ListingsLogic({ saved = 0 }) {
+interface ListingsLogicProps {
+  saved?: number;
+}
+
+function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   const location = useLocation();
   // Get Redux Props
-  const status = useSelector((state) => listingStatus(state, location.key));
-  const settings = useSelector((state) => state.siteSettings);
+  const status = useAppSelector((state) => listingStatus(state, location.key));
+  const settings = useAppSelector((state) => state.siteSettings);
   const locationKey = location.key;
-  const listingsCurrentState = useSelector((state) =>
+  const listingsCurrentState = useAppSelector((state) =>
     listingState(state, location.key)
   );
 
@@ -40,9 +43,9 @@ function ListingsLogic({ saved = 0 }) {
     ListingsContextLastExpanded
   );
 
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
-  const setLastExpandedRedux = (expandedId) => {
+  const setLastExpandedRedux = (expandedId: string) => {
     if (expandedId) {
       const newState = { ...listingsCurrentState };
       newState.lastExpanded = expandedId;
@@ -68,7 +71,7 @@ function ListingsLogic({ saved = 0 }) {
   };
 
   // Set some hotkeys
-  const hotkeys = (event) => {
+  const hotkeys = (event: KeyboardEvent) => {
     if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
       const pressedKey = event.key;
       try {
@@ -194,9 +197,5 @@ function ListingsLogic({ saved = 0 }) {
 
   return null;
 }
-
-ListingsLogic.propTypes = {
-  saved: PropTypes.number,
-};
 
 export default ListingsLogic;

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '@/redux/hooks';
+import type { LabeledMultiData } from '@/types/redditApi';
 import RedditAPI from '../../reddit/redditAPI';
 import MultiDelete from './MultiDelete';
 
 function ListingsHeaderMulti() {
-  const [currentMulti, setCurrentMulti] = useState(null);
-  const filter = useSelector((state) => state.listingsFilter);
-  // const multis = useSelector((state) => state.redditMultiReddits);
-  const me = useSelector((state) => state.redditMe);
+  const [currentMulti, setCurrentMulti] = useState<LabeledMultiData | null>(
+    null
+  );
+  const filter = useAppSelector((state) => state.listingsFilter);
+  const me = useAppSelector((state) => state.redditMe);
 
   const { target, user } = filter;
   const name = user === 'me' ? me.me.name : user;

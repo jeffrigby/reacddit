@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
+import { useAppSelector } from '@/redux/hooks';
 import SubUnSub from './SubUnSub';
 import MultiToggle from './MultiToggle';
 import {
@@ -11,19 +11,20 @@ import {
 
 function ListingsHeaderSub() {
   const location = useLocation();
-  const about = useSelector((state) =>
+  const about = useAppSelector((state) =>
     getCurrentSubreddit(state, location.key)
   );
 
-  const filter = useSelector((state) => state.listingsFilter);
-  const cachedSub = useSelector((state) => getCachedSub(state));
+  const filter = useAppSelector((state) => state.listingsFilter);
+  const cachedSub = useAppSelector((state) => getCachedSub(state));
 
   const { listType, target, multi, user } = filter;
 
-  let title = '';
-  let subInfo;
-  let searchEverywhere;
+  let title: string | JSX.Element = '';
+  let subInfo: string | undefined;
+  let searchEverywhere: JSX.Element | undefined;
   let showSubInfo = false;
+
   switch (listType) {
     case 'u':
       document.title = `u/${user}: ${
@@ -96,8 +97,8 @@ function ListingsHeaderSub() {
     </span>
   );
 
-  const description = cachedSub.public_description || about.public_description;
-  const subhead = cachedSub.title || about.title;
+  const description = cachedSub.public_description ?? about.public_description;
+  const subhead = cachedSub.title ?? about.title;
 
   return (
     <>

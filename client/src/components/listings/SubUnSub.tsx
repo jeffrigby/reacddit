@@ -1,22 +1,31 @@
 import { useCallback } from 'react';
 import isEmpty from 'lodash/isEmpty';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router';
 import { produce } from 'immer';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import type { SubredditData } from '@/types/redditApi';
 import { subredditsData } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
 import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
 
+interface SubredditsState {
+  subreddits: Record<string, SubredditData>;
+  [key: string]: unknown;
+}
+
 /**
  * Custom hook to handle subreddit subscription
- * @returns {Function} - Callback function to subscribe to a subreddit
+ * @returns Callback function to subscribe to a subreddit
  */
 function useSubscribe() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   return useCallback(
-    async (about, subreddits, locationKey) => {
+    async (
+      about: SubredditData,
+      subreddits: SubredditsState,
+      locationKey: string
+    ) => {
       await RedditAPI.subscribe(about.name, 'sub');
       const newAbout = { ...about, user_is_subscriber: true };
       dispatch(currentSubreddit(locationKey, newAbout));
@@ -31,12 +40,16 @@ function useSubscribe() {
 
 /**
  * Custom hook to handle subreddit unsubscription
- * @returns {Function} - Callback function to unsubscribe from a subreddit
+ * @returns Callback function to unsubscribe from a subreddit
  */
 function useUnsubscribe() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   return useCallback(
-    async (about, subreddits, locationKey) => {
+    async (
+      about: SubredditData,
+      subreddits: SubredditsState,
+      locationKey: string
+    ) => {
       await RedditAPI.subscribe(about.name, 'unsub');
       const newAbout = { ...about, user_is_subscriber: false };
       dispatch(currentSubreddit(locationKey, newAbout));
@@ -51,17 +64,21 @@ function useUnsubscribe() {
 
 /**
  * SubscribeButton component to handle subscribing and unsubscribing from subreddits
- * @returns {JSX.Element|null} - Rendered SubscribeButton component or null if conditions not met
+ * @returns Rendered SubscribeButton component or null if conditions not met
  */
 function SubUnSub() {
   const location = useLocation();
   const params = useParams();
 
-  const about = useSelector((state) =>
+  const about = useAppSelector((state) =>
     getCurrentSubreddit(state, location.key)
   );
-  const subreddits = useSelector((state) => state.subreddits);
-  const { status: bearerStatus } = useSelector((state) => state.redditBearer);
+  const subreddits = useAppSelector(
+    (state) => state.subreddits
+  ) as SubredditsState;
+  const { status: bearerStatus } = useAppSelector(
+    (state) => state.redditBearer
+  );
 
   const subscribe = useSubscribe();
   const unsubscribe = useUnsubscribe();
