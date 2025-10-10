@@ -9,17 +9,20 @@
 
 ## Component Declaration
 ```typescript
-// ✅ Use function declarations, NOT arrow functions
+// ✅ Use function declarations (recommended for clarity and hoisting)
 function ComponentName() {
   return <div>Content</div>;
 }
 
-// ❌ Avoid
+// ✅ Arrow functions are also acceptable (both are valid in 2025)
 const ComponentName = () => {
   return <div>Content</div>;
 };
 
-// ❌ Never use React.FC
+// ❌ Avoid React.FC (not needed, adds unnecessary complexity)
+// React.FC is not deprecated, but it's unnecessary
+// With React 18+, it no longer includes children by default
+// Function declarations provide clearer intent and better DX
 const ComponentName: React.FC = () => {
   return <div>Content</div>;
 };
@@ -39,7 +42,7 @@ function ComponentName({ title, count, optional = false }: ComponentNameProps) {
   return <div>{title}</div>;
 }
 
-// ❌ Avoid inline type definitions
+// ❌ Avoid inline type definitions for complex props
 function ComponentName({ title }: { title: string }) {
   return <div>{title}</div>;
 }
@@ -52,17 +55,17 @@ function MyComponent() {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log(event.currentTarget.value);
   };
-  
+
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
-  
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       // handle enter
     }
   };
-  
+
   return (
     <div>
       <input onChange={handleChange} onKeyDown={handleKeyDown} />
@@ -76,26 +79,39 @@ useEffect(() => {
   const handleKeyDown = (event: KeyboardEvent) => {
     // handle event
   };
-  
+
   document.addEventListener('keydown', handleKeyDown);
   return () => document.removeEventListener('keydown', handleKeyDown);
 }, []);
 ```
 
-## Redux Integration
+## Redux Integration (Updated for 2025)
 ```typescript
-import { useSelector, useDispatch } from 'react-redux';
+// ✅ Create typed hooks using .withTypes() (Redux v9.1.0+)
+// In src/redux/hooks.ts
+import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '@/types/redux';
 
+// Use the new .withTypes() method for better type inference
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+export const useAppSelector = useSelector.withTypes<RootState>();
+
+// ✅ In components - use the pre-typed hooks
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+
 function MyComponent() {
-  // ✅ Typed useSelector
-  const data = useSelector((state: RootState) => state.slice.data);
-  
-  // ✅ Typed useDispatch
-  const dispatch = useDispatch<AppDispatch>();
-  
+  // No need to type RootState - it's already inferred
+  const data = useAppSelector((state) => state.slice.data);
+
+  // Already knows about thunks and middleware
+  const dispatch = useAppDispatch();
+
   return <div>{data}</div>;
 }
+
+// ❌ Avoid typing on every usage (old pattern)
+const data = useSelector((state: RootState) => state.slice.data);
+const dispatch = useDispatch<AppDispatch>();
 ```
 
 ## State Management
@@ -116,16 +132,30 @@ type RequestState =
   | { status: 'error'; error: Error };
 
 const [requestState, setRequestState] = useState<RequestState>({ status: 'idle' });
+
+// ✅ Type guards for narrowing
+if (requestState.status === 'success') {
+  // TypeScript knows requestState.data exists here
+  console.log(requestState.data);
+}
 ```
 
 ## Refs
 ```typescript
-// ✅ Typed refs
+// ✅ Typed refs (standard pattern - preferred)
 const inputRef = useRef<HTMLInputElement>(null);
 const buttonRef = useRef<HTMLButtonElement>(null);
 const divRef = useRef<HTMLDivElement>(null);
 
-// ✅ Ref callbacks with explicit block bodies
+// Use in component
+<input ref={inputRef} />
+
+// Access with null check
+if (inputRef.current) {
+  inputRef.current.focus();
+}
+
+// ✅ Ref callbacks (for advanced cases only)
 <div ref={current => {
   instance = current;
 }} />
@@ -157,15 +187,16 @@ function useTheme() {
 import { useState, useEffect, useRef } from 'react';
 
 // 2. External libraries
-import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
 
-// 3. Internal imports with @ alias
+// 3. Redux imports (use pre-typed hooks)
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { subredditActions } from '@/redux/actions/subreddits';
-import type { RootState, AppDispatch } from '@/types/redux';
+
+// 4. Type imports
 import type { LinkData, SubredditData } from '@/types/redditApi';
 
-// 4. Relative imports
+// 5. Relative imports
 import { formatNumber } from './utils';
 ```
 
@@ -175,20 +206,34 @@ import { formatNumber } from './utils';
 import type { LinkData, CommentData } from '@/types/redditApi';
 import type { RootState } from '@/types/redux';
 
+// ✅ Inline type qualifiers (TypeScript 4.5+) when mixing types and values
+import { type SomeType, someValue } from './module';
+
 // ✅ Combined imports when needed
 import React, { type MouseEvent } from 'react';
 ```
 
 ## Custom Hooks
 ```typescript
-// ✅ Custom hook pattern
-function useCustomHook(initialValue: string) {
+// ✅ Custom hook pattern with explicit return type
+function useCustomHook(initialValue: string): { value: string; updateValue: (newValue: string) => void } {
   const [value, setValue] = useState(initialValue);
-  
+
   const updateValue = (newValue: string) => {
     setValue(newValue);
   };
-  
+
+  return { value, updateValue };
+}
+
+// ✅ Or with type inference (preferred for simple cases)
+function useCustomHook(initialValue: string) {
+  const [value, setValue] = useState(initialValue);
+
+  const updateValue = (newValue: string) => {
+    setValue(newValue);
+  };
+
   return { value, updateValue };
 }
 ```
@@ -205,6 +250,10 @@ interface LayoutProps {
 interface CardProps {
   children: React.ReactElement; // Only JSX elements
 }
+
+interface StrictProps {
+  children: React.ReactElement<{ id: string }>; // Specific element type
+}
 ```
 
 ## Return Types
@@ -218,6 +267,65 @@ function MyComponent() {
 function renderItems(): React.ReactElement[] | null {
   if (!items) return null;
   return items.map(item => <Item key={item.id} {...item} />);
+}
+```
+
+## React 19 New Features
+```typescript
+// ✅ use() hook for reading promises/context
+import { use } from 'react';
+
+interface User {
+  name: string;
+  email: string;
+}
+
+function Component({ userPromise }: { userPromise: Promise<User> }) {
+  const user = use(userPromise);
+  return <div>{user.name}</div>;
+}
+
+// ✅ useActionState for form handling
+import { useActionState } from 'react';
+
+type FormState = { message: string; success: boolean };
+
+function FormComponent() {
+  const [state, formAction] = useActionState(
+    async (prevState: FormState, formData: FormData): Promise<FormState> => {
+      // Handle form submission
+      return { message: 'Submitted', success: true };
+    },
+    { message: '', success: false }
+  );
+
+  return <form action={formAction}>...</form>;
+}
+
+// ✅ useFormStatus for form state
+import { useFormStatus } from 'react-dom';
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return <button disabled={pending}>Submit</button>;
+}
+
+// ✅ useOptimistic for optimistic UI updates
+import { useOptimistic } from 'react';
+
+function TodoList({ todos }: { todos: string[] }) {
+  const [optimisticTodos, addOptimisticTodo] = useOptimistic(
+    todos,
+    (state, newTodo: string) => [...state, newTodo]
+  );
+
+  return (
+    <ul>
+      {optimisticTodos.map((todo, i) => (
+        <li key={i}>{todo}</li>
+      ))}
+    </ul>
+  );
 }
 ```
 
@@ -252,6 +360,31 @@ const handleSubmit = useCallback((data: FormData) => {
 }, [dispatch]);
 ```
 
+### Generic Components
+```typescript
+// ✅ Generic component pattern
+interface ListProps<T> {
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
+}
+
+function List<T>({ items, renderItem }: ListProps<T>) {
+  return (
+    <ul>
+      {items.map((item, index) => (
+        <li key={index}>{renderItem(item)}</li>
+      ))}
+    </ul>
+  );
+}
+
+// Usage
+<List<User>
+  items={users}
+  renderItem={(user) => <span>{user.name}</span>}
+/>
+```
+
 ## Reddit API Types
 ```typescript
 // ✅ Use types from @/types/redditApi
@@ -267,8 +400,40 @@ interface PostProps {
 ## File Naming & Organization
 - Components: PascalCase.tsx (e.g., `Search.tsx`, `Settings.tsx`)
 - Single component per file
-- Test files alongside components: `ComponentName.test.tsx`
 - Default export for components
+
+## TypeScript Best Practices
+```typescript
+// ✅ Avoid 'any' - use 'unknown' for truly unknown types
+function processData(data: unknown) {
+  if (typeof data === 'string') {
+    // TypeScript knows data is string here
+    return data.toUpperCase();
+  }
+}
+
+// ✅ Use type guards for runtime checks
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'name' in value &&
+    'email' in value
+  );
+}
+
+// ✅ Use const assertions for literal types
+const config = {
+  baseUrl: 'https://api.example.com',
+  timeout: 5000,
+} as const;
+
+// ✅ Use satisfies operator (TypeScript 4.9+)
+const colors = {
+  primary: '#007bff',
+  secondary: '#6c757d',
+} satisfies Record<string, string>;
+```
 
 ## ESLint Compliance
 Always run `npm run lint` after conversion to ensure:
@@ -282,8 +447,18 @@ Always run `npm run lint` after conversion to ensure:
 2. [ ] Add Props interface
 3. [ ] Type all event handlers
 4. [ ] Type useState/useRef calls
-5. [ ] Type Redux hooks (useSelector/useDispatch)
+5. [ ] Replace Redux hooks with pre-typed versions (useAppSelector/useAppDispatch)
 6. [ ] Use 'import type' for type-only imports
 7. [ ] Remove PropTypes if present
 8. [ ] Run `npm run lint` and fix issues
 9. [ ] Verify no TypeScript errors
+
+## Key Differences from Previous Versions
+
+### What Changed in 2025
+- **Redux hooks**: Use `.withTypes()` method instead of typing on every usage
+- **React 19**: New hooks like `use()`, `useActionState()`, `useFormStatus()`, `useOptimistic()`
+- **TypeScript 5.6+**: Improved error messages and type inference
+- **Import patterns**: Inline type qualifiers with `import { type T, value }`
+- **Type safety**: Prefer `unknown` over `any`, use type guards
+- **Generic components**: More common pattern for reusable components
