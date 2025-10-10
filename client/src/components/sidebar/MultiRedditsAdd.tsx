@@ -18,13 +18,16 @@ function MultiRedditsAdd({
   const [disabled, setDisabled] = useState<boolean>(true);
   const visibilityIconClass = visibility ? 'fas fa-eye' : 'fas fa-eye-slash';
 
-  const checkInput = useCallback((_event: ChangeEvent<HTMLInputElement>): void => {
-    if (!nameInput.current) {
-      return;
-    }
-    const { value } = nameInput.current;
-    setDisabled(value === '');
-  }, []);
+  const checkInput = useCallback(
+    (_event: ChangeEvent<HTMLInputElement>): void => {
+      if (!nameInput.current) {
+        return;
+      }
+      const { value } = nameInput.current;
+      setDisabled(value === '');
+    },
+    []
+  );
 
   const addMulti = useCallback(async (): Promise<void> => {
     if (!nameInput.current || !descriptionTextarea.current) {

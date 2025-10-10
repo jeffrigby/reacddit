@@ -37,9 +37,7 @@ function NavigationGenericNavItem({
   const titleNew = title ?? text;
   const linkClassNames = `nav-link${classes ? ` ${classes}` : ''}`;
 
-  const iconElement = iconClass ? (
-    <i className={`${iconClass} fa-fw`} />
-  ) : null;
+  const iconElement = iconClass ? <i className={`${iconClass} fa-fw`} /> : null;
 
   const badgeElement = badge ? (
     <span className="badge bg-primary rounded-pill">{badge}</span>

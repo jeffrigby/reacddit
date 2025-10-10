@@ -68,7 +68,11 @@ function MultiReddits(): ReactElement | null {
     });
   }, [multireddits?.multis]);
 
-  if (redditBearer.status !== 'auth' || !multireddits || multiItems.length === 0) {
+  if (
+    redditBearer.status !== 'auth' ||
+    !multireddits ||
+    multiItems.length === 0
+  ) {
     return null;
   }
 
@@ -87,9 +91,9 @@ function MultiReddits(): ReactElement | null {
         <span
           className="me-auto show-cursor"
           role="presentation"
+          tabIndex={0}
           onClick={toggleMenu}
           onKeyDown={(e) => handleKeyPress(e, toggleMenu)}
-          tabIndex={0}
         >
           <i className={caretClass} /> Custom Feeds
         </span>
@@ -101,7 +105,9 @@ function MultiReddits(): ReactElement | null {
               role="button"
               tabIndex={0}
               onClick={() => setShowAdd((prev) => !prev)}
-              onKeyDown={(e) => handleKeyPress(e, () => setShowAdd((prev) => !prev))}
+              onKeyDown={(e) =>
+                handleKeyPress(e, () => setShowAdd((prev) => !prev))
+              }
             />
             <i
               aria-label="Reload Multis"
