@@ -24,15 +24,12 @@ function renderCommentLinks(
   };
   return (
     <div className="list-actions">
-      <Link to={{ pathname: permalink, state: { showBack: true } }}>
+      <Link state={{ showBack: true }} to={permalink}>
         View all comments
       </Link>{' '}
       <Link
-        to={{
-          pathname: parentCommentLink,
-          search: `?${new URLSearchParams(search as Record<string, string>).toString()}`,
-          state: { showBack: true },
-        }}
+        state={{ showBack: true }}
+        to={`${parentCommentLink}?${new URLSearchParams(search as Record<string, string>).toString()}`}
       >
         Show parent comments
       </Link>

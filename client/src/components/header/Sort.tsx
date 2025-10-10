@@ -5,7 +5,6 @@ import type { To } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
-import type { ListingsFilter } from '@/types/listings';
 import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
@@ -89,9 +88,7 @@ const iconClasses: IconClasses = {
 
 function Sort() {
   const me = useAppSelector((state) => state.redditMe?.me);
-  const listingsFilter = useAppSelector<ListingsFilter>(
-    (state) => state.listingsFilter
-  );
+  const listingsFilter = useAppSelector((state) => state.listingsFilter);
   const location = useLocation();
   const navigate = useNavigate();
   const { search } = location;

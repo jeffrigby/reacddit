@@ -1,7 +1,6 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useParams } from 'react-router';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
@@ -11,27 +10,27 @@ import PostHeaderComment from './PostHeaderComment';
 import PostTimeAgo from './PostTimeAgo';
 import PostCommentLink from './PostCommentLink';
 import PostSubLink from './PostSubLink';
-import type { RootState } from '../../../redux/configureStore';
+import { useAppSelector } from '../../../redux/hooks';
 import type { LinkData } from '../../../types/redditApi';
 
 interface PostHeaderProps {
   toggleView: (event: MouseEvent | KeyboardEvent) => void;
   expand: boolean;
   duplicate: boolean;
+  parent?: boolean;
 }
 
 function PostHeader({
   toggleView,
   expand,
   duplicate,
+  parent = false,
 }: PostHeaderProps): React.JSX.Element {
   const postContext = useContext(PostsContextData) as {
     post: { data: LinkData; kind: string };
     isLoaded: boolean;
   };
-  const listType = useSelector(
-    (state: RootState) => state.listingsFilter.listType
-  );
+  const listType = useAppSelector((state) => state.listingsFilter.listType);
   const params = useParams<{ listType?: string; target?: string }>();
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
@@ -50,11 +49,8 @@ function PostHeader({
     linkFlair = (
       <Link
         className="badge bg-dark mx-1"
-        to={{
-          pathname: flairLink,
-          search: `?q=${flairLinkQuery}`,
-          state: { showBack: true },
-        }}
+        state={{ showBack: true }}
+        to={`${flairLink}?q=${flairLinkQuery}`}
       >
         {data.link_flair_text}
       </Link>
@@ -108,8 +104,9 @@ function PostHeader({
       <div>
         <Link
           className={btnClass}
+          state={{ showBack: true }}
           title="Search for other posts linking to this link"
-          to={{ pathname: searchTo, state: { showBack: true } }}
+          to={searchTo}
         >
           <i className="far fa-copy" />
         </Link>
@@ -165,12 +162,8 @@ function PostHeader({
         aria-label="Title"
         className="list-group-item-heading align-middle"
         dangerouslySetInnerHTML={{ __html: data.title }}
-        to={{
-          pathname: data.permalink,
-          state: {
-            showBack: true,
-          },
-        }}
+        state={{ showBack: true }}
+        to={data.permalink}
       />
     );
   }

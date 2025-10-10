@@ -1,9 +1,12 @@
 import { createSelector } from '@reduxjs/toolkit';
+import type { RootState } from '../../types/redux';
 
-const listingsStatusSelector = (state) => state.listingsRedditStatus;
-const listingsEntriesSelector = (state) => state.listingsRedditEntries;
-const listingsStateSelector = (state) => state.listingsState;
-const locationKeySelector = (state, locationKey) => locationKey;
+const listingsStatusSelector = (state: RootState) => state.listingsRedditStatus;
+const listingsEntriesSelector = (state: RootState) =>
+  state.listingsRedditEntries;
+const listingsStateSelector = (state: RootState) => state.listingsState;
+const locationKeySelector = (_state: RootState, locationKey: string) =>
+  locationKey;
 
 export const listingData = createSelector(
   [listingsEntriesSelector, locationKeySelector],

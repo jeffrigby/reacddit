@@ -6,7 +6,7 @@ interface PostSubLinkProps {
 
 function PostSubLink({ subreddit }: PostSubLinkProps): React.JSX.Element {
   return (
-    <Link to={{ pathname: `/r/${subreddit}`, state: { showBack: true } }}>
+    <Link state={{ showBack: true }} to={`/r/${subreddit}`}>
       /r/{subreddit}
     </Link>
   );

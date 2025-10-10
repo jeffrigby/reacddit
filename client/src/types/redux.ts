@@ -42,10 +42,14 @@ export type LastUpdatedState = Record<string, number>;
 export interface RootState {
   siteSettings: {
     stream: boolean;
+    debug: boolean;
     debugMode?: boolean;
     theme?: string;
     autoRefresh?: boolean;
     view?: 'expanded' | 'condensed';
+    condenseSticky?: boolean;
+    condensePinned?: boolean;
+    condenseDuplicate?: boolean;
     [key: string]: unknown;
   };
   listings: {
@@ -81,6 +85,24 @@ export interface RootState {
     [key: string]: unknown;
   };
   listingsFilter: ListingsFilter;
+  listingsRedditStatus: Record<
+    string,
+    {
+      status: 'unloaded' | 'loading' | 'loaded' | 'loadedAll' | 'error';
+      [key: string]: unknown;
+    }
+  >;
+  listingsRedditEntries: Record<string, unknown>;
+  listingsState: Record<
+    string,
+    {
+      focused: string;
+      visible: string[];
+      minHeights: Record<string, number>;
+      actionable: string | number | null;
+      hasError: boolean;
+    }
+  >;
   [key: string]: unknown;
 }
 

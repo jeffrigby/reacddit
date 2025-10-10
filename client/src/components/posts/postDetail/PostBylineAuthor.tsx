@@ -109,10 +109,8 @@ function PostBylineAuthor({
       </button>{' '}
       <Link
         className={authorClasses}
-        to={{
-          pathname: `/user/${author}/posts/new`,
-          state: { showBack: true },
-        }}
+        state={{ showBack: true }}
+        to={`/user/${author}/posts/new`}
       >
         {author}
       </Link>{' '}

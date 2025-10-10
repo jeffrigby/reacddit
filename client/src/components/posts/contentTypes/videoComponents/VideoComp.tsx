@@ -103,9 +103,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
   const stalledTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const debug = useSelector(
-    (state: RootState) => state.siteSettings.debug as boolean
-  );
+  const debug = useSelector((state: RootState) => state.siteSettings.debug);
   const autoplay = useSelector(
     (state: RootState) => state.siteSettings.autoplay as boolean
   );

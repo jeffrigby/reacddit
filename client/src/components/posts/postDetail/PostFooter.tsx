@@ -112,11 +112,8 @@ function PostFooter({
           {debug && <span className="ps-3">{debugLinks}</span>}
           {!linkData.is_self && linkData.domain && (
             <Link
-              to={{
-                pathname: `/r/${linkData.subreddit}/search`,
-                search: `?q=site:%22${linkData.domain}%22`,
-                state: { showBack: true },
-              }}
+              state={{ showBack: true }}
+              to={`/r/${linkData.subreddit}/search?q=site:%22${linkData.domain}%22`}
             >
               {linkData.domain}
             </Link>

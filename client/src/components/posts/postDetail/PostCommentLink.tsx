@@ -26,14 +26,7 @@ function PostCommentLink({
 }: PostCommentLinkProps): React.JSX.Element {
   const commentCount = abbr(numComments);
   return (
-    <Link
-      to={{
-        pathname: permalink,
-        state: {
-          showBack: true,
-        },
-      }}
-    >
+    <Link state={{ showBack: true }} to={permalink}>
       <i className="far fa-comment" /> {commentCount}
     </Link>
   );

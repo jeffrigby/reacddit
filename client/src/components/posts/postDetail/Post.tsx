@@ -11,7 +11,7 @@ import {
 import { useNavigate, useLocation, useParams } from 'react-router';
 import classNames from 'classnames';
 import Content from '../Content';
-import RenderContent from '../embeds';
+import renderContent from '../embeds';
 import PostFooter from './PostFooter';
 import PostHeader from './PostHeader';
 import {
@@ -62,8 +62,8 @@ function useRenderedContent(
       // Get the content from the crosspost
       const getContent =
         linkData.crosspost_parent && linkData.crosspost_parent_list?.[0]
-          ? await RenderContent(linkData.crosspost_parent_list[0], 't3')
-          : await RenderContent(data, kind);
+          ? await renderContent(linkData.crosspost_parent_list[0], 't3')
+          : await renderContent(data, kind);
 
       if (!getContent) {
         isRendered.current = true;
