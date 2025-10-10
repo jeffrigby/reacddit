@@ -120,8 +120,8 @@ async function render(
   // But Reddit doesn't have a video embed for it.
   if (
     !cleanedPath.match(/[gif|jpg|jpeg|mp4|gifv]$/) &&
-    cleanedPath.substr(0, 2) !== 'a/' &&
-    cleanedPath.substr(0, 2) !== 'gallery/'
+    !cleanedPath.startsWith('a/') &&
+    !cleanedPath.startsWith('gallery/')
   ) {
     const mp4 = await getMP4(id, entry.name, width, height);
     if (mp4) {
@@ -130,7 +130,7 @@ async function render(
   }
 
   // Look for album MP4. This works sometimes. Last ditch effort.
-  if (cleanedPath.substr(0, 2) === 'a/') {
+  if (cleanedPath.startsWith('a/')) {
     const embedID = getEmbedId(entry);
     if (embedID) {
       const embedMp4 = await getMP4(embedID, entry.name, width, height);

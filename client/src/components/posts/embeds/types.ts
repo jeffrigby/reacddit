@@ -33,7 +33,6 @@ export interface GalleryMediaItem {
 // Base embed content interface
 export interface BaseEmbedContent {
   renderFunction?: string;
-  initRenderFunction?: string;
 }
 
 // Image embed content
@@ -55,8 +54,16 @@ export interface VideoEmbedContent extends BaseEmbedContent {
   thumb?: string | null;
   hasAudio?: boolean;
   audioWarning?: boolean;
-  media?: unknown;
-  imgurRenderType?: string;
+  media?: {
+    iframe?: string;
+    apiInfo?: Record<string, unknown>;
+  };
+  imgurRenderType?:
+    | 'imgurGifVPath'
+    | 'imgurMP4Path'
+    | 'imgurMP4'
+    | 'albumMP4'
+    | 'imgurImagePath';
 }
 
 // IFrame embed content
@@ -74,7 +81,7 @@ export interface IFrameEmbedContent extends BaseEmbedContent {
 export interface SelfTextContent extends BaseEmbedContent {
   type: 'self';
   html: string;
-  inline: unknown[];
+  inline: EmbedContent[];
   inlineLinks?: string[];
 }
 
@@ -108,7 +115,36 @@ export type EmbedContent =
   | SocialEmbedContent
   | null;
 
-// Embed render function type
+/**
+ * Handler function contract for domain-specific embed renderers
+ *
+ * @param entry - Reddit post (LinkData) or comment (CommentData) to render
+ * @returns Embed content (sync) or Promise<EmbedContent> (async)
+ *
+ * Handler Requirements:
+ * - Return null if the URL pattern doesn't match your domain's expected format
+ * - Throw errors for API failures (will be caught upstream with fallbacks)
+ * - Support both sync and async implementations
+ * - Don't set renderFunction - this is added automatically by tryDomainHandlers
+ *
+ * @example
+ * ```typescript
+ * // Synchronous handler
+ * function youtubeHandler(entry: LinkData): IFrameEmbedContent | null {
+ *   const videoId = extractVideoId(entry.url);
+ *   if (!videoId) return null;
+ *   return { type: 'iframe', src: `https://youtube.com/embed/${videoId}` };
+ * }
+ *
+ * // Asynchronous handler
+ * async function gfycatHandler(entry: LinkData): Promise<VideoEmbedContent | null> {
+ *   const id = extractId(entry.url);
+ *   const apiData = await fetch(`https://api.gfycat.com/${id}`);
+ *   if (!apiData) return null;
+ *   return { type: 'video', sources: [...] };
+ * }
+ * ```
+ */
 export type EmbedRenderFunction = (
   entry: LinkData | CommentData
 ) => EmbedContent | Promise<EmbedContent>;
