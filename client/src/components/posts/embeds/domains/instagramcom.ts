@@ -1,6 +1,6 @@
-// import parse from 'url-parse';
+import type { LinkData } from '../../../../types/redditApi';
 
-const render = (entry) => {
+function render(entry: LinkData): null {
   // This doesn't work for some reason
 
   const { url } = entry;
@@ -19,6 +19,6 @@ const render = (entry) => {
   //   network: 'instagram',
   //   url: `${origin}${pathname}`,
   // };
-};
+}
 
 export default render;

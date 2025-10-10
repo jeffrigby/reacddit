@@ -1,20 +1,36 @@
 import parse from 'url-parse';
+import type { LinkData, ImageDetails } from '../../../../types/redditApi';
+import type { ImageEmbedContent } from '../types';
 
 const IMAGE_HEIGHT_THRESHOLD = 748;
 const IMAGE_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|avif|svg|bmp|ico)$/i;
 
-const findBestResolution = (resolutions) =>
-  resolutions.find((res) => res.height > IMAGE_HEIGHT_THRESHOLD);
+function findBestResolution(
+  resolutions: ImageDetails[]
+): ImageDetails | undefined {
+  return resolutions.find((res) => res.height > IMAGE_HEIGHT_THRESHOLD);
+}
 
-const createImageProps = (base, { width, height, url }) => ({
-  ...base,
-  width,
-  height,
-  src: url,
-});
+interface BaseImage {
+  title: string;
+  type: 'image';
+  renderFunction: string;
+}
 
-const redditImagePreview = (entry) => {
-  const baseImage = {
+function createImageProps(
+  base: BaseImage,
+  { width, height, url }: ImageDetails
+): ImageEmbedContent {
+  return {
+    ...base,
+    width,
+    height,
+    src: url,
+  };
+}
+
+function redditImagePreview(entry: LinkData): ImageEmbedContent | null {
+  const baseImage: BaseImage = {
     title: entry.title,
     type: 'image',
     renderFunction: 'redditImagePreview',
@@ -43,6 +59,6 @@ const redditImagePreview = (entry) => {
   }
 
   return null;
-};
+}
 
 export default redditImagePreview;

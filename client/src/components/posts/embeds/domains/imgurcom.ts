@@ -1,9 +1,16 @@
 import parse from 'url-parse';
 import axios from 'axios';
+import type { LinkData } from '../../../../types/redditApi';
+import type { VideoEmbedContent, ImageEmbedContent } from '../types';
 import redditImagePreview from '../defaults/redditImagePreview';
 import redditVideoPreview from '../defaults/redditVideoPreview';
 
-async function getMP4(id, name, width, height) {
+async function getMP4(
+  id: string,
+  name: string,
+  width: number,
+  height: number
+): Promise<VideoEmbedContent | false> {
   try {
     const videoUrl = `https://i.imgur.com/${id}.mp4`;
     const checkType = await axios.head(videoUrl);
@@ -30,24 +37,24 @@ async function getMP4(id, name, width, height) {
   return false;
 }
 
-function cleanPath(pathname) {
+function cleanPath(pathname: string): string {
   return pathname
     .substring(1)
     .replace(/\/new$/, '')
     .replace(/^\/|\/$/g, '');
 }
 
-function getEmbedId(entry) {
+function getEmbedId(entry: LinkData): string | false {
   try {
-    if (!entry.secure_media_embed.content) {
+    if (!entry.secure_media_embed?.content) {
       return false;
     }
     const embeddlySrs = entry.secure_media_embed.content.match(/src="(\S+)" /);
-    if (!embeddlySrs[1]) {
+    if (!embeddlySrs?.[1]) {
       return false;
     }
     const embeddlySrsParsed = parse(embeddlySrs[1], true);
-    const embedSrc = parse(embeddlySrsParsed.query.image);
+    const embedSrc = parse(embeddlySrsParsed.query.image as string);
     const embedSrcClean = cleanPath(embedSrc.pathname);
     return embedSrcClean.split('.')[0];
   } catch (e) {
@@ -57,7 +64,9 @@ function getEmbedId(entry) {
   return false;
 }
 
-const render = async (entry) => {
+async function render(
+  entry: LinkData
+): Promise<VideoEmbedContent | ImageEmbedContent | null> {
   const parsedUrl = parse(entry.url, true);
   const { pathname } = parsedUrl;
 
@@ -69,7 +78,7 @@ const render = async (entry) => {
   let width = 1024;
   let height = 768;
 
-  if (entry.preview) {
+  if (entry.preview?.images?.[0]?.source) {
     const { width: w, height: h } = entry.preview.images[0].source;
     width = w;
     height = h;
@@ -176,6 +185,6 @@ const render = async (entry) => {
     src,
     imgurRenderType: 'imgurImagePath',
   };
-};
+}
 
 export default render;

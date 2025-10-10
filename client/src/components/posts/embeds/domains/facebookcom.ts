@@ -1,6 +1,8 @@
 import parse from 'url-parse';
+import type { LinkData } from '../../../../types/redditApi';
+import type { SocialEmbedContent } from '../types';
 
-const render = (entry) => {
+function render(entry: LinkData): SocialEmbedContent | null {
   const { url } = entry;
   if (!url) {
     return null;
@@ -20,6 +22,6 @@ const render = (entry) => {
     network: 'facebook',
     url: `${origin}${pathname}`,
   };
-};
+}
 
 export default render;

@@ -1,4 +1,4 @@
 .env.production
 /.eslintcache
-/src/components/posts/embeds/domains_custom/*.js
+/src/components/posts/embeds/domains_custom/*.ts
 /dist

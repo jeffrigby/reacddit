@@ -1,16 +1,12 @@
-const { detect } = require('detect-browser');
+import { detect } from 'detect-browser';
+import type { LinkData } from '../../../../types/redditApi';
+import type { VideoEmbedContent, VideoSource } from '../types';
 
 const browser = detect();
 
-const redditVideoPreview = (entry) => {
-  const rvp =
-    entry.preview && entry.preview.reddit_video_preview
-      ? entry.preview.reddit_video_preview
-      : null;
-  const mrv =
-    entry.secure_media && entry.secure_media.reddit_video
-      ? entry.secure_media.reddit_video
-      : null;
+function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
+  const rvp = entry.preview?.reddit_video_preview ?? null;
+  const mrv = entry.secure_media?.reddit_video ?? null;
 
   let media = null;
   if (mrv) {
@@ -19,21 +15,23 @@ const redditVideoPreview = (entry) => {
     media = rvp;
   }
 
-  let poster = entry.thumbnail ? entry.thumbnail : null;
+  let poster: string | null = entry.thumbnail ? entry.thumbnail : null;
   try {
-    poster = entry.preview.images[0].source.url;
+    if (entry.preview?.images?.[0]?.source?.url) {
+      poster = entry.preview.images[0].source.url;
+    }
   } catch (e) {
     console.error(`redditVideoPreview: Error getting poster`, e);
     // continue
   }
 
   if (media) {
-    const sources = [];
+    const sources: VideoSource[] = [];
     let audioWarning = true;
 
     // For some reason safari doesn't care about the CORS violation and can play sound.
     // Firefox and chrome don't work even with hls.js & dash.js embeds.
-    if (browser.name === 'safari' || browser.name === 'ios') {
+    if (browser?.name === 'safari' || browser?.name === 'ios') {
       sources.push({
         type: 'application/vnd.apple.mpegURL',
         src: media.hls_url,
@@ -68,7 +66,7 @@ const redditVideoPreview = (entry) => {
     if (mp4) {
       const { source } = mp4;
 
-      const sources = [{ type: 'video/mp4', src: source.url }];
+      const sources: VideoSource[] = [{ type: 'video/mp4', src: source.url }];
 
       return {
         width: source.width,
@@ -82,6 +80,6 @@ const redditVideoPreview = (entry) => {
   }
 
   return null;
-};
+}
 
 export default redditVideoPreview;

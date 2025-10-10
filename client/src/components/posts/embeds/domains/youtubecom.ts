@@ -1,11 +1,15 @@
 import parse from 'url-parse';
+import type { LinkData } from '../../../../types/redditApi';
+import type { IFrameEmbedContent } from '../types';
 
-const render = (entry) => {
+function render(entry: LinkData): IFrameEmbedContent | null {
   const parsedUrl = parse(entry.url, true);
   const youtubeid = parsedUrl.query.v;
+
   if (!youtubeid) {
     return null;
   }
+
   const { title } = entry;
   const src = `https://www.youtube.com/embed/${youtubeid}`;
 
@@ -20,11 +24,6 @@ const render = (entry) => {
       'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
     referrerPolicy: 'strict-origin-when-cross-origin',
   };
-};
+}
 
 export default render;
-
-// <iframe width="560" height="315" src="https://www.youtube.com/embed/3HjIljJd-o0?si=ELx-1DMhY7CabmoY"
-//         title="YouTube video player" frameBorder="0"
-//         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-//         referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
