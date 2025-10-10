@@ -54,7 +54,7 @@ function Header() {
 
   // removed `history.length > 2 &&` when upgrading to react-router v6
   // @todo do I need to check this?
-  const backButton = location.state && location.state.showBack && (
+  const backButton = location.state?.showBack && (
     <div>
       <button
         aria-label="Go Back"
@@ -100,7 +100,5 @@ function Header() {
     </div>
   );
 }
-
-Header.propTypes = {};
 
 export default Header;

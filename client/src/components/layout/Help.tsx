@@ -7,7 +7,7 @@ function Help() {
         className="modal fade"
         id="autoRefresh"
         role="dialog"
-        tabIndex="-1"
+        tabIndex={-1}
       >
         <div className="modal-dialog modal-sm">
           <div className="modal-content">
@@ -38,7 +38,7 @@ function Help() {
         className="modal fade"
         id="condenseHelp"
         role="dialog"
-        tabIndex="-1"
+        tabIndex={-1}
       >
         <div className="modal-dialog modal-sm">
           <div className="modal-content">
@@ -66,7 +66,7 @@ function Help() {
         className="modal fade"
         id="hotkeys"
         role="dialog"
-        tabIndex="-1"
+        tabIndex={-1}
       >
         <div className="modal-dialog modal-lg" role="document">
           <div className="modal-content">

@@ -1,32 +1,38 @@
-import { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import { useEffect, useCallback } from 'react';
 import isEmpty from 'lodash/isEmpty';
+import type { SubredditsFilterState } from '@/types/redux';
 import MultiReddits from '../sidebar/MultiReddits';
 import NavigationPrimaryLinks from '../sidebar/NavigationPrimaryLinks';
 import NavigationSubReddits from '../sidebar/NavigationSubreddits';
 import SearchRedditNames from '../sidebar/SearchRedditNames';
-import '../../styles/sidebar.scss';
 import NavigationAccount from '../sidebar/NavigationAccount';
+import '../../styles/sidebar.scss';
 
-function Navigation({ redditBearer, subredditsFilter }) {
-  const closeMenuIfOpen = () => {
+interface NavigationProps {
+  redditBearer: {
+    bearer?: string;
+    status?: string;
+    loginURL?: string;
+  };
+  subredditsFilter: SubredditsFilterState;
+}
+
+function Navigation({ redditBearer, subredditsFilter }: NavigationProps) {
+  const closeMenuIfOpen = useCallback(() => {
     if (document.body.classList.contains('show-menu')) {
       document.body.classList.remove('show-menu');
     }
-  };
+  }, []);
 
   useEffect(() => {
-    document
-      .getElementById('menu-overlay')
-      .addEventListener('click', closeMenuIfOpen);
-    return () => {
-      if (document.getElementById('menu-overlay')) {
-        document
-          .getElementById('menu-overlay')
-          .removeEventListener('click', closeMenuIfOpen);
-      }
-    };
-  }, []);
+    const menuOverlay = document.getElementById('menu-overlay');
+    if (menuOverlay) {
+      menuOverlay.addEventListener('click', closeMenuIfOpen);
+      return () => {
+        menuOverlay.removeEventListener('click', closeMenuIfOpen);
+      };
+    }
+  }, [closeMenuIfOpen]);
 
   const { filterText, active } = subredditsFilter;
   const hideExtras = !isEmpty(filterText) || active;
@@ -48,10 +54,5 @@ function Navigation({ redditBearer, subredditsFilter }) {
     </div>
   );
 }
-
-Navigation.propTypes = {
-  redditBearer: PropTypes.object.isRequired,
-  subredditsFilter: PropTypes.object.isRequired,
-};
 
 export default Navigation;

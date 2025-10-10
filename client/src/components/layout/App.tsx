@@ -1,34 +1,37 @@
 import { memo, StrictMode, useState, useEffect, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { redditGetBearer, redditFetchMe } from '@/redux/actions/reddit';
+import { hotkeyStatus } from '@/common';
 import Navigation from './Navigation';
 import Header from './Header';
 import Help from './Help';
 import Routes from './RedditRoutes';
-import { redditGetBearer, redditFetchMe } from '@/redux/actions/reddit';
 import '../../styles/layout.scss';
-import { hotkeyStatus } from '@/common';
 
 function App() {
   const [error, setError] = useState(false);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState(null);
-  const dispatch = useDispatch();
-  const redditBearer = useSelector((state) => state.redditBearer);
-  const pinMenu = useSelector((state) => state.siteSettings.pinMenu);
-  const subredditsFilter = useSelector((state) => state.subredditsFilter);
-  const redditMe = useSelector((state) => state.redditMe);
+  const [message, setMessage] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const redditBearer = useAppSelector((state) => state.redditBearer);
+  const pinMenu = useAppSelector((state) => state.siteSettings.pinMenu);
+  const subredditsFilter = useAppSelector((state) => state.subredditsFilter);
+  const redditMe = useAppSelector((state) => state.redditMe);
 
-  const hotkeys = (event) => {
+  const hotkeys = useCallback((event: KeyboardEvent) => {
     const pressedKey = event.key;
 
     if (hotkeyStatus()) {
       if (pressedKey === '?') {
-        const modal = new bootstrap.Modal(document.getElementById('hotkeys'));
-        modal.show();
+        const modalElement = document.getElementById('hotkeys');
+        if (modalElement) {
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        }
       }
     }
-  };
+  }, []);
 
   const getToken = useCallback(async () => {
     const bearer = await dispatch(redditGetBearer());
@@ -50,7 +53,7 @@ function App() {
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  });
+  }, [hotkeys]);
 
   // Get the token and user.
   useEffect(() => {
@@ -68,7 +71,7 @@ function App() {
     };
   }, [dispatch, token]);
 
-  if (redditMe.status === 'error') {
+  if (redditMe?.status === 'error') {
     return (
       <div className="alert alert-danger m-2" role="alert">
         <p>
@@ -77,7 +80,7 @@ function App() {
           blocks this by default. Please check your browser content blocking
           settings and try again.
         </p>
-        <p>{redditMe.error}</p>
+        <p>{redditMe?.error}</p>
       </div>
     );
   }

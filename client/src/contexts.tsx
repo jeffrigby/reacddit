@@ -71,33 +71,29 @@ export function IntersectionObserverProvider({
 
   // Lazy initialization during render - ensures observers exist before children mount
   // This prevents a race condition where child posts try to observe before observers are created
-  if (!loadObserverRef.current) {
-    loadObserverRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const callback = loadCallbacksRef.current.get(entry.target);
-          if (callback) {
-            callback(entry.isIntersecting);
-          }
-        });
-      },
-      { threshold: 0, rootMargin: '250px 0px 500px 0px' }
-    );
-  }
+  loadObserverRef.current ??= new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const callback = loadCallbacksRef.current.get(entry.target);
+        if (callback) {
+          callback(entry.isIntersecting);
+        }
+      });
+    },
+    { threshold: 0, rootMargin: '250px 0px 500px 0px' }
+  );
 
-  if (!visibilityObserverRef.current) {
-    visibilityObserverRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const callback = visibilityCallbacksRef.current.get(entry.target);
-          if (callback) {
-            callback(entry.isIntersecting);
-          }
-        });
-      },
-      { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
-    );
-  }
+  visibilityObserverRef.current ??= new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const callback = visibilityCallbacksRef.current.get(entry.target);
+        if (callback) {
+          callback(entry.isIntersecting);
+        }
+      });
+    },
+    { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
+  );
 
   // Cleanup on unmount
   useEffect(() => {

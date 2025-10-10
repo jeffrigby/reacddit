@@ -16,7 +16,21 @@ const userTargets = [
   'gilded',
 ];
 
-const routes = [
+interface RouteConfig {
+  paths: string[];
+  overrides: {
+    listType: string;
+    multi?: boolean;
+    user?: string;
+  };
+  validations: {
+    sort?: string[];
+    target?: string[];
+    user?: string;
+  };
+}
+
+const routes: RouteConfig[] = [
   // Reddit Paths
   {
     paths: ['/', '/:sort', '/r/:target', '/r/:target/:sort'],
@@ -96,32 +110,36 @@ const routes = [
   },
 ];
 
-const extractArgs = (path) =>
-  [...path.matchAll(/\/:(\w+)/g)].map((match) => match[1]);
+function extractArgs(path: string): string[] {
+  return [...path.matchAll(/\/:(\w+)/g)].map((match) => match[1]);
+}
 
-const filterValidations = (args, validations) =>
-  Object.keys(validations)
+function filterValidations(
+  args: string[],
+  validations: RouteConfig['validations']
+): RouteConfig['validations'] {
+  return Object.keys(validations)
     .filter((key) => args.includes(key))
     .reduce(
       (obj, key) => ({
         ...obj,
-        [key]: validations[key],
+        [key]: validations[key as keyof typeof validations],
       }),
       {}
     );
+}
 
 function RedditRoutes() {
-  const generatedRoutes = [];
+  const generatedRoutes: JSX.Element[] = [];
   routes.forEach((route) => {
     const { paths, overrides, validations } = route;
-    paths.forEach((path, index) => {
+    paths.forEach((path) => {
       const filteredValidations = filterValidations(
         extractArgs(path),
         validations
       );
       generatedRoutes.push(
         <Route
-          exact
           element={
             <ListingsRoute
               overrides={overrides}
