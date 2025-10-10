@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom';
 
-function abbr(value: number): string | number {
-  let newValue: number | string = value;
+function abbr(value: number): string {
   const suffixes = ['', 'K', 'M', 'B', 'T'];
+  let newValue = value;
   let suffixNum = 0;
-  while (newValue >= 1000) {
+
+  while (newValue >= 1000 && suffixNum < suffixes.length - 1) {
     newValue /= 1000;
     suffixNum += 1;
-    newValue = Number(newValue.toPrecision(2));
   }
 
-  newValue = newValue + suffixes[suffixNum];
-  return newValue;
+  const formatted = suffixNum > 0 ? Number(newValue.toPrecision(2)) : newValue;
+
+  return `${formatted}${suffixes[suffixNum]}`;
 }
 
 interface PostCommentLinkProps {
@@ -23,8 +24,7 @@ function PostCommentLink({
   numComments,
   permalink,
 }: PostCommentLinkProps): React.JSX.Element {
-  // const commentCount = parseFloat(numComments).toLocaleString('en');
-  const commentCount = abbr(parseFloat(numComments.toString()));
+  const commentCount = abbr(numComments);
   return (
     <Link
       to={{

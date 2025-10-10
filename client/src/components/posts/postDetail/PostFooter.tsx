@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react';
-import { memo, useContext, useState } from 'react';
+import { memo, useContext, useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import copy from 'copy-to-clipboard';
 import { PostsContextData } from '../../../contexts';
@@ -28,12 +28,24 @@ function PostFooter({
   const [copied, setCopied] = useState(false);
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
+  const copyTimeoutRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const copyID = (comp: MouseEvent<HTMLButtonElement>): void => {
     const id = comp.currentTarget.textContent || '';
     copy(id);
     setCopied(true);
-    setTimeout(() => {
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+    }
+    copyTimeoutRef.current = setTimeout(() => {
       setCopied(false);
     }, 500);
   };

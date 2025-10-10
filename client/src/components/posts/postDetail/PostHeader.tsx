@@ -100,8 +100,8 @@ function PostHeader({
 
   const btnClass = 'btn btn-link btn-sm m-0 p-0 shadow-none';
 
-  let searchLink: React.JSX.Element | string = '';
-  let directLink: React.JSX.Element | string = '';
+  let searchLink: React.JSX.Element | null = null;
+  let directLink: React.JSX.Element | null = null;
   if (!data.is_self) {
     const searchTo = `/duplicates/${data.id}`;
     searchLink = (
@@ -191,6 +191,13 @@ function PostHeader({
     showSubreddits = false;
   }
 
+  const handleKeyDown = (event: MouseEvent | KeyboardEvent): void => {
+    if ('key' in event && (event.key === 'Enter' || event.key === ' ')) {
+      event.preventDefault();
+      toggleView(event);
+    }
+  };
+
   if (!expand) {
     return (
       <header className="d-flex flex-nowrap">
@@ -201,11 +208,11 @@ function PostHeader({
         </div>
         <div
           className="flex-grow-1 list-group-item-heading shadow-none align-middle title me-2"
-          role="link"
+          role="button"
           tabIndex={0}
           title="Click to expand"
           onClick={toggleView}
-          onKeyDown={toggleView}
+          onKeyDown={handleKeyDown}
         >
           <span
             className="fw-bold"

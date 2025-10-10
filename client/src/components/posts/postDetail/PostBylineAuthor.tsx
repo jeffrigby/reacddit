@@ -43,22 +43,32 @@ function PostBylineAuthor({
   }, [isFollowed]);
 
   const unfollowUser = async (name: string): Promise<void> => {
-    await RedditAPI.followUser(name, 'unsub');
-    setIsFollowing(false);
-    const newSubreddits = produce(subreddits, (draft) => {
-      delete draft.subreddits[authorSub];
-    });
-    dispatch(subredditsData(newSubreddits));
+    try {
+      await RedditAPI.followUser(name, 'unsub');
+      const newSubreddits = produce(subreddits, (draft) => {
+        delete draft.subreddits[authorSub];
+      });
+      dispatch(subredditsData(newSubreddits));
+      setIsFollowing(false);
+    } catch (error) {
+      console.error('Failed to unfollow user:', error);
+      setIsFollowing(true); // Revert optimistic update
+    }
   };
 
   const followUser = async (name: string): Promise<void> => {
-    await RedditAPI.followUser(name, 'sub');
-    setIsFollowing(true);
-    const subredditAbout = await RedditAPI.subredditAbout(authorSub);
-    const newSubreddits = produce(subreddits, (draft) => {
-      draft.subreddits[authorSub] = subredditAbout.data;
-    });
-    dispatch(subredditsData(newSubreddits));
+    try {
+      await RedditAPI.followUser(name, 'sub');
+      const subredditAbout = await RedditAPI.subredditAbout(authorSub);
+      const newSubreddits = produce(subreddits, (draft) => {
+        draft.subreddits[authorSub] = subredditAbout.data;
+      });
+      dispatch(subredditsData(newSubreddits));
+      setIsFollowing(true);
+    } catch (error) {
+      console.error('Failed to follow user:', error);
+      setIsFollowing(false); // Revert optimistic update
+    }
   };
 
   const onClick = (): void => {

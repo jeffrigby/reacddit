@@ -11,6 +11,7 @@ import {
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
 import { useNavigate, useLocation, useParams } from 'react-router';
+import classNames from 'classnames';
 import Content from '../Content';
 import RenderContent from '../embeds';
 import PostFooter from './PostFooter';
@@ -29,7 +30,6 @@ import {
 import CommentReplyList from '../../comments/CommentReplyList';
 import type { RootState } from '../../../redux/configureStore';
 import type { LinkData, CommentData } from '../../../types/redditApi';
-const classNames = require('classnames');
 
 interface RenderedContent {
   inline?: Array<Promise<unknown> | unknown>;
@@ -72,9 +72,9 @@ function useRenderedContent(
       }
 
       if (getContent.inline) {
-        await getContent.inline.forEach(async (value, key) => {
-          getContent.inline[key] = await value;
-        });
+        getContent.inline = await Promise.all(
+          getContent.inline.map(async (value) => await value)
+        );
       }
 
       setRenderedContent(getContent);
@@ -144,7 +144,7 @@ function Post({
       loadObserver.observe(postRef.current);
     }
     return () => loadObserver.disconnect();
-  }, [postRef]);
+  }, []);
 
   // Set observer for on screen range.
   useEffect(() => {
@@ -156,7 +156,7 @@ function Post({
       onScreenObs.observe(postRef.current);
     }
     return () => onScreenObs.disconnect();
-  }, [postRef]);
+  }, []);
 
   const getMinHeight = useCallback(() => {
     if (postRef.current && shouldLoad) {
@@ -164,28 +164,31 @@ function Post({
     }
   }, [shouldLoad]);
 
+  const throttledGetHeights = useMemo(
+    () => throttle(getMinHeight, 500),
+    [getMinHeight]
+  );
+
   useEffect(() => {
     getMinHeight();
-    const throttledGetHeights = throttle(getMinHeight, 500);
     if (shouldLoad) {
       window.addEventListener('resize', throttledGetHeights, false);
-    } else {
-      window.removeEventListener('resize', throttledGetHeights, false);
     }
     return () => {
       window.removeEventListener('resize', throttledGetHeights, false);
     };
-  }, [getMinHeight, shouldLoad]);
+  }, [getMinHeight, shouldLoad, throttledGetHeights]);
 
   useEffect(() => {
     if (shouldLoad) {
       getMinHeight();
       // trigger it after a second in case things re-render
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         getMinHeight();
       }, 500);
+      return () => clearTimeout(timeoutId);
     }
-  });
+  }, [shouldLoad, getMinHeight]);
 
   const initView = useCallback(() => {
     if (params.listType === 'comments') {
@@ -310,12 +313,13 @@ function Post({
   }, [data]);
 
   useEffect(() => {
-    const hotkeys = (event: KeyboardEvent): void => {
+    const hotkeys = (event: Event): void => {
+      const keyEvent = event as globalThis.KeyboardEvent;
       if (
         hotkeyStatus() &&
         (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')
       ) {
-        const pressedKey = event.key;
+        const pressedKey = keyEvent.key;
         try {
           switch (pressedKey) {
             case 'x':
@@ -341,18 +345,12 @@ function Post({
     };
 
     if (actionable) {
-      document.addEventListener('keydown', hotkeys as unknown as EventListener);
+      document.addEventListener('keydown', hotkeys);
     } else {
-      document.removeEventListener(
-        'keydown',
-        hotkeys as unknown as EventListener
-      );
+      document.removeEventListener('keydown', hotkeys);
     }
     return () => {
-      document.removeEventListener(
-        'keydown',
-        hotkeys as unknown as EventListener
-      );
+      document.removeEventListener('keydown', hotkeys);
     };
   }, [
     actionable,
