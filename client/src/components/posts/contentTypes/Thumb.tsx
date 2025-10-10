@@ -1,9 +1,9 @@
 import { useContext } from 'react';
-import type { LinkData } from '@/types/redditApi';
 import { PostsContextData } from '@/contexts';
+import type { ThumbEmbedContent } from '../embeds/types';
 
 interface ThumbProps {
-  content: LinkData;
+  content: ThumbEmbedContent;
 }
 
 interface PostContextData {

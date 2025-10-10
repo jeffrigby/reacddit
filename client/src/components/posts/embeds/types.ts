@@ -104,6 +104,41 @@ export interface SocialEmbedContent extends BaseEmbedContent {
   url: string;
 }
 
+// Imgur Album content
+export interface ImgurAlbumEmbedContent extends BaseEmbedContent {
+  type: 'imgur_album';
+  images_count: number;
+  cover_height: number;
+  cover_width: number;
+  images: Array<{
+    id: string;
+    animated: boolean;
+    link?: string;
+    src?: string;
+    width?: number;
+    height?: number;
+    sources?: Array<{ src: string; type: string }>;
+    hasAudio?: boolean;
+    audioWarning?: boolean;
+    thumb?: string;
+  }>;
+}
+
+// Thumb content (uses LinkData directly)
+export interface ThumbEmbedContent extends BaseEmbedContent {
+  type: 'thumb';
+  thumbnail: string;
+  title: string;
+  url: string;
+  domain: string;
+}
+
+// Raw HTML content
+export interface RawHTMLEmbedContent extends BaseEmbedContent {
+  type: 'raw_html';
+  html: string;
+}
+
 // Union type for all possible embed content
 export type EmbedContent =
   | ImageEmbedContent
@@ -113,6 +148,9 @@ export type EmbedContent =
   | RedditGalleryContent
   | HttpsErrorContent
   | SocialEmbedContent
+  | ImgurAlbumEmbedContent
+  | ThumbEmbedContent
+  | RawHTMLEmbedContent
   | null;
 
 /**

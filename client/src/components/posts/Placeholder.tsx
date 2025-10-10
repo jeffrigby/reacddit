@@ -1,15 +1,22 @@
 import { useContext } from 'react';
-// import PropTypes from 'prop-types';
-import { PostsContextData } from '../../contexts';
+import { PostsContextData, type PostContextData } from '../../contexts';
 import renderSelf from './embeds/domains/self';
 import Self from './contentTypes/Self';
+import type { LinkData } from '../../types/redditApi';
+
+interface RatioInfo {
+  width: number;
+  ratio: number;
+  contStyle: { width: string };
+  ratioStyle: { paddingBottom: string };
+}
 
 function Placeholder() {
-  const postContext = useContext(PostsContextData);
+  const postContext = useContext(PostsContextData) as PostContextData;
   const { post } = postContext;
   const { data } = post;
 
-  const getRatio = (width, height) => {
+  function getRatio(width: number, height: number): RatioInfo {
     const maxHeight = 625;
 
     const widthContrained =
@@ -23,10 +30,11 @@ function Placeholder() {
       contStyle: { width: `${widthContrained}px` },
       ratioStyle: { paddingBottom: `${ratio}%` },
     };
-  };
+  }
 
-  const getDimensions = () => {
-    const { preview } = data;
+  function getDimensions(): [number, number] | [] {
+    const linkData = data as LinkData;
+    const { preview } = linkData;
     if (preview) {
       // Check for video preview
       if (preview.reddit_video_preview) {
@@ -51,26 +59,30 @@ function Placeholder() {
     }
 
     return [];
-  };
+  }
 
-  const getRatioRounded = (width, height) =>
-    Math.round((width / height) * 100) / 100;
+  function getRatioRounded(width: number, height: number): number {
+    return Math.round((width / height) * 100) / 100;
+  }
 
-  const fixedRatio = (r) => (
-    <div className="content">
-      <div className="media-cont black-bg">
-        <div className="media-contain-width">
-          <div className={`ratio ratio-${r} black-bg`} />
-        </div>
-      </div>
-    </div>
-  );
-
-  if (data.is_self && data.selftext) {
-    const selfContent = renderSelf(data);
+  function fixedRatio(r: string): React.JSX.Element {
     return (
       <div className="content">
-        <Self content={selfContent} name={data.name} />
+        <div className="media-cont black-bg">
+          <div className="media-contain-width">
+            <div className={`ratio ratio-${r} black-bg`} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const linkData = data as LinkData;
+  if (linkData.is_self && linkData.selftext) {
+    const selfContent = renderSelf(linkData);
+    return (
+      <div className="content">
+        <Self content={selfContent} name={linkData.name} />
       </div>
     );
   }
@@ -112,7 +124,5 @@ function Placeholder() {
 
   return <div className="content" />;
 }
-
-Placeholder.propTypes = {};
 
 export default Placeholder;

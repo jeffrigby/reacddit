@@ -1,5 +1,4 @@
 import { useContext } from 'react';
-import PropTypes from 'prop-types';
 import ImageComp from './contentTypes/ImageComp';
 import VideoComp from './contentTypes/videoComponents/VideoComp';
 import IFrame from './contentTypes/IFrame';
@@ -8,19 +7,30 @@ import Self from './contentTypes/Self';
 import ImgurAlbum from './contentTypes/ImgurAlbum';
 import RawHTML from './contentTypes/RawHTML';
 import Placeholder from './Placeholder';
-import { PostsContextData, PostsContextContent } from '../../contexts';
+import {
+  PostsContextData,
+  PostsContextContent,
+  type PostContextData,
+} from '../../contexts';
 import HTTPSError from './contentTypes/HTTPSError';
 import RedditGallery from './contentTypes/RedditGallery';
 import Social from './contentTypes/Social';
+import type { LinkData } from '../../types/redditApi';
+import type { EmbedContent } from './embeds/types';
 
-function Content({ content = null }) {
-  const postContext = useContext(PostsContextData);
+interface ContentProps {
+  content?: EmbedContent | null;
+}
+
+function Content({ content = null }: ContentProps) {
+  const postContext = useContext(PostsContextData) as PostContextData;
   const { post } = postContext;
   const { data } = post;
+  const linkData = data as LinkData;
 
-  const { name, url } = data;
+  const { name, url } = linkData;
 
-  if (data.is_self && !data.selftext) {
+  if (linkData.is_self && !linkData.selftext) {
     return null;
   }
 
@@ -28,7 +38,7 @@ function Content({ content = null }) {
     return <Placeholder />;
   }
 
-  let contentRendered = '';
+  let contentRendered: React.JSX.Element | null = null;
   if (content.type) {
     switch (content.type) {
       case 'image':
@@ -76,9 +86,5 @@ function Content({ content = null }) {
     </PostsContextContent.Provider>
   );
 }
-
-Content.propTypes = {
-  content: PropTypes.object,
-};
 
 export default Content;

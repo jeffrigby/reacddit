@@ -2,9 +2,8 @@ import isNil from 'lodash/isNil';
 
 /**
  * Load the next entry in expanded view mode.
- * @param focused
  */
-export const nextEntry = (focused) => {
+export function nextEntry(focused: string | null): void {
   if (isNil(focused)) {
     return;
   }
@@ -16,25 +15,24 @@ export const nextEntry = (focused) => {
 
   const next = current.nextElementSibling;
 
-  if (next.classList.contains('entry')) {
+  if (next?.classList.contains('entry')) {
     const scrollBy = next.getBoundingClientRect().top - 50;
     window.scrollBy({ top: scrollBy, left: 0 });
   } else {
     window.scrollTo(0, document.body.scrollHeight);
   }
-};
+}
 
 /**
  * Load the next entry when in collapsed view mode.
- * @param lastExpanded
- * @param setLastExpanded
- * @returns {string|null|*}
  */
-export const nextEntryCollapsed = (lastExpanded, setLastExpanded) => {
+export function nextEntryCollapsed(
+  lastExpanded: string | null,
+  setLastExpanded: (id: string) => void
+): string | null {
   // Open up the first one.
   if (!lastExpanded) {
     const first = document.getElementsByClassName('entry')[0];
-    // console.log(first);
     if (isNil(first)) {
       return null;
     }
@@ -48,19 +46,18 @@ export const nextEntryCollapsed = (lastExpanded, setLastExpanded) => {
   }
 
   const next = current.nextElementSibling;
-  if (next.classList.contains('entry')) {
+  if (next?.classList.contains('entry')) {
     setLastExpanded(next.id);
     return next.id;
   }
 
   return null;
-};
+}
 
 /**
  * Previous entry in expanded view mode.
- * @param focused
  */
-export const prevEntry = (focused) => {
+export function prevEntry(focused: string | null): void {
   if (isNil(focused)) {
     return;
   }
@@ -78,15 +75,15 @@ export const prevEntry = (focused) => {
 
   const scrollBy = prev.getBoundingClientRect().top - 50;
   window.scrollBy({ top: scrollBy, left: 0 });
-};
+}
 
 /**
  * Load the previous entry in collapsed view mode
- * @param lastExpanded
- * @param setLastExpanded
- * @returns {string|null}
  */
-export const prevEntryCollapsed = (lastExpanded, setLastExpanded) => {
+export function prevEntryCollapsed(
+  lastExpanded: string | null,
+  setLastExpanded: (id: string) => void
+): string | null {
   // Open up the first one.
   if (!lastExpanded) {
     return null;
@@ -98,42 +95,40 @@ export const prevEntryCollapsed = (lastExpanded, setLastExpanded) => {
   }
 
   const prev = current.previousElementSibling;
-  if (prev.classList.contains('entry')) {
+  if (prev?.classList.contains('entry')) {
     setLastExpanded(prev.id);
     return prev.id;
   }
   return null;
-};
+}
+
+interface ListingState {
+  focused: string;
+  actionable: string | null;
+}
 
 /**
  * Get the current listing state.
- * @param currentState
- * @param viewMode
- * @param lastExpanded
- * @returns {{actionable: null, focused: string}|{}}
  */
-export const getCurrentListingState = (
-  currentState,
-  viewMode,
-  lastExpanded
-) => {
+export function getCurrentListingState(
+  currentState: ListingState | Record<string, never>,
+  viewMode: string,
+  lastExpanded: string | null
+): ListingState | Record<string, never> {
   const postsCollection = document.getElementsByClassName('entry');
   if (postsCollection.length === 0) {
     return {};
   }
   const posts = Array.from(postsCollection);
   let focused = '';
-  let actionable = null;
-  // const minHeights = {};
-  // const visible = [];
-  let prevPostId = null;
+  let actionable: string | null = null;
+  let prevPostId: string | null = null;
 
   if (viewMode === 'condensed' && lastExpanded) {
     actionable = lastExpanded;
     focused = lastExpanded;
   } else {
     posts.forEach((post) => {
-      // const { top, bottom, height } = post.getBoundingClientRect();
       const { top, bottom } = post.getBoundingClientRect();
 
       // If it's not in the visible range skip it.
@@ -153,7 +148,6 @@ export const getCurrentListingState = (
             actionable = inView ? post.id : prevPostId;
           }
         }
-        // visible.push(post.id);
       }
       prevPostId = post.id;
     });
@@ -161,36 +155,35 @@ export const getCurrentListingState = (
 
   return {
     focused,
-    // visible,
     actionable,
   };
-};
+}
 
-export const unfocusIFrame = () => {
+export function unfocusIFrame(): void {
   // Check if iframe is focused. If it is, unfocus it so hotkeys work.
-  if (document.activeElement.tagName === 'IFRAME') {
-    // setTimeout(() => {
+  if (document.activeElement?.tagName === 'IFRAME') {
     window.focus();
-    document.activeElement.blur();
-    // }, 1000);
+    (document.activeElement as HTMLElement).blur();
   }
-};
+}
 
-export const autoPlayVideos = () => {
-  const videoCollection = document.querySelectorAll('video:not(.manual-stop)');
+export function autoPlayVideos(): void {
+  const videoCollection = document.querySelectorAll<HTMLVideoElement>(
+    'video:not(.manual-stop)'
+  );
   if (videoCollection.length !== 0) {
     const videos = Array.from(videoCollection);
     videos.forEach((video) => {
       if (video.paused) {
         const playPromise = video.play();
         playPromise
-          .then((_) => {
+          .then(() => {
             // auto play worked
           })
-          .catch((error) => {
+          .catch(() => {
             // Auto-play was prevented. Ignore the error.
           });
       }
     });
   }
-};
+}

@@ -1,12 +1,12 @@
 import { useState, useMemo, type MouseEvent } from 'react';
 import VideoComp from './videoComponents/VideoComp';
 import Image from './ImageComp';
-import type { ImgurAlbumContent } from './types';
+import type { ImgurAlbumEmbedContent } from '../embeds/types';
 import type { VideoContent } from './videoComponents/types';
 import type { ImageContent } from './types';
 
 interface ImgurAlbumProps {
-  content: ImgurAlbumContent;
+  content: ImgurAlbumEmbedContent;
 }
 
 interface AlbumStyle {

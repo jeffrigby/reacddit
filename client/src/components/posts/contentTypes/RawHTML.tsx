@@ -1,7 +1,7 @@
-import type { RawHTMLContent } from './types';
+import type { RawHTMLEmbedContent } from '../embeds/types';
 
 interface RawHTMLProps {
-  content: RawHTMLContent;
+  content: RawHTMLEmbedContent;
 }
 
 function RawHTML({ content }: RawHTMLProps) {
