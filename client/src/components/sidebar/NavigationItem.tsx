@@ -6,7 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import type { RootState } from '@/types/redux';
 import type { SubredditData } from '@/types/redditApi';
-import { getDiffClassName } from './navHelpers';
+import { getDiffClassName, buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
 
@@ -42,27 +42,14 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
 
   const query = queryString.parse(location.search);
   const { t } = query;
-  let currentSort = sort ?? '';
-  switch (currentSort) {
-    case 'top':
-    case 'controversial':
-      currentSort += t ? `?t=${t}` : '';
-      break;
-    case 'relevance':
-    case 'best':
-    case 'comments':
-      currentSort = '';
-      break;
-    default:
-      break;
-  }
+  const sortPath = buildSortPath(sort, t);
 
   const href =
     item.subreddit_type === 'user'
-      ? `/${_trim(item.url, '/')}/posts/${_trim(currentSort, '/')}`
-      : `/${_trim(item.url, '/')}/${_trim(currentSort, '/')}`;
+      ? `/${_trim(item.url, '/')}/posts/${_trim(sortPath, '/')}`
+      : `/${_trim(item.url, '/')}/${_trim(sortPath, '/')}`;
   const classNameStr = getDiffClassName(lastUpdated, trigger);
-  const subLabel = classNameStr.indexOf('sub-new') !== -1 ? 'New' : null;
+  const subLabel = classNameStr.includes('sub-new') ? 'New' : null;
 
   let { title } = item;
   if (lastUpdated !== 0) {
@@ -73,7 +60,7 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
   return (
     <li className="nav-item d-flex align-items-center">
       <div className="d-flex w-100">
-        {me.name && (
+        {me?.name && (
           <div>
             {item.user_has_favorited !== undefined && (
               <SubFavorite

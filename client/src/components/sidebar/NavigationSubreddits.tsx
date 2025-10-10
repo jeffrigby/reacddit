@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import type { SubredditData } from '@/types/redditApi';
@@ -25,7 +25,8 @@ function NavigationSubReddits() {
 
   useEffect(() => {
     dispatch(subredditsFetchData(false, where));
-  }, [redditBearer.status, dispatch, where]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 'where' is derived from redditBearer.status
+  }, [redditBearer.status, dispatch]);
 
   useEffect(() => {
     const checkLastUpdated = setInterval(() => {
@@ -70,50 +71,63 @@ function NavigationSubReddits() {
     setShowMenu(!showMenu);
   };
 
-  const generateNavItems = () => {
-    const favoritesArray: SubredditData[] = [];
-    const itemsArray: SubredditData[] = [];
-
-    Object.values(filteredSubreddits).forEach((item) => {
-      if (item.user_has_favorited) {
-        favoritesArray.push(item as SubredditData);
-      } else {
-        itemsArray.push(item as SubredditData);
-      }
-    });
-
-    let pos = 0;
-    const navItems: React.ReactElement[] = [];
+  const navItems = useMemo(() => {
     const filterActive = filter.active && !isEmpty(filter.filterText);
-    if (favoritesArray.length) {
-      favoritesArray.forEach((sub) => {
+
+    // Separate favorites and regular subreddits
+    const { favorites, regular } = Object.values(filteredSubreddits).reduce<{
+      favorites: SubredditData[];
+      regular: SubredditData[];
+    }>(
+      (acc, item) => {
+        if (item.subreddit_type === 'user') {
+          return acc;
+        }
+        if (item.user_has_favorited) {
+          acc.favorites.push(item as SubredditData);
+        } else {
+          acc.regular.push(item as SubredditData);
+        }
+        return acc;
+      },
+      { favorites: [], regular: [] }
+    );
+
+    const items: React.ReactElement[] = [];
+    let pos = 0;
+
+    // Render favorites
+    if (favorites.length > 0) {
+      favorites.forEach((sub) => {
         const trigger = filter.activeIndex === pos && filterActive;
-        navItems.push(
+        items.push(
           <NavigationItem item={sub} key={sub.name} trigger={trigger} />
         );
         pos += 1;
       });
-      navItems.push(
+      items.push(
         <li key="divider">
           <hr />
         </li>
       );
     }
 
-    itemsArray.forEach((sub) => {
+    // Render regular subreddits
+    regular.forEach((sub) => {
       const trigger = filter.activeIndex === pos && filterActive;
-      const { subreddit_type: subredditType } = sub;
-      if (subredditType === 'user') {
-        return;
-      }
-      navItems.push(
+      items.push(
         <NavigationItem item={sub} key={sub.name} trigger={trigger} />
       );
       pos += 1;
     });
 
-    return navItems;
-  };
+    return items;
+  }, [
+    filteredSubreddits,
+    filter.active,
+    filter.activeIndex,
+    filter.filterText,
+  ]);
 
   const caretClass = showMenu
     ? 'fas fa-caret-down menu-caret'
@@ -146,7 +160,6 @@ function NavigationSubReddits() {
       </div>
     );
   } else if (subreddits.status === 'loaded') {
-    const navItems = generateNavItems();
     const noItems = isEmpty(navItems);
     if (noItems) {
       content = (
@@ -166,7 +179,8 @@ function NavigationSubReddits() {
 
   const handleReloadKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
-      reloadSubredditsClick(event as unknown as React.MouseEvent);
+      event.preventDefault();
+      reloadSubreddits();
     }
   };
 

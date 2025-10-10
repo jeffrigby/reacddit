@@ -1,3 +1,8 @@
+/**
+ * Navigation helper utilities for sidebar components
+ * Includes time-based CSS class generation and URL building utilities
+ */
+
 // Time thresholds in seconds
 const SECONDS_IN_HOUR = 3600;
 const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
@@ -6,6 +11,11 @@ const STALE_THRESHOLD = (365 / 12) * SECONDS_IN_DAY; // 3 months
 const TODAY_THRESHOLD = SECONDS_IN_DAY; // 1 day
 const NEW_THRESHOLD = SECONDS_IN_HOUR / 2; // 30 minutes
 
+/**
+ * Calculate the difference between current time and last updated time
+ * @param lastUpdated - Timestamp of last update in seconds
+ * @returns Difference in seconds
+ */
 export function lastUpdatedDiff(lastUpdated: number): number {
   const now = Math.floor(Date.now() / 1000);
   return now - lastUpdated;
@@ -42,4 +52,67 @@ export function getDiffClassName(
   }
 
   return classes.join(' ');
+}
+
+/**
+ * Builds a URL query string for sorts that support time filters
+ * @param sort - The current sort value
+ * @param timeFilter - The time filter (t parameter)
+ * @returns Query string with time filter if applicable, empty string otherwise
+ */
+export function buildSortQueryString(
+  sort: string | null | undefined,
+  timeFilter: string | string[] | undefined
+): string {
+  if (!sort) {
+    return '';
+  }
+
+  const isTimeSensitiveSort = sort === 'top' || sort === 'controversial';
+
+  if (isTimeSensitiveSort && timeFilter && typeof timeFilter === 'string') {
+    return `?t=${timeFilter}`;
+  }
+
+  return '';
+}
+
+/**
+ * Normalizes sort parameter for URL construction
+ * Removes certain sort types that shouldn't appear in URLs
+ * @param sort - The sort parameter to normalize
+ * @returns Normalized sort string, or empty string if sort should be omitted
+ */
+export function normalizeSortForUrl(sort: string | null | undefined): string {
+  if (!sort) {
+    return '';
+  }
+
+  // These sorts should not appear in the URL
+  const excludedSorts = ['relevance', 'best', 'comments'];
+  if (excludedSorts.includes(sort)) {
+    return '';
+  }
+
+  return sort;
+}
+
+/**
+ * Builds the complete sort path segment for a URL
+ * @param sort - The sort parameter
+ * @param timeFilter - The time filter (t parameter)
+ * @returns Complete sort path with query string if applicable
+ */
+export function buildSortPath(
+  sort: string | null | undefined,
+  timeFilter: string | string[] | undefined
+): string {
+  const normalizedSort = normalizeSortForUrl(sort);
+
+  if (!normalizedSort) {
+    return '';
+  }
+
+  const queryString = buildSortQueryString(sort, timeFilter);
+  return normalizedSort + queryString;
 }

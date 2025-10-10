@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
 import { searchSubreddits } from '@/reddit/redditApiTs';
 import type { RootState } from '@/types/redux';
 import { getSubredditKeys } from '@/redux/selectors/subredditSelectors';
+import { buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 interface SearchRedditNamesProps {
@@ -58,6 +60,7 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   const auth = useSelector(
     (state: RootState) => state.redditBearer.status === 'auth' || false
   );
+  const location = useLocation();
 
   const initShowSearchResuts = over18 ?? false;
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
@@ -68,37 +71,20 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   }
 
   // Filter out subscribed reddits
-  const filteredSubs: string[] = [];
   const lowerCaseSubreddits = subreddits.map((sub) => sub.toLowerCase());
-  searchResults.forEach((value) => {
-    if (value && lowerCaseSubreddits.indexOf(value.toLowerCase()) === -1) {
-      filteredSubs.push(value);
-    }
-  });
+  const filteredSubs = searchResults.filter(
+    (value) => value && !lowerCaseSubreddits.includes(value.toLowerCase())
+  );
 
-  let currentSort = sort ?? '';
-  const query = queryString.parse(window.location.search);
+  const query = queryString.parse(location.search);
   const { t } = query;
-
-  switch (currentSort) {
-    case 'top':
-    case 'controversial':
-      currentSort += `?t=${t}`;
-      break;
-    case 'relevance':
-    case 'best':
-    case 'comments':
-      currentSort = '';
-      break;
-    default:
-      break;
-  }
+  const sortPath = buildSortPath(sort, t);
 
   let navItems: React.ReactElement[] = [];
   if (filteredSubs.length > 0) {
     navItems = filteredSubs.map((value, idx) => {
       const key = `sr_search_${value}_${idx}`;
-      const to = `/r/${value}/${currentSort}`;
+      const to = `/r/${value}/${sortPath}`;
       return (
         <NavigationGenericNavItem id={key} key={key} text={value} to={to} />
       );

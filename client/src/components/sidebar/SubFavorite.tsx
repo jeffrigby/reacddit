@@ -42,10 +42,10 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
       const newFavoriteState = !isFavorite;
       const subredditKey = srName.toLowerCase();
 
-      // Optimistic update
+      // Optimistic update - Immer allows mutation in draft state
       const optimisticSubs = produce(subreddits, (draftState) => {
         if (draftState.subreddits[subredditKey]) {
-          // eslint-disable-next-line no-param-reassign
+          // eslint-disable-next-line no-param-reassign -- Immer draft state
           draftState.subreddits[subredditKey].user_has_favorited =
             newFavoriteState;
         }
@@ -73,7 +73,8 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
         setIsLoading(false);
       }
     },
-    [isFavorite, srName, subreddits, dispatch, isLoading]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isLoading checked at function start
+    [isFavorite, srName, subreddits, dispatch]
   );
 
   if (!me?.name) {

@@ -11,7 +11,7 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 // Constants
 const MENU_ID = 'friends';
-const INVALID_STATUSES = ['loading', 'unloaded', 'error'] as const;
+const INVALID_STATUSES = new Set(['loading', 'unloaded', 'error']);
 
 // Custom hook for friends logic
 function useFriends() {
@@ -61,7 +61,7 @@ function Friends() {
   } = useFriends();
 
   const friendItems = useMemo(() => {
-    if (INVALID_STATUSES.includes(subreddits.status)) {
+    if (INVALID_STATUSES.has(subreddits.status)) {
       return null;
     }
 

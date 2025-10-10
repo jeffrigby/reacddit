@@ -3,6 +3,7 @@ import type { SubredditData } from '@/types/redditApi';
 import NavigationItem from './NavigationItem';
 
 interface SubredditItem {
+  name: string;
   data: SubredditData;
 }
 

@@ -7,6 +7,7 @@ import _trimEnd from 'lodash/trimEnd';
 import type { RootState } from '@/types/redux';
 import type { LabeledMultiData } from '@/types/redditApi';
 import { setMenuStatus, getMenuStatus } from '../../common';
+import { buildSortPath } from './navHelpers';
 import MultiRedditsSubs from './MultiRedditsSubs';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
@@ -34,14 +35,8 @@ function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
   const search = queryString.parse(location.search) as QueryParams;
 
   // Generate Link
-  let currentSort = sort ?? '';
-  if (currentSort.match(/^(top|controversial)$/) && search.t) {
-    currentSort = `${currentSort}?t=${search.t}`;
-  } else if (currentSort === 'relevance' || currentSort === 'best') {
-    currentSort = '';
-  }
-
-  const navTo = `/me/m/${item.data.name}/${currentSort}`;
+  const sortPath = buildSortPath(sort, search.t);
+  const navTo = `/me/m/${item.data.name}/${sortPath}`;
 
   const arrowClass = showSubs ? 'down' : 'left';
   const arrowTitle = showSubs ? 'Hide Subreddits' : 'Show Subreddits';

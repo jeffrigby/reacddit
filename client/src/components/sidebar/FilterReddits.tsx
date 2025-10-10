@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState, AppDispatch } from '@/types/redux';
@@ -28,11 +28,11 @@ function FilterReddits() {
   /**
    * Helper to clear the filter textbox
    */
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     const filterText = '';
     const activeIndex = 0;
     dispatch(subredditsFilter({ filterText, activeIndex }));
-  };
+  }, [dispatch]);
 
   /**
    * Disable the hotkeys when using the filter.
@@ -56,72 +56,76 @@ function FilterReddits() {
     dispatch(subredditsFilter({ active, activeIndex }));
   };
 
-  const handleFilterHotkey = (event: KeyboardEvent) => {
-    const pressedKey = event.key;
-    const subLength = document.querySelectorAll(
-      '#sidebar-subreddits .nav-item a, #sidebar-search-results .nav-item a'
-    ).length;
+  const handleFilterHotkey = useCallback(
+    (event: KeyboardEvent) => {
+      const pressedKey = event.key;
 
-    if (hotkeyStatus()) {
-      switch (pressedKey) {
-        case 'F':
-        case 'q':
-          filterInput.current?.focus();
-          document.body.classList.add('show-menu');
-          clearSearch();
-          event.preventDefault();
-          break;
-        default:
-          break;
-      }
-    } else if (filter.active) {
-      // Filter is active
-      switch (pressedKey) {
-        case 'ArrowUp': {
-          const activeIndex = filter.activeIndex - 1;
-          if (activeIndex >= 0) {
-            dispatch(subredditsFilter({ activeIndex }));
-          }
-          event.preventDefault();
-          break;
+      if (hotkeyStatus()) {
+        switch (pressedKey) {
+          case 'F':
+          case 'q':
+            filterInput.current?.focus();
+            document.body.classList.add('show-menu');
+            clearSearch();
+            event.preventDefault();
+            break;
+          default:
+            break;
         }
-        case 'ArrowDown': {
-          if (subLength <= filter.activeIndex + 1) {
+      } else if (filter.active) {
+        // Filter is active
+        switch (pressedKey) {
+          case 'ArrowUp': {
+            const activeIndex = filter.activeIndex - 1;
+            if (activeIndex >= 0) {
+              dispatch(subredditsFilter({ activeIndex }));
+            }
+            event.preventDefault();
             break;
           }
-          const activeIndex = filter.activeIndex + 1;
-          dispatch(subredditsFilter({ activeIndex }));
-          event.preventDefault();
-          break;
-        }
-        case 'Enter': {
-          const trigger = document.querySelector<HTMLAnchorElement>(
-            '#sidebar-subreddits .nav-item a.trigger, #sidebar-search-results .nav-item a.trigger'
-          );
-          if (trigger?.pathname) {
-            navigate(trigger.pathname);
+          case 'ArrowDown': {
+            // Query DOM only when needed for navigation
+            const subLength = document.querySelectorAll(
+              '#sidebar-subreddits .nav-item a, #sidebar-search-results .nav-item a'
+            ).length;
+            if (subLength <= filter.activeIndex + 1) {
+              break;
+            }
+            const activeIndex = filter.activeIndex + 1;
+            dispatch(subredditsFilter({ activeIndex }));
+            event.preventDefault();
+            break;
           }
-          document.body.classList.remove('show-menu');
-          filterInput.current?.blur();
-          break;
+          case 'Enter': {
+            const trigger = document.querySelector<HTMLAnchorElement>(
+              '#sidebar-subreddits .nav-item a.trigger, #sidebar-search-results .nav-item a.trigger'
+            );
+            if (trigger?.pathname) {
+              navigate(trigger.pathname);
+            }
+            document.body.classList.remove('show-menu');
+            filterInput.current?.blur();
+            break;
+          }
+          case 'Escape':
+            filterInput.current?.blur();
+            document.body.classList.remove('show-menu');
+            clearSearch();
+            break;
+          default:
+            break;
         }
-        case 'Escape':
-          filterInput.current?.blur();
-          document.body.classList.remove('show-menu');
-          clearSearch();
-          break;
-        default:
-          break;
       }
-    }
-  };
+    },
+    [filter.active, filter.activeIndex, navigate, dispatch, clearSearch]
+  );
 
   useEffect(() => {
     document.addEventListener('keydown', handleFilterHotkey);
     return () => {
       document.removeEventListener('keydown', handleFilterHotkey);
     };
-  });
+  }, [filter.active, filter.activeIndex, handleFilterHotkey]);
 
   return (
     <div
