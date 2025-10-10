@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
 import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
-import type { RootState } from '@/types/redux';
 import type { ListingsFilter } from '@/types/listings';
+import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
 function Search() {
@@ -14,7 +13,7 @@ function Search() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const listingsFilter = useSelector<RootState, ListingsFilter>(
+  const listingsFilter = useAppSelector<ListingsFilter>(
     (state) => state.listingsFilter
   );
 

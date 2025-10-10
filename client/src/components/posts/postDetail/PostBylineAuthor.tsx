@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { produce } from 'immer';
 import classNames from 'classnames';
 import RedditAPI from '../../../reddit/redditAPI';
 import { subredditsData } from '../../../redux/actions/subreddits';
-import type { RootState } from '../../../redux/configureStore';
+import { useAppSelector } from '../../../redux/hooks';
 
 interface PostBylineAuthorProps {
   author: string;
@@ -28,7 +28,7 @@ function PostBylineAuthor({
   isSubmitter = false,
 }: PostBylineAuthorProps): React.JSX.Element {
   const dispatch = useDispatch();
-  const subreddits = useSelector((state: RootState) => state.subreddits);
+  const subreddits = useAppSelector((state) => state.subreddits);
 
   const authorSub = useMemo(() => `u_${author.toLowerCase()}`, [author]);
   const isFollowed = useMemo(

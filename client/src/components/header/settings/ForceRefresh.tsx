@@ -1,5 +1,4 @@
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import { unregister } from '@/serviceWorkerRegistration';
 
 /* global BUILDTIME */
@@ -17,7 +16,7 @@ const reload = () => {
 };
 
 function ForceRefresh() {
-  const debug = useSelector((state: RootState) => state.siteSettings.debug);
+  const debug = useAppSelector((state) => state.siteSettings.debug);
 
   return (
     <div>

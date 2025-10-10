@@ -1,11 +1,10 @@
 import { memo, useState } from 'react';
 import type { ReactElement } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
 import _trimEnd from 'lodash/trimEnd';
-import type { RootState } from '@/types/redux';
 import type { LabeledMultiData } from '@/types/redditApi';
+import { useAppSelector } from '@/redux/hooks';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import { buildSortPath } from './navHelpers';
 import MultiRedditsSubs from './MultiRedditsSubs';
@@ -24,7 +23,7 @@ function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
   const { path } = item.data;
   const [showSubs, setShowSubs] = useState<boolean>(getMenuStatus(path));
 
-  const sort = useSelector((state: RootState) => state.listingsFilter.sort);
+  const sort = useAppSelector((state) => state.listingsFilter.sort);
   const location = useLocation();
 
   function hideShowSubs(): void {

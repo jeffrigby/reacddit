@@ -1,8 +1,7 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import type { MouseEvent } from 'react';
-import type { RootState } from '@/types/redux';
 import type { LinkData } from '@/types/redditApi';
+import { useAppSelector } from '@/redux/hooks';
 import { PostsContextData, PostsContextActionable } from '@/contexts';
 import { hotkeyStatus } from '@/common';
 import { vote as voteAPI } from '@/reddit/redditApiTs';
@@ -79,7 +78,7 @@ function getNewState(
 }
 
 function PostVote() {
-  const bearer = useSelector((state: RootState) => state.redditBearer);
+  const bearer = useAppSelector((state) => state.redditBearer);
 
   const postContext = useContext(PostsContextData) as PostContextData;
   const { post } = postContext;

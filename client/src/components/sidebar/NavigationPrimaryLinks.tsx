@@ -1,11 +1,10 @@
 import { useEffect, useRef, useCallback } from 'react';
 import type { ReactElement, MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { useSelector } from 'react-redux';
 import queryString from 'query-string';
 import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
-import type { RootState } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
 
@@ -16,11 +15,11 @@ declare const bootstrap: {
 };
 
 function NavigationPrimaryLinks(): ReactElement {
-  const me = useSelector((state: RootState) => state.redditMe?.me);
-  const redditBearer = useSelector((state: RootState) => state.redditBearer);
-  const sort = useSelector((state: RootState) => state.listingsFilter.sort);
-  const query = useSelector((state: RootState) => state.listingsFilter.qs);
-  const subreddits = useSelector((state: RootState) => state.subreddits);
+  const me = useAppSelector((state) => state.redditMe?.me);
+  const redditBearer = useAppSelector((state) => state.redditBearer);
+  const sort = useAppSelector((state) => state.listingsFilter.sort);
+  const query = useAppSelector((state) => state.listingsFilter.qs);
+  const subreddits = useAppSelector((state) => state.subreddits);
   const navigate = useNavigate();
 
   const lastKeyPressed = useRef<string>('');

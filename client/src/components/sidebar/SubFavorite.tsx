@@ -1,9 +1,10 @@
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import { produce } from 'immer';
 import type { MouseEvent } from 'react';
-import type { RootState, AppDispatch } from '@/types/redux';
+import type { AppDispatch } from '@/types/redux';
 import type { SubredditData } from '@/types/redditApi';
+import { useAppSelector } from '@/redux/hooks';
 import { subredditsData } from '@/redux/actions/subreddits';
 import { favorite } from '@/reddit/redditApiTs';
 
@@ -19,9 +20,9 @@ interface SubredditsState {
 }
 
 function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
-  const me = useSelector((state: RootState) => state.redditMe?.me);
-  const subreddits = useSelector(
-    (state: RootState) => state.subreddits as SubredditsState
+  const me = useAppSelector((state) => state.redditMe?.me);
+  const subreddits = useAppSelector(
+    (state) => state.subreddits as SubredditsState
   );
   const dispatch = useDispatch<AppDispatch>();
   const [isLoading, setIsLoading] = useState(false);

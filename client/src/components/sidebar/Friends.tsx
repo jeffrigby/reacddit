@@ -1,11 +1,12 @@
 import { useMemo, useCallback, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
 import { produce } from 'immer';
 import RedditAPI from '@/reddit/redditAPI';
 import { setMenuStatus, getMenuStatus } from '@/common';
 import { subredditsData } from '@/redux/actions/subreddits';
-import type { RootState, AppDispatch } from '@/types/redux';
+import type { AppDispatch } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
@@ -16,8 +17,8 @@ const INVALID_STATUSES = new Set(['loading', 'unloaded', 'error']);
 // Custom hook for friends logic
 function useFriends() {
   const [showFriends, setShowFriends] = useState(getMenuStatus(MENU_ID));
-  const lastUpdated = useSelector((state: RootState) => state.lastUpdated);
-  const subreddits = useSelector((state: RootState) => state.subreddits);
+  const lastUpdated = useAppSelector((state) => state.lastUpdated);
+  const subreddits = useAppSelector((state) => state.subreddits);
   const dispatch = useDispatch<AppDispatch>();
 
   const toggleShowFriends = useCallback(() => {

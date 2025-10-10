@@ -1,13 +1,14 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import type { RootState, AppDispatch } from '@/types/redux';
+import type { AppDispatch } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import { subredditsFilter } from '@/redux/actions/subreddits';
 import { hotkeyStatus } from '@/common';
 
 function FilterReddits() {
   const filterInput = useRef<HTMLInputElement>(null);
-  const filter = useSelector((state: RootState) => state.subredditsFilter);
+  const filter = useAppSelector((state) => state.subredditsFilter);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 

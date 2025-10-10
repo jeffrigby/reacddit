@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
 import { searchSubreddits } from '@/reddit/redditApiTs';
-import type { RootState } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import { getSubredditKeys } from '@/redux/selectors/subredditSelectors';
 import { buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
@@ -54,11 +53,11 @@ function useGetSubredditNames(filterText: string, showNSFW: boolean): string[] {
  * Display a list of subreddit names that match the filter text
  */
 function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
-  const over18 = useSelector((state: RootState) => state.redditMe?.me?.over_18);
-  const subreddits = useSelector(getSubredditKeys);
-  const sort = useSelector((state: RootState) => state.listingsFilter.sort);
-  const auth = useSelector(
-    (state: RootState) => state.redditBearer.status === 'auth' || false
+  const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
+  const subreddits = useAppSelector(getSubredditKeys);
+  const sort = useAppSelector((state) => state.listingsFilter.sort);
+  const auth = useAppSelector(
+    (state) => state.redditBearer.status === 'auth' || false
   );
   const location = useLocation();
 

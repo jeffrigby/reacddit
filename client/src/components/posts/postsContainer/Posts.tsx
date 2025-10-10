@@ -1,11 +1,10 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
-import type { RootState } from '../../../types/redux';
 import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
 import { listingData } from '../../../redux/selectors/listingsSelector';
 import { IntersectionObserverProvider } from '../../../contexts';
+import { useAppSelector } from '../../../redux/hooks';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
@@ -21,7 +20,7 @@ function Posts(): ReactElement {
   const location = useLocation();
 
   // Combine selectors to reduce re-renders
-  const { listType, data } = useSelector((state: RootState) => ({
+  const { listType, data } = useAppSelector((state) => ({
     listType: state.listingsFilter.listType,
     data: listingData(state, location.key) as ListingDataResponse,
   }));

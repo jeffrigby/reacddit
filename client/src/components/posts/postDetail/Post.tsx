@@ -8,7 +8,6 @@ import {
   useContext,
   useMemo,
 } from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate, useLocation, useParams } from 'react-router';
 import classNames from 'classnames';
 import Content from '../Content';
@@ -28,7 +27,7 @@ import {
   postFocused,
 } from '../../../redux/selectors/postSelectors';
 import CommentReplyList from '../../comments/CommentReplyList';
-import type { RootState } from '../../../redux/configureStore';
+import { useAppSelector } from '../../../redux/hooks';
 import type { LinkData, CommentData } from '../../../types/redditApi';
 
 interface RenderedContent {
@@ -117,14 +116,14 @@ function Post({
   const postRef = useRef<HTMLDivElement>(null);
   const minHeightRef = useRef<number>();
 
-  const siteSettings = useSelector((state: RootState) => state.siteSettings);
-  const listingsStatus = useSelector((state: RootState) =>
+  const siteSettings = useAppSelector((state) => state.siteSettings);
+  const listingsStatus = useAppSelector((state) =>
     listingStatus(state, location.key)
   );
-  const focused = useSelector((state: RootState) =>
+  const focused = useAppSelector((state) =>
     postFocused(state, postName, idx, location.key)
   );
-  const actionable = useSelector((state: RootState) =>
+  const actionable = useAppSelector((state) =>
     postActionable(state, postName, idx, location.key)
   );
 

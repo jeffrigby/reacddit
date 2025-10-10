@@ -1,8 +1,7 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
-import type { RootState } from '../../../types/redux';
+import { useAppSelector } from '../../../redux/hooks';
 import {
   listingData,
   listingStatus,
@@ -72,7 +71,7 @@ function PostsLoadingStatus(): ReactElement | null {
   const location = useLocation();
 
   // Combine selectors to reduce re-renders
-  const { data, status } = useSelector((state: RootState) => ({
+  const { data, status } = useAppSelector((state) => ({
     data: listingData(state, location.key),
     status: listingStatus(state, location.key),
   }));

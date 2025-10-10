@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactElement, KeyboardEvent } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from '@/types/redux';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import { redditFetchMultis } from '../../redux/actions/reddit';
 import MultiRedditsItem from './MultiRedditsItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
@@ -16,10 +17,8 @@ function MultiReddits(): ReactElement | null {
   );
   const [showAdd, setShowAdd] = useState<boolean>(false);
 
-  const multireddits = useSelector(
-    (state: RootState) => state.redditMultiReddits
-  );
-  const redditBearer = useSelector((state: RootState) => state.redditBearer);
+  const multireddits = useAppSelector((state) => state.redditMultiReddits);
+  const redditBearer = useAppSelector((state) => state.redditBearer);
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {

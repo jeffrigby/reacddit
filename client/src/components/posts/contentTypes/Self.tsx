@@ -1,9 +1,8 @@
 import { useContext, useState, useRef, useEffect, useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
 import classNames from 'classnames';
 import { PostsContextData } from '@/contexts';
-import type { RootState } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import SelfInline from './SelfInline';
 import '../../../styles/self.scss';
 
@@ -73,10 +72,8 @@ function Self({ name, content }: SelfProps) {
   );
   const [specs, setSpecs] = useState<Dimensions | null>(null);
 
-  const listType = useSelector(
-    (state: RootState) => state.listingsFilter.listType
-  );
-  const debug = useSelector((state: RootState) => state.siteSettings.debugMode);
+  const listType = useAppSelector((state) => state.listingsFilter.listType);
+  const debug = useAppSelector((state) => state.siteSettings.debugMode);
   const selfRef = useRef<HTMLDivElement>(null);
   const selfHTMLRef = useRef<HTMLDivElement>(null);
 

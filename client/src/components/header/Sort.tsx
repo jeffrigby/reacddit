@@ -3,11 +3,10 @@ import queryString from 'query-string';
 import _isEmpty from 'lodash/isEmpty';
 import type { To } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
-import type { RootState } from '@/types/redux';
 import type { ListingsFilter } from '@/types/listings';
+import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
 interface SortCategories {
@@ -89,8 +88,8 @@ const iconClasses: IconClasses = {
 };
 
 function Sort() {
-  const me = useSelector((state: RootState) => state.redditMe?.me);
-  const listingsFilter = useSelector<RootState, ListingsFilter>(
+  const me = useAppSelector((state) => state.redditMe?.me);
+  const listingsFilter = useAppSelector<ListingsFilter>(
     (state) => state.listingsFilter
   );
   const location = useLocation();

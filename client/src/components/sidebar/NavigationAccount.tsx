@@ -1,10 +1,9 @@
 import { memo, useEffect, useState, useRef } from 'react';
 import type { ReactElement } from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip } from 'react-tooltip';
-import type { RootState } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
@@ -13,7 +12,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 const menuID = 'navAccount';
 
 function NavigationAccount(): ReactElement {
-  const me = useSelector((state: RootState) => state.redditMe?.me);
+  const me = useAppSelector((state) => state.redditMe?.me);
   const navigate = useNavigate();
 
   const [showNavAccountMenu, toggleShowNavAccountMenu] = useState<boolean>(

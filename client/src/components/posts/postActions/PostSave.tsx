@@ -1,8 +1,7 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import type { MouseEvent } from 'react';
-import type { RootState } from '@/types/redux';
 import type { LinkData } from '@/types/redditApi';
+import { useAppSelector } from '@/redux/hooks';
 import { PostsContextActionable, PostsContextData } from '@/contexts';
 import { hotkeyStatus } from '@/common';
 import { save as saveAPI, unsave as unsaveAPI } from '@/reddit/redditApiTs';
@@ -15,7 +14,7 @@ interface PostContextData {
 }
 
 function PostSave() {
-  const bearer = useSelector((state: RootState) => state.redditBearer);
+  const bearer = useAppSelector((state) => state.redditBearer);
   const postContext = useContext(PostsContextData) as PostContextData;
   const { post } = postContext;
   const { data } = post;

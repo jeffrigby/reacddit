@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch, RootState } from '@/types/redux';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '@/common';
 
 function AutoRefresh() {
-  const stream = useSelector((state: RootState) => state.siteSettings.stream);
+  const stream = useAppSelector((state) => state.siteSettings.stream);
   const dispatch = useDispatch<AppDispatch>();
 
   const autoRefreshToggle = () => {

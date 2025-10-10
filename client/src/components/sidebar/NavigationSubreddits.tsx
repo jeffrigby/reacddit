@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import type { SubredditData } from '@/types/redditApi';
-import type { RootState, AppDispatch } from '@/types/redux';
+import type { AppDispatch } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import { filterSubs } from '@/redux/selectors/subredditSelectors';
 import {
   subredditsFetchData,
@@ -13,12 +14,10 @@ import NavigationItem from './NavigationItem';
 
 function NavigationSubReddits() {
   const [showMenu, setShowMenu] = useState(getMenuStatus('subreddits', true));
-  const redditBearer = useSelector((state: RootState) => state.redditBearer);
-  const subreddits = useSelector((state: RootState) => state.subreddits);
-  const filter = useSelector((state: RootState) => state.subredditsFilter);
-  const filteredSubreddits = useSelector((state: RootState) =>
-    filterSubs(state)
-  );
+  const redditBearer = useAppSelector((state) => state.redditBearer);
+  const subreddits = useAppSelector((state) => state.subreddits);
+  const filter = useAppSelector((state) => state.subredditsFilter);
+  const filteredSubreddits = useAppSelector((state) => filterSubs(state));
   const dispatch = useDispatch<AppDispatch>();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';

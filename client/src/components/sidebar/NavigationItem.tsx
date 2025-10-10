@@ -1,11 +1,10 @@
-import { useSelector } from 'react-redux';
 import queryString from 'query-string';
 import _trim from 'lodash/trim';
 import _trimEnd from 'lodash/trimEnd';
 import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
-import type { RootState } from '@/types/redux';
 import type { SubredditData } from '@/types/redditApi';
+import { useAppSelector } from '@/redux/hooks';
 import { getDiffClassName, buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
@@ -33,9 +32,9 @@ function getLastUpdated(
 }
 
 function NavigationItem({ item, trigger }: NavigationItemProps) {
-  const sort = useSelector((state: RootState) => state.listingsFilter.sort);
-  const me = useSelector((state: RootState) => state.redditMe.me);
-  const lastUpdated = useSelector((state: RootState) =>
+  const sort = useAppSelector((state) => state.listingsFilter.sort);
+  const me = useAppSelector((state) => state.redditMe.me);
+  const lastUpdated = useAppSelector((state) =>
     getLastUpdated(state.lastUpdated, item)
   );
   const location = useLocation();

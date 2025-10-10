@@ -1,9 +1,8 @@
 import type { ReactElement } from 'react';
 import { memo } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
-import type { RootState } from '../../../types/redux';
 import { listingStatus } from '../../../redux/selectors/listingsSelector';
+import { useAppSelector } from '../../../redux/hooks';
 
 type FooterStatus = 'loadingNext' | 'loadedAll';
 
@@ -34,9 +33,7 @@ function renderFooterStatus(status: string): ReactElement | null {
 
 function PostsFooter(): ReactElement {
   const location = useLocation();
-  const status = useSelector((state: RootState) =>
-    listingStatus(state, location.key)
-  );
+  const status = useAppSelector((state) => listingStatus(state, location.key));
   const footerStatus = renderFooterStatus(status);
   return <div className="footer-status p-2">{footerStatus}</div>;
 }

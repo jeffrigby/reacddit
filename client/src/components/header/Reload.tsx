@@ -1,14 +1,15 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router';
-import type { AppDispatch, RootState } from '@/types/redux';
+import type { AppDispatch } from '@/types/redux';
+import { useAppSelector } from '@/redux/hooks';
 import { listingsFetchRedditNew } from '@/redux/actions/listings';
 import { listingStatus } from '@/redux/selectors/listingsSelector';
 
 function Reload() {
-  const stream = useSelector((state: RootState) => state.siteSettings.stream);
+  const stream = useAppSelector((state) => state.siteSettings.stream);
   const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
-  const listingsStatus = useSelector((state: RootState) =>
+  const listingsStatus = useAppSelector((state) =>
     listingStatus(state, location.key)
   );
 
