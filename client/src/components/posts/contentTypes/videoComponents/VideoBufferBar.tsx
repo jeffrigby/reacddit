@@ -1,4 +1,4 @@
-import { memo, useRef } from 'react';
+import { memo, useRef, useMemo } from 'react';
 import type { BufferData } from './types';
 
 interface VideoBufferBarProps {
@@ -33,28 +33,31 @@ function VideoBufferBar({
     seek(seekTime);
   };
 
-  const bars = [];
+  // Memoize buffer bars to prevent recreation on every render
+  const bars = useMemo(() => {
+    // Figure out buffer bars
+    if (buffers.buffers.length === 0 || buffers.status === 'full') {
+      return [<div className="buffer-bar buffer-bar-full" key="buffer-full" />];
+    }
 
-  // Figure out buffer bars
-  if (buffers.buffers.length === 0 || buffers.status === 'full') {
-    bars.push(<div className="buffer-bar buffer-bar-full" key="buffer-full" />);
-  } else {
-    buffers.buffers.forEach((val, idx) => {
+    return buffers.buffers.map((val) => {
       const style = {
         left: `${val.marginLeft}%`,
         right: `${val.marginRight}%`,
       };
-      bars.push(
+      return (
         <div className="buffer-bar" key={`buffer-${val.range}`} style={style} />
       );
     });
-  }
+  }, [buffers.buffers, buffers.status]);
 
-  // Figure out duration
-  const progressMarginRight = 100 - (currentTime / duration) * 100;
-  const progressBarStyle = {
-    right: `${progressMarginRight}%`,
-  };
+  // Memoize progress bar style
+  const progressBarStyle = useMemo(() => {
+    const progressMarginRight = 100 - (currentTime / duration) * 100;
+    return {
+      right: `${progressMarginRight}%`,
+    };
+  }, [currentTime, duration]);
 
   return (
     <div className="video-bar-cont">

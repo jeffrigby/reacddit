@@ -15,7 +15,7 @@ import Social from './contentTypes/Social';
 
 function Content({ content = null }) {
   const postContext = useContext(PostsContextData);
-  const { post, isLoaded } = postContext;
+  const { post } = postContext;
   const { data } = post;
 
   const { name, url } = data;
@@ -41,7 +41,7 @@ function Content({ content = null }) {
         contentRendered = <IFrame content={content} />;
         break;
       case 'imgur_album':
-        contentRendered = <ImgurAlbum content={content} load={isLoaded} />;
+        contentRendered = <ImgurAlbum content={content} />;
         break;
       case 'thumb':
         contentRendered = <Thumb content={content} />;

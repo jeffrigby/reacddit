@@ -1,4 +1,3 @@
-import type { MouseEvent } from 'react';
 import { memo, useState } from 'react';
 import type { BufferData } from './types';
 
@@ -23,7 +22,7 @@ function VideoDebug({
 }: VideoDebugProps) {
   const [showDebug, setShowDebug] = useState(false);
 
-  const toggleDebug = (event: MouseEvent<HTMLButtonElement>) => {
+  const toggleDebug = () => {
     setShowDebug(!showDebug);
   };
 

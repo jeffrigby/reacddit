@@ -1,6 +1,10 @@
-import PropTypes from 'prop-types';
+import type { HTTPSErrorContent } from './types';
 
-function HTTPSError({ content }) {
+interface HTTPSErrorProps {
+  content: HTTPSErrorContent;
+}
+
+function HTTPSError({ content }: HTTPSErrorProps) {
   const { src } = content;
   return (
     <div className="self">
@@ -14,9 +18,5 @@ function HTTPSError({ content }) {
     </div>
   );
 }
-
-HTTPSError.propTypes = {
-  content: PropTypes.object.isRequired,
-};
 
 export default HTTPSError;

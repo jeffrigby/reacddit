@@ -41,8 +41,11 @@ interface PostContextData {
 function extractBuffer(
   videoRef: React.RefObject<HTMLVideoElement>,
   idx: number
-): BufferRange {
+): BufferRange | null {
   const video = videoRef.current;
+  if (!video) {
+    return null;
+  }
   const start = video.buffered.start(idx);
   const end = video.buffered.end(idx);
   const marginLeft = (start * 100) / video.duration;
@@ -72,13 +75,15 @@ function getBuffers(
     const buffers: BufferRange[] = [];
     while (range < bufferLength) {
       const bufferedRange = extractBuffer(videoRef, range);
-      if (
-        bufferedRange.start === 0 &&
-        bufferedRange.end === videoRef.current.duration
-      ) {
-        status = 'full';
+      if (bufferedRange) {
+        if (
+          bufferedRange.start === 0 &&
+          bufferedRange.end === videoRef.current.duration
+        ) {
+          status = 'full';
+        }
+        buffers.push(bufferedRange);
       }
-      buffers.push(extractBuffer(videoRef, range));
       range += 1;
     }
     return { status, buffers };
@@ -95,6 +100,8 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const isPlaying = useRef<boolean>(false);
   const isPlayingTimeout = useRef<NodeJS.Timeout | null>(null);
+  const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
+  const stalledTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const debug = useSelector(
     (state: RootState) => state.siteSettings.debug as boolean
@@ -134,7 +141,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
       setAutoplayState(false);
       videoRef.current.pause();
     }
-  }, [videoRef, autoplay, autoplayState]);
+  }, [autoplay, autoplayState]);
 
   useEffect(() => {
     const canPlayTimeout = setTimeout(() => {
@@ -160,7 +167,10 @@ function VideoComp({ link = '', content }: VideoCompProps) {
           setBuffer(currentBuffers as BufferData);
         }
       }, 500),
-    [buffer.status]
+    // Only create once - buffer.status is checked inside but we don't want to
+    // recreate the throttled function when it changes, as that defeats throttling
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   useEffect(() => {
@@ -169,9 +179,13 @@ function VideoComp({ link = '', content }: VideoCompProps) {
 
   const { width, height, sources } = content;
 
-  const contStyle: React.CSSProperties = {};
-  contStyle.aspectRatio = `${width}/${height}`;
-  contStyle.maxHeight = height < 740 ? height : undefined;
+  const contStyle = useMemo<React.CSSProperties>(
+    () => ({
+      aspectRatio: `${width}/${height}`,
+      maxHeight: height < 740 ? height : undefined,
+    }),
+    [width, height]
+  );
 
   const videoId = `video-${content.id}`;
 
@@ -212,17 +226,27 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     setStalled(false);
   };
 
-  const eventWaiting = (e: SyntheticEvent<HTMLVideoElement>) => {
-    setTimeout(() => {
+  const eventWaiting = () => {
+    // Clear any existing timeout
+    if (waitingTimeout.current) {
+      clearTimeout(waitingTimeout.current);
+    }
+    waitingTimeout.current = setTimeout(() => {
       if (isLoaded && canPlay && isPlaying.current === false) {
         setWaiting(true);
       }
+      waitingTimeout.current = null;
     }, 1000);
   };
 
-  const eventStalled = (e: SyntheticEvent<HTMLVideoElement>) => {
-    setTimeout(() => {
+  const eventStalled = () => {
+    // Clear any existing timeout
+    if (stalledTimeout.current) {
+      clearTimeout(stalledTimeout.current);
+    }
+    stalledTimeout.current = setTimeout(() => {
       setStalled(true);
+      stalledTimeout.current = null;
     }, 250);
   };
 
@@ -242,6 +266,26 @@ function VideoComp({ link = '', content }: VideoCompProps) {
       }, 250),
     []
   );
+
+  // Cleanup effect for all timeouts and throttled functions
+  useEffect(() => {
+    return () => {
+      // Cancel throttled functions
+      getSetBuffer.cancel();
+      throttledTime.cancel();
+
+      // Clear all timeouts
+      if (isPlayingTimeout.current) {
+        clearTimeout(isPlayingTimeout.current);
+      }
+      if (waitingTimeout.current) {
+        clearTimeout(waitingTimeout.current);
+      }
+      if (stalledTimeout.current) {
+        clearTimeout(stalledTimeout.current);
+      }
+    };
+  }, [getSetBuffer, throttledTime]);
 
   const trackPlaying = () => {
     if (videoRef.current) {
@@ -403,15 +447,27 @@ function VideoComp({ link = '', content }: VideoCompProps) {
 
             <div className="video-controls m-0 p-0">
               <button
-                aria-label="Toggle Browser Video Controls"
+                aria-label={
+                  controls
+                    ? 'Hide Browser Video Controls'
+                    : 'Show Browser Video Controls'
+                }
                 className={`${btnClasses} ${
                   controls ? 'ctrl-visible' : 'ctrl-hidden'
                 } video-controls-toggle`}
-                title="Toggle Browser Video Controls"
+                title={
+                  controls
+                    ? 'Hide Browser Video Controls'
+                    : 'Show Browser Video Controls'
+                }
                 type="button"
                 onClick={() => setControls(!controls)}
               >
-                <i className="fas fa-sliders-h" />
+                <i
+                  className={`fas ${
+                    controls ? 'fa-toggle-on' : 'fa-toggle-off'
+                  }`}
+                />
               </button>
               <VideoAudioButton
                 audioWarning={content.audioWarning}
