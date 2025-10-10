@@ -1,4 +1,4 @@
-import { createRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import RedditAPI from '../../reddit/redditAPI';
@@ -9,7 +9,7 @@ interface MultiToggleProps {
 }
 
 function MultiToggle({ srName }: MultiToggleProps) {
-  const multiRef = createRef<HTMLDivElement>();
+  const multiRef = useRef<HTMLDivElement>(null);
 
   const about = useAppSelector((state) => state.currentSubreddit);
   const multis = useAppSelector((state) => state.redditMultiReddits);
@@ -31,8 +31,7 @@ function MultiToggle({ srName }: MultiToggleProps) {
         multiMenu.removeEventListener('click', disableClose);
       };
     }
-    return () => {};
-  });
+  }, []);
 
   if (
     isEmpty(about) ||
@@ -47,35 +46,24 @@ function MultiToggle({ srName }: MultiToggleProps) {
   }
 
   const addRemove = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    let rsp = '';
-    if (e.target.checked) {
-      rsp = await RedditAPI.multiAddSubreddit(e.target.value, srName);
-    } else {
-      rsp = await RedditAPI.multiRemoveSubreddit(e.target.value, srName);
-    }
+    const rsp = e.target.checked
+      ? await RedditAPI.multiAddSubreddit(e.target.value, srName)
+      : await RedditAPI.multiRemoveSubreddit(e.target.value, srName);
 
     if (rsp.status === 200 || rsp.status === 201) {
       await dispatch(redditFetchMultis(true));
-    } else {
-      // Show an error?
     }
   };
 
-  const getSubreddits = (subs: Array<{ name: string }>) => {
-    const subNames: string[] = [];
-    subs.forEach((sub) => {
-      subNames.push(sub.name);
-    });
-    return subNames;
-  };
+  const getSubreddits = (subs: Array<{ name: string }>) =>
+    subs.map((sub) => sub.name);
 
-  const menuItems: JSX.Element[] = [];
-  multis.multis.forEach((item) => {
+  const menuItems = multis.multis.map((item) => {
     const key = `${item.data.display_name}-${item.data.created}-${srName}`;
     const subNames = getSubreddits(item.data.subreddits);
     const checked = subNames.includes(srName);
 
-    menuItems.push(
+    return (
       <div className="form-check dropdown-item small m-0 p-0" key={key}>
         <label className="form-check-label w-100" htmlFor={key}>
           <input

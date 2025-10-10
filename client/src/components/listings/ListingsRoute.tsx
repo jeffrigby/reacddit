@@ -25,15 +25,9 @@ function ListingsRoute({
 
   const overrideMatch = { ...match, ...overrides };
 
-  let validated = true;
-  Object.keys(validations).every((key) => {
-    if (overrideMatch[key] && validations[key].includes(overrideMatch[key])) {
-      validated = true;
-      return true;
-    }
-    validated = false;
-    return false;
-  });
+  const validated = Object.keys(validations).every(
+    (key) => overrideMatch[key] && validations[key].includes(overrideMatch[key])
+  );
 
   if (!validated) {
     return <NotFound404 />;

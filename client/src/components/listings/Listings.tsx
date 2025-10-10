@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
 import throttle from 'lodash/throttle';
@@ -50,11 +50,13 @@ function Listings({ match }: ListingsProps) {
     match;
 
   // Set title for detail pages
-  if (data.originalPost) {
-    const origTitle = data.originalPost.data.title;
-    const origSub = data.originalPost.data.subreddit;
-    document.title = `${origTitle} : ${origSub}`;
-  }
+  useEffect(() => {
+    if (data.originalPost) {
+      const origTitle = data.originalPost.data.title;
+      const origSub = data.originalPost.data.subreddit;
+      document.title = `${origTitle} : ${origSub}`;
+    }
+  }, [data.originalPost]);
 
   // Set the new filter.
   useEffect(() => {
@@ -123,8 +125,6 @@ function Listings({ match }: ListingsProps) {
     let streamNewPostsInterval: NodeJS.Timeout | undefined;
     if (settings.stream) {
       streamNewPostsInterval = setInterval(streamNewPosts, 5000);
-    } else if (streamNewPostsInterval) {
-      clearInterval(streamNewPostsInterval);
     }
     return () => {
       if (streamNewPostsInterval) {
@@ -137,25 +137,25 @@ function Listings({ match }: ListingsProps) {
   const moreLoading = useRef(false);
 
   // Check if I should load new entries
+  const loadMore = useCallback(async () => {
+    if (
+      window.scrollY + window.innerHeight >
+        document.documentElement.scrollHeight - 2500 &&
+      status === 'loaded' &&
+      !moreLoading.current
+    ) {
+      moreLoading.current = true;
+      await dispatch(listingsFetchRedditNext(location));
+      // Give it a few seconds to render before turning it off to avoid re-renders.
+      setTimeout(() => {
+        moreLoading.current = false;
+      }, 2000);
+    }
+  }, [status, location, dispatch]);
+
+  const loadMoreThrottled = useMemo(() => throttle(loadMore, 500), [loadMore]);
+
   useEffect(() => {
-    const loadMore = async () => {
-      if (
-        window.scrollY + window.innerHeight >
-          document.documentElement.scrollHeight - 2500 &&
-        status === 'loaded' &&
-        !moreLoading.current
-      ) {
-        moreLoading.current = true;
-        await dispatch(listingsFetchRedditNext(location));
-        // Give it a few seconds to render before turning it off to avoid re-renders.
-        setTimeout(() => {
-          moreLoading.current = false;
-        }, 2000);
-      }
-    };
-
-    const loadMoreThrottled = throttle(loadMore, 500);
-
     if (status === 'loaded') {
       window.addEventListener('resize', loadMoreThrottled, false);
       document.addEventListener('scroll', loadMoreThrottled, false);
@@ -167,37 +167,39 @@ function Listings({ match }: ListingsProps) {
       window.removeEventListener('resize', loadMoreThrottled, false);
       document.removeEventListener('scroll', loadMoreThrottled, false);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, dispatch]);
+  }, [status, loadMoreThrottled]);
 
   // Set some hotkeys
-  const hotkeys = (event: KeyboardEvent) => {
-    if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
-      const pressedKey = event.key;
-      try {
-        switch (pressedKey) {
-          case '.':
-            window.scrollTo(0, 0);
-            dispatch(listingsFetchRedditNew(location));
-            break;
-          case '/':
-            window.scrollTo(0, document.body.scrollHeight);
-            break;
-          default:
-            break;
+  const hotkeys = useCallback(
+    (event: KeyboardEvent) => {
+      if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
+        const pressedKey = event.key;
+        try {
+          switch (pressedKey) {
+            case '.':
+              window.scrollTo(0, 0);
+              dispatch(listingsFetchRedditNew(location));
+              break;
+            case '/':
+              window.scrollTo(0, document.body.scrollHeight);
+              break;
+            default:
+              break;
+          }
+        } catch (e) {
+          console.error('Error in listing hotkeys', e);
         }
-      } catch (e) {
-        console.error('Error in listing hotkeys', e);
       }
-    }
-  };
+    },
+    [status, location, dispatch]
+  );
 
   useEffect(() => {
     document.addEventListener('keydown', hotkeys);
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  });
+  }, [hotkeys]);
 
   const locationKey = location.key || 'front';
   const context = useMemo(

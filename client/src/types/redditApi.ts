@@ -405,8 +405,11 @@ export interface SubredditData {
   public_description: string | null;
   public_description_html?: string | null;
   subscribers: number | null;
+  /** @deprecated Reddit removed this field in 2024. Historically showed users active in the past 15 minutes. */
   accounts_active?: number | null;
+  /** @deprecated Field is no longer reliably populated as of 2024. */
   accounts_active_is_fuzzed?: boolean;
+  /** @deprecated Reddit removed this field in 2024. Was a duplicate of accounts_active. */
   active_user_count?: number | null;
   created: number;
   created_utc: number;

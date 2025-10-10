@@ -83,12 +83,13 @@ function SubUnSub() {
   const subscribe = useSubscribe();
   const unsubscribe = useUnsubscribe();
 
+  const locationKey = location.key || 'front';
+  const { target, listType } = params;
+
   const {
     user_is_subscriber: userIsSubscriber,
     display_name_prefixed: displayNamePrefixed,
   } = about;
-  const locationKey = location.key || 'front';
-  const { target, listType } = params;
 
   const buttonAction = useCallback(
     () =>

@@ -40,6 +40,13 @@ function ListingsHeaderMulti() {
     <span className="loading-placeholder">Loading Description</span>
   );
 
+  // Set the title
+  useEffect(() => {
+    if (currentMulti) {
+      document.title = `${currentMulti.name} subreddites curated by /u/${currentMulti.owner}`;
+    }
+  }, [currentMulti]);
+
   if (!currentMulti) {
     return (
       <>
@@ -54,9 +61,6 @@ function ListingsHeaderMulti() {
       </>
     );
   }
-
-  // Set the title
-  document.title = `${currentMulti.name} subreddites curated by /u/${currentMulti.owner}`;
 
   return (
     <>

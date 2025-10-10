@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useContext } from 'react';
+import { useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { useLocation } from 'react-router';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
@@ -45,59 +45,77 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
 
   const dispatch = useAppDispatch();
 
-  const setLastExpandedRedux = (expandedId: string) => {
-    if (expandedId) {
-      const newState = { ...listingsCurrentState };
-      newState.lastExpanded = expandedId;
-      const key = locationKey || 'front';
-      dispatch(listingsState(key, newState));
-    }
-  };
+  const setLastExpandedRedux = useCallback(
+    (expandedId: string) => {
+      if (expandedId) {
+        const newState = { ...listingsCurrentState };
+        newState.lastExpanded = expandedId;
+        const key = locationKey || 'front';
+        dispatch(listingsState(key, newState));
+      }
+    },
+    [listingsCurrentState, locationKey, dispatch]
+  );
 
-  const next = () => {
+  const next = useCallback(() => {
     if (settings.view === 'expanded') {
       nextEntry(listingsCurrentState.focused);
     } else {
       setLastExpandedRedux(nextEntryCollapsed(lastExpanded, setLastExpanded));
     }
-  };
+  }, [
+    settings.view,
+    listingsCurrentState.focused,
+    lastExpanded,
+    setLastExpanded,
+    setLastExpandedRedux,
+  ]);
 
-  const prev = () => {
+  const prev = useCallback(() => {
     if (settings.view === 'expanded') {
       prevEntry(listingsCurrentState.focused);
     } else {
       setLastExpandedRedux(prevEntryCollapsed(lastExpanded, setLastExpanded));
     }
-  };
+  }, [
+    settings.view,
+    listingsCurrentState.focused,
+    lastExpanded,
+    setLastExpanded,
+    setLastExpandedRedux,
+  ]);
 
   // Set some hotkeys
-  const hotkeys = (event: KeyboardEvent) => {
-    if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
-      const pressedKey = event.key;
-      try {
-        switch (pressedKey) {
-          case 'j':
-            next();
-            break;
+  const hotkeys = useCallback(
+    (event: KeyboardEvent) => {
+      if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
+        const pressedKey = event.key;
+        try {
+          switch (pressedKey) {
+            case 'j':
+              next();
+              break;
 
-          case 'k':
-            prev();
-            break;
-          default:
-            break;
+            case 'k':
+              prev();
+              break;
+            default:
+              break;
+          }
+        } catch (e) {
+          console.error('Error in listing hotkeys', e);
         }
-      } catch (e) {
-        console.error('Error in listing hotkeys', e);
       }
-    }
-  };
+    },
+    [status, next, prev]
+  );
 
   useEffect(() => {
     document.addEventListener('keydown', hotkeys);
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  });
+  }, [hotkeys]);
 
   const monitorEntries = useCallback(() => {
     if (!scrollResize.current) {
@@ -160,9 +178,13 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   // precise pixel-based calculations for focus/actionable state. IntersectionObserver
   // works with thresholds and rootMargin but can't provide the exact positioning logic
   // needed for keyboard navigation and the condensed view mode.
+  const throttledUpdate = useMemo(
+    () => throttle(monitorEntries, 500),
+    [monitorEntries]
+  );
+
   useEffect(() => {
     forceDelayedUpdate();
-    const throttledUpdate = throttle(monitorEntries, 500);
     window.addEventListener('resize', throttledUpdate, false);
     document.addEventListener('scroll', throttledUpdate, false);
 
@@ -170,7 +192,7 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
       window.removeEventListener('resize', throttledUpdate, false);
       document.removeEventListener('scroll', throttledUpdate, false);
     };
-  }, [forceDelayedUpdate, monitorEntries]);
+  }, [forceDelayedUpdate, throttledUpdate]);
 
   // Monitor iframe focus on user interaction instead of polling
   useEffect(() => {

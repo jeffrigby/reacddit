@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
@@ -24,10 +25,11 @@ function ListingsHeaderSub() {
   let subInfo: string | undefined;
   let searchEverywhere: JSX.Element | undefined;
   let showSubInfo = false;
+  let pageTitle = '';
 
   switch (listType) {
     case 'u':
-      document.title = `u/${user}: ${
+      pageTitle = `u/${user}: ${
         target.charAt(0).toUpperCase() + target.slice(1)
       }`;
       title = `/u/${user} ${target}`;
@@ -35,9 +37,9 @@ function ListingsHeaderSub() {
     case 'r': {
       // Title
       if (target === 'mine') {
-        document.title = 'reacddit';
+        pageTitle = 'reacddit';
       } else {
-        document.title = target;
+        pageTitle = target;
       }
 
       if (target === 'friends') {
@@ -52,16 +54,36 @@ function ListingsHeaderSub() {
           </>
         );
       } else {
-        const subscribers = about.subscribers
-          ? `${about.subscribers.toLocaleString()} Subcribers`
-          : '';
-        const online = about.active_user_count
-          ? `${about.active_user_count.toLocaleString()} Online`
-          : '';
+        // Try to get data from about, fallback to cachedSub if available
+        const subscriberCount =
+          about.subscribers ?? cachedSub.subscribers ?? null;
+
+        // Reddit uses different field names for active users - try both
+        const onlineCount =
+          about.active_user_count ??
+          about.accounts_active ??
+          cachedSub.active_user_count ??
+          cachedSub.accounts_active ??
+          null;
+
+        const subscribers =
+          subscriberCount !== null
+            ? `${subscriberCount.toLocaleString()} Subscribers`
+            : '';
+        const online =
+          onlineCount !== null ? `${onlineCount.toLocaleString()} Online` : '';
+
         showSubInfo = true;
+
+        // Build subInfo with whatever data is available
         if (subscribers && online) {
           subInfo = `${subscribers} - ${online}`;
+        } else if (subscribers) {
+          subInfo = subscribers;
+        } else if (online) {
+          subInfo = online;
         }
+
         title = `/r/${target}`;
       }
       break;
@@ -71,31 +93,38 @@ function ListingsHeaderSub() {
       break;
     case 's': {
       const qs = queryString.parse(window.location.search);
-      searchEverywhere = target !== 'mine' && (
-        <NavLink to={`/search?q=${qs.q}`}>Search Everywhere</NavLink>
-      );
+      searchEverywhere =
+        target !== 'mine' ? (
+          <NavLink to={`/search?q=${qs.q}`}>Search Everywhere</NavLink>
+        ) : undefined;
       title = `Search results for '${qs.q}'`;
       if (multi) {
         title += ` in /m/${target}`;
       } else if (target !== 'mine') {
         title += ` in /r/${target}`;
       }
-      document.title = title;
+      pageTitle = typeof title === 'string' ? title : '';
       break;
     }
     default:
-      document.title = 'reacddit';
+      pageTitle = 'reacddit';
       title = '';
       break;
   }
 
+  // Set document title in useEffect
+  useEffect(() => {
+    if (pageTitle) {
+      document.title = pageTitle;
+    }
+  }, [pageTitle]);
+
+  // Only show loading placeholder if we're expecting subscriber data
   const renderedSubInfo = subInfo ? (
     <span>{subInfo}</span>
-  ) : (
-    <span className="loading-placeholder">
-      Loading Members - Loading Online
-    </span>
-  );
+  ) : showSubInfo ? (
+    <span className="loading-placeholder">Loading Members</span>
+  ) : null;
 
   const description = cachedSub.public_description ?? about.public_description;
   const subhead = cachedSub.title ?? about.title;
