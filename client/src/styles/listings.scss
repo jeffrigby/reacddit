@@ -109,6 +109,11 @@ div#entries {
   div.entry {
     //border-left: 0;
 
+    // Modern CSS optimization: skip rendering off-screen content
+    // The 'auto' keyword remembers last rendered size to prevent layout shifts
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+
     &.comment-child,
     .comments-more {
       border-width: 0 0 0 1px;

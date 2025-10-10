@@ -9,7 +9,6 @@ import {
   useMemo,
 } from 'react';
 import { useSelector } from 'react-redux';
-import throttle from 'lodash/throttle';
 import { useNavigate, useLocation, useParams } from 'react-router';
 import classNames from 'classnames';
 import Content from '../Content';
@@ -20,6 +19,7 @@ import {
   PostsContextData,
   PostsContextActionable,
   ListingsContextLastExpanded,
+  useIntersectionObservers,
 } from '../../../contexts';
 import { hotkeyStatus } from '../../../common';
 import { listingStatus } from '../../../redux/selectors/listingsSelector';
@@ -132,63 +132,64 @@ function Post({
     ListingsContextLastExpanded
   ) as [string, (value: string) => void];
 
-  // Set observer for loading range.
-  useEffect(() => {
-    const loadObserver = new IntersectionObserver(
-      (entries) => {
-        setShouldLoad(entries[0].isIntersecting);
-      },
-      { threshold: 0, rootMargin: '250px 0px 500px 0px' }
-    );
-    if (postRef.current) {
-      loadObserver.observe(postRef.current);
-    }
-    return () => loadObserver.disconnect();
+  // Get shared IntersectionObservers from context
+  const { observeForLoading, observeForVisibility } =
+    useIntersectionObservers();
+
+  // Stable callbacks for observer handlers
+  const handleLoadIntersection = useCallback((isIntersecting: boolean) => {
+    setShouldLoad(isIntersecting);
   }, []);
 
-  // Set observer for on screen range.
-  useEffect(() => {
-    const onScreenObs = new IntersectionObserver(
-      (entries) => setOnScreen(entries[0].isIntersecting),
-      { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
-    );
-    if (postRef.current) {
-      onScreenObs.observe(postRef.current);
-    }
-    return () => onScreenObs.disconnect();
-  }, []);
-
-  const getMinHeight = useCallback(() => {
-    if (postRef.current && shouldLoad) {
-      minHeightRef.current = postRef.current.getBoundingClientRect().height;
-    }
-  }, [shouldLoad]);
-
-  const throttledGetHeights = useMemo(
-    () => throttle(getMinHeight, 500),
-    [getMinHeight]
+  const handleVisibilityIntersection = useCallback(
+    (isIntersecting: boolean) => {
+      setOnScreen(isIntersecting);
+    },
+    []
   );
 
+  // Register with shared loading observer
   useEffect(() => {
-    getMinHeight();
-    if (shouldLoad) {
-      window.addEventListener('resize', throttledGetHeights, false);
+    if (!postRef.current) {
+      return;
     }
-    return () => {
-      window.removeEventListener('resize', throttledGetHeights, false);
-    };
-  }, [getMinHeight, shouldLoad, throttledGetHeights]);
+    return observeForLoading(postRef.current, handleLoadIntersection);
+  }, [observeForLoading, handleLoadIntersection]);
 
+  // Register with shared visibility observer
   useEffect(() => {
-    if (shouldLoad) {
-      getMinHeight();
-      // trigger it after a second in case things re-render
-      const timeoutId = setTimeout(() => {
-        getMinHeight();
-      }, 500);
-      return () => clearTimeout(timeoutId);
+    if (!postRef.current) {
+      return;
     }
-  }, [shouldLoad, getMinHeight]);
+    return observeForVisibility(postRef.current, handleVisibilityIntersection);
+  }, [observeForVisibility, handleVisibilityIntersection]);
+
+  // Use ResizeObserver for more efficient height tracking
+  useEffect(() => {
+    if (!postRef.current || !shouldLoad) {
+      return;
+    }
+
+    const updateMinHeight = () => {
+      if (postRef.current) {
+        minHeightRef.current = postRef.current.getBoundingClientRect().height;
+      }
+    };
+
+    // Initial measurement
+    updateMinHeight();
+
+    // Modern ResizeObserver instead of window resize events
+    const resizeObserver = new ResizeObserver(() => {
+      updateMinHeight();
+    });
+
+    resizeObserver.observe(postRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [shouldLoad]);
 
   const initView = useCallback(() => {
     if (params.listType === 'comments') {

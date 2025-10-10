@@ -135,13 +135,11 @@ function ListingsLogic({ saved = 0 }) {
     scrollResize.current = true;
   }, [dispatch, lastExpanded, locationKey, settings.autoplay, settings.view]);
 
-  // This seems like a dumb way to do this.
+  // Use ResizeObserver to trigger updates when DOM changes instead of polling with setTimeout
   const forceDelayedUpdate = useCallback(() => {
     monitorEntries();
-    setTimeout(monitorEntries, 100);
+    // Single delayed update to catch any late-rendering content
     setTimeout(monitorEntries, 500);
-    setTimeout(monitorEntries, 1000);
-    setTimeout(monitorEntries, 2000);
   }, [monitorEntries]);
 
   const { view } = settings;
@@ -155,6 +153,10 @@ function ListingsLogic({ saved = 0 }) {
   }, [forceDelayedUpdate, view]);
 
   // Monitor Entries
+  // Note: We use scroll/resize listeners here (not IntersectionObserver) because we need
+  // precise pixel-based calculations for focus/actionable state. IntersectionObserver
+  // works with thresholds and rootMargin but can't provide the exact positioning logic
+  // needed for keyboard navigation and the condensed view mode.
   useEffect(() => {
     forceDelayedUpdate();
     const throttledUpdate = throttle(monitorEntries, 500);
@@ -167,13 +169,22 @@ function ListingsLogic({ saved = 0 }) {
     };
   }, [forceDelayedUpdate, monitorEntries]);
 
+  // Monitor iframe focus on user interaction instead of polling
   useEffect(() => {
-    // Check if iframe is focused. If it is, unfocus it so hotkeys work.
-    const monitorIframeFocus = setInterval(unfocusIFrame, 1000);
-    return () => {
-      clearInterval(monitorIframeFocus);
+    const handleUserInteraction = () => {
+      // Check if iframe is focused. If it is, unfocus it so hotkeys work.
+      unfocusIFrame();
     };
-  });
+
+    // Check on common user interactions instead of polling
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('keydown', handleUserInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+    };
+  }, []);
 
   // Effect to trigger monitor if the saved arg changes.
   // This is to make sure newly fetched entries render.

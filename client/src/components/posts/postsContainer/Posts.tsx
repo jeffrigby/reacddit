@@ -5,6 +5,7 @@ import { useLocation } from 'react-router';
 import type { RootState } from '../../../types/redux';
 import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
 import { listingData } from '../../../redux/selectors/listingsSelector';
+import { IntersectionObserverProvider } from '../../../contexts';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
@@ -40,16 +41,18 @@ function Posts(): ReactElement {
   }
 
   return (
-    <>
-      {hasParent && originalPost && <PostsParent post={originalPost} />}
-      <PostsLoadingStatus />
-      <PostsRender
-        idxOffset={idxOffset}
-        listType={listType}
-        posts={entriesObject}
-      />
-      <PostsFooter />
-    </>
+    <IntersectionObserverProvider>
+      <>
+        {hasParent && originalPost && <PostsParent post={originalPost} />}
+        <PostsLoadingStatus />
+        <PostsRender
+          idxOffset={idxOffset}
+          listType={listType}
+          posts={entriesObject}
+        />
+        <PostsFooter />
+      </>
+    </IntersectionObserverProvider>
   );
 }
 
