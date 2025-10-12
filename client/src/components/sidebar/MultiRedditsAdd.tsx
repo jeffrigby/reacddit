@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import type { ReactElement, ChangeEvent } from 'react';
+import { Form } from 'react-bootstrap';
 import RedditAPI from '../../reddit/redditAPI';
 
 interface MultiRedditsAddProps {
@@ -45,11 +46,11 @@ function MultiRedditsAdd({
     <div className="multireddits-add my-2">
       <div className="text-muted">Add a new custom feed</div>
       <div className="input-group mt-2">
-        <input
+        <Form.Control
           aria-label="Custom Feed Name"
-          className="form-control form-control-sm"
           placeholder="Feed Name"
           ref={nameInput}
+          size="sm"
           type="text"
           onChange={checkInput}
         />
@@ -82,15 +83,16 @@ function MultiRedditsAdd({
           </div>
         </div>
       </div>
-      <div className="form-group mt-2">
-        <textarea
-          className="form-control form-control-sm"
+      <Form.Group className="mt-2">
+        <Form.Control
+          as="textarea"
           id="multiform-descr"
           placeholder="Description (optional)"
           ref={descriptionTextarea}
           rows={3}
+          size="sm"
         />
-      </div>
+      </Form.Group>
       <div className="form-group mt-2">
         <button
           className="btn btn-primary btn-sm me-2"

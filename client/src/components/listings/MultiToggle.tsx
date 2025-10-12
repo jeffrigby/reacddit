@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
+import { Form } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
@@ -64,18 +65,16 @@ function MultiToggle({ srName }: MultiToggleProps) {
     const checked = subNames.includes(srName);
 
     return (
-      <div className="form-check dropdown-item small m-0 p-0" key={key}>
-        <label className="form-check-label w-100" htmlFor={key}>
-          <input
-            className="form-check-input multi-toggle-input mx-2"
-            defaultChecked={checked}
-            id={key}
-            type="checkbox"
-            value={item.data.path}
-            onChange={addRemove}
-          />
-          {item.data.display_name}
-        </label>
+      <div className="dropdown-item small m-0 p-0" key={key}>
+        <Form.Check
+          className="multi-toggle-input mx-2 w-100"
+          defaultChecked={checked}
+          id={key}
+          label={item.data.display_name}
+          type="checkbox"
+          value={item.data.path}
+          onChange={addRemove}
+        />
       </div>
     );
   });

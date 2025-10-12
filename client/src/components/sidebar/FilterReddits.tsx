@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { Form } from 'react-bootstrap';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
 import { subredditsFilter } from '@/redux/actions/subreddits';
@@ -134,11 +135,12 @@ function FilterReddits() {
         filter.active ? 'filter-focused' : 'filter-unfocused'
       }`}
     >
-      <input
-        className="form-control form-control-sm w-100 py-0"
+      <Form.Control
+        className="w-100 py-0"
         id="subreddit-filter"
         placeholder="Filter"
         ref={filterInput}
+        size="sm"
         type="text"
         value={filter.filterText}
         onBlur={setBlur}

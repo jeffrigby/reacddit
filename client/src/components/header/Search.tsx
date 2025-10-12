@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
+import { Form } from 'react-bootstrap';
 import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
@@ -204,11 +205,12 @@ function Search() {
 
   return (
     <div className={searchClassName} id="search" ref={searchInputParent}>
-      <input
-        className="form-control form-control-sm w-100 py-0"
+      <Form.Control
+        className="w-100 py-0"
         id="search-reddit"
         placeholder={placeholder}
         ref={searchInput}
+        size="sm"
         title={title}
         type="text"
         value={search}
