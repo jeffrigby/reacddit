@@ -2,6 +2,7 @@ import { memo, StrictMode, useState, useEffect, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { redditGetBearer, redditFetchMe } from '@/redux/actions/reddit';
 import { hotkeyStatus } from '@/common';
+import { useModals } from '@/contexts/ModalContext';
 import Navigation from './Navigation';
 import Header from './Header';
 import Help from './Help';
@@ -18,20 +19,20 @@ function App() {
   const pinMenu = useAppSelector((state) => state.siteSettings.pinMenu);
   const subredditsFilter = useAppSelector((state) => state.subredditsFilter);
   const redditMe = useAppSelector((state) => state.redditMe);
+  const { setShowHotkeys } = useModals();
 
-  const hotkeys = useCallback((event: KeyboardEvent) => {
-    const pressedKey = event.key;
+  const hotkeys = useCallback(
+    (event: KeyboardEvent) => {
+      const pressedKey = event.key;
 
-    if (hotkeyStatus()) {
-      if (pressedKey === '?') {
-        const modalElement = document.getElementById('hotkeys');
-        if (modalElement) {
-          const modal = new bootstrap.Modal(modalElement);
-          modal.show();
+      if (hotkeyStatus()) {
+        if (pressedKey === '?') {
+          setShowHotkeys(true);
         }
       }
-    }
-  }, []);
+    },
+    [setShowHotkeys]
+  );
 
   const getToken = useCallback(async () => {
     const bearer = await dispatch(redditGetBearer());

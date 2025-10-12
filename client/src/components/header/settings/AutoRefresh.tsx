@@ -2,12 +2,14 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
+import { useModals } from '@/contexts/ModalContext';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '@/common';
 
 function AutoRefresh() {
   const stream = useAppSelector((state) => state.siteSettings.stream);
   const dispatch = useDispatch<AppDispatch>();
+  const { setShowAutoRefresh } = useModals();
 
   const autoRefreshToggle = () => {
     window.scrollTo(0, 0);
@@ -52,9 +54,15 @@ function AutoRefresh() {
         </div>
         <div
           className="ms-auto"
-          data-bs-target="#autoRefresh"
-          data-bs-toggle="modal"
+          role="button"
+          tabIndex={0}
           title="Auto Refresh Info"
+          onClick={() => setShowAutoRefresh(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setShowAutoRefresh(true);
+            }
+          }}
         >
           <i className="fas fa-info-circle" />
         </div>

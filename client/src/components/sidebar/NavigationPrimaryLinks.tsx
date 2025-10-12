@@ -5,14 +5,9 @@ import queryString from 'query-string';
 import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
 import { useAppSelector } from '@/redux/hooks';
+import { useModals } from '@/contexts/ModalContext';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
-
-declare const bootstrap: {
-  Modal: new (element: Element | null) => {
-    show: () => void;
-  };
-};
 
 function NavigationPrimaryLinks(): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);
@@ -21,6 +16,7 @@ function NavigationPrimaryLinks(): ReactElement {
   const query = useAppSelector((state) => state.listingsFilter.qs);
   const subreddits = useAppSelector((state) => state.subreddits);
   const navigate = useNavigate();
+  const { setShowHotkeys } = useModals();
 
   const lastKeyPressed = useRef<string>('');
 
@@ -77,11 +73,7 @@ function NavigationPrimaryLinks(): ReactElement {
     if (e) {
       e.preventDefault();
     }
-    const hotkeysElement = document.getElementById('hotkeys');
-    if (hotkeysElement && typeof bootstrap !== 'undefined') {
-      const modal = new bootstrap.Modal(hotkeysElement);
-      modal.show();
-    }
+    setShowHotkeys(true);
   }
 
   useEffect(() => {

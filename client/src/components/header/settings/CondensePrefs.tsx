@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/types/redux';
+import { useModals } from '@/contexts/ModalContext';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
 
 function CondensePrefs() {
@@ -13,6 +14,7 @@ function CondensePrefs() {
     (state: RootState) => state.siteSettings.condensePinned
   );
   const dispatch = useDispatch<AppDispatch>();
+  const { setShowCondenseHelp } = useModals();
 
   const toggleDupe = () => {
     dispatch(siteSettings({ condenseDuplicate: !condenseDuplicatesSetting }));
@@ -32,9 +34,15 @@ function CondensePrefs() {
         <div className="fw-bold mb-1">Default Condense</div>
         <div
           className="ms-auto"
-          data-bs-target="#condenseHelp"
-          data-bs-toggle="modal"
+          role="button"
+          tabIndex={0}
           title="Condense Info"
+          onClick={() => setShowCondenseHelp(true)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setShowCondenseHelp(true);
+            }
+          }}
         >
           <i className="fas fa-info-circle" />
         </div>
