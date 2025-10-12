@@ -1,5 +1,6 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
 import type { MouseEvent } from 'react';
+import { Button } from 'react-bootstrap';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { PostsContextActionable, PostsContextData } from '@/contexts';
@@ -81,14 +82,15 @@ function PostSave() {
   }
   return (
     <div id="entry-save">
-      <button
-        className="btn btn-link shadow-none btn-sm m-0 p-0"
+      <Button
+        className="shadow-none m-0 p-0"
+        size="sm"
         title={title}
-        type="button"
+        variant="link"
         onClick={handleClick}
       >
         {saveStr}
-      </button>
+      </Button>
     </div>
   );
 }

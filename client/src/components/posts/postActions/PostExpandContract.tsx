@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Button } from 'react-bootstrap';
 import classNames from 'classnames';
 
 /**
@@ -49,15 +50,16 @@ function PostExpandContract({
       : 'Expand post';
 
   return (
-    <button
+    <Button
       aria-label={viewTitle}
-      className="btn btn-link btn-sm shadow-none m-0 p-0"
+      className="shadow-none m-0 p-0"
+      size="sm"
       title={viewTitle}
-      type="button"
+      variant="link"
       onClick={toggleView}
     >
       <i className={viewIcon} />
-    </button>
+    </Button>
   );
 }
 

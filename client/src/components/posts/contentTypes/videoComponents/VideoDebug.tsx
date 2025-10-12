@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { Button } from 'react-bootstrap';
 import type { BufferData } from './types';
 
 interface VideoDebugProps {
@@ -29,13 +30,14 @@ function VideoDebug({
   return (
     <div>
       <div>
-        <button
-          className="btn btn-link btn-sm m-0 p-0 shadow-none"
-          type="button"
+        <Button
+          className="m-0 p-0 shadow-none"
+          size="sm"
+          variant="link"
           onClick={toggleDebug}
         >
           {showDebug ? 'Hide' : 'Show'} Video Debug
-        </button>
+        </Button>
       </div>
       {showDebug && (
         <code>

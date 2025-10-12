@@ -1,5 +1,6 @@
 import { memo, useState } from 'react';
 import type { ReactElement } from 'react';
+import { Button } from 'react-bootstrap';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
 import _trimEnd from 'lodash/trimEnd';
@@ -52,14 +53,15 @@ function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
           />
         </span>
         <span>
-          <button
+          <Button
             aria-label={arrowTitle}
-            className="btn btn-link btn-sm m-0 p-0 ps-2 border-0"
-            type="button"
+            className="m-0 p-0 ps-2 border-0"
+            size="sm"
+            variant="link"
             onClick={hideShowSubs}
           >
             <i className={`fas fa-caret-${arrowClass} menu-caret`} />
-          </button>
+          </Button>
         </span>
       </div>
       {showSubs && <MultiRedditsSubs multiRedditSubs={item.data.subreddits} />}

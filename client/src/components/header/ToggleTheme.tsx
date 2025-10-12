@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Button } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
@@ -30,15 +31,15 @@ function ToggleTheme() {
 
   return (
     <div className="header-button">
-      <button
+      <Button
         aria-label={`Enable ${buttonTitle}`}
-        className="btn btn-secondary btn-sm"
+        size="sm"
         title={buttonTitle}
-        type="button"
+        variant="secondary"
         onClick={toggleTheme}
       >
         <i className={iconClass} />
-      </button>
+      </Button>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { Button } from 'react-bootstrap';
 import isEmpty from 'lodash/isEmpty';
 import { useLocation, useParams } from 'react-router';
 import { produce } from 'immer';
@@ -118,14 +119,15 @@ function SubUnSub() {
   } ${displayNamePrefixed}`;
 
   return (
-    <button
-      className="btn btn-primary btn-sm sub-un-sub"
+    <Button
+      className="sub-un-sub"
+      size="sm"
       title={title}
-      type="button"
+      variant="primary"
       onClick={buttonAction}
     >
       <i className={iconClass} /> {text}
-    </button>
+    </Button>
   );
 }
 

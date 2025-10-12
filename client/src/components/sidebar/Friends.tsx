@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useState } from 'react';
+import { Button } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
 import { produce } from 'immer';
@@ -132,17 +133,18 @@ function Friends() {
             />
           </div>
           <div>
-            <button
+            <Button
               aria-label={showFriends ? 'Hide Friends' : 'Show Friends'}
-              className="btn btn-link btn-sm m-0 p-0 border-0"
-              type="button"
+              className="m-0 p-0 border-0"
+              size="sm"
+              variant="link"
               onClick={toggleShowFriends}
             >
               <i
                 aria-hidden="true"
                 className={`fas fa-caret-${showFriends ? 'down' : 'left'} menu-caret`}
               />
-            </button>
+            </Button>
           </div>
         </div>
       </li>

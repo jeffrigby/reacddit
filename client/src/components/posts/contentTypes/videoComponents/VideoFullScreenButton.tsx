@@ -1,4 +1,5 @@
 import { memo, type MouseEvent } from 'react';
+import { Button } from 'react-bootstrap';
 import type { ExtendedHTMLVideoElement } from './types';
 
 interface VideoFullScreenButtonProps {
@@ -30,15 +31,16 @@ function VideoFullScreenButton({ videoRef }: VideoFullScreenButtonProps) {
   };
 
   return (
-    <button
+    <Button
       aria-label="Full Screen"
-      className="btn btn-link shadow-none mx-4 p-0 btn-sm"
+      className="shadow-none mx-4 p-0"
+      size="sm"
       title="Full Screen"
-      type="button"
+      variant="link"
       onClick={toggleFullscreen}
     >
       <i className="fas fa-expand" />
-    </button>
+    </Button>
   );
 }
 

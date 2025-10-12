@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
-import { Form } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
@@ -232,23 +232,24 @@ function Search() {
       {focused && !global && (
         <div className="searchToolTip small p-1 mt-1">
           {showTargetSearch && (
-            <button
-              className="btn btn-primary btn-sm me-1"
+            <Button
+              className="me-1"
               disabled={!search}
-              type="button"
+              size="sm"
+              variant="primary"
               onClick={searchTarget}
             >
               Search in /r/{listingsFilter.target} {!isMobile && <>⏎</>}
-            </button>
+            </Button>
           )}
-          <button
-            className="btn btn-primary btn-sm"
+          <Button
             disabled={!search}
-            type="button"
+            size="sm"
+            variant="primary"
             onClick={searchEverywhere}
           >
             Search Everywhere {!isMobile && <>⇧⏎</>}
-          </button>
+          </Button>
         </div>
       )}
     </div>

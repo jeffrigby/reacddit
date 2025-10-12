@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
 import { useAppDispatch } from '@/redux/hooks';
 import type { LabeledMultiData } from '@/types/redditApi';
@@ -24,15 +25,15 @@ function MultiDelete({ multi }: MultiDeleteProps) {
   };
 
   return (
-    <button
+    <Button
       aria-label="Delete Custom Feed"
-      className="btn btn-sm btn-danger"
+      size="sm"
       title="Delete Custom Feed"
-      type="button"
+      variant="danger"
       onClick={removeMulti}
     >
       <i className="fas fa-trash-alt" />
-    </button>
+    </Button>
   );
 }
 

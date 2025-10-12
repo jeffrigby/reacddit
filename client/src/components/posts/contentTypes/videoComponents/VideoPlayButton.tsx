@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Button } from 'react-bootstrap';
 
 interface VideoPlayButtonProps {
   /** The video reference. */
@@ -33,15 +34,16 @@ function VideoPlayButton({
   };
 
   return (
-    <button
+    <Button
       aria-label={playTitle}
-      className="btn btn-link shadow-none mx-4 p-0 btn-sm"
+      className="shadow-none mx-4 p-0"
+      size="sm"
       title={playTitle}
-      type="button"
+      variant="link"
       onClick={playStop}
     >
       <i className={playIconClass} />
-    </button>
+    </Button>
   );
 }
 

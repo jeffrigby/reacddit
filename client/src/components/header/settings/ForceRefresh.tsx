@@ -1,3 +1,4 @@
+import { Button } from 'react-bootstrap';
 import { useAppSelector } from '@/redux/hooks';
 import { unregister } from '@/serviceWorkerRegistration';
 
@@ -20,13 +21,14 @@ function ForceRefresh() {
 
   return (
     <div>
-      <button
-        className="btn btn-primary btn-sm m-0 small w-100"
-        type="button"
+      <Button
+        className="m-0 small w-100"
+        size="sm"
+        variant="primary"
         onClick={reload}
       >
         <small>Load Newest Version</small>
-      </button>
+      </Button>
       {debug && (
         <>
           <div className="dropdown-divider" />

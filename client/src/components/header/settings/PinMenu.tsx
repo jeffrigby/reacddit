@@ -1,3 +1,4 @@
+import { Button } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
@@ -16,17 +17,17 @@ function PinMenu() {
     dispatch(siteSettings({ pinMenu: !pinMenuSetting }));
   };
 
-  const buttonClass = pinMenuSetting ? 'light' : 'secondary';
+  const buttonVariant = pinMenuSetting ? 'light' : 'secondary';
 
   return (
-    <button
+    <Button
       aria-label="Pin Menu"
-      className={`btn btn-${buttonClass} btn-sm`}
-      type="button"
+      size="sm"
+      variant={buttonVariant}
       onClick={togglePinMenu}
     >
       <i className="fas fa-thumbtack" />
-    </button>
+    </Button>
   );
 }
 

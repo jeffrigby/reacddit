@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Button } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
 import { searchSubreddits } from '@/reddit/redditApiTs';
@@ -101,14 +102,15 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   const nsfwText = showNSFW ? 'Hide NSFW' : 'Show NSFW';
   const nsfwButton = !auth ? (
     <div className="pt-1 small">
-      <button
-        className="btn btn-dark btn-sm m-0"
+      <Button
+        className="m-0"
+        size="sm"
         title="Toggle NSFW Results"
-        type="button"
+        variant="dark"
         onClick={toggleNSFW}
       >
         {nsfwText}
-      </button>
+      </Button>
     </div>
   ) : null;
 

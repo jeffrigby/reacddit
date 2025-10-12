@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
 import redditAPI from '@/reddit/redditAPI';
@@ -64,10 +65,11 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
 
   return (
     <div className="comments-more ps-2 mt-2">
-      <button
-        className="btn btn-outline-secondary btn-sm mb-2"
+      <Button
+        className="mb-2"
         disabled={loading}
-        type="button"
+        size="sm"
+        variant="outline-secondary"
         onClick={getMoreComments}
       >
         {loading ? (
@@ -75,7 +77,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
         ) : (
           <>{count.toLocaleString()} more replies.</>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

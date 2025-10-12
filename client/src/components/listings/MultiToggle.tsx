@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
-import { Form } from 'react-bootstrap';
+import { Form, Button } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
@@ -81,16 +81,17 @@ function MultiToggle({ srName }: MultiToggleProps) {
 
   return (
     <div className="multi-menu header-button ms-2">
-      <button
+      <Button
         aria-expanded="false"
         aria-haspopup="true"
         aria-label="Multis"
-        className="btn btn-primary btn-sm form-control-sm"
+        className="form-control-sm"
         data-bs-toggle="dropdown"
-        type="button"
+        size="sm"
+        variant="primary"
       >
         Multis <i className="fas fa-caret-down" />
-      </button>
+      </Button>
       <div className="dropdown-menu dropdown-menu-end" ref={multiRef}>
         {menuItems}
       </div>

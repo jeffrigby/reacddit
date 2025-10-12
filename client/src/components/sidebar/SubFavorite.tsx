@@ -1,5 +1,6 @@
 import { useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
+import { Button } from 'react-bootstrap';
 import { produce } from 'immer';
 import type { MouseEvent } from 'react';
 import type { AppDispatch } from '@/types/redux';
@@ -88,16 +89,17 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
 
   return (
     <>
-      <button
+      <Button
         aria-label={label}
-        className="btn btn-link btn-sm m-0 p-0 me-1 faded"
+        className="m-0 p-0 me-1 faded"
         disabled={isLoading}
+        size="sm"
         title={label}
-        type="button"
+        variant="link"
         onClick={toggleFavorite}
       >
         <i className={`${iconClass} ${isLoading ? 'opacity-50' : ''}`} />
-      </button>
+      </Button>
       {error && (
         <small className="text-danger ms-1" role="alert">
           {error}

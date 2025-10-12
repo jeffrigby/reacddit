@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from 'react-bootstrap';
 import { useLocation, useParams } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
@@ -70,15 +71,15 @@ function PostsDebug() {
           </div>
         </>
       ) : (
-        <button
+        <Button
           aria-label="Open Debug Info"
-          className="btn btn-primary btn-sm"
+          size="sm"
           title="Open Debug Info"
-          type="button"
+          variant="primary"
           onClick={() => setClosed(false)}
         >
           <i className="fas fa-bug" />
-        </button>
+        </Button>
       )}
     </div>
   );

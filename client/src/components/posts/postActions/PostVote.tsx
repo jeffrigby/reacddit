@@ -1,5 +1,6 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
 import type { MouseEvent } from 'react';
+import { Button } from 'react-bootstrap';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { PostsContextData, PostsContextActionable } from '@/contexts';
@@ -158,27 +159,29 @@ function PostVote() {
 
   return (
     <div className="vote">
-      <button
-        className="btn btn-link btn-sm shadow-none"
+      <Button
+        className="shadow-none"
         disabled={disabled}
+        size="sm"
         title="Vote Up (a)"
-        type="button"
+        variant="link"
         onClick={handleUpvote}
       >
         {' '}
         <i className={`fa-arrow-alt-circle-up ${upClass}`} />{' '}
-      </button>
+      </Button>
       <span>{ups.toLocaleString()}</span>
-      <button
+      <Button
         aria-label="Vote Down"
-        className="btn btn-link btn-sm shadow-none"
+        className="shadow-none"
         disabled={disabled}
+        size="sm"
         title="Vote Down (z)"
-        type="button"
+        variant="link"
         onClick={handleDownvote}
       >
         <i className={`fa-arrow-alt-circle-down ${downClass}`} />
-      </button>
+      </Button>
     </div>
   );
 }
