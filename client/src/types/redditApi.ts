@@ -2,12 +2,12 @@
 // Based on https://www.reddit.com/dev/api/
 
 export type RedditKind =
-  | `t1_${string}` // Comment
-  | `t2_${string}` // Account
-  | `t3_${string}` // Link
-  | `t4_${string}` // Message
-  | `t5_${string}` // Subreddit
-  | `t6_${string}` // Award
+  | 't1' // Comment
+  | 't2' // Account
+  | 't3' // Link
+  | 't4' // Message
+  | 't5' // Subreddit
+  | 't6' // Award
   | 'Listing'
   | 'more'
   | 'UserList' // For friend lists (deprecated)
@@ -27,7 +27,7 @@ export type RedditKind =
  * @template T The type of the 'data' field.
  */
 export interface Thing<T> {
-  /** The kind of object. e.g., "t1" for Comment, "t2" for Account. */
+  /** The kind of object. e.g., "t1" for Comment, "t3" for Link, "t5" for Subreddit. */
   kind: RedditKind;
   /** The data payload for this object. */
   data: T;

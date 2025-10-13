@@ -34,7 +34,7 @@ function PostsRender({
       } = post;
 
       let duplicate = false;
-      if (kind.startsWith('t3_') && listType !== 'duplicates') {
+      if (kind === 't3') {
         const linkData = post.data as LinkData;
         if (!links.has(linkData.url)) {
           links.add(linkData.url);
@@ -53,7 +53,7 @@ function PostsRender({
         />
       );
     });
-  }, [posts, listType, idxOffset]);
+  }, [posts, idxOffset]);
 }
 
 export default memo(PostsRender);
