@@ -85,7 +85,10 @@ const getStyleLoaders = (cssOptions, preProcessor) => {
         options: {
           sourceMap: true,
           sassOptions: {
-            // Suppress Bootstrap Sass deprecation warnings
+            // Suppress Bootstrap Sass deprecation warnings from node_modules
+            // Note: Warnings about @import in our own files (bootstrap.scss) will still appear
+            // These are EXPECTED and harmless - we must use @import because Bootstrap 5.x
+            // requires it for proper mixin/variable sharing. Will be fixed in Bootstrap 6.
             quietDeps: true,
           },
         },

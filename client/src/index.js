@@ -9,7 +9,6 @@ import queryString from 'query-string';
 import configureReduxStore from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import './styles/bootstrap.scss';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './styles/main.scss';
 import Root from './components/layout/Root';
 import { register as serviceWorkerRegister } from './serviceWorkerRegistration';
