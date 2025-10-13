@@ -1,7 +1,9 @@
 import { useAppSelector } from '@/redux/hooks';
 
 function ListingsHeaderError() {
-  const target = useAppSelector((state) => state.listingsFilter?.target);
+  const target = useAppSelector(
+    (state) => state.listings.currentFilter?.target
+  );
 
   return (
     <div className="d-flex">

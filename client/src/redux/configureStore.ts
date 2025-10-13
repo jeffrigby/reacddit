@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import type { PreloadedState } from '@reduxjs/toolkit';
 import type { RootState } from '@/types/redux';
-import * as listings from './reducers/listings';
+import listingsReducer from './slices/listingsSlice';
 import siteSettingsSlice from './slices/siteSettingsSlice';
 import historySlice from './slices/historySlice';
 import subredditsReducer from './slices/subredditsSlice';
@@ -12,7 +12,7 @@ import meReducer from './slices/redditMeSlice';
 const configureReduxStore = (initialState?: PreloadedState<RootState>) =>
   configureStore({
     reducer: {
-      ...listings,
+      listings: listingsReducer,
       siteSettings: siteSettingsSlice,
       history: historySlice,
       subreddits: subredditsReducer,

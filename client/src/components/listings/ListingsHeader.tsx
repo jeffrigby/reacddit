@@ -6,7 +6,9 @@ import ListingsHeaderError from './ListingsHeaderError';
 import { listingStatus } from '../../redux/selectors/listingsSelector';
 
 function ListingsHeader() {
-  const listType = useAppSelector((state) => state.listingsFilter?.listType);
+  const listType = useAppSelector(
+    (state) => state.listings.currentFilter?.listType
+  );
   const location = useLocation();
   const status = useAppSelector((state) => listingStatus(state, location.key));
 

@@ -2,7 +2,7 @@ import { createSelector } from '@reduxjs/toolkit';
 
 const postFocusedSelector = (state, postName, idx, locationKey) => {
   const key = locationKey || 'front';
-  const listingState = state.listingsState[key];
+  const listingState = state.listings?.uiStateByLocation[key];
   if (!listingState) {
     return idx === 0;
   }
@@ -12,7 +12,7 @@ const postFocusedSelector = (state, postName, idx, locationKey) => {
 
 const postActionableSelector = (state, postName, idx, locationKey) => {
   const key = locationKey || 'front';
-  const listingState = state.listingsState[key];
+  const listingState = state.listings?.uiStateByLocation[key];
   if (!listingState) {
     return idx === 0;
   }

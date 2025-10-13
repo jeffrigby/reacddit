@@ -1,17 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
-import queryString from 'query-string';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import {
+  fetchListingsInitial,
+  fetchListingsNew,
+  filterChanged,
+  selectListingData,
+  selectListingStatus,
+} from '@/redux/slices/listingsSlice';
 import ListingsLogic from './ListingsLogic';
-import {
-  listingsFetchEntriesReddit,
-  listingsFetchRedditNew,
-  listingsFilter,
-} from '../../redux/actions/listings';
-import {
-  listingData,
-  listingStatus,
-} from '../../redux/selectors/listingsSelector';
 import { hotkeyStatus } from '../../common';
 import ListingsHeader from './ListingsHeader';
 import PostsDebug from './PostsDebug';
@@ -39,10 +36,14 @@ function Listings({ match }: ListingsProps) {
   const dispatch = useAppDispatch();
   const [lastExpanded, setLastExpanded] = useState('');
 
-  const data = useAppSelector((state) => listingData(state, location.key));
-  const status = useAppSelector((state) => listingStatus(state, location.key));
+  const data = useAppSelector((state) =>
+    selectListingData(state, location.key)
+  );
+  const status = useAppSelector((state) =>
+    selectListingStatus(state, location.key)
+  );
   const settings = useAppSelector((state) => state.siteSettings);
-  const filter = useAppSelector((state) => state.listingsFilter);
+  const filter = useAppSelector((state) => state.listings.currentFilter);
 
   const { listType, sort, target, user, userType, multi, postName, comment } =
     match;
@@ -58,8 +59,6 @@ function Listings({ match }: ListingsProps) {
 
   // Set the new filter.
   useEffect(() => {
-    const qs = queryString.parse(location.search);
-
     let listingType = listType ?? 'r';
     if (listType === 'user') {
       listingType = 'u';
@@ -71,8 +70,7 @@ function Listings({ match }: ListingsProps) {
       listingType = 's';
     }
 
-    // Set to best if it's the front page.
-    const getSort = sort ?? (qs.sort as string) ?? (target ? 'hot' : 'best');
+    const getSort = sort ?? (target ? 'hot' : 'best');
 
     const newFilter = {
       sort: getSort,
@@ -81,12 +79,11 @@ function Listings({ match }: ListingsProps) {
       userType: userType ?? '',
       user: user ?? '',
       listType: listingType,
-      qs: location.search,
       postName: postName ?? '',
       comment: comment ?? '',
     };
 
-    dispatch(listingsFilter(newFilter));
+    dispatch(filterChanged(newFilter));
   }, [
     listType,
     target,
@@ -106,7 +103,13 @@ function Listings({ match }: ListingsProps) {
       return;
     }
     setLastExpanded('');
-    dispatch(listingsFetchEntriesReddit(filter, location));
+    dispatch(
+      fetchListingsInitial({
+        filters: filter,
+        location,
+        siteSettings: settings,
+      })
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, dispatch]);
 
@@ -117,7 +120,7 @@ function Listings({ match }: ListingsProps) {
       if (window.scrollY > 10) {
         return;
       }
-      dispatch(listingsFetchRedditNew(location, true));
+      dispatch(fetchListingsNew({ location, stream: true }));
     };
 
     let streamNewPostsInterval: NodeJS.Timeout | undefined;
@@ -141,7 +144,7 @@ function Listings({ match }: ListingsProps) {
           switch (pressedKey) {
             case '.':
               window.scrollTo(0, 0);
-              dispatch(listingsFetchRedditNew(location));
+              dispatch(fetchListingsNew({ location }));
               break;
             case '/':
               window.scrollTo(0, document.body.scrollHeight);

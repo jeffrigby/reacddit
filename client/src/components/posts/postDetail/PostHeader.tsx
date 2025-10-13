@@ -38,7 +38,9 @@ function PostHeader({
     post: { data: LinkData; kind: string };
     isLoaded: boolean;
   };
-  const listType = useAppSelector((state) => state.listingsFilter.listType);
+  const listType = useAppSelector(
+    (state) => state.listings.currentFilter.listType
+  );
   const params = useParams<{ listType?: string; target?: string }>();
   const { post, isLoaded } = postContext;
   const { data, kind } = post;

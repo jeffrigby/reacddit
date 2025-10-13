@@ -15,7 +15,9 @@ function Search() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const listingsFilter = useAppSelector((state) => state.listingsFilter);
+  const listingsFilter = useAppSelector(
+    (state) => state.listings.currentFilter
+  );
 
   const searchInput = useRef<HTMLInputElement>(null);
   const searchInputParent = useRef<HTMLDivElement>(null);

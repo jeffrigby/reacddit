@@ -8,7 +8,7 @@ function ListingsHeaderMulti() {
   const [currentMulti, setCurrentMulti] = useState<LabeledMultiData | null>(
     null
   );
-  const filter = useAppSelector((state) => state.listingsFilter);
+  const filter = useAppSelector((state) => state.listings.currentFilter);
   const me = useAppSelector((state) => state.redditMe);
 
   const { target, user } = filter;

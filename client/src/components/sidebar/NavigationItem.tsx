@@ -16,7 +16,7 @@ interface NavigationItemProps {
 }
 
 function NavigationItem({ item, trigger }: NavigationItemProps) {
-  const sort = useAppSelector((state) => state.listingsFilter.sort);
+  const sort = useAppSelector((state) => state.listings.currentFilter.sort);
   const me = useAppSelector((state) => state.redditMe?.me);
   const lastUpdatedTracking = useAppSelector(selectLastUpdatedTracking);
   const location = useLocation();

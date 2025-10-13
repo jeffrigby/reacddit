@@ -39,6 +39,9 @@ const CACHE_EXPIRATION = 3600 * 24 * 1000;
 
 /**
  * Filter state for sidebar subreddit navigation
+ * @property filterText - The current search/filter text
+ * @property active - Whether the filter is currently active/focused
+ * @property activeIndex - Index of currently selected subreddit in filtered list (for keyboard navigation)
  */
 export interface SubredditFilterState {
   filterText: string;
@@ -48,17 +51,34 @@ export interface SubredditFilterState {
 
 /**
  * Last updated tracking for subreddit post timestamps
+ * Used to display "new post" indicators in the sidebar
+ * @property lastPost - Unix timestamp (ms) of the most recent post
+ * @property expires - Unix timestamp (ms) when this cache entry should be refreshed
  */
 export interface LastUpdatedEntry {
   lastPost: number;
   expires: number;
 }
 
+/**
+ * Map of subreddit fullnames (e.g., 't5_2r0ij') to their last updated info
+ * Key format MUST be the fullname (name field) not display_name
+ */
 export type LastUpdatedTracking = Record<string, LastUpdatedEntry>;
 
 /**
  * State shape for subreddits slice
  * Uses EntityAdapter for normalized state with O(1) lookups
+ * @property ids - Array of subreddit keys (from EntityAdapter, sorted alphabetically)
+ * @property entities - Map of subreddit key to SubredditData (from EntityAdapter)
+ * @property status - Loading state: idle | loading | succeeded | failed
+ * @property error - Error message from fetchSubreddits, null if no error
+ * @property lastUpdated - Unix timestamp (ms) when subreddits were last fetched
+ * @property filter - Filter state for sidebar search/keyboard navigation
+ * @property lastUpdatedTracking - Map of subreddit fullnames to last post timestamps
+ * @property lastUpdatedTime - Unix timestamp (ms) of last lastUpdated polling run
+ * @property lastUpdatedRunning - Flag to prevent concurrent lastUpdated polling
+ * @property lastUpdatedError - Error message from background polling, null if no error
  */
 export interface SubredditsState extends EntityState<SubredditData, string> {
   // EntityAdapter provides: ids: string[], entities: Record<string, SubredditData>
@@ -75,7 +95,7 @@ export interface SubredditsState extends EntityState<SubredditData, string> {
   lastUpdatedTracking: LastUpdatedTracking;
   lastUpdatedTime: number;
   lastUpdatedRunning: boolean;
-  lastUpdatedError: string | null; // Errors from background polling
+  lastUpdatedError: string | null;
 }
 
 /**
@@ -108,16 +128,19 @@ const initialState: SubredditsState = subredditsAdapter.getInitialState({
 
 /**
  * Helper: Map Reddit API response children to normalized record
+ * @param children - Array of Thing<SubredditData> from Reddit API
+ * @returns Record keyed by lowercase display_name
  */
 const mapSubreddits = (
   children: Thing<SubredditData>[]
-): Record<string, SubredditData> =>
-  children
-    .map((thing) => thing.data)
-    .reduce(
-      (acc, sub) => ({ ...acc, [sub.display_name.toLowerCase()]: sub }),
-      {}
-    );
+): Record<string, SubredditData> => {
+  const result: Record<string, SubredditData> = {};
+  for (const thing of children) {
+    const key = thing.data.display_name.toLowerCase();
+    result[key] = thing.data;
+  }
+  return result;
+};
 
 /**
  * Helper: Fetch all subreddits with pagination (handles Reddit's 100 sub limit)
@@ -216,91 +239,95 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
   void,
   void,
   { state: RootState }
->('subreddits/fetchLastUpdated', async (_, { dispatch, getState }) => {
-  const state = getState();
-  const { entities, lastUpdatedTracking, lastUpdatedRunning } =
-    state.subreddits;
+>(
+  'subreddits/fetchLastUpdated',
+  async (_, { dispatch, getState }) => {
+    const state = getState();
+    const { entities, lastUpdatedTracking } = state.subreddits;
 
-  // Prevent concurrent runs
-  if (lastUpdatedRunning) {
-    return;
-  }
+    // Set running flag and clear previous errors
+    dispatch(lastUpdatedRunningSet(true));
+    dispatch(lastUpdatedErrorSet(null));
 
-  // Set running flag and clear previous errors
-  dispatch({ type: 'subreddits/lastUpdatedRunningSet', payload: true });
-  dispatch({ type: 'subreddits/lastUpdatedErrorSet', payload: null });
+    try {
+      // Create subreddit lookup requests
+      const lookups: Array<{
+        type: 'friend' | 'subreddit';
+        path: string;
+        id: string;
+      }> = [];
 
-  try {
-    // Create subreddit lookup requests
-    const lookups: Array<{
-      type: 'friend' | 'subreddit';
-      path: string;
-      id: string;
-    }> = [];
-
-    Object.values(entities).forEach((subreddit) => {
-      if (!subreddit) {
-        return;
-      }
-
-      // CRITICAL: Use fullname (name field like 't5_2r0ij') as the key
-      // Components expect this format in lastUpdatedTracking lookups
-      const subredditFullname = subreddit.name;
-
-      // Check if this subreddit needs updating based on expiration
-      if (shouldUpdate(lastUpdatedTracking, subredditFullname)) {
-        // Check if it's a subreddit or a user
-        if (subreddit.url.match(/^\/user\//)) {
-          lookups.push({
-            type: 'friend',
-            path: subreddit.url.replace(/^\/user\/|\/$/g, ''),
-            id: subredditFullname,
-          });
+      Object.values(entities).forEach((subreddit) => {
+        if (!subreddit) {
           return;
         }
 
-        lookups.push({
-          type: 'subreddit',
-          path: subreddit.url.replace(/^\/r\/|\/$/g, ''),
-          id: subredditFullname,
-        });
-      }
-    });
+        // CRITICAL: Use fullname (name field like 't5_2r0ij') as the key
+        // Components expect this format in lastUpdatedTracking lookups
+        const subredditFullname = subreddit.name;
 
-    // Fetch with delay and rate limiting
-    const fetchWithDelay = async (lookup: (typeof lookups)[0]) => {
-      const { type, path, id } = lookup;
-      // CRITICAL: 2-5 second random delay for rate limiting
-      const toUpdate = await getLastUpdatedWithDelay(type, path, id, 2, 5);
-      if (toUpdate !== null) {
-        // PERFORMANCE NOTE: Dispatching individually (not batched)
-        // This creates one action per subreddit (up to 100 actions).
-        // Tradeoff: Progressive UI updates (good UX) vs batching (fewer re-renders).
-        // Current approach chosen for better perceived performance.
-        dispatch({ type: 'subreddits/lastUpdatedSet', payload: toUpdate });
-      }
-    };
+        // Check if this subreddit needs updating based on expiration
+        if (shouldUpdate(lastUpdatedTracking, subredditFullname)) {
+          // Check if it's a subreddit or a user
+          if (subreddit.url.match(/^\/user\//)) {
+            lookups.push({
+              type: 'friend',
+              path: subreddit.url.replace(/^\/user\/|\/$/g, ''),
+              id: subredditFullname,
+            });
+            return;
+          }
 
-    // CRITICAL: p-limit(5) for concurrency control
-    const limit = pLimit(5);
-    // CRITICAL: Max 100 subreddits to prevent API overload
-    const max = 100;
-    const maxLookups = lookups.slice(0, max);
-    const fetchPromises = maxLookups.map((lookup) =>
-      limit(() => fetchWithDelay(lookup))
-    );
+          lookups.push({
+            type: 'subreddit',
+            path: subreddit.url.replace(/^\/r\/|\/$/g, ''),
+            id: subredditFullname,
+          });
+        }
+      });
 
-    await Promise.all(fetchPromises);
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Error fetching last updated';
-    console.error('Error fetching last updated', error);
-    dispatch({ type: 'subreddits/lastUpdatedErrorSet', payload: errorMessage });
-  } finally {
-    // Clear running flag
-    dispatch({ type: 'subreddits/lastUpdatedRunningSet', payload: false });
+      // Fetch with delay and rate limiting
+      const fetchWithDelay = async (lookup: (typeof lookups)[0]) => {
+        const { type, path, id } = lookup;
+        // CRITICAL: 2-5 second random delay for rate limiting
+        const toUpdate = await getLastUpdatedWithDelay(type, path, id, 2, 5);
+        if (toUpdate !== null) {
+          // PERFORMANCE NOTE: Dispatching individually (not batched)
+          // This creates one action per subreddit (up to 100 actions).
+          // Tradeoff: Progressive UI updates (good UX) vs batching (fewer re-renders).
+          // Current approach chosen for better perceived performance.
+          dispatch(lastUpdatedSet(toUpdate));
+        }
+      };
+
+      // CRITICAL: p-limit(5) for concurrency control
+      const limit = pLimit(5);
+      // CRITICAL: Max 100 subreddits to prevent API overload
+      const max = 100;
+      const maxLookups = lookups.slice(0, max);
+      const fetchPromises = maxLookups.map((lookup) =>
+        limit(() => fetchWithDelay(lookup))
+      );
+
+      await Promise.all(fetchPromises);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error fetching last updated';
+      console.error('Error fetching last updated', error);
+      dispatch(lastUpdatedErrorSet(errorMessage));
+    } finally {
+      // Clear running flag
+      dispatch(lastUpdatedRunningSet(false));
+    }
+  },
+  {
+    // Condition prevents concurrent runs (double-check for race conditions)
+    condition: (_, { getState }) => {
+      const state = getState();
+      return !state.subreddits.lastUpdatedRunning;
+    },
   }
-});
+);
 
 /**
  * Subreddits slice
@@ -318,12 +345,10 @@ const subredditsSlice = createSlice({
 
     /**
      * Set last updated timestamp for a subreddit
+     * Immer handles immutability, so direct assignment is safe and more efficient
      */
     lastUpdatedSet(state, action: PayloadAction<LastUpdatedTracking>) {
-      state.lastUpdatedTracking = {
-        ...state.lastUpdatedTracking,
-        ...action.payload,
-      };
+      Object.assign(state.lastUpdatedTracking, action.payload);
       state.lastUpdatedTime = Date.now();
     },
 
@@ -488,3 +513,9 @@ export const selectFilteredSubreddits = createSelector(
     );
   }
 );
+
+/**
+ * @deprecated Use selectSubredditIds directly from EntityAdapter instead.
+ * This selector is redundant and only adds an extra layer.
+ * Kept for backward compatibility but will be removed in future refactor.
+ */

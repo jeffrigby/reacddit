@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
+import { useLocation } from 'react-router';
 import { Form, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
+import { selectSubredditData } from '@/redux/slices/listingsSlice';
 import RedditAPI from '../../reddit/redditAPI';
 
 interface MultiToggleProps {
@@ -13,8 +15,11 @@ interface MultiToggleProps {
 
 function MultiToggle({ srName }: MultiToggleProps) {
   const multiRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
-  const about = useAppSelector((state) => state.currentSubreddit);
+  const about = useAppSelector((state) =>
+    selectSubredditData(state, location.key)
+  );
   const multis = useAppSelector((state) => state.redditMultiReddits);
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const dispatch = useAppDispatch();

@@ -56,7 +56,7 @@ function useGetSubredditNames(filterText: string, showNSFW: boolean): string[] {
 function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
   const subreddits = useAppSelector(selectSubredditIds);
-  const sort = useAppSelector((state) => state.listingsFilter.sort);
+  const sort = useAppSelector((state) => state.listings.currentFilter.sort);
   const auth = useAppSelector(
     (state) => state.redditBearer.status === 'auth' || false
   );

@@ -6,9 +6,11 @@ import {
   faSpinner,
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
-import { listingStatus } from '../../../redux/selectors/listingsSelector';
 import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
-import { listingsFetchRedditNext } from '../../../redux/actions/listings';
+import {
+  fetchListingsNext,
+  selectListingStatus,
+} from '../../../redux/slices/listingsSlice';
 import { useIntersectionObservers } from '../../../contexts';
 
 type FooterStatus = 'loadingNext' | 'loadedAll';
@@ -41,7 +43,9 @@ function renderFooterStatus(status: string): ReactElement | null {
 function PostsFooter(): ReactElement {
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const status = useAppSelector((state) => listingStatus(state, location.key));
+  const status = useAppSelector((state) =>
+    selectListingStatus(state, location.key)
+  );
   const footerRef = useRef<HTMLDivElement>(null);
   const { observeForLoading } = useIntersectionObservers();
 
@@ -49,7 +53,7 @@ function PostsFooter(): ReactElement {
   const handleIntersection = useCallback(
     (isIntersecting: boolean) => {
       if (isIntersecting && status === 'loaded') {
-        dispatch(listingsFetchRedditNext(location));
+        dispatch(fetchListingsNext({ location }));
       }
     },
     [status, location, dispatch]

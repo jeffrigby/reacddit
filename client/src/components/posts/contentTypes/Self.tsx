@@ -78,7 +78,9 @@ function Self({ name, content }: SelfProps) {
   );
   const [specs, setSpecs] = useState<Dimensions | null>(null);
 
-  const listType = useAppSelector((state) => state.listingsFilter.listType);
+  const listType = useAppSelector(
+    (state) => state.listings.currentFilter.listType
+  );
   const debug = useAppSelector((state) => state.siteSettings.debugMode);
   const selfRef = useRef<HTMLDivElement>(null);
   const selfHTMLRef = useRef<HTMLDivElement>(null);

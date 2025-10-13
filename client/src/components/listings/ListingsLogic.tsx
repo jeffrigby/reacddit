@@ -3,11 +3,11 @@ import { useLocation } from 'react-router';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { listingsState } from '../../redux/actions/listings';
 import {
-  listingState,
-  listingStatus,
-} from '../../redux/selectors/listingsSelector';
+  uiStateUpdated,
+  selectUiState,
+  selectListingStatus,
+} from '@/redux/slices/listingsSlice';
 import { ListingsContextLastExpanded } from '../../contexts';
 import {
   getCurrentListingState,
@@ -35,11 +35,13 @@ interface ExtendedListingsState extends ListingsState {
 function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   const location = useLocation();
   // Get Redux Props
-  const status = useAppSelector((state) => listingStatus(state, location.key));
+  const status = useAppSelector((state) =>
+    selectListingStatus(state, location.key)
+  );
   const settings = useAppSelector((state) => state.siteSettings);
   const locationKey = location.key;
   const listingsCurrentState = useAppSelector((state) =>
-    listingState(state, location.key)
+    selectUiState(state, location.key)
   ) as ExtendedListingsState;
 
   // Keep latest props in a ref.
@@ -61,7 +63,7 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
         const newState = { ...listingsCurrentState };
         newState.lastExpanded = expandedId;
         const key = locationKey || 'front';
-        dispatch(listingsState(key, newState));
+        dispatch(uiStateUpdated({ key, uiState: newState }));
       }
     },
     [listingsCurrentState, locationKey, dispatch]
@@ -174,7 +176,7 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
 
     const stateCompare = isEqual(compareState, newState);
     if (!stateCompare) {
-      dispatch(listingsState(key, newState));
+      dispatch(uiStateUpdated({ key, uiState: newState }));
       prevState.current = newState;
     }
 

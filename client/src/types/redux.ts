@@ -7,12 +7,7 @@ import type { SubredditsState } from '@/redux/slices/subredditsSlice';
 import type { MultiRedditsState } from '@/redux/slices/multiRedditsSlice';
 import type { BearerState } from '@/redux/slices/redditBearerSlice';
 import type { MeState } from '@/redux/slices/redditMeSlice';
-import type {
-  ListingsFilter,
-  ListingsData,
-  ListingsState as ListingsStateEntry,
-} from './listings';
-import type { SubredditData } from './redditApi';
+import type { ListingsSliceState } from '@/redux/slices/listingsSlice';
 
 /**
  * Subreddit data as stored in Redux state
@@ -61,32 +56,17 @@ export interface RootState {
     condenseDuplicate?: boolean;
     [key: string]: unknown;
   };
-  listings: {
-    [key: string]: unknown;
-  };
+  listings: ListingsSliceState;
   reddit: {
     [key: string]: unknown;
   };
   redditBearer: BearerState;
   redditMe: MeState;
   redditMultiReddits: MultiRedditsState;
-  // Modern Redux Toolkit slice - consolidates subreddits, filter, and lastUpdated
   subreddits: SubredditsState;
   history: {
     [key: string]: unknown;
   };
-  listingsFilter: ListingsFilter;
-  listingsRedditStatus: Record<
-    string,
-    {
-      status: 'unloaded' | 'loading' | 'loaded' | 'loadedAll' | 'error';
-      saved?: number;
-      [key: string]: unknown;
-    }
-  >;
-  listingsRedditEntries: Record<string, ListingsData>;
-  listingsState: Record<string, ListingsStateEntry>;
-  currentSubreddit: Record<string, SubredditData & { saved?: number }>;
   [key: string]: unknown;
 }
 

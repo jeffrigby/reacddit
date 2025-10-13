@@ -42,7 +42,7 @@ function renderCommentLinks(
  */
 function PostsParent({ post }: PostsParentProps): ReactElement | null {
   const listingsFilter = useSelector(
-    (state: RootState) => state.listingsFilter
+    (state: RootState) => state.listings.currentFilter
   );
   const { listType, comment } = listingsFilter;
 

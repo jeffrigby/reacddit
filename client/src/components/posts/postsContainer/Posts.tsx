@@ -21,7 +21,7 @@ function Posts(): ReactElement {
 
   // Combine selectors to reduce re-renders
   const { listType, data } = useAppSelector((state) => ({
-    listType: state.listingsFilter.listType,
+    listType: state.listings.currentFilter.listType,
     data: listingData(state, location.key) as ListingDataResponse,
   }));
 

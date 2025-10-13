@@ -26,7 +26,7 @@ function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
   const { path } = item.data;
   const [showSubs, setShowSubs] = useState<boolean>(getMenuStatus(path));
 
-  const sort = useAppSelector((state) => state.listingsFilter.sort);
+  const sort = useAppSelector((state) => state.listings.currentFilter.sort);
   const location = useLocation();
 
   function hideShowSubs(): void {

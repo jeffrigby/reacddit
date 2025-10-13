@@ -16,7 +16,9 @@ function PostsDebug() {
   const match = useParams();
 
   const debugEnabled = useAppSelector((state) => state.siteSettings.debug);
-  const listingsFilter = useAppSelector((state) => state.listingsFilter);
+  const listingsFilter = useAppSelector(
+    (state) => state.listings.currentFilter
+  );
   const listingsState = useAppSelector((state) =>
     listingState(state, location.key)
   );

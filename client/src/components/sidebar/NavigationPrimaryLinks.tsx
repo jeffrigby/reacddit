@@ -20,8 +20,8 @@ import { hotkeyStatus } from '../../common';
 function NavigationPrimaryLinks(): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const sort = useAppSelector((state) => state.listingsFilter.sort);
-  const query = useAppSelector((state) => state.listingsFilter.qs);
+  const sort = useAppSelector((state) => state.listings.currentFilter.sort);
+  const query = useAppSelector((state) => state.listings.currentFilter.qs);
   const subreddits = useAppSelector((state) => state.subreddits);
   const navigate = useNavigate();
   const { setShowHotkeys } = useModals();
