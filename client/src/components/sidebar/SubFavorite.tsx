@@ -1,14 +1,13 @@
 import { useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { produce } from 'immer';
 import type { MouseEvent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
-import { subredditsData } from '@/redux/actions/subreddits';
+import { fetchSubreddits } from '@/redux/slices/subredditsSlice';
 import { favorite } from '@/reddit/redditApiTs';
 
 interface SubFavoriteProps {
@@ -18,7 +17,7 @@ interface SubFavoriteProps {
 
 function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
   const me = useAppSelector((state) => state.redditMe?.me);
-  const subreddits = useAppSelector((state) => state.subreddits);
+  const redditBearer = useAppSelector((state) => state.redditBearer);
   const dispatch = useDispatch<AppDispatch>();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,28 +35,18 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
       }
 
       const newFavoriteState = !isFavorite;
-      const subredditKey = srName.toLowerCase();
-
-      // Optimistic update - Immer allows mutation in draft state
-      const optimisticSubs = produce(subreddits, (draftState) => {
-        if (draftState.subreddits[subredditKey]) {
-          // eslint-disable-next-line no-param-reassign -- Immer draft state
-          draftState.subreddits[subredditKey].user_has_favorited =
-            newFavoriteState;
-        }
-      });
 
       try {
         setIsLoading(true);
         setError(null);
 
-        // Update UI optimistically
-        dispatch(subredditsData(optimisticSubs));
+        // Call Reddit API to update favorite status
         await favorite(newFavoriteState, srName);
-      } catch (err) {
-        // Rollback on error
-        dispatch(subredditsData(subreddits));
 
+        // Refetch subreddits to get updated favorite status
+        const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+        dispatch(fetchSubreddits({ reset: true, where }));
+      } catch (err) {
         const errorMessage =
           err instanceof Error
             ? err.message
@@ -70,7 +59,7 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- isLoading checked at function start
-    [isFavorite, srName, subreddits, dispatch]
+    [isFavorite, srName, redditBearer.status, dispatch]
   );
 
   if (!me?.name) {

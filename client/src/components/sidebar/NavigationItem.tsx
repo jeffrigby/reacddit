@@ -4,8 +4,8 @@ import _trimEnd from 'lodash/trimEnd';
 import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import type { SubredditData } from '@/types/redditApi';
-import type { LastUpdatedState } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
+import { selectLastUpdatedTracking } from '@/redux/slices/subredditsSlice';
 import { getDiffClassName, buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
@@ -15,24 +15,16 @@ interface NavigationItemProps {
   trigger: boolean;
 }
 
-function getLastUpdated(
-  lastUpdated: LastUpdatedState,
-  subreddit: SubredditData
-): number {
-  if (subreddit.name === undefined) {
-    return 0;
-  }
-
-  return lastUpdated[subreddit.name]?.lastPost ?? 0;
-}
-
 function NavigationItem({ item, trigger }: NavigationItemProps) {
   const sort = useAppSelector((state) => state.listingsFilter.sort);
   const me = useAppSelector((state) => state.redditMe?.me);
-  const lastUpdated = useAppSelector((state) =>
-    getLastUpdated(state.lastUpdated, item)
-  );
+  const lastUpdatedTracking = useAppSelector(selectLastUpdatedTracking);
   const location = useLocation();
+
+  // Get last updated timestamp for this subreddit
+  const lastUpdated = item.name
+    ? (lastUpdatedTracking[item.name]?.lastPost ?? 0)
+    : 0;
 
   const query = queryString.parse(location.search);
   const { t } = query;

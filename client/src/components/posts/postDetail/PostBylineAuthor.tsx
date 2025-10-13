@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { produce } from 'immer';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,7 +10,10 @@ import {
   faUserPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import RedditAPI from '../../../reddit/redditAPI';
-import { subredditsData } from '../../../redux/actions/subreddits';
+import {
+  fetchSubreddits,
+  selectSubredditById,
+} from '../../../redux/slices/subredditsSlice';
 import { useAppSelector } from '../../../redux/hooks';
 
 interface PostBylineAuthorProps {
@@ -35,13 +37,13 @@ function PostBylineAuthor({
   isSubmitter = false,
 }: PostBylineAuthorProps): React.JSX.Element {
   const dispatch = useDispatch();
-  const subreddits = useAppSelector((state) => state.subreddits);
+  const redditBearer = useAppSelector((state) => state.redditBearer);
 
   const authorSub = useMemo(() => `u_${author.toLowerCase()}`, [author]);
-  const isFollowed = useMemo(
-    () => !!subreddits?.subreddits?.[authorSub],
-    [subreddits, authorSub]
+  const followedUser = useAppSelector((state) =>
+    selectSubredditById(state, authorSub)
   );
+  const isFollowed = useMemo(() => !!followedUser, [followedUser]);
 
   const [isFollowing, setIsFollowing] = useState(isFollowed);
 
@@ -51,12 +53,11 @@ function PostBylineAuthor({
 
   const unfollowUser = async (name: string): Promise<void> => {
     try {
+      setIsFollowing(false); // Optimistic update
       await RedditAPI.followUser(name, 'unsub');
-      const newSubreddits = produce(subreddits, (draft) => {
-        delete draft.subreddits[authorSub];
-      });
-      dispatch(subredditsData(newSubreddits));
-      setIsFollowing(false);
+      // Refetch subreddits to update cache
+      const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+      dispatch(fetchSubreddits({ reset: true, where }));
     } catch (error) {
       console.error('Failed to unfollow user:', error);
       setIsFollowing(true); // Revert optimistic update
@@ -65,13 +66,11 @@ function PostBylineAuthor({
 
   const followUser = async (name: string): Promise<void> => {
     try {
+      setIsFollowing(true); // Optimistic update
       await RedditAPI.followUser(name, 'sub');
-      const subredditAbout = await RedditAPI.subredditAbout(authorSub);
-      const newSubreddits = produce(subreddits, (draft) => {
-        draft.subreddits[authorSub] = subredditAbout.data;
-      });
-      dispatch(subredditsData(newSubreddits));
-      setIsFollowing(true);
+      // Refetch subreddits to update cache
+      const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+      dispatch(fetchSubreddits({ reset: true, where }));
     } catch (error) {
       console.error('Failed to follow user:', error);
       setIsFollowing(false); // Revert optimistic update

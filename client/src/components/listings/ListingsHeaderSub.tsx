@@ -3,12 +3,16 @@ import { NavLink } from 'react-router-dom';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
+import { selectSubredditById } from '@/redux/slices/subredditsSlice';
+import type { RootState } from '@/types/redux';
 import SubUnSub from './SubUnSub';
 import MultiToggle from './MultiToggle';
-import {
-  getCurrentSubreddit,
-  getCachedSub,
-} from '../../redux/selectors/subredditSelectors';
+
+// Helper selector for getting current subreddit from currentSubreddit state
+const getCurrentSubreddit = (state: RootState, locationKey: string) => {
+  const key = locationKey ?? 'front';
+  return state.currentSubreddit[key] ?? {};
+};
 
 function ListingsHeaderSub() {
   const location = useLocation();
@@ -17,7 +21,10 @@ function ListingsHeaderSub() {
   );
 
   const filter = useAppSelector((state) => state.listingsFilter);
-  const cachedSub = useAppSelector((state) => getCachedSub(state));
+  const cachedSub = useAppSelector((state) => {
+    const { target } = state.listingsFilter;
+    return target ? selectSubredditById(state, target.toLowerCase()) : null;
+  });
 
   const { listType, target, multi, user } = filter;
 

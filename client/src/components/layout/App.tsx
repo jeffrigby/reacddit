@@ -18,7 +18,7 @@ function App() {
   const dispatch = useAppDispatch();
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const pinMenu = useAppSelector((state) => state.siteSettings.pinMenu);
-  const subredditsFilter = useAppSelector((state) => state.subredditsFilter);
+  const subredditsFilter = useAppSelector((state) => state.subreddits.filter);
   const redditMe = useAppSelector((state) => state.redditMe);
   const { setShowHotkeys } = useModals();
 

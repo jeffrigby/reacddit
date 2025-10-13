@@ -6,12 +6,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
-import { subredditsFilter } from '@/redux/actions/subreddits';
+import {
+  filterUpdated,
+  selectSubredditsFilter,
+} from '@/redux/slices/subredditsSlice';
 import { hotkeyStatus } from '@/common';
 
 function FilterReddits() {
   const filterInput = useRef<HTMLInputElement>(null);
-  const filter = useAppSelector((state) => state.subredditsFilter);
+  const filter = useAppSelector(selectSubredditsFilter);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
@@ -23,10 +26,10 @@ function FilterReddits() {
     // Always reset the index.
     const activeIndex = 0;
     if (!filterText) {
-      dispatch(subredditsFilter({ filterText: '', activeIndex }));
+      dispatch(filterUpdated({ filterText: '', activeIndex }));
       return;
     }
-    dispatch(subredditsFilter({ filterText, activeIndex }));
+    dispatch(filterUpdated({ filterText, activeIndex }));
   };
 
   /**
@@ -35,7 +38,7 @@ function FilterReddits() {
   const clearSearch = useCallback(() => {
     const filterText = '';
     const activeIndex = 0;
-    dispatch(subredditsFilter({ filterText, activeIndex }));
+    dispatch(filterUpdated({ filterText, activeIndex }));
   }, [dispatch]);
 
   /**
@@ -48,7 +51,7 @@ function FilterReddits() {
     }
     const active = true;
     filterInput.current?.select();
-    dispatch(subredditsFilter({ active }));
+    dispatch(filterUpdated({ active }));
   };
 
   /**
@@ -57,7 +60,7 @@ function FilterReddits() {
   const setBlur = () => {
     const active = false;
     const activeIndex = 0;
-    dispatch(subredditsFilter({ active, activeIndex }));
+    dispatch(filterUpdated({ active, activeIndex }));
   };
 
   const handleFilterHotkey = useCallback(
@@ -82,7 +85,7 @@ function FilterReddits() {
           case 'ArrowUp': {
             const activeIndex = filter.activeIndex - 1;
             if (activeIndex >= 0) {
-              dispatch(subredditsFilter({ activeIndex }));
+              dispatch(filterUpdated({ activeIndex }));
             }
             event.preventDefault();
             break;
@@ -96,7 +99,7 @@ function FilterReddits() {
               break;
             }
             const activeIndex = filter.activeIndex + 1;
-            dispatch(subredditsFilter({ activeIndex }));
+            dispatch(filterUpdated({ activeIndex }));
             event.preventDefault();
             break;
           }

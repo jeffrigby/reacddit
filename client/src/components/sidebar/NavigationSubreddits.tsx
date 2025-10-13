@@ -12,32 +12,34 @@ import {
 import type { SubredditData } from '@/types/redditApi';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
-import { filterSubs } from '@/redux/selectors/subredditSelectors';
 import {
-  subredditsFetchData,
-  subredditsFetchLastUpdated,
-} from '@/redux/actions/subreddits';
+  fetchSubreddits,
+  fetchSubredditsLastUpdated,
+  selectSubredditsStatus,
+  selectSubredditsFilter,
+  selectFilteredSubreddits,
+} from '@/redux/slices/subredditsSlice';
 import { getMenuStatus, hotkeyStatus, setMenuStatus } from '@/common';
 import NavigationItem from './NavigationItem';
 
 function NavigationSubReddits() {
   const [showMenu, setShowMenu] = useState(getMenuStatus('subreddits', true));
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const subreddits = useAppSelector((state) => state.subreddits);
-  const filter = useAppSelector((state) => state.subredditsFilter);
-  const filteredSubreddits = useAppSelector((state) => filterSubs(state));
+  const subredditsStatus = useAppSelector(selectSubredditsStatus);
+  const filter = useAppSelector(selectSubredditsFilter);
+  const filteredSubreddits = useAppSelector(selectFilteredSubreddits);
   const dispatch = useDispatch<AppDispatch>();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
 
   useEffect(() => {
-    dispatch(subredditsFetchData(false, where));
+    dispatch(fetchSubreddits({ reset: false, where }));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 'where' is derived from redditBearer.status
   }, [redditBearer.status, dispatch]);
 
   useEffect(() => {
     const checkLastUpdated = setInterval(() => {
-      dispatch(subredditsFetchLastUpdated());
+      dispatch(fetchSubredditsLastUpdated());
     }, 60000);
     return () => {
       clearInterval(checkLastUpdated);
@@ -45,7 +47,7 @@ function NavigationSubReddits() {
   }, [dispatch, where]);
 
   const reloadSubreddits = useCallback(() => {
-    dispatch(subredditsFetchData(true, where));
+    dispatch(fetchSubreddits({ reset: true, where }));
   }, [dispatch, where]);
 
   useEffect(() => {
@@ -82,10 +84,7 @@ function NavigationSubReddits() {
     const filterActive = filter.active && !isEmpty(filter.filterText);
 
     // Separate favorites and regular subreddits
-    const subredditValues = Object.values(
-      filteredSubreddits as Record<string, SubredditData>
-    );
-    const { favorites, regular } = subredditValues.reduce<{
+    const { favorites, regular } = filteredSubreddits.reduce<{
       favorites: SubredditData[];
       regular: SubredditData[];
     }>(
@@ -142,13 +141,13 @@ function NavigationSubReddits() {
   const caretIcon = showMenu ? faCaretDown : faCaretRight;
 
   let content: React.ReactElement | undefined;
-  if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
+  if (subredditsStatus === 'loading' || subredditsStatus === 'idle') {
     // content = (
     //   <div className="alert alert-info" id="subreddits-loading" role="alert">
     //     <FontAwesomeIcon icon={faSpinner} spin /> Loading Subreddits
     //   </div>
     // );
-  } else if (subreddits.status === 'error') {
+  } else if (subredditsStatus === 'failed') {
     content = (
       <div
         className="alert alert-danger small"
@@ -168,7 +167,7 @@ function NavigationSubReddits() {
         </button>
       </div>
     );
-  } else if (subreddits.status === 'loaded') {
+  } else if (subredditsStatus === 'succeeded') {
     const noItems = isEmpty(navItems);
     if (noItems) {
       content = (
@@ -181,7 +180,7 @@ function NavigationSubReddits() {
     }
   }
 
-  const isReloading = subreddits.status === 'loading';
+  const isReloading = subredditsStatus === 'loading';
 
   const handleReloadKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {

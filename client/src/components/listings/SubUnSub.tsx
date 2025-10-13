@@ -4,14 +4,18 @@ import isEmpty from 'lodash/isEmpty';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useParams } from 'react-router';
-import { produce } from 'immer';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import type { SubredditData } from '@/types/redditApi';
-import type { SubredditsState } from '@/types/redux';
-import { subredditsData } from '../../redux/actions/subreddits';
+import type { RootState } from '@/types/redux';
+import { fetchSubreddits } from '@/redux/slices/subredditsSlice';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
-import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
+
+// Helper selector for getting current subreddit from currentSubreddit state
+const getCurrentSubreddit = (state: RootState, locationKey: string) => {
+  const key = locationKey ?? 'front';
+  return state.currentSubreddit[key] ?? {};
+};
 
 /**
  * Custom hook to handle subreddit subscription
@@ -19,21 +23,17 @@ import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
  */
 function useSubscribe() {
   const dispatch = useAppDispatch();
+  const redditBearer = useAppSelector((state) => state.redditBearer);
   return useCallback(
-    async (
-      about: SubredditData,
-      subreddits: SubredditsState,
-      locationKey: string
-    ) => {
+    async (about: SubredditData, locationKey: string) => {
       await RedditAPI.subscribe(about.name, 'sub');
       const newAbout = { ...about, user_is_subscriber: true };
       dispatch(currentSubreddit(locationKey, newAbout));
-      const newSubreddits = produce(subreddits, (draft) => {
-        draft.subreddits[about.display_name] = newAbout;
-      });
-      dispatch(subredditsData(newSubreddits));
+      // Refetch subreddits to update cache
+      const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+      dispatch(fetchSubreddits({ reset: true, where }));
     },
-    [dispatch]
+    [dispatch, redditBearer.status]
   );
 }
 
@@ -43,21 +43,17 @@ function useSubscribe() {
  */
 function useUnsubscribe() {
   const dispatch = useAppDispatch();
+  const redditBearer = useAppSelector((state) => state.redditBearer);
   return useCallback(
-    async (
-      about: SubredditData,
-      subreddits: SubredditsState,
-      locationKey: string
-    ) => {
+    async (about: SubredditData, locationKey: string) => {
       await RedditAPI.subscribe(about.name, 'unsub');
       const newAbout = { ...about, user_is_subscriber: false };
       dispatch(currentSubreddit(locationKey, newAbout));
-      const newSubreddits = produce(subreddits, (draft) => {
-        delete draft.subreddits[about.display_name];
-      });
-      dispatch(subredditsData(newSubreddits));
+      // Refetch subreddits to update cache
+      const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+      dispatch(fetchSubreddits({ reset: true, where }));
     },
-    [dispatch]
+    [dispatch, redditBearer.status]
   );
 }
 
@@ -72,7 +68,6 @@ function SubUnSub() {
   const about = useAppSelector((state) =>
     getCurrentSubreddit(state, location.key)
   );
-  const subreddits = useAppSelector((state) => state.subreddits);
   const { status: bearerStatus } = useAppSelector(
     (state) => state.redditBearer
   );
@@ -91,9 +86,9 @@ function SubUnSub() {
   const buttonAction = useCallback(
     () =>
       userIsSubscriber
-        ? unsubscribe(about, subreddits, locationKey)
-        : subscribe(about, subreddits, locationKey),
-    [userIsSubscriber, unsubscribe, about, subreddits, locationKey, subscribe]
+        ? unsubscribe(about, locationKey)
+        : subscribe(about, locationKey),
+    [userIsSubscriber, unsubscribe, about, locationKey, subscribe]
   );
 
   if (

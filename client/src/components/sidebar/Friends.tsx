@@ -2,7 +2,6 @@ import { useMemo, useCallback, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
-import { produce } from 'immer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUserFriends,
@@ -12,7 +11,12 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import RedditAPI from '@/reddit/redditAPI';
 import { setMenuStatus, getMenuStatus } from '@/common';
-import { subredditsData } from '@/redux/actions/subreddits';
+import {
+  selectAllSubreddits,
+  selectSubredditsStatus,
+  selectLastUpdatedTracking,
+  fetchSubreddits,
+} from '@/redux/slices/subredditsSlice';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
 import { getDiffClassName } from './navHelpers';
@@ -20,13 +24,15 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 // Constants
 const MENU_ID = 'friends';
-const INVALID_STATUSES = new Set(['loading', 'unloaded', 'error']);
+const INVALID_STATUSES = new Set(['loading', 'idle', 'failed']);
 
 // Custom hook for friends logic
 function useFriends() {
   const [showFriends, setShowFriends] = useState(getMenuStatus(MENU_ID));
-  const lastUpdated = useAppSelector((state) => state.lastUpdated);
-  const subreddits = useAppSelector((state) => state.subreddits);
+  const lastUpdated = useAppSelector(selectLastUpdatedTracking);
+  const allSubreddits = useAppSelector(selectAllSubreddits);
+  const subredditsStatus = useAppSelector(selectSubredditsStatus);
+  const redditBearer = useAppSelector((state) => state.redditBearer);
   const dispatch = useDispatch<AppDispatch>();
 
   const toggleShowFriends = useCallback(() => {
@@ -40,22 +46,22 @@ function useFriends() {
       const nameLower = name.toLowerCase();
       try {
         await RedditAPI.followUser(nameLower, 'unsub');
-        const newSubreddits = produce(subreddits, (draft) => {
-          delete draft.subreddits[nameLower];
-        });
-        dispatch(subredditsData(newSubreddits));
+        // Refetch subreddits after unfollowing (cache will be updated)
+        const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+        dispatch(fetchSubreddits({ reset: true, where }));
       } catch (error) {
         console.error(`Error unfollowing user ${name}:`, error);
       }
     },
-    [subreddits, dispatch]
+    [redditBearer.status, dispatch]
   );
 
   return {
     showFriends,
     toggleShowFriends,
     lastUpdated,
-    subreddits,
+    allSubreddits,
+    subredditsStatus,
     unfollowUser,
   };
 }
@@ -65,16 +71,17 @@ function Friends() {
     showFriends,
     toggleShowFriends,
     lastUpdated,
-    subreddits,
+    allSubreddits,
+    subredditsStatus,
     unfollowUser,
   } = useFriends();
 
   const friendItems = useMemo(() => {
-    if (INVALID_STATUSES.has(subreddits.status)) {
+    if (INVALID_STATUSES.has(subredditsStatus)) {
       return null;
     }
 
-    const userSubreddits = Object.values(subreddits.subreddits).filter(
+    const userSubreddits = allSubreddits.filter(
       (item) => item.subreddit_type === 'user'
     );
 
@@ -122,7 +129,7 @@ function Friends() {
         </li>
       );
     });
-  }, [subreddits, lastUpdated, unfollowUser]);
+  }, [allSubreddits, subredditsStatus, lastUpdated, unfollowUser]);
 
   if (!friendItems || friendItems.length === 0) {
     return null;

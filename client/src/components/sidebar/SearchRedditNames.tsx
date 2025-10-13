@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
 import { searchSubreddits } from '@/reddit/redditApiTs';
 import { useAppSelector } from '@/redux/hooks';
-import { getSubredditKeys } from '@/redux/selectors/subredditSelectors';
+import { selectSubredditKeys } from '@/redux/slices/subredditsSlice';
 import { buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
@@ -55,7 +55,7 @@ function useGetSubredditNames(filterText: string, showNSFW: boolean): string[] {
  */
 function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
-  const subreddits = useAppSelector(getSubredditKeys);
+  const subreddits = useAppSelector(selectSubredditKeys);
   const sort = useAppSelector((state) => state.listingsFilter.sort);
   const auth = useAppSelector(
     (state) => state.redditBearer.status === 'auth' || false

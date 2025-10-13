@@ -3,6 +3,7 @@
  */
 import type { ThunkDispatch } from '@reduxjs/toolkit';
 import type { AnyAction } from 'redux';
+import type { SubredditsState } from '@/redux/slices/subredditsSlice';
 import type { MultiRedditsState } from '@/redux/slices/multiRedditsSlice';
 import type { BearerState } from '@/redux/slices/redditBearerSlice';
 import type { MeState } from '@/redux/slices/redditMeSlice';
@@ -20,33 +21,29 @@ import type { SubredditData } from './redditApi';
 export type SubredditInfo = SubredditData;
 
 /**
- * Subreddits state in Redux
+ * DEPRECATED: These types are now part of SubredditsState in subredditsSlice
+ * Kept for backward compatibility during migration
+ * TODO: Remove after all components are updated
  */
-export interface SubredditsState {
+export interface LegacySubredditsState {
   status: 'unloaded' | 'loading' | 'loaded' | 'error';
   subreddits: Record<string, SubredditData>;
   lastUpdated?: number;
   message?: string;
 }
 
-/**
- * Subreddits filter state
- */
-export interface SubredditsFilterState {
+export interface LegacySubredditsFilterState {
   filterText: string;
   active: boolean;
   activeIndex: number;
 }
 
-/**
- * Last updated timestamps for subreddits
- */
-export interface LastUpdatedEntry {
+export interface LegacyLastUpdatedEntry {
   lastPost: number;
   expires: number;
 }
 
-export type LastUpdatedState = Record<string, LastUpdatedEntry>;
+export type LegacyLastUpdatedState = Record<string, LegacyLastUpdatedEntry>;
 
 /**
  * Root state type - this will be expanded as we convert more files to TypeScript
@@ -73,10 +70,8 @@ export interface RootState {
   redditBearer: BearerState;
   redditMe: MeState;
   redditMultiReddits: MultiRedditsState;
+  // Modern Redux Toolkit slice - consolidates subreddits, filter, and lastUpdated
   subreddits: SubredditsState;
-  subredditsFilter: SubredditsFilterState;
-  lastUpdated: LastUpdatedState;
-  lastUpdatedTime: number;
   history: {
     [key: string]: unknown;
   };
