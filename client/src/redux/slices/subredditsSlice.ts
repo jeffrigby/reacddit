@@ -246,8 +246,9 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
     const { entities, lastUpdatedTracking } = state.subreddits;
 
     // Set running flag and clear previous errors
-    dispatch(lastUpdatedRunningSet(true));
-    dispatch(lastUpdatedErrorSet(null));
+    // Note: Using string-based actions to avoid use-before-define ESLint error
+    dispatch({ type: 'subreddits/lastUpdatedRunningSet', payload: true });
+    dispatch({ type: 'subreddits/lastUpdatedErrorSet', payload: null });
 
     try {
       // Create subreddit lookup requests
@@ -296,7 +297,7 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
           // This creates one action per subreddit (up to 100 actions).
           // Tradeoff: Progressive UI updates (good UX) vs batching (fewer re-renders).
           // Current approach chosen for better perceived performance.
-          dispatch(lastUpdatedSet(toUpdate));
+          dispatch({ type: 'subreddits/lastUpdatedSet', payload: toUpdate });
         }
       };
 
@@ -314,10 +315,13 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
       const errorMessage =
         error instanceof Error ? error.message : 'Error fetching last updated';
       console.error('Error fetching last updated', error);
-      dispatch(lastUpdatedErrorSet(errorMessage));
+      dispatch({
+        type: 'subreddits/lastUpdatedErrorSet',
+        payload: errorMessage,
+      });
     } finally {
       // Clear running flag
-      dispatch(lastUpdatedRunningSet(false));
+      dispatch({ type: 'subreddits/lastUpdatedRunningSet', payload: false });
     }
   },
   {

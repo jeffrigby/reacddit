@@ -145,6 +145,7 @@ export function keyEntryChildren(entries: RedditEntry): KeyedRedditEntry {
   );
 
   return {
+    ...entries,
     data: {
       ...entries.data,
       children: newChildren,

@@ -43,7 +43,6 @@ function Listings({ match }: ListingsProps) {
     selectListingStatus(state, location.key)
   );
   const settings = useAppSelector((state) => state.siteSettings);
-  const filter = useAppSelector((state) => state.listings.currentFilter);
 
   const { listType, sort, target, user, userType, multi, postName, comment } =
     match;
@@ -57,7 +56,7 @@ function Listings({ match }: ListingsProps) {
     }
   }, [data.originalPost]);
 
-  // Set the new filter.
+  // Set the new filter and fetch data
   useEffect(() => {
     let listingType = listType ?? 'r';
     if (listType === 'user') {
@@ -83,7 +82,16 @@ function Listings({ match }: ListingsProps) {
       comment: comment ?? '',
     };
 
+    // Set filter and fetch in same effect to avoid race conditions
     dispatch(filterChanged(newFilter));
+    setLastExpanded('');
+    dispatch(
+      fetchListingsInitial({
+        filters: newFilter,
+        location,
+        siteSettings: settings,
+      })
+    );
   }, [
     listType,
     target,
@@ -95,23 +103,8 @@ function Listings({ match }: ListingsProps) {
     dispatch,
     postName,
     comment,
+    settings,
   ]);
-
-  // Get new posts if the filter changes.
-  useEffect(() => {
-    if (!filter.target) {
-      return;
-    }
-    setLastExpanded('');
-    dispatch(
-      fetchListingsInitial({
-        filters: filter,
-        location,
-        siteSettings: settings,
-      })
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, dispatch]);
 
   // Check if I should stream entries
   useEffect(() => {
