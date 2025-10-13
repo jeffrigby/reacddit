@@ -1,5 +1,7 @@
 import { memo, type MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExpand } from '@fortawesome/free-solid-svg-icons';
 import type { ExtendedHTMLVideoElement } from './types';
 
 interface VideoFullScreenButtonProps {
@@ -39,7 +41,7 @@ function VideoFullScreenButton({ videoRef }: VideoFullScreenButtonProps) {
       variant="link"
       onClick={toggleFullscreen}
     >
-      <i className="fas fa-expand" />
+      <FontAwesomeIcon icon={faExpand} />
     </Button>
   );
 }

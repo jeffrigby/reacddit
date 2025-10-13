@@ -1,5 +1,7 @@
 import { memo } from 'react';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router';
 import { useAppDispatch } from '@/redux/hooks';
 import type { LabeledMultiData } from '@/types/redditApi';
@@ -32,7 +34,7 @@ function MultiDelete({ multi }: MultiDeleteProps) {
       variant="danger"
       onClick={removeMulti}
     >
-      <i className="fas fa-trash-alt" />
+      <FontAwesomeIcon icon={faTrashAlt} />
     </Button>
   );
 }

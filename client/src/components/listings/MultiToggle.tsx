@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import { Form, Dropdown } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
@@ -88,7 +90,7 @@ function MultiToggle({ srName }: MultiToggleProps) {
         size="sm"
         variant="primary"
       >
-        Multis <i className="fas fa-caret-down" />
+        Multis <FontAwesomeIcon icon={faCaretDown} />
       </Dropdown.Toggle>
       <Dropdown.Menu align="end" ref={multiRef}>
         {menuItems}

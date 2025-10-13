@@ -1,5 +1,7 @@
 import { memo } from 'react';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlay, faPause } from '@fortawesome/free-solid-svg-icons';
 
 interface VideoPlayButtonProps {
   /** The video reference. */
@@ -20,7 +22,7 @@ function VideoPlayButton({
   playing,
   toggleManualStop,
 }: VideoPlayButtonProps) {
-  const playIconClass = `fas ${playing ? 'fa-pause' : 'fa-play'}`;
+  const playIcon = playing ? faPause : faPlay;
   const playTitle = playing ? 'Pause' : 'Play';
 
   const playStop = () => {
@@ -42,7 +44,7 @@ function VideoPlayButton({
       variant="link"
       onClick={playStop}
     >
-      <i className={playIconClass} />
+      <FontAwesomeIcon icon={playIcon} />
     </Button>
   );
 }

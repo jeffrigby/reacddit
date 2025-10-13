@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
@@ -26,7 +28,7 @@ function ToggleTheme() {
     dispatch(siteSettings({ theme: newTheme }));
   };
 
-  const iconClass = siteSettingsTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  const themeIcon = siteSettingsTheme === 'dark' ? faSun : faMoon;
   const buttonTitle = siteSettingsTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
 
   return (
@@ -38,7 +40,7 @@ function ToggleTheme() {
         variant="secondary"
         onClick={toggleTheme}
       >
-        <i className={iconClass} />
+        <FontAwesomeIcon icon={themeIcon} />
       </Button>
     </div>
   );

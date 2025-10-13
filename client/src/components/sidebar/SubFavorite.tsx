@@ -3,6 +3,9 @@ import { useCallback, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { produce } from 'immer';
 import type { MouseEvent } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 import type { AppDispatch } from '@/types/redux';
 import type { SubredditData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
@@ -29,7 +32,7 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const iconClass = isFavorite ? 'fas fa-heart' : 'far fa-heart';
+  const favoriteIcon = isFavorite ? faHeart : farHeart;
 
   const toggleFavorite = useCallback(
     async (event?: MouseEvent<HTMLButtonElement>) => {
@@ -98,7 +101,10 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
         variant="link"
         onClick={toggleFavorite}
       >
-        <i className={`${iconClass} ${isLoading ? 'opacity-50' : ''}`} />
+        <FontAwesomeIcon
+          className={isLoading ? 'opacity-50' : ''}
+          icon={favoriteIcon}
+        />
       </Button>
       {error && (
         <small className="text-danger ms-1" role="alert">

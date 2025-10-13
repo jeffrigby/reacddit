@@ -4,6 +4,12 @@ import { Link } from 'react-router-dom';
 import { produce } from 'immer';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faUser,
+  faUserMinus,
+  faUserPlus,
+} from '@fortawesome/free-solid-svg-icons';
 import RedditAPI from '../../../reddit/redditAPI';
 import { subredditsData } from '../../../redux/actions/subreddits';
 import { useAppSelector } from '../../../redux/hooks';
@@ -93,7 +99,7 @@ function PostBylineAuthor({
 
   return author === '[deleted]' ? (
     <div>
-      <i className="fas fa-user" /> {author}
+      <FontAwesomeIcon icon={faUser} /> {author}
     </div>
   ) : (
     <>
@@ -105,9 +111,7 @@ function PostBylineAuthor({
         variant="link"
         onClick={onClick}
       >
-        <i
-          className={`fas ${isFollowing ? 'fa-user-minus' : 'fa-user-plus'}`}
-        />
+        <FontAwesomeIcon icon={isFollowing ? faUserMinus : faUserPlus} />
       </Button>{' '}
       <Link
         className={authorClasses}

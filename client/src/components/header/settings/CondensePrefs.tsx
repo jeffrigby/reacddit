@@ -1,4 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import type { AppDispatch, RootState } from '@/types/redux';
 import { useModals } from '@/contexts/ModalContext';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
@@ -44,7 +46,7 @@ function CondensePrefs() {
             }
           }}
         >
-          <i className="fas fa-info-circle" />
+          <FontAwesomeIcon icon={faInfoCircle} />
         </div>
       </div>
       <div className="form-check">

@@ -1,5 +1,7 @@
 import { useState, useMemo, type MouseEvent } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBackward, faForward } from '@fortawesome/free-solid-svg-icons';
 import VideoComp from './videoComponents/VideoComp';
 import Image from './ImageComp';
 import type { ImgurAlbumEmbedContent } from '../embeds/types';
@@ -109,7 +111,7 @@ function ImgurAlbum({ content }: ImgurAlbumProps) {
           variant="secondary"
           onClick={prevSlide}
         >
-          <i className="fas fa-backward" />
+          <FontAwesomeIcon icon={faBackward} />
         </Button>
         <Button disabled className="shadow-none" variant="secondary">
           {currentSlide} / {totalSlides}
@@ -120,7 +122,7 @@ function ImgurAlbum({ content }: ImgurAlbumProps) {
           variant="secondary"
           onClick={nextSlide}
         >
-          <i className="fas fa-forward" />
+          <FontAwesomeIcon icon={faForward} />
         </Button>
       </ButtonGroup>
       <div className="ratio-container" style={contStyle}>

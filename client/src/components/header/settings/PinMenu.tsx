@@ -1,4 +1,6 @@
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbtack } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
@@ -26,7 +28,7 @@ function PinMenu() {
       variant={buttonVariant}
       onClick={togglePinMenu}
     >
-      <i className="fas fa-thumbtack" />
+      <FontAwesomeIcon icon={faThumbtack} />
     </Button>
   );
 }

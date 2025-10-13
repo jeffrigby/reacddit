@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router';
 import { isMobile } from 'react-device-detect';
 import queryString from 'query-string';
 import { Form, Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
@@ -220,10 +222,11 @@ function Search() {
         onKeyUp={processSearch}
       />
       {(focused || search) && (
-        <i
+        <FontAwesomeIcon
           aria-hidden="true"
           aria-label="Clear Search Box"
-          className="far fa-times-circle form-control-clear"
+          className="form-control-clear"
+          icon={faTimesCircle}
           id="search-clear"
           role="button"
           onClick={clearSearch}

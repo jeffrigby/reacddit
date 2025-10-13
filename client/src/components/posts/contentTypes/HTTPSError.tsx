@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import type { HTTPSErrorContent } from './types';
 
 interface HTTPSErrorProps {
@@ -9,7 +11,7 @@ function HTTPSError({ content }: HTTPSErrorProps) {
   return (
     <div className="self">
       <p>
-        <i className="fas fa-exclamation-circle" /> Link is not HTTPS. Click{' '}
+        <FontAwesomeIcon icon={faExclamationCircle} /> Link is not HTTPS. Click{' '}
         <a href={src} rel="noreferrer" target="_blank">
           here
         </a>{' '}

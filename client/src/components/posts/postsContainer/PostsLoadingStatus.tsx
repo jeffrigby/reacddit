@@ -1,6 +1,11 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
 import { useLocation } from 'react-router';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faSpinner,
+  faExclamationTriangle,
+} from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../redux/hooks';
 import {
   listingData,
@@ -18,7 +23,7 @@ type ListingStatus =
 
 interface StatusInfo {
   message: string;
-  icon: string;
+  icon: typeof faSpinner | typeof faExclamationTriangle;
   alertType: string;
 }
 
@@ -36,14 +41,14 @@ function getStatusInfo(status: string, data: ListingData): StatusInfo | null {
       return {
         message:
           'Error fetching content from Reddit. Reddit might be down. Try reloading.',
-        icon: 'fas fa-exclamation-triangle',
+        icon: faExclamationTriangle,
         alertType: 'alert alert-danger',
       };
     case 'loaded': {
       if (!data.children) {
         return {
           message: 'Nothing here.',
-          icon: 'fas fa-exclamation-triangle',
+          icon: faExclamationTriangle,
           alertType: 'alert alert-warning',
         };
       }
@@ -53,13 +58,13 @@ function getStatusInfo(status: string, data: ListingData): StatusInfo | null {
     case 'loading':
       return {
         message: 'Getting entries from Reddit.',
-        icon: 'fas fa-spinner fa-spin',
+        icon: faSpinner,
         alertType: 'alert alert-info',
       };
     case 'loadingNew':
       return {
         message: 'Getting new entries from Reddit.',
-        icon: 'fas fa-spinner fa-spin',
+        icon: faSpinner,
         alertType: 'alert alert-info',
       };
     default:
@@ -84,10 +89,11 @@ function PostsLoadingStatus(): ReactElement | null {
   }
 
   const { message, icon, alertType } = statusInfo;
+  const isSpinner = icon === faSpinner;
 
   return (
     <div className={`${alertType} m-2`} id="content-loading" role="alert">
-      <i className={icon} /> {message}
+      <FontAwesomeIcon icon={icon} spin={isSpinner} /> {message}
     </div>
   );
 }

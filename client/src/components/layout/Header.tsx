@@ -1,5 +1,11 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faBars,
+  faTimes,
+  faChevronLeft,
+} from '@fortawesome/free-solid-svg-icons';
 import Search from '../header/Search';
 import Sort from '../header/Sort';
 import Reload from '../header/Reload';
@@ -32,7 +38,7 @@ function Header() {
       variant="secondary"
       onClick={showMenu}
     >
-      <i className="fas fa-bars" />
+      <FontAwesomeIcon icon={faBars} />
     </Button>
   );
 
@@ -43,7 +49,7 @@ function Header() {
       variant="secondary"
       onClick={hideMenu}
     >
-      <i className="fas fa-times" />
+      <FontAwesomeIcon icon={faTimes} />
     </Button>
   );
 
@@ -65,7 +71,7 @@ function Header() {
         variant="secondary"
         onClick={() => navigate(-1)}
       >
-        <i className="fas fa-chevron-left" />
+        <FontAwesomeIcon icon={faChevronLeft} />
       </Button>
     </div>
   );

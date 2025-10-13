@@ -2,6 +2,8 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Form } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
 import { subredditsFilter } from '@/redux/actions/subreddits';
@@ -148,10 +150,11 @@ function FilterReddits() {
         onFocus={setFocus}
       />
       {(filter.active || filter.filterText) && (
-        <i
+        <FontAwesomeIcon
           aria-hidden
           aria-label="Clear Filter Box"
-          className="far fa-times-circle form-control-clear filter-clear"
+          className="form-control-clear filter-clear"
+          icon={faTimesCircle}
           role="button"
           onClick={clearSearch}
         />

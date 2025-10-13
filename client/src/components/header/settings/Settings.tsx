@@ -1,4 +1,6 @@
 import { Dropdown } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCog } from '@fortawesome/free-solid-svg-icons';
 import AutoRefresh from './AutoRefresh';
 import ForceRefresh from './ForceRefresh';
 import AutoPlay from './AutoPlay';
@@ -15,7 +17,7 @@ function Settings() {
         size="sm"
         variant="secondary"
       >
-        <i className="fas fa-cog" />
+        <FontAwesomeIcon icon={faCog} />
       </Dropdown.Toggle>
       <Dropdown.Menu align="end" className="p-2">
         <div className="small">

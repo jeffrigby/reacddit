@@ -1,4 +1,6 @@
 import { formatDistanceToNow } from 'date-fns';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock } from '@fortawesome/free-regular-svg-icons';
 
 interface PostTimeAgoProps {
   createdUtc: number;
@@ -22,7 +24,7 @@ function PostTimeAgo({ createdUtc }: PostTimeAgoProps): React.JSX.Element {
 
   return (
     <>
-      <i className="far fa-clock" /> {timeagoshort}
+      <FontAwesomeIcon icon={faClock} /> {timeagoshort}
     </>
   );
 }

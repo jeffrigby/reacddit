@@ -1,6 +1,12 @@
 import { memo } from 'react';
 import { Button } from 'react-bootstrap';
-import classNames from 'classnames';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCaretDown,
+  faCaretRight,
+  faCompressArrowsAlt,
+  faExpandArrowsAlt,
+} from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Reddit kind types that this component handles
@@ -32,13 +38,16 @@ function PostExpandContract({
 }: PostExpandContractProps) {
   const isComment = kind === 't1';
 
-  const viewIcon = classNames({
-    fas: true,
-    'fa-caret-down menu-caret': isComment && expand,
-    'fa-caret-right menu-caret': isComment && !expand,
-    'fa-compress-arrows-alt': !isComment && expand,
-    'fa-expand-arrows-alt': !isComment && !expand,
-  });
+  // Determine the appropriate icon based on content type and state
+  let expandIcon;
+  let iconClassName = '';
+
+  if (isComment) {
+    expandIcon = expand ? faCaretDown : faCaretRight;
+    iconClassName = 'menu-caret';
+  } else {
+    expandIcon = expand ? faCompressArrowsAlt : faExpandArrowsAlt;
+  }
 
   // More descriptive accessibility labels without keyboard shortcut notation
   const viewTitle = isComment
@@ -58,7 +67,7 @@ function PostExpandContract({
       variant="link"
       onClick={toggleView}
     >
-      <i className={viewIcon} />
+      <FontAwesomeIcon className={iconClassName} icon={expandIcon} />
     </Button>
   );
 }

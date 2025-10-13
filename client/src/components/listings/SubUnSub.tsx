@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { Button } from 'react-bootstrap';
 import isEmpty from 'lodash/isEmpty';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useParams } from 'react-router';
 import { produce } from 'immer';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -108,10 +110,7 @@ function SubUnSub() {
     return null;
   }
 
-  const iconClass = `fas ${
-    userIsSubscriber ? 'fa-minus-circle' : 'fa-plus-circle'
-  }`;
-
+  const subIcon = userIsSubscriber ? faMinusCircle : faPlusCircle;
   const text = userIsSubscriber ? 'Unsubscribe' : 'Subscribe';
 
   const title = `${
@@ -126,7 +125,7 @@ function SubUnSub() {
       variant="primary"
       onClick={buttonAction}
     >
-      <i className={iconClass} /> {text}
+      <FontAwesomeIcon icon={subIcon} /> {text}
     </Button>
   );
 }

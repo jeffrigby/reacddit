@@ -1,4 +1,6 @@
 import { memo } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faVolumeMute, faVolumeUp } from '@fortawesome/free-solid-svg-icons';
 
 interface VideoAudioButtonProps {
   hasAudio?: boolean;
@@ -27,7 +29,7 @@ function VideoAudioButton({
     }
   };
 
-  const mutedIconClass = `fas ${muted ? 'fa-volume-mute' : 'fa-volume-up'}`;
+  const mutedIcon = muted ? faVolumeMute : faVolumeUp;
   const muteTitle = muted ? 'Play Sound' : 'Mute';
 
   return hasAudio ? (
@@ -39,7 +41,7 @@ function VideoAudioButton({
         type="button"
         onClick={toggleSound}
       >
-        <i className={mutedIconClass} />
+        <FontAwesomeIcon icon={mutedIcon} />
       </button>
       {audioWarning && link && (
         <span

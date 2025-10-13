@@ -4,6 +4,8 @@ import { Button } from 'react-bootstrap';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
 import _trimEnd from 'lodash/trimEnd';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCaretDown, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import type { LabeledMultiData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { setMenuStatus, getMenuStatus } from '../../common';
@@ -38,7 +40,7 @@ function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
   const sortPath = buildSortPath(sort, search.t);
   const navTo = `/me/m/${item.data.name}/${sortPath}`;
 
-  const arrowClass = showSubs ? 'down' : 'left';
+  const arrowIcon = showSubs ? faCaretDown : faCaretLeft;
   const arrowTitle = showSubs ? 'Hide Subreddits' : 'Show Subreddits';
 
   return (
@@ -60,7 +62,7 @@ function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
             variant="link"
             onClick={hideShowSubs}
           >
-            <i className={`fas fa-caret-${arrowClass} menu-caret`} />
+            <FontAwesomeIcon className="menu-caret" icon={arrowIcon} />
           </Button>
         </span>
       </div>

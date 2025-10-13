@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactElement, KeyboardEvent } from 'react';
 import { useDispatch } from 'react-redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCaretDown,
+  faCaretRight,
+  faSyncAlt,
+  faPlus,
+  faMinus,
+} from '@fortawesome/free-solid-svg-icons';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
 import { redditFetchMultis } from '../../redux/actions/reddit';
@@ -75,14 +83,9 @@ function MultiReddits(): ReactElement | null {
     return null;
   }
 
-  const spinnerClass = loading
-    ? 'fas fa-sync-alt reload fa-spin'
-    : 'fas fa-sync-alt reload';
   const multisClass = loading ? 'nav flex-column faded' : 'nav flex-column';
-  const caretClass = showMenu
-    ? 'fas fa-caret-down menu-caret'
-    : 'fas fa-caret-right menu-caret';
-  const showAddClass = showAdd ? 'fas fa-minus me-1' : 'fas fa-plus me-1';
+  const caretIcon = showMenu ? faCaretDown : faCaretRight;
+  const showAddIcon = showAdd ? faMinus : faPlus;
 
   return (
     <div id="sidebar-multis">
@@ -94,13 +97,15 @@ function MultiReddits(): ReactElement | null {
           onClick={toggleMenu}
           onKeyDown={(e) => handleKeyPress(e, toggleMenu)}
         >
-          <i className={caretClass} /> Custom Feeds
+          <FontAwesomeIcon className="menu-caret" icon={caretIcon} /> Custom
+          Feeds
         </span>
         {showMenu && (
           <span>
-            <i
+            <FontAwesomeIcon
               aria-label="Add Custom Feed"
-              className={showAddClass}
+              className="me-1"
+              icon={showAddIcon}
               role="button"
               tabIndex={0}
               onClick={() => setShowAdd((prev) => !prev)}
@@ -108,10 +113,12 @@ function MultiReddits(): ReactElement | null {
                 handleKeyPress(e, () => setShowAdd((prev) => !prev))
               }
             />
-            <i
+            <FontAwesomeIcon
               aria-label="Reload Multis"
-              className={spinnerClass}
+              className="reload"
+              icon={faSyncAlt}
               role="button"
+              spin={loading}
               tabIndex={0}
               onClick={reloadMultis}
               onKeyDown={(e) => handleKeyPress(e, reloadMultis)}

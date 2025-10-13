@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faComment } from '@fortawesome/free-regular-svg-icons';
 
 function abbr(value: number): string {
   const suffixes = ['', 'K', 'M', 'B', 'T'];
@@ -27,7 +29,7 @@ function PostCommentLink({
   const commentCount = abbr(numComments);
   return (
     <Link state={{ showBack: true }} to={permalink}>
-      <i className="far fa-comment" /> {commentCount}
+      <FontAwesomeIcon icon={faComment} /> {commentCount}
     </Link>
   );
 }

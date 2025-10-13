@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCaretDown,
+  faCaretRight,
+  faSyncAlt,
+  faInfoCircle,
+  faExclamationTriangle,
+} from '@fortawesome/free-solid-svg-icons';
 import type { SubredditData } from '@/types/redditApi';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
@@ -128,15 +136,13 @@ function NavigationSubReddits() {
     filter.filterText,
   ]);
 
-  const caretClass = showMenu
-    ? 'fas fa-caret-down menu-caret'
-    : 'fas fa-caret-right menu-caret';
+  const caretIcon = showMenu ? faCaretDown : faCaretRight;
 
   let content: React.ReactElement | undefined;
   if (subreddits.status === 'loading' || subreddits.status === 'unloaded') {
     // content = (
     //   <div className="alert alert-info" id="subreddits-loading" role="alert">
-    //     <i className="fas fa-spinner fa-spin" /> Loading Subreddits
+    //     <FontAwesomeIcon icon={faSpinner} spin /> Loading Subreddits
     //   </div>
     // );
   } else if (subreddits.status === 'error') {
@@ -146,7 +152,8 @@ function NavigationSubReddits() {
         id="subreddits-load-error"
         role="alert"
       >
-        <i className="fas fa-exclamation-triangle" /> Error loading subreddits
+        <FontAwesomeIcon icon={faExclamationTriangle} /> Error loading
+        subreddits
         <br />
         <button
           aria-label="Reload Subreddits"
@@ -163,7 +170,7 @@ function NavigationSubReddits() {
     if (noItems) {
       content = (
         <div className="alert alert-info" id="subreddits-end" role="alert">
-          <i className="fas fa-info-circle" /> No subreddits found
+          <FontAwesomeIcon icon={faInfoCircle} /> No subreddits found
         </div>
       );
     } else {
@@ -171,10 +178,7 @@ function NavigationSubReddits() {
     }
   }
 
-  let spinnerClass = 'fas fa-sync-alt reload';
-  if (subreddits.status === 'loading') {
-    spinnerClass += ' fa-spin';
-  }
+  const isReloading = subreddits.status === 'loading';
 
   const handleReloadKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -191,13 +195,15 @@ function NavigationSubReddits() {
           role="presentation"
           onClick={toggleMenu}
         >
-          <i className={caretClass} /> Subreddits
+          <FontAwesomeIcon className="menu-caret" icon={caretIcon} /> Subreddits
         </span>
         <span>
-          <i
+          <FontAwesomeIcon
             aria-label="Reload Subreddits"
-            className={spinnerClass}
+            className="reload"
+            icon={faSyncAlt}
             role="button"
+            spin={isReloading}
             tabIndex={-1}
             onClick={reloadSubredditsClick}
             onKeyDown={handleReloadKeyDown}

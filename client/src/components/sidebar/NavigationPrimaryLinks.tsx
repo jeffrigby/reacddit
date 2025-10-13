@@ -4,6 +4,14 @@ import { useNavigate } from 'react-router';
 import queryString from 'query-string';
 import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
+import {
+  faHome,
+  faFire,
+  faRandom,
+  faBug,
+  faKeyboard,
+  faSignInAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
 import { useModals } from '@/contexts/ModalContext';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
@@ -122,27 +130,27 @@ function NavigationPrimaryLinks(): ReactElement {
       {!me?.name && (
         <NavigationGenericNavItem
           isStatic
-          iconClass="fas fa-sign-in-alt"
+          icon={faSignInAlt}
           text="Reddit Login"
           title="Login to reddit to see your subreddits. ⇧L"
           to={loginLink}
         />
       )}
       <NavigationGenericNavItem
-        iconClass="fas fa-home"
+        icon={faHome}
         text="Front"
         title="Show My Subreddit Posts"
         to={`/${currentSort}`}
       />
       <NavigationGenericNavItem
-        iconClass="fas fa-fire"
+        icon={faFire}
         text="Popular"
         title="Popular Posts"
         to={`/r/popular/${currentSort}`}
       />
       <NavigationGenericNavItem
         isStatic
-        iconClass="fas fa-random"
+        icon={faRandom}
         text="Random"
         title="Random Subreddit"
         to="/r/random"
@@ -150,7 +158,7 @@ function NavigationPrimaryLinks(): ReactElement {
       />
       <NavigationGenericNavItem
         isStatic
-        iconClass="fas fa-bug"
+        icon={faBug}
         text="Report Bug"
         title="Bugs"
         to="https://github.com/jeffrigby/reacddit/issues"
@@ -158,7 +166,7 @@ function NavigationPrimaryLinks(): ReactElement {
       {!isMobile && (
         <NavigationGenericNavItem
           isStatic
-          iconClass="fas fa-keyboard"
+          icon={faKeyboard}
           text="Hotkeys"
           title="Show Hotkeys"
           to="/hotkeys"

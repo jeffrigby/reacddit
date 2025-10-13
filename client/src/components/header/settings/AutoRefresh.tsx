@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
 import { useModals } from '@/contexts/ModalContext';
@@ -64,7 +66,7 @@ function AutoRefresh() {
             }
           }}
         >
-          <i className="fas fa-info-circle" />
+          <FontAwesomeIcon icon={faInfoCircle} />
         </div>
       </div>
     </div>

@@ -2,6 +2,11 @@ import { useContext, useState, useRef, useEffect, useCallback } from 'react';
 import throttle from 'lodash/throttle';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faAngleDoubleDown,
+  faAngleDoubleUp,
+} from '@fortawesome/free-solid-svg-icons';
 import { PostsContextData } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
 import SelfInline from './SelfInline';
@@ -134,15 +139,8 @@ function Self({ name, content }: SelfProps) {
     'sf-html-show-all': showAll,
   });
 
-  const buttonText = !showAll ? (
-    <>
-      <i className="fas fa-angle-double-down" /> Read More
-    </>
-  ) : (
-    <>
-      <i className="fas fa-angle-double-up" /> Collapse
-    </>
-  );
+  const buttonIcon = !showAll ? faAngleDoubleDown : faAngleDoubleUp;
+  const buttonText = !showAll ? 'Read More' : 'Collapse';
 
   return (
     <div className={`self self-${post.kind} self-${post.kind}-${listType}`}>
@@ -159,7 +157,7 @@ function Self({ name, content }: SelfProps) {
               variant="link"
               onClick={toggleShow}
             >
-              {buttonText}
+              <FontAwesomeIcon icon={buttonIcon} /> {buttonText}
             </Button>
           </div>
         )}

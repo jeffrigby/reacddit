@@ -1,6 +1,12 @@
 import type { MouseEvent } from 'react';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCompressArrowsAlt,
+  faExpandArrowsAlt,
+} from '@fortawesome/free-solid-svg-icons';
 import type { AppDispatch, RootState } from '@/types/redux';
 import { siteSettings } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '@/common';
@@ -13,8 +19,6 @@ function ViewMode() {
       (state.siteSettings.view as ViewModeType) || 'expanded'
   );
   const dispatch = useDispatch<AppDispatch>();
-
-  const btnClasses = 'btn btn-secondary btn-sm';
 
   const toggleView = async (view: ViewModeType) => {
     window.scrollTo(0, 0);
@@ -50,30 +54,27 @@ function ViewMode() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteSettingsView]);
 
-  const button =
-    siteSettingsView === 'expanded' ? (
-      <button
-        aria-label="Condensed View"
-        className={btnClasses}
-        title="Condensed View (v)"
-        type="button"
-        onClick={handleButtonClick('condensed')}
-      >
-        <i className="fas fa-compress-arrows-alt" />
-      </button>
-    ) : (
-      <button
-        aria-label="Full View"
-        className={btnClasses}
-        title="Full View (v)"
-        type="button"
-        onClick={handleButtonClick('expanded')}
-      >
-        <i className="fas fa-expand-arrows-alt" />
-      </button>
-    );
+  const viewIcon =
+    siteSettingsView === 'expanded' ? faCompressArrowsAlt : faExpandArrowsAlt;
+  const viewLabel =
+    siteSettingsView === 'expanded' ? 'Condensed View' : 'Full View';
+  const viewTitle =
+    siteSettingsView === 'expanded' ? 'Condensed View (v)' : 'Full View (v)';
+  const viewAction = siteSettingsView === 'expanded' ? 'condensed' : 'expanded';
 
-  return <div className="header-button">{button}</div>;
+  return (
+    <div className="header-button">
+      <Button
+        aria-label={viewLabel}
+        size="sm"
+        title={viewTitle}
+        variant="secondary"
+        onClick={handleButtonClick(viewAction)}
+      >
+        <FontAwesomeIcon icon={viewIcon} />
+      </Button>
+    </div>
+  );
 }
 
 export default ViewMode;

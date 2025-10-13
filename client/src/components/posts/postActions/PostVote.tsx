@@ -1,6 +1,15 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
 import type { MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faArrowAltCircleUp,
+  faArrowAltCircleDown,
+} from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowAltCircleUp as farArrowAltCircleUp,
+  faArrowAltCircleDown as farArrowAltCircleDown,
+} from '@fortawesome/free-regular-svg-icons';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { PostsContextData, PostsContextActionable } from '@/contexts';
@@ -93,8 +102,9 @@ function PostVote() {
   const sixmonthSeconds = 182.5 * 86400; // I don't know when reddit exactly cuts it off.
   const disabled = bearer.status !== 'auth' || expired > sixmonthSeconds;
 
-  const upClass = likes === true ? 'fas' : 'far';
-  const downClass = likes === false ? 'fas' : 'far';
+  const upIcon = likes === true ? faArrowAltCircleUp : farArrowAltCircleUp;
+  const downIcon =
+    likes === false ? faArrowAltCircleDown : farArrowAltCircleDown;
 
   const vote = useCallback(
     async (dir: VoteDirection) => {
@@ -168,7 +178,7 @@ function PostVote() {
         onClick={handleUpvote}
       >
         {' '}
-        <i className={`fa-arrow-alt-circle-up ${upClass}`} />{' '}
+        <FontAwesomeIcon icon={upIcon} />{' '}
       </Button>
       <span>{ups.toLocaleString()}</span>
       <Button
@@ -180,7 +190,7 @@ function PostVote() {
         variant="link"
         onClick={handleDownvote}
       >
-        <i className={`fa-arrow-alt-circle-down ${downClass}`} />
+        <FontAwesomeIcon icon={downIcon} />
       </Button>
     </div>
   );

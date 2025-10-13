@@ -3,6 +3,8 @@ import { memo, useContext, useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import copy from 'copy-to-clipboard';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCode, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
@@ -68,7 +70,7 @@ function PostFooter({
         variant="link"
         onClick={() => setShowDebug(!showDebug)}
       >
-        <i className="fas fa-code" />
+        <FontAwesomeIcon icon={faCode} />
       </Button>
       <Button
         aria-label={
@@ -79,7 +81,7 @@ function PostFooter({
         variant="link"
         onClick={() => setShowVisToggle(!showVisToggle)}
       >
-        <i className={`fas ${showVisToggle ? 'fa-eye-slash' : 'fa-eye'}`} />
+        <FontAwesomeIcon icon={showVisToggle ? faEyeSlash : faEye} />
       </Button>
     </>
   );

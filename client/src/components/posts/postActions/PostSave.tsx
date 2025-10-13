@@ -1,6 +1,9 @@
 import { memo, useContext, useEffect, useState, useCallback } from 'react';
 import type { MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBookmark } from '@fortawesome/free-solid-svg-icons';
+import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { PostsContextActionable, PostsContextData } from '@/contexts';
@@ -69,12 +72,7 @@ function PostSave() {
     triggerSave();
   };
 
-  const saveStr =
-    saved === true ? (
-      <i className="fas fa-bookmark" />
-    ) : (
-      <i className="far fa-bookmark" />
-    );
+  const saveIcon = saved === true ? faBookmark : farBookmark;
   const title = saved === true ? 'Unsave Post (s)' : 'Save Post (s)';
 
   if (bearer.status !== 'auth') {
@@ -89,7 +87,7 @@ function PostSave() {
         variant="link"
         onClick={handleClick}
       >
-        {saveStr}
+        <FontAwesomeIcon icon={saveIcon} />
       </Button>
     </div>
   );

@@ -3,6 +3,13 @@ import { Button } from 'react-bootstrap';
 import { useDispatch } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
 import { produce } from 'immer';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faUserFriends,
+  faUserMinus,
+  faCaretDown,
+  faCaretLeft,
+} from '@fortawesome/free-solid-svg-icons';
 import RedditAPI from '@/reddit/redditAPI';
 import { setMenuStatus, getMenuStatus } from '@/common';
 import { subredditsData } from '@/redux/actions/subreddits';
@@ -107,7 +114,7 @@ function Friends() {
                   }
                 }}
               >
-                <i aria-hidden="true" className="fas fa-user-minus" />
+                <FontAwesomeIcon aria-hidden="true" icon={faUserMinus} />
               </button>
             </div>
           </li>
@@ -119,6 +126,8 @@ function Friends() {
     return null;
   }
 
+  const caretIcon = showFriends ? faCaretDown : faCaretLeft;
+
   return (
     <>
       <li className="nav-item">
@@ -126,7 +135,7 @@ function Friends() {
           <div className="me-auto">
             <NavigationGenericNavItem
               noLi
-              iconClass="fas fa-user-friends"
+              icon={faUserFriends}
               text="Friends"
               title="Show Friend's Posts"
               to="/r/friends"
@@ -140,9 +149,10 @@ function Friends() {
               variant="link"
               onClick={toggleShowFriends}
             >
-              <i
+              <FontAwesomeIcon
                 aria-hidden="true"
-                className={`fas fa-caret-${showFriends ? 'down' : 'left'} menu-caret`}
+                className="menu-caret"
+                icon={caretIcon}
               />
             </Button>
           </div>

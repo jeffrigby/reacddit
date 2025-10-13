@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBug } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useParams } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
@@ -78,7 +80,7 @@ function PostsDebug() {
           variant="primary"
           onClick={() => setClosed(false)}
         >
-          <i className="fas fa-bug" />
+          <FontAwesomeIcon icon={faBug} />
         </Button>
       )}
     </div>

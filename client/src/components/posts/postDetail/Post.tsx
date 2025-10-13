@@ -11,6 +11,8 @@ import {
 import { useNavigate, useLocation, useParams } from 'react-router';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Content from '../Content';
 import renderContent from '../embeds';
 import PostFooter from './PostFooter';
@@ -391,6 +393,8 @@ function Post({
   const commentData = data as CommentData;
   const isReplies = kind === 't1' && (commentData.replies ?? false);
 
+  const visibilityIcon = hide ? faEye : faEyeSlash;
+
   const visibilityToggle = showVisToggle ? (
     <div className="debug-visibility">
       <Button
@@ -401,7 +405,7 @@ function Post({
         variant="primary"
         onClick={() => setHide(!hide)}
       >
-        <i className={`fas ${hide ? 'fa-eye' : 'fa-eye-slash'}`} />
+        <FontAwesomeIcon icon={visibilityIcon} />
       </Button>
     </div>
   ) : null;

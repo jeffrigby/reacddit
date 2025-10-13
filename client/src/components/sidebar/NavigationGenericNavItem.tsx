@@ -2,6 +2,8 @@ import type { ReactElement, MouseEvent } from 'react';
 import { NavLink } from 'react-router-dom';
 import _trimEnd from 'lodash/trimEnd';
 import parse from 'url-parse';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 interface NavigationGenericNavItemProps {
   to: string;
@@ -13,7 +15,8 @@ interface NavigationGenericNavItemProps {
   id?: string;
   badge?: string;
   noLi?: boolean;
-  iconClass?: string;
+  icon?: IconDefinition;
+  iconClass?: string; // Deprecated - use icon instead
   liClass?: string;
 }
 
@@ -31,13 +34,19 @@ function NavigationGenericNavItem({
   id = '',
   badge = '',
   noLi = false,
+  icon,
   iconClass = '',
   liClass = '',
 }: NavigationGenericNavItemProps): ReactElement {
   const titleNew = title ?? text;
   const linkClassNames = `nav-link${classes ? ` ${classes}` : ''}`;
 
-  const iconElement = iconClass ? <i className={`${iconClass} fa-fw`} /> : null;
+  // Support both new icon prop and legacy iconClass for backwards compatibility
+  const iconElement = icon ? (
+    <FontAwesomeIcon className="fa-fw" icon={icon} />
+  ) : iconClass ? (
+    <i className={`${iconClass} fa-fw`} />
+  ) : null;
 
   const badgeElement = badge ? (
     <span className="badge bg-primary rounded-pill">{badge}</span>

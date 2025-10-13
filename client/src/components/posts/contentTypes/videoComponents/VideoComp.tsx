@@ -11,6 +11,12 @@ import {
 import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
 import classNames from 'classnames';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCircleNotch,
+  faToggleOn,
+  faToggleOff,
+} from '@fortawesome/free-solid-svg-icons';
 import '../../../../styles/video.scss';
 import VideoDebug from './VideoDebug';
 import VideoAudioButton from './VideoAudioButton';
@@ -418,7 +424,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
         {loadingError && (
           <div className="video-loading-error p-1 d-flex">
             <div>
-              <i className="fas fa-circle-notch fa-spin mx-1" />
+              <FontAwesomeIcon spin className="mx-1" icon={faCircleNotch} />
             </div>
             <div>{loadingError}</div>
           </div>
@@ -461,11 +467,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
                 type="button"
                 onClick={() => setControls(!controls)}
               >
-                <i
-                  className={`fas ${
-                    controls ? 'fa-toggle-on' : 'fa-toggle-off'
-                  }`}
-                />
+                <FontAwesomeIcon icon={controls ? faToggleOn : faToggleOff} />
               </button>
               <VideoAudioButton
                 audioWarning={content.audioWarning}

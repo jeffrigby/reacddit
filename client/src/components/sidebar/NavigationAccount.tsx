@@ -3,6 +3,19 @@ import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router';
 import { formatDistanceToNow } from 'date-fns';
 import { Tooltip } from 'react-tooltip';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faCaretDown,
+  faCaretRight,
+  faInfoCircle,
+  faSignOutAlt,
+} from '@fortawesome/free-solid-svg-icons';
+import {
+  faFile,
+  faThumbsUp,
+  faThumbsDown,
+  faBookmark,
+} from '@fortawesome/free-regular-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
@@ -72,9 +85,7 @@ function NavigationAccount(): ReactElement {
     return null;
   }
 
-  const caretClass = showNavAccountMenu
-    ? 'fas fa-caret-down menu-caret'
-    : 'fas fa-caret-right menu-caret';
+  const caretIcon = showNavAccountMenu ? faCaretDown : faCaretRight;
 
   const karmaTotal = (me.link_karma || 0) + (me.comment_karma || 0);
   const joinedDate = formatDistanceToNow((me.created_utc || 0) * 1000);
@@ -93,12 +104,13 @@ function NavigationAccount(): ReactElement {
       <div id="sidebar-nav_account">
         <div className="sidebar-heading d-flex text-muted show-cursor">
           <span className="me-1" role="presentation" onClick={toggleShowMenu}>
-            <i className={caretClass} /> {me.name}
+            <FontAwesomeIcon className="menu-caret" icon={caretIcon} />{' '}
+            {me.name}
           </span>
           <span>
-            <i
-              className="fas fa-info-circle"
+            <FontAwesomeIcon
               data-tooltip-html={accountInfo}
+              icon={faInfoCircle}
               id="nav-user-info"
             />
           </span>
@@ -107,7 +119,7 @@ function NavigationAccount(): ReactElement {
               isStatic
               noLi
               classes="m-0 p-0"
-              iconClass="fas fa-sign-out-alt m-0 p-0"
+              icon={faSignOutAlt}
               text=""
               title="Logout"
               to={`${process.env.API_PATH}/logout`}
@@ -118,25 +130,25 @@ function NavigationAccount(): ReactElement {
           <ul className="nav flex-column">
             <Friends />
             <NavigationGenericNavItem
-              iconClass="far fa-file"
+              icon={faFile}
               text="Posts"
               title="Show My Submitted Posts"
               to={`/user/${me.name}/posts`}
             />
             <NavigationGenericNavItem
-              iconClass="far fa-thumbs-up"
+              icon={faThumbsUp}
               text="Upvoted"
               title="Show My Upvoted Posts"
               to={`/user/${me.name}/upvoted`}
             />
             <NavigationGenericNavItem
-              iconClass="far fa-thumbs-down"
+              icon={faThumbsDown}
               text="Downvoted"
               title="Show My Downvoted Posts"
               to={`/user/${me.name}/downvoted`}
             />
             <NavigationGenericNavItem
-              iconClass="far fa-bookmark"
+              icon={faBookmark}
               text="Saved"
               title="Show My Saved Posts"
               to={`/user/${me.name}/saved`}

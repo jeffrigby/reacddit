@@ -2,6 +2,14 @@ import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faThumbtack,
+  faStickyNote,
+  faLink,
+} from '@fortawesome/free-solid-svg-icons';
+import { faCopy } from '@fortawesome/free-regular-svg-icons';
+import { faReddit } from '@fortawesome/free-brands-svg-icons';
 import PostVote from '../postActions/PostVote';
 import PostSave from '../postActions/PostSave';
 import { PostsContextData } from '../../../contexts';
@@ -77,13 +85,13 @@ function PostHeader({
 
   const pinned = data.pinned ? (
     <div className="badge text-dark me-1" title="Pinned Post">
-      <i className="fas fa-thumbtack" />
+      <FontAwesomeIcon icon={faThumbtack} />
     </div>
   ) : null;
 
   const sticky = data.stickied ? (
     <div className="badge text-dark me-1" title="Sticky Post">
-      <i className="fas fa-sticky-note" />
+      <FontAwesomeIcon icon={faStickyNote} />
     </div>
   ) : null;
 
@@ -108,7 +116,7 @@ function PostHeader({
           title="Search for other posts linking to this link"
           to={searchTo}
         >
-          <i className="far fa-copy" />
+          <FontAwesomeIcon icon={faCopy} />
         </Link>
       </div>
     );
@@ -123,7 +131,7 @@ function PostHeader({
           target="_blank"
           title="Open this link directly"
         >
-          <i className="fas fa-link" />
+          <FontAwesomeIcon icon={faLink} />
         </a>
       </div>
     );
@@ -139,7 +147,7 @@ function PostHeader({
         target="_blank"
         title="Open on Reddit"
       >
-        <i className="fab fa-reddit" />
+        <FontAwesomeIcon icon={faReddit} />
       </a>
     </div>
   );

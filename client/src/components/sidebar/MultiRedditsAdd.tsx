@@ -1,6 +1,8 @@
 import { useRef, useState, useCallback } from 'react';
 import type { ReactElement, ChangeEvent } from 'react';
 import { Form, Dropdown, Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import RedditAPI from '../../reddit/redditAPI';
 
 interface MultiRedditsAddProps {
@@ -17,7 +19,7 @@ function MultiRedditsAdd({
 
   const [visibility, setVisibility] = useState<boolean>(false);
   const [disabled, setDisabled] = useState<boolean>(true);
-  const visibilityIconClass = visibility ? 'fas fa-eye' : 'fas fa-eye-slash';
+  const visibilityIcon = visibility ? faEye : faEyeSlash;
 
   const checkInput = useCallback(
     (_event: ChangeEvent<HTMLInputElement>): void => {
@@ -61,14 +63,14 @@ function MultiRedditsAdd({
             size="sm"
             variant="outline-secondary"
           >
-            <i className={visibilityIconClass} />
+            <FontAwesomeIcon icon={visibilityIcon} />
           </Dropdown.Toggle>
           <Dropdown.Menu>
             <Dropdown.Item onClick={() => setVisibility(true)}>
-              <i className="fas fa-eye-slash" /> Private
+              <FontAwesomeIcon icon={faEyeSlash} /> Private
             </Dropdown.Item>
             <Dropdown.Item onClick={() => setVisibility(false)}>
-              <i className="fas fa-eye" /> Public
+              <FontAwesomeIcon icon={faEye} /> Public
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>

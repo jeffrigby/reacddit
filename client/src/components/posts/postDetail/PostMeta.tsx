@@ -1,4 +1,6 @@
 import { useContext } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRandom, faStickyNote } from '@fortawesome/free-solid-svg-icons';
 import PostByline from './PostByline';
 import { PostsContextData } from '../../../contexts';
 import type { LinkData } from '../../../types/redditApi';
@@ -24,11 +26,17 @@ function PostMeta(): React.JSX.Element {
       <PostByline data={data} kind={kind} />
       {crossPost && (
         <div>
-          <i className="fas fa-random pe-2" title="Crossposted" />
+          <FontAwesomeIcon
+            className="pe-2"
+            icon={faRandom}
+            title="Crossposted"
+          />
           <PostByline data={data.crosspost_parent_list[0]} kind={kind} />
         </div>
       )}
-      {sticky && <i className="fas fa-sticky-note px-2" title="Sticky" />}
+      {sticky && (
+        <FontAwesomeIcon className="px-2" icon={faStickyNote} title="Sticky" />
+      )}
     </>
   );
 }
