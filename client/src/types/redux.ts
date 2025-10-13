@@ -4,12 +4,14 @@
 import type { ThunkDispatch } from '@reduxjs/toolkit';
 import type { AnyAction } from 'redux';
 import type { MultiRedditsState } from '@/redux/slices/multiRedditsSlice';
+import type { BearerState } from '@/redux/slices/redditBearerSlice';
+import type { MeState } from '@/redux/slices/redditMeSlice';
 import type {
   ListingsFilter,
   ListingsData,
   ListingsState as ListingsStateEntry,
 } from './listings';
-import type { SubredditData, AccountData } from './redditApi';
+import type { SubredditData } from './redditApi';
 
 /**
  * Subreddit data as stored in Redux state
@@ -68,19 +70,8 @@ export interface RootState {
   reddit: {
     [key: string]: unknown;
   };
-  redditBearer: {
-    bearer?: string;
-    status?: string;
-    loginURL?: string;
-    [key: string]: unknown;
-  };
-  redditMe?: {
-    me?: AccountData;
-    status?: string;
-    lastUpdated?: number;
-    id?: string;
-    error?: string;
-  };
+  redditBearer: BearerState;
+  redditMe: MeState;
   redditMultiReddits: MultiRedditsState;
   subreddits: SubredditsState;
   subredditsFilter: SubredditsFilterState;

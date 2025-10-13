@@ -1,6 +1,7 @@
 import { memo, StrictMode, useState, useEffect, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { redditGetBearer, redditFetchMe } from '@/redux/actions/reddit';
+import { fetchBearer } from '@/redux/slices/redditBearerSlice';
+import { fetchMe } from '@/redux/slices/redditMeSlice';
 import { hotkeyStatus } from '@/common';
 import { useModals } from '@/contexts/ModalContext';
 import Navigation from './Navigation';
@@ -35,10 +36,11 @@ function App() {
   );
 
   const getToken = useCallback(async () => {
-    const bearer = await dispatch(redditGetBearer());
-    if (bearer !== null) {
-      setToken(bearer);
-      await dispatch(redditFetchMe());
+    const bearerResult = await dispatch(fetchBearer());
+    if (fetchBearer.fulfilled.match(bearerResult)) {
+      setToken(bearerResult.payload.bearer);
+      // Force fetch on initialization to ensure we have fresh user data
+      await dispatch(fetchMe(true));
       setLoading(false);
     } else {
       setError(true);
@@ -63,7 +65,7 @@ function App() {
 
   useEffect(() => {
     const tokenQuery = token
-      ? setInterval(() => dispatch(redditGetBearer()), 1000)
+      ? setInterval(() => dispatch(fetchBearer()), 1000)
       : null;
     return () => {
       if (tokenQuery) {
@@ -72,7 +74,7 @@ function App() {
     };
   }, [dispatch, token]);
 
-  if (redditMe?.status === 'error') {
+  if (redditMe.status === 'failed') {
     return (
       <div className="alert alert-danger m-2" role="alert">
         <p>
@@ -81,7 +83,7 @@ function App() {
           blocks this by default. Please check your browser content blocking
           settings and try again.
         </p>
-        <p>{redditMe?.error}</p>
+        <p>{redditMe.error}</p>
       </div>
     );
   }
@@ -95,7 +97,7 @@ function App() {
   }
 
   // This is to handle an issue where the account or bearer isn't fetched correctly.
-  if (loading || redditBearer.status === 'unloaded') {
+  if (loading || redditBearer.status === 'idle') {
     return null;
   }
 

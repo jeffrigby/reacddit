@@ -12,9 +12,22 @@ function ListingsHeaderMulti() {
   const me = useAppSelector((state) => state.redditMe);
 
   const { target, user } = filter;
-  const name = user === 'me' ? me?.me?.name : user;
+  const meName = me.me?.name;
+
+  // Calculate the name based on whether it's 'me' or a specific user
+  const name = user === 'me' ? meName : user;
 
   useEffect(() => {
+    // If user is 'me' and we don't have the name yet (not loaded), wait
+    if (user === 'me' && !meName) {
+      return;
+    }
+
+    // If we still don't have a name, wait
+    if (!name) {
+      return;
+    }
+
     let isSubscribed = true;
     const getCurrentMulti = async () => {
       const multiLookup = await RedditAPI.multiInfo(`user/${name}/m/${target}`);
@@ -29,7 +42,7 @@ function ListingsHeaderMulti() {
     return () => {
       isSubscribed = false;
     };
-  }, [name, target]);
+  }, [name, target, user, meName]);
 
   const info = currentMulti ? (
     <>

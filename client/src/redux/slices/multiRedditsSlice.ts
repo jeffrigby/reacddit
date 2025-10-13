@@ -47,21 +47,9 @@ export const fetchMultiReddits = createAsyncThunk<
   { state: RootState } // ThunkAPI config
 >(
   'multiReddits/fetch',
-  async (reset = false, { getState, rejectWithValue }) => {
+  async (reset = false, { rejectWithValue }) => {
+    // Note: reset parameter is used by condition function below, not here
     try {
-      const state = getState();
-      const currentState = state.redditMultiReddits;
-
-      // Check if we need to fetch based on cache expiration
-      if (!reset && currentState) {
-        const cacheExpired =
-          Date.now() > currentState.lastUpdated + CACHE_EXPIRATION;
-        if (currentState.status === 'succeeded' && !cacheExpired) {
-          // Return cached data
-          return currentState.multis;
-        }
-      }
-
       // Fetch fresh data from Reddit API
       const multis = await RedditAPI.multiMine({ expand_srs: true });
       return multis;
@@ -70,6 +58,34 @@ export const fetchMultiReddits = createAsyncThunk<
         error instanceof Error ? error.message : 'Failed to fetch multiReddits'
       );
     }
+  },
+  {
+    // Condition prevents thunk from running if cache is still valid
+    condition: (reset = false, { getState }) => {
+      if (reset) {
+        return true;
+      } // Allow forced refresh
+
+      const state = getState();
+      const currentState = state.redditMultiReddits;
+
+      // Don't run if already loading or failed
+      if (
+        currentState.status === 'loading' ||
+        currentState.status === 'failed'
+      ) {
+        return false;
+      }
+
+      // Check if we need to fetch based on cache expiration
+      if (currentState.status === 'succeeded') {
+        const cacheExpired =
+          Date.now() > currentState.lastUpdated + CACHE_EXPIRATION;
+        return cacheExpired; // Only run if cache expired
+      }
+
+      return true; // Run if status is idle
+    },
   }
 );
 

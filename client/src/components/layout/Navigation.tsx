@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import type { SubredditsFilterState } from '@/types/redux';
+import type { BearerState } from '@/redux/slices/redditBearerSlice';
 import MultiReddits from '../sidebar/MultiReddits';
 import NavigationPrimaryLinks from '../sidebar/NavigationPrimaryLinks';
 import NavigationSubReddits from '../sidebar/NavigationSubreddits';
@@ -9,11 +10,7 @@ import NavigationAccount from '../sidebar/NavigationAccount';
 import '../../styles/sidebar.scss';
 
 interface NavigationProps {
-  redditBearer: {
-    bearer?: string;
-    status?: string;
-    loginURL?: string;
-  };
+  redditBearer: BearerState;
   subredditsFilter: SubredditsFilterState;
 }
 

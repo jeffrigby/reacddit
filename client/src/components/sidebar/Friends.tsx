@@ -74,52 +74,54 @@ function Friends() {
       return null;
     }
 
-    return Object.values(subreddits.subreddits)
-      .filter((item) => item.subreddit_type === 'user')
-      .map(({ url, id, display_name: displayName }) => {
-        const link = `${url}posts?sort=new`;
-        const friendLastUpdated = lastUpdated[`t5_${id}`]?.lastPost ?? 0;
-        const classNameStr = getDiffClassName(friendLastUpdated, false);
-        const badge = classNameStr.includes('sub-new') ? 'New' : null;
-        const cleanDisplayName = displayName.replace('u_', '');
-        const timeago =
-          friendLastUpdated !== 0
-            ? formatDistanceToNow(friendLastUpdated * 1000)
-            : '';
+    const userSubreddits = Object.values(subreddits.subreddits).filter(
+      (item) => item.subreddit_type === 'user'
+    );
 
-        return (
-          <li className="nav-item d-flex friend-li" key={id}>
-            <div className="me-auto d-flex w-100">
-              <NavigationGenericNavItem
-                noLi
-                badge={badge ?? undefined}
-                classes={classNameStr}
-                id={id}
-                text={cleanDisplayName}
-                title={`${cleanDisplayName} Posts${timeago ? ` - updated ${timeago} ago` : ''}`}
-                to={link}
-              />
-            </div>
-            <div className="friend-actions">
-              <button
-                aria-label={`Remove ${displayName} from friend's list`}
-                className="btn-link"
-                title={`Remove ${displayName} from friend's list`}
-                type="button"
-                onClick={() => {
-                  if (
-                    window.confirm(`Remove ${cleanDisplayName} from friends?`)
-                  ) {
-                    unfollowUser(displayName);
-                  }
-                }}
-              >
-                <FontAwesomeIcon aria-hidden="true" icon={faUserMinus} />
-              </button>
-            </div>
-          </li>
-        );
-      });
+    return userSubreddits.map(({ url, id, display_name: displayName }) => {
+      const link = `${url}posts?sort=new`;
+      const friendLastUpdated = lastUpdated[`t5_${id}`]?.lastPost ?? 0;
+      const classNameStr = getDiffClassName(friendLastUpdated, false);
+      const badge = classNameStr.includes('sub-new') ? 'New' : null;
+      const cleanDisplayName = displayName.replace('u_', '');
+      const timeago =
+        friendLastUpdated !== 0
+          ? formatDistanceToNow(friendLastUpdated * 1000)
+          : '';
+
+      return (
+        <li className="nav-item d-flex friend-li" key={id}>
+          <div className="me-auto d-flex w-100">
+            <NavigationGenericNavItem
+              noLi
+              badge={badge ?? undefined}
+              classes={classNameStr}
+              id={id}
+              text={cleanDisplayName}
+              title={`${cleanDisplayName} Posts${timeago ? ` - updated ${timeago} ago` : ''}`}
+              to={link}
+            />
+          </div>
+          <div className="friend-actions">
+            <button
+              aria-label={`Remove ${displayName} from friend's list`}
+              className="btn-link"
+              title={`Remove ${displayName} from friend's list`}
+              type="button"
+              onClick={() => {
+                if (
+                  window.confirm(`Remove ${cleanDisplayName} from friends?`)
+                ) {
+                  unfollowUser(displayName);
+                }
+              }}
+            >
+              <FontAwesomeIcon aria-hidden="true" icon={faUserMinus} />
+            </button>
+          </div>
+        </li>
+      );
+    });
   }, [subreddits, lastUpdated, unfollowUser]);
 
   if (!friendItems || friendItems.length === 0) {

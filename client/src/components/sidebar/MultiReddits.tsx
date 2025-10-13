@@ -24,19 +24,23 @@ function MultiReddits(): ReactElement | null {
   const [showAdd, setShowAdd] = useState<boolean>(false);
 
   const multireddits = useAppSelector((state) => state.redditMultiReddits);
-  const redditBearer = useAppSelector((state) => state.redditBearer);
+  const bearerStatus = useAppSelector((state) => state.redditBearer.status);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     async function getMultis(): Promise<void> {
-      if (redditBearer.status === 'auth') {
-        await dispatch(fetchMultiReddits());
-        setLoading(false);
+      if (bearerStatus === 'auth') {
+        if (multireddits.status === 'idle') {
+          await dispatch(fetchMultiReddits());
+          setLoading(false);
+        } else if (multireddits.status === 'succeeded') {
+          setLoading(false);
+        }
       }
     }
 
     getMultis();
-  }, [dispatch, redditBearer.status]);
+  }, [dispatch, bearerStatus, multireddits.status]);
 
   const reloadMultis = useCallback(async (): Promise<void> => {
     setLoading(true);
@@ -74,7 +78,7 @@ function MultiReddits(): ReactElement | null {
   }, [multireddits?.multis]);
 
   if (
-    redditBearer.status !== 'auth' ||
+    bearerStatus !== 'auth' ||
     multireddits.status !== 'succeeded' ||
     multiItems.length === 0
   ) {
