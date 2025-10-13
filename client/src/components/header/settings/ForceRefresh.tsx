@@ -1,4 +1,4 @@
-import { Button } from 'react-bootstrap';
+import { Button, Dropdown } from 'react-bootstrap';
 import { useAppSelector } from '@/redux/hooks';
 import { unregister } from '@/serviceWorkerRegistration';
 
@@ -31,7 +31,7 @@ function ForceRefresh() {
       </Button>
       {debug && (
         <>
-          <div className="dropdown-divider" />
+          <Dropdown.Divider />
           <div className="supersmall">
             Build Date:
             <br />

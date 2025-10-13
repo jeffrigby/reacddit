@@ -1,4 +1,5 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 import Search from '../header/Search';
 import Sort from '../header/Sort';
 import Reload from '../header/Reload';
@@ -25,25 +26,25 @@ function Header() {
   };
 
   const menuButton = (
-    <button
+    <Button
       aria-label="Show Menu"
-      className="btn btn-secondary btn-sm"
-      type="button"
+      size="sm"
+      variant="secondary"
       onClick={showMenu}
     >
       <i className="fas fa-bars" />
-    </button>
+    </Button>
   );
 
   const closeMenuButton = (
-    <button
+    <Button
       aria-label="Hide Menu"
-      className="btn btn-secondary btn-sm"
-      type="button"
+      size="sm"
+      variant="secondary"
       onClick={hideMenu}
     >
       <i className="fas fa-times" />
-    </button>
+    </Button>
   );
 
   const brand = (
@@ -56,15 +57,16 @@ function Header() {
   // @todo do I need to check this?
   const backButton = location.state?.showBack && (
     <div>
-      <button
+      <Button
         aria-label="Go Back"
-        className="btn btn-secondary btn-sm me-2"
+        className="me-2"
+        size="sm"
         title="Go Back"
-        type="button"
+        variant="secondary"
         onClick={() => navigate(-1)}
       >
         <i className="fas fa-chevron-left" />
-      </button>
+      </Button>
     </div>
   );
 

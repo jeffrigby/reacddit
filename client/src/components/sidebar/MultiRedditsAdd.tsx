@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import type { ReactElement, ChangeEvent } from 'react';
-import { Form } from 'react-bootstrap';
+import { Form, Dropdown, Button } from 'react-bootstrap';
 import RedditAPI from '../../reddit/redditAPI';
 
 interface MultiRedditsAddProps {
@@ -54,34 +54,24 @@ function MultiRedditsAdd({
           type="text"
           onChange={checkInput}
         />
-        <div className="input-group-append">
-          <button
-            aria-expanded="false"
-            aria-haspopup="true"
+        <Dropdown className="input-group-append">
+          <Dropdown.Toggle
             aria-label={visibility ? 'Private' : 'Public'}
-            className="btn btn-sm btn-outline-secondary dropdown-toggle"
-            data-bs-toggle="dropdown"
-            type="button"
+            id="dropdown-visibility"
+            size="sm"
+            variant="outline-secondary"
           >
             <i className={visibilityIconClass} />
-          </button>
-          <div className="dropdown-menu">
-            <button
-              className="btn btn-link btn-sm dropdown-item"
-              type="button"
-              onClick={() => setVisibility(true)}
-            >
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={() => setVisibility(true)}>
               <i className="fas fa-eye-slash" /> Private
-            </button>
-            <button
-              className="btn btn-link btn-sm dropdown-item"
-              type="button"
-              onClick={() => setVisibility(false)}
-            >
+            </Dropdown.Item>
+            <Dropdown.Item onClick={() => setVisibility(false)}>
               <i className="fas fa-eye" /> Public
-            </button>
-          </div>
-        </div>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </div>
       <Form.Group className="mt-2">
         <Form.Control
@@ -94,21 +84,18 @@ function MultiRedditsAdd({
         />
       </Form.Group>
       <div className="form-group mt-2">
-        <button
-          className="btn btn-primary btn-sm me-2"
+        <Button
+          className="me-2"
           disabled={disabled}
-          type="button"
+          size="sm"
+          variant="primary"
           onClick={addMulti}
         >
           Add
-        </button>
-        <button
-          className="btn btn-secondary btn-sm"
-          type="button"
-          onClick={() => setShowAdd(false)}
-        >
+        </Button>
+        <Button size="sm" variant="secondary" onClick={() => setShowAdd(false)}>
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );

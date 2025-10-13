@@ -48,13 +48,15 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
 
     return (
       <div className="comments-more">
-        <Link
-          className="btn btn-outline-secondary btn-sm mb-2"
-          role="button"
+        <Button
+          as={Link}
+          className="mb-2"
+          size="sm"
           to={`/r/${target}/comments/${postName}/${postTitle}/${parantID}`}
+          variant="outline-secondary"
         >
           Continue This Thread
-        </Link>
+        </Button>
       </div>
     );
   }

@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router';
 import classNames from 'classnames';
+import { Button } from 'react-bootstrap';
 import Content from '../Content';
 import renderContent from '../embeds';
 import PostFooter from './PostFooter';
@@ -392,15 +393,16 @@ function Post({
 
   const visibilityToggle = showVisToggle ? (
     <div className="debug-visibility">
-      <button
+      <Button
         aria-label={hide ? 'Show' : 'Hide'}
-        className="btn btn-primary btn-sm shadow-none m-0 p-0 me-1"
+        className="shadow-none m-0 p-0 me-1"
+        size="sm"
         title="Toggle visiblity"
-        type="button"
+        variant="primary"
         onClick={() => setHide(!hide)}
       >
         <i className={`fas ${hide ? 'fa-eye' : 'fa-eye-slash'}`} />
-      </button>
+      </Button>
     </div>
   ) : null;
 

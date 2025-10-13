@@ -9,29 +9,6 @@ interface Window {
   __REDUX_DEVTOOLS_EXTENSION__?: () => unknown;
 }
 
-// Bootstrap global declaration
-// Note: Modal has been migrated to React-Bootstrap (Phase 2.1)
-declare const bootstrap: {
-  Dropdown: new (element: Element | null) => {
-    show: () => void;
-    hide: () => void;
-    toggle: () => void;
-    dispose: () => void;
-  };
-  Collapse: new (element: Element | null) => {
-    show: () => void;
-    hide: () => void;
-    toggle: () => void;
-    dispose: () => void;
-  };
-  Tooltip: new (element: Element | null) => {
-    show: () => void;
-    hide: () => void;
-    toggle: () => void;
-    dispose: () => void;
-  };
-};
-
 // Allow importing of various asset types
 declare module '*.svg' {
   const content: string;

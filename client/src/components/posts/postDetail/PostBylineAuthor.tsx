@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { produce } from 'immer';
 import classNames from 'classnames';
+import { Button } from 'react-bootstrap';
 import RedditAPI from '../../../reddit/redditAPI';
 import { subredditsData } from '../../../redux/actions/subreddits';
 import { useAppSelector } from '../../../redux/hooks';
@@ -96,17 +97,18 @@ function PostBylineAuthor({
     </div>
   ) : (
     <>
-      <button
+      <Button
         aria-label={title}
-        className="btn btn-link btn-sm shadow-none"
+        className="shadow-none"
+        size="sm"
         title={title}
-        type="button"
+        variant="link"
         onClick={onClick}
       >
         <i
           className={`fas ${isFollowing ? 'fa-user-minus' : 'fa-user-plus'}`}
         />
-      </button>{' '}
+      </Button>{' '}
       <Link
         className={authorClasses}
         state={{ showBack: true }}

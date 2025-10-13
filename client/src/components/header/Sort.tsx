@@ -5,6 +5,7 @@ import type { To } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
+import { Dropdown } from 'react-bootstrap';
 import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
@@ -219,13 +220,14 @@ function Sort() {
       const sortActive = active() ? 'sort-active' : '';
 
       links.push(
-        <NavLink
-          className={`dropdown-item ${sortActive}`}
+        <Dropdown.Item
+          as={NavLink}
+          className={sortActive}
           key={linkKey}
           to={url}
         >
           <span className="sort-title ps-3 small">{linkString}</span>
-        </NavLink>
+        </Dropdown.Item>
       );
     });
 
@@ -291,17 +293,16 @@ function Sort() {
 
         links.push(
           <div key={sortName}>
-            <NavLink
-              className={`dropdown-item d-flex small ${
-                active ? 'sort-active' : ''
-              }`}
+            <Dropdown.Item
+              as={NavLink}
+              className={`d-flex small ${active ? 'sort-active' : ''}`}
               to={genLink(sortName)}
             >
               <div className="me-auto pe-2 sort-title">
                 {getIcon(sortName)} {sortName}
               </div>{' '}
               <span className="menu-shortcut">&#x21E7;{key}</span>
-            </NavLink>
+            </Dropdown.Item>
             {subLinksRendered}
           </div>
         );
@@ -341,19 +342,18 @@ function Sort() {
   const links = renderLinks();
 
   return (
-    <div className="btn-group sort-menu header-button">
-      <button
-        aria-expanded="false"
-        aria-haspopup="true"
+    <Dropdown className="sort-menu header-button">
+      <Dropdown.Toggle
         aria-label="Sort"
-        className="btn btn-secondary btn-sm form-control-sm dropdown-toggle sort-button"
-        data-bs-toggle="dropdown"
-        type="button"
+        className="form-control-sm sort-button"
+        id="dropdown-sort"
+        size="sm"
+        variant="secondary"
       >
         {icon} {currentSort}
-      </button>
-      <div className="dropdown-menu dropdown-menu-end">{links}</div>
-    </div>
+      </Dropdown.Toggle>
+      <Dropdown.Menu align="end">{links}</Dropdown.Menu>
+    </Dropdown>
   );
 }
 

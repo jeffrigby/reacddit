@@ -2,6 +2,7 @@ import type { MouseEvent } from 'react';
 import { memo, useContext, useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import copy from 'copy-to-clipboard';
+import { Button } from 'react-bootstrap';
 import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
@@ -52,34 +53,34 @@ function PostFooter({
 
   const debugLinks = (
     <>
-      <button
-        className="btn btn-link shadow-none m-0 p-0 me-1"
+      <Button
+        className="shadow-none m-0 p-0 me-1"
         title="Click to copy"
-        type="button"
+        variant="link"
         onClick={copyID}
       >
         {copied ? 'Copied' : data.name}
-      </button>
-      <button
+      </Button>
+      <Button
         aria-label={showDebug ? 'Hide debug' : 'Show debug'}
-        className="btn btn-link shadow-none m-0 p-0 me-1"
+        className="shadow-none m-0 p-0 me-1"
         title="Show debug!"
-        type="button"
+        variant="link"
         onClick={() => setShowDebug(!showDebug)}
       >
         <i className="fas fa-code" />
-      </button>
-      <button
+      </Button>
+      <Button
         aria-label={
           showVisToggle ? 'Hide Visibility Toggle' : 'Show Visibility Toggle'
         }
-        className="btn btn-link shadow-none m-0 p-0 me-1"
+        className="shadow-none m-0 p-0 me-1"
         title="Show Visibility Toggle"
-        type="button"
+        variant="link"
         onClick={() => setShowVisToggle(!showVisToggle)}
       >
         <i className={`fas ${showVisToggle ? 'fa-eye-slash' : 'fa-eye'}`} />
-      </button>
+      </Button>
     </>
   );
 

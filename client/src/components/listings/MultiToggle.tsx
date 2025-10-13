@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
-import { Form, Button } from 'react-bootstrap';
+import { Form, Dropdown } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import RedditAPI from '../../reddit/redditAPI';
 import { redditFetchMultis } from '../../redux/actions/reddit';
@@ -65,7 +65,7 @@ function MultiToggle({ srName }: MultiToggleProps) {
     const checked = subNames.includes(srName);
 
     return (
-      <div className="dropdown-item small m-0 p-0" key={key}>
+      <Dropdown.Item as="div" className="small m-0 p-0" key={key}>
         <Form.Check
           className="multi-toggle-input mx-2 w-100"
           defaultChecked={checked}
@@ -75,27 +75,25 @@ function MultiToggle({ srName }: MultiToggleProps) {
           value={item.data.path}
           onChange={addRemove}
         />
-      </div>
+      </Dropdown.Item>
     );
   });
 
   return (
-    <div className="multi-menu header-button ms-2">
-      <Button
-        aria-expanded="false"
-        aria-haspopup="true"
+    <Dropdown className="multi-menu header-button ms-2">
+      <Dropdown.Toggle
         aria-label="Multis"
         className="form-control-sm"
-        data-bs-toggle="dropdown"
+        id="dropdown-multis"
         size="sm"
         variant="primary"
       >
         Multis <i className="fas fa-caret-down" />
-      </Button>
-      <div className="dropdown-menu dropdown-menu-end" ref={multiRef}>
+      </Dropdown.Toggle>
+      <Dropdown.Menu align="end" ref={multiRef}>
         {menuItems}
-      </div>
-    </div>
+      </Dropdown.Menu>
+    </Dropdown>
   );
 }
 

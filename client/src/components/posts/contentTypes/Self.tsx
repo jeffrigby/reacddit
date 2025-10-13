@@ -1,6 +1,7 @@
 import { useContext, useState, useRef, useEffect, useCallback } from 'react';
 import throttle from 'lodash/throttle';
 import classNames from 'classnames';
+import { Button } from 'react-bootstrap';
 import { PostsContextData } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
 import SelfInline from './SelfInline';
@@ -151,14 +152,15 @@ function Self({ name, content }: SelfProps) {
         </div>
         {showMore && (
           <div className="self-show-more">
-            <button
-              className="btn btn-link btn-sm shadow-none p-0"
+            <Button
+              className="shadow-none p-0"
+              size="sm"
               title="Load More"
-              type="button"
+              variant="link"
               onClick={toggleShow}
             >
               {buttonText}
-            </button>
+            </Button>
           </div>
         )}
       </div>

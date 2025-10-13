@@ -1,4 +1,5 @@
 import { useState, useMemo, type MouseEvent } from 'react';
+import { Button, ButtonGroup } from 'react-bootstrap';
 import VideoComp from './videoComponents/VideoComp';
 import Image from './ImageComp';
 import type { ImgurAlbumEmbedContent } from '../embeds/types';
@@ -101,27 +102,27 @@ function ImgurAlbum({ content }: ImgurAlbumProps) {
 
   return (
     <div className="ratio-bg albumEntry">
-      <div className="btn-group btn-group-xs albumNav">
-        <button
+      <ButtonGroup className="btn-group-xs albumNav" size="sm">
+        <Button
           aria-label="Previous Slide"
-          className="btn btn-default shadow-none"
-          type="button"
+          className="shadow-none"
+          variant="secondary"
           onClick={prevSlide}
         >
           <i className="fas fa-backward" />
-        </button>
-        <div className="btn btn-default">
+        </Button>
+        <Button disabled className="shadow-none" variant="secondary">
           {currentSlide} / {totalSlides}
-        </div>
-        <button
+        </Button>
+        <Button
           aria-label="Next Slide"
-          className="btn btn-default shadow-none"
-          type="button"
+          className="shadow-none"
+          variant="secondary"
           onClick={nextSlide}
         >
           <i className="fas fa-forward" />
-        </button>
-      </div>
+        </Button>
+      </ButtonGroup>
       <div className="ratio-container" style={contStyle}>
         <div className="ratio embed-responsive" style={ratioStyle}>
           {render}
