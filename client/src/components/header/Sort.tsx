@@ -6,6 +6,20 @@ import { NavLink } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
 import { Dropdown } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faBullseye,
+  faFireAlt,
+  faAward,
+  faChartLine,
+  faClock,
+  faBolt,
+  faSortAmountUp,
+  faComment,
+  faQuestionCircle,
+  faHistory,
+} from '@fortawesome/free-solid-svg-icons';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
@@ -13,8 +27,8 @@ interface SortCategories {
   [key: string]: string;
 }
 
-interface IconClasses {
-  [key: string]: string;
+interface SortIcons {
+  [key: string]: IconDefinition;
 }
 
 const catsSearch: SortCategories = {
@@ -74,17 +88,17 @@ const timeCats: SortCategories = {
   all: 'all time',
 };
 
-const iconClasses: IconClasses = {
-  relevance: 'fas fa-bullseye fa-fw',
-  hot: 'fas fa-fire-alt fa-fw',
-  best: 'fas fa-award fa-fw',
-  rising: 'fas fa-chart-line fa-fw',
-  new: 'fas fa-clock fa-fw',
-  controversial: 'fas fa-bolt fa-fw',
-  top: 'fas fa-sort-amount-up fa-fw',
-  comments: 'fas fa-comment fa-fw',
-  qa: 'fas fa-question-circle fa-fw',
-  old: 'fas fa-history fa-fw',
+const sortIcons: SortIcons = {
+  relevance: faBullseye,
+  hot: faFireAlt,
+  best: faAward,
+  rising: faChartLine,
+  new: faClock,
+  controversial: faBolt,
+  top: faSortAmountUp,
+  comments: faComment,
+  qa: faQuestionCircle,
+  old: faHistory,
 };
 
 function Sort() {
@@ -94,7 +108,9 @@ function Sort() {
   const navigate = useNavigate();
   const { search } = location;
 
-  const getIcon = (sort: string) => <i className={iconClasses[sort]} />;
+  const getIcon = (sort: string) => (
+    <FontAwesomeIcon fixedWidth icon={sortIcons[sort]} />
+  );
 
   const genLink = (sort: string, t?: string): To => {
     const { listType, target, userType } = listingsFilter;

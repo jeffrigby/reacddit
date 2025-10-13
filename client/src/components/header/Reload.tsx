@@ -1,5 +1,8 @@
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router';
+import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSyncAlt } from '@fortawesome/free-solid-svg-icons';
 import type { AppDispatch } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
 import { listingsFetchRedditNew } from '@/redux/actions/listings';
@@ -14,10 +17,7 @@ function Reload() {
   );
 
   const loading = listingsStatus !== 'loaded' && listingsStatus !== 'loadedAll';
-  const iconClass = `fas fa-sync-alt${loading ? ' fa-spin' : ''}`;
-  const btnClass = stream
-    ? 'btn btn-primary btn-sm'
-    : 'btn btn-secondary btn-sm';
+  const variant = stream ? 'primary' : 'secondary';
 
   const refresh = async (): Promise<void> => {
     window.scrollTo(0, 0);
@@ -26,16 +26,16 @@ function Reload() {
 
   return (
     <div className="header-button">
-      <button
+      <Button
         aria-label="Load New Entries"
-        className={btnClass}
         disabled={loading}
+        size="sm"
         title="Load New Entries"
-        type="button"
+        variant={variant}
         onClick={refresh}
       >
-        <i className={iconClass} />
-      </button>
+        <FontAwesomeIcon icon={faSyncAlt} spin={loading} />
+      </Button>
     </div>
   );
 }

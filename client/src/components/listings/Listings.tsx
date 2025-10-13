@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
-import throttle from 'lodash/throttle';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import ListingsLogic from './ListingsLogic';
 import {
   listingsFetchEntriesReddit,
   listingsFetchRedditNew,
-  listingsFetchRedditNext,
   listingsFilter,
 } from '../../redux/actions/listings';
 import {
@@ -133,41 +131,6 @@ function Listings({ match }: ListingsProps) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.stream, dispatch]);
-
-  const moreLoading = useRef(false);
-
-  // Check if I should load new entries
-  const loadMore = useCallback(async () => {
-    if (
-      window.scrollY + window.innerHeight >
-        document.documentElement.scrollHeight - 2500 &&
-      status === 'loaded' &&
-      !moreLoading.current
-    ) {
-      moreLoading.current = true;
-      await dispatch(listingsFetchRedditNext(location));
-      // Give it a few seconds to render before turning it off to avoid re-renders.
-      setTimeout(() => {
-        moreLoading.current = false;
-      }, 2000);
-    }
-  }, [status, location, dispatch]);
-
-  const loadMoreThrottled = useMemo(() => throttle(loadMore, 500), [loadMore]);
-
-  useEffect(() => {
-    if (status === 'loaded') {
-      window.addEventListener('resize', loadMoreThrottled, false);
-      document.addEventListener('scroll', loadMoreThrottled, false);
-    } else {
-      window.removeEventListener('resize', loadMoreThrottled, false);
-      document.removeEventListener('scroll', loadMoreThrottled, false);
-    }
-    return () => {
-      window.removeEventListener('resize', loadMoreThrottled, false);
-      document.removeEventListener('scroll', loadMoreThrottled, false);
-    };
-  }, [status, loadMoreThrottled]);
 
   // Set some hotkeys
   const hotkeys = useCallback(
