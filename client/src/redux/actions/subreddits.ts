@@ -26,7 +26,7 @@ interface SubredditsDataAction {
 
 interface SubredditsLastUpdatedAction {
   type: 'SUBREDDITS_LAST_UPDATED';
-  lastUpdated: Record<string, number>;
+  lastUpdated: Record<string, { lastPost: number; expires: number }>;
 }
 
 interface SubredditsClearLastUpdatedAction {
@@ -75,7 +75,7 @@ export function subredditsData(
 }
 
 export function subredditsLastUpdated(
-  lastUpdated: Record<string, number>
+  lastUpdated: Record<string, { lastPost: number; expires: number }>
 ): SubredditsLastUpdatedAction {
   return {
     type: 'SUBREDDITS_LAST_UPDATED',
@@ -137,7 +137,9 @@ export function subredditsFetchLastUpdated() {
       const fetchWithDelay = async (lookup: (typeof lookups)[0]) => {
         const { type, path, id } = lookup;
         const toUpdate = await getLastUpdatedWithDelay(type, path, id, 2, 5);
-        dispatch(subredditsLastUpdated(toUpdate));
+        if (toUpdate !== null) {
+          dispatch(subredditsLastUpdated(toUpdate));
+        }
       };
 
       const limit = pLimit(5);

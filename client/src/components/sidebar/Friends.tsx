@@ -76,7 +76,7 @@ function Friends() {
 
     return Object.values(subreddits.subreddits)
       .filter((item) => item.subreddit_type === 'user')
-      .map(({ url, id, display_name: displayName, title }) => {
+      .map(({ url, id, display_name: displayName }) => {
         const link = `${url}posts?sort=new`;
         const friendLastUpdated = lastUpdated[`t5_${id}`]?.lastPost ?? 0;
         const classNameStr = getDiffClassName(friendLastUpdated, false);
@@ -92,7 +92,7 @@ function Friends() {
             <div className="me-auto d-flex w-100">
               <NavigationGenericNavItem
                 noLi
-                badge={badge}
+                badge={badge ?? undefined}
                 classes={classNameStr}
                 id={id}
                 text={cleanDisplayName}

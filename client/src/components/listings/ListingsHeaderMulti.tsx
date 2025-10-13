@@ -12,7 +12,7 @@ function ListingsHeaderMulti() {
   const me = useAppSelector((state) => state.redditMe);
 
   const { target, user } = filter;
-  const name = user === 'me' ? me.me.name : user;
+  const name = user === 'me' ? me?.me?.name : user;
 
   useEffect(() => {
     let isSubscribed = true;

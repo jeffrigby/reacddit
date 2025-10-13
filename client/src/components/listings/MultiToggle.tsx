@@ -39,12 +39,12 @@ function MultiToggle({ srName }: MultiToggleProps) {
   if (
     isEmpty(about) ||
     redditBearer.status !== 'auth' ||
-    multis.status !== 'loaded'
+    multis?.status !== 'loaded'
   ) {
     return null;
   }
 
-  if (!multis.multis) {
+  if (!multis?.multis) {
     return null;
   }
 

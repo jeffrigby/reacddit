@@ -144,9 +144,12 @@ export function keyEntryChildren(entries: RedditEntry): KeyedRedditEntry {
     {} as KeyedRedditEntry['data']['children']
   );
 
-  return produce(entries, (draft) => {
-    (draft as unknown as KeyedRedditEntry).data.children = newChildren;
-  }) as KeyedRedditEntry;
+  return {
+    data: {
+      ...entries.data,
+      children: newChildren,
+    },
+  } as KeyedRedditEntry;
 }
 
 /**

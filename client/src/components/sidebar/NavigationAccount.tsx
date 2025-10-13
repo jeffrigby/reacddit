@@ -24,7 +24,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 
 const menuID = 'navAccount';
 
-function NavigationAccount(): ReactElement {
+function NavigationAccount(): ReactElement | null {
   const me = useAppSelector((state) => state.redditMe?.me);
   const navigate = useNavigate();
 
@@ -156,7 +156,7 @@ function NavigationAccount(): ReactElement {
           </ul>
         )}
       </div>
-      <Tooltip html anchorId="nav-user-info" place="bottom" />
+      <Tooltip anchorId="nav-user-info" place="bottom" />
     </>
   );
 }

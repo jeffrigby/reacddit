@@ -21,9 +21,9 @@ function ListingsHeaderSub() {
 
   const { listType, target, multi, user } = filter;
 
-  let title: string | JSX.Element = '';
+  let title: string | React.ReactNode = '';
   let subInfo: string | undefined;
-  let searchEverywhere: JSX.Element | undefined;
+  let searchEverywhere: React.ReactNode | undefined;
   let showSubInfo = false;
   let pageTitle = '';
 
@@ -56,14 +56,14 @@ function ListingsHeaderSub() {
       } else {
         // Try to get data from about, fallback to cachedSub if available
         const subscriberCount =
-          about.subscribers ?? cachedSub.subscribers ?? null;
+          about?.subscribers ?? cachedSub?.subscribers ?? null;
 
         // Reddit uses different field names for active users - try both
         const onlineCount =
-          about.active_user_count ??
-          about.accounts_active ??
-          cachedSub.active_user_count ??
-          cachedSub.accounts_active ??
+          about?.active_user_count ??
+          about?.accounts_active ??
+          cachedSub?.active_user_count ??
+          cachedSub?.accounts_active ??
           null;
 
         const subscribers =
@@ -126,8 +126,9 @@ function ListingsHeaderSub() {
     <span className="loading-placeholder">Loading Members</span>
   ) : null;
 
-  const description = cachedSub.public_description ?? about.public_description;
-  const subhead = cachedSub.title ?? about.title;
+  const description =
+    cachedSub?.public_description ?? about?.public_description;
+  const subhead = cachedSub?.title ?? about?.title;
 
   return (
     <>

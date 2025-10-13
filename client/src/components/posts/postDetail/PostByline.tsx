@@ -22,7 +22,8 @@ function PostByline({ data, kind }: PostBylineProps): React.JSX.Element {
     return 'num_comments' in d;
   };
 
-  const isSubmitter = 'is_submitter' in data ? data.is_submitter : false;
+  const isSubmitter =
+    'is_submitter' in data ? Boolean(data.is_submitter) : false;
   const numComments = isLinkData(data) ? data.num_comments : 0;
   const permalink = data.permalink;
 

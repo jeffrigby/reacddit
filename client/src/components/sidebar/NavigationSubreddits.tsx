@@ -82,7 +82,10 @@ function NavigationSubReddits() {
     const filterActive = filter.active && !isEmpty(filter.filterText);
 
     // Separate favorites and regular subreddits
-    const { favorites, regular } = Object.values(filteredSubreddits).reduce<{
+    const subredditValues = Object.values(
+      filteredSubreddits as Record<string, SubredditData>
+    );
+    const { favorites, regular } = subredditValues.reduce<{
       favorites: SubredditData[];
       regular: SubredditData[];
     }>(
@@ -91,9 +94,9 @@ function NavigationSubReddits() {
           return acc;
         }
         if (item.user_has_favorited) {
-          acc.favorites.push(item as SubredditData);
+          acc.favorites.push(item);
         } else {
-          acc.regular.push(item as SubredditData);
+          acc.regular.push(item);
         }
         return acc;
       },
@@ -180,7 +183,7 @@ function NavigationSubReddits() {
 
   const isReloading = subreddits.status === 'loading';
 
-  const handleReloadKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+  const handleReloadKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       reloadSubreddits();

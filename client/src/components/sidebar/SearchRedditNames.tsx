@@ -78,7 +78,7 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
 
   const query = queryString.parse(location.search);
   const { t } = query;
-  const sortPath = buildSortPath(sort, t);
+  const sortPath = buildSortPath(sort, typeof t === 'string' ? t : undefined);
 
   let navItems: React.ReactElement[] = [];
   if (filteredSubs.length > 0) {

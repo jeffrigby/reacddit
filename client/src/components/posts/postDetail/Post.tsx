@@ -31,7 +31,12 @@ import {
 } from '../../../redux/selectors/postSelectors';
 import CommentReplyList from '../../comments/CommentReplyList';
 import { useAppSelector } from '../../../redux/hooks';
-import type { LinkData, CommentData } from '../../../types/redditApi';
+import type {
+  LinkData,
+  CommentData,
+  Listing,
+  MoreChildrenData,
+} from '../../../types/redditApi';
 
 interface RenderedContent {
   inline?: Array<Promise<unknown> | unknown>;
@@ -370,6 +375,7 @@ function Post({
   // const isFocused =
   //   siteSettings.view === 'expanded' ? focused : lastExpanded === data.name;
 
+  const commentDepth = kind === 't1' ? (data as CommentData).depth : undefined;
   const classArray = classNames('entry', 'list-group-item', `kind-${kind}`, {
     focused,
     actionable,
@@ -379,10 +385,7 @@ function Post({
     duplicate,
     loaded: shouldLoad,
     'on-screen': onScreen,
-    'comment-child':
-      kind === 't1' &&
-      (data as CommentData).depth &&
-      (data as CommentData).depth > 0,
+    'comment-child': kind === 't1' && commentDepth != null && commentDepth > 0,
   });
 
   const styles: React.CSSProperties = {};
@@ -391,7 +394,8 @@ function Post({
   }
 
   const commentData = data as CommentData;
-  const isReplies = kind === 't1' && (commentData.replies ?? false);
+  const isReplies =
+    kind === 't1' && commentData.replies != null && commentData.replies !== '';
 
   const visibilityIcon = hide ? faEye : faEyeSlash;
 
@@ -453,7 +457,11 @@ function Post({
               {isReplies && expand && (
                 <CommentReplyList
                   linkId={commentData.link_id ?? ''}
-                  replies={commentData.replies}
+                  replies={
+                    commentData.replies as Listing<
+                      CommentData | MoreChildrenData
+                    >
+                  }
                 />
               )}
             </div>

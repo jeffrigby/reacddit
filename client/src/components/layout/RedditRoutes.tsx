@@ -117,7 +117,7 @@ function extractArgs(path: string): string[] {
 function filterValidations(
   args: string[],
   validations: RouteConfig['validations']
-): RouteConfig['validations'] {
+): Record<string, string[] | string | undefined> {
   return Object.keys(validations)
     .filter((key) => args.includes(key))
     .reduce(
@@ -125,12 +125,12 @@ function filterValidations(
         ...obj,
         [key]: validations[key as keyof typeof validations],
       }),
-      {}
+      {} as Record<string, string[] | string | undefined>
     );
 }
 
 function RedditRoutes() {
-  const generatedRoutes: JSX.Element[] = [];
+  const generatedRoutes: React.ReactElement[] = [];
   routes.forEach((route) => {
     const { paths, overrides, validations } = route;
     paths.forEach((path) => {

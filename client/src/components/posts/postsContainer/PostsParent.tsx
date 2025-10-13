@@ -19,8 +19,8 @@ function renderCommentLinks(
 ): ReactElement | null {
   const parentCommentLink = `${permalink}${comment}/`;
   const search = {
-    context: 8,
-    depth: 9,
+    context: '8',
+    depth: '9',
   };
   return (
     <div className="list-actions">
@@ -29,7 +29,7 @@ function renderCommentLinks(
       </Link>{' '}
       <Link
         state={{ showBack: true }}
-        to={`${parentCommentLink}?${new URLSearchParams(search as Record<string, string>).toString()}`}
+        to={`${parentCommentLink}?${new URLSearchParams(search).toString()}`}
       >
         Show parent comments
       </Link>

@@ -17,7 +17,7 @@ function AutoPlay() {
       <div className="form-check">
         <label className="form-check-label" htmlFor="autoPlayCheck">
           <input
-            checked={autoplay}
+            checked={Boolean(autoplay)}
             className="form-check-input"
             id="autoPlayCheck"
             type="checkbox"

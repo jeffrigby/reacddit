@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../../types/redux';
+import type { ListingsData } from '../../types/listings';
 
 const listingsStatusSelector = (state: RootState) => state.listingsRedditStatus;
 const listingsEntriesSelector = (state: RootState) =>
@@ -10,7 +11,7 @@ const locationKeySelector = (_state: RootState, locationKey: string) =>
 
 export const listingData = createSelector(
   [listingsEntriesSelector, locationKeySelector],
-  (entries, locationKey) => {
+  (entries, locationKey): ListingsData => {
     const key = locationKey || 'front';
     if (!entries[key]) {
       return {};

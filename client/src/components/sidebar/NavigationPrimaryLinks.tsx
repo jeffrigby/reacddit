@@ -67,7 +67,7 @@ function NavigationPrimaryLinks(): ReactElement {
     const { loginURL } = redditBearer;
 
     if (!loginURL) {
-      return `${process.env.API_PATH}/login`;
+      return process.env.API_PATH ? `${process.env.API_PATH}/login` : '/login';
     }
 
     if (isMobile) {

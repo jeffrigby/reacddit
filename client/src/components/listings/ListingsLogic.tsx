@@ -19,9 +19,17 @@ import {
   prevEntryCollapsed,
 } from '../posts/PostsFunctions';
 import { hotkeyStatus } from '../../common';
+import type { ListingsState } from '../../types/listings';
 
 interface ListingsLogicProps {
   saved?: number;
+}
+
+/**
+ * Extended listing state with lastExpanded for tracking in condensed view
+ */
+interface ExtendedListingsState extends ListingsState {
+  lastExpanded?: string;
 }
 
 function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
@@ -32,16 +40,18 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   const locationKey = location.key;
   const listingsCurrentState = useAppSelector((state) =>
     listingState(state, location.key)
-  );
+  ) as ExtendedListingsState;
 
   // Keep latest props in a ref.
-  const prevState = useRef(listingsCurrentState);
+  const prevState = useRef<ExtendedListingsState>(listingsCurrentState);
   const prevView = useRef(settings.view);
   const scrollResize = useRef(true);
 
-  const [lastExpanded, setLastExpanded] = useContext(
-    ListingsContextLastExpanded
-  );
+  const contextValue = useContext(ListingsContextLastExpanded);
+  // Type guard to check if we have the tuple [string, function]
+  const [lastExpanded, setLastExpanded] = Array.isArray(contextValue)
+    ? (contextValue as [string, (value: string) => void])
+    : (['', () => {}] as [string, (value: string) => void]);
 
   const dispatch = useAppDispatch();
 
@@ -61,7 +71,10 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
     if (settings.view === 'expanded') {
       nextEntry(listingsCurrentState.focused);
     } else {
-      setLastExpandedRedux(nextEntryCollapsed(lastExpanded, setLastExpanded));
+      const nextId = nextEntryCollapsed(lastExpanded, setLastExpanded);
+      if (nextId) {
+        setLastExpandedRedux(nextId);
+      }
     }
   }, [
     settings.view,
@@ -75,7 +88,10 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
     if (settings.view === 'expanded') {
       prevEntry(listingsCurrentState.focused);
     } else {
-      setLastExpandedRedux(prevEntryCollapsed(lastExpanded, setLastExpanded));
+      const prevId = prevEntryCollapsed(lastExpanded, setLastExpanded);
+      if (prevId) {
+        setLastExpandedRedux(prevId);
+      }
     }
   }, [
     settings.view,
@@ -128,15 +144,32 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
     }
     scrollResize.current = false;
 
-    const newState = getCurrentListingState(
-      prevState.current,
-      settings.view,
+    // getCurrentListingState only needs focused and actionable properties
+    // Ensure actionable is string | null (not number)
+    const simplifiedState = {
+      focused: prevState.current.focused,
+      actionable:
+        typeof prevState.current.actionable === 'string'
+          ? prevState.current.actionable
+          : null,
+    };
+    const partialState = getCurrentListingState(
+      simplifiedState,
+      settings.view ?? 'expanded',
       lastExpanded
     );
 
+    // Merge the partial state from getCurrentListingState with existing state
+    const newState: ExtendedListingsState = {
+      ...prevState.current,
+      ...(partialState as { focused: string; actionable: string | null }),
+    };
+
     const key = locationKey || 'front';
 
-    const compareState = { ...prevState.current };
+    const compareState: Partial<ExtendedListingsState> = {
+      ...prevState.current,
+    };
     delete compareState.saved;
 
     const stateCompare = isEqual(compareState, newState);

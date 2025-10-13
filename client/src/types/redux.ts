@@ -3,8 +3,17 @@
  */
 import type { ThunkDispatch } from '@reduxjs/toolkit';
 import type { AnyAction } from 'redux';
-import type { ListingsFilter } from './listings';
-import type { SubredditData, AccountData, LabeledMultiData } from './redditApi';
+import type {
+  ListingsFilter,
+  ListingsData,
+  ListingsState as ListingsStateEntry,
+} from './listings';
+import type {
+  SubredditData,
+  AccountData,
+  LabeledMultiData,
+  Thing,
+} from './redditApi';
 
 /**
  * Subreddit data as stored in Redux state
@@ -34,7 +43,12 @@ export interface SubredditsFilterState {
 /**
  * Last updated timestamps for subreddits
  */
-export type LastUpdatedState = Record<string, number>;
+export interface LastUpdatedEntry {
+  lastPost: number;
+  expires: number;
+}
+
+export type LastUpdatedState = Record<string, LastUpdatedEntry>;
 
 /**
  * Root state type - this will be expanded as we convert more files to TypeScript
@@ -72,7 +86,7 @@ export interface RootState {
     error?: string;
   };
   redditMultiReddits?: {
-    multis?: LabeledMultiData[];
+    multis?: Thing<LabeledMultiData>[];
     status?: string;
     lastUpdated?: number;
     error?: string;
@@ -89,20 +103,13 @@ export interface RootState {
     string,
     {
       status: 'unloaded' | 'loading' | 'loaded' | 'loadedAll' | 'error';
+      saved?: number;
       [key: string]: unknown;
     }
   >;
-  listingsRedditEntries: Record<string, unknown>;
-  listingsState: Record<
-    string,
-    {
-      focused: string;
-      visible: string[];
-      minHeights: Record<string, number>;
-      actionable: string | number | null;
-      hasError: boolean;
-    }
-  >;
+  listingsRedditEntries: Record<string, ListingsData>;
+  listingsState: Record<string, ListingsStateEntry>;
+  currentSubreddit: Record<string, SubredditData & { saved?: number }>;
   [key: string]: unknown;
 }
 

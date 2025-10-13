@@ -34,7 +34,7 @@ function PostsRender({
       } = post;
 
       let duplicate = false;
-      if (kind === 't3' && listType !== 'duplicates') {
+      if (kind.startsWith('t3_') && listType !== 'duplicates') {
         const linkData = post.data as LinkData;
         if (!links.has(linkData.url)) {
           links.add(linkData.url);

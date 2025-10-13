@@ -1,16 +1,14 @@
-import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSyncAlt } from '@fortawesome/free-solid-svg-icons';
-import type { AppDispatch } from '@/types/redux';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { listingsFetchRedditNew } from '@/redux/actions/listings';
 import { listingStatus } from '@/redux/selectors/listingsSelector';
 
 function Reload() {
   const stream = useAppSelector((state) => state.siteSettings.stream);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const location = useLocation();
   const listingsStatus = useAppSelector((state) =>
     listingStatus(state, location.key)

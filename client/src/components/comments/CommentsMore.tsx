@@ -5,11 +5,28 @@ import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
 import redditAPI from '@/reddit/redditAPI';
 import CommentsRender from './CommentsRender';
 
-const arrayToObject = <T extends { data: Record<string, unknown> }>(
-  arr: T[],
+type CommentOrMore = Thing<CommentData> | Thing<MoreChildrenData>;
+
+const arrayToObject = (
+  arr: CommentOrMore[],
   keyField: string
-): Record<string, T> =>
-  Object.assign({}, ...arr.map((item) => ({ [item.data[keyField]]: item })));
+): Record<string, CommentOrMore> => {
+  const result: Record<string, CommentOrMore> = {};
+  arr.forEach((item) => {
+    const key = (item.data as unknown as Record<string, unknown>)[keyField];
+    if (
+      typeof key !== 'string' &&
+      typeof key !== 'number' &&
+      typeof key !== 'symbol'
+    ) {
+      throw new Error(
+        `Key field "${keyField}" must be a string, number, or symbol`
+      );
+    }
+    result[String(key)] = item;
+  });
+  return result;
+};
 
 interface CommentsMoreProps {
   linkId: string;
@@ -18,10 +35,9 @@ interface CommentsMoreProps {
 
 function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
   const { count, children } = moreList.data;
-  const [replies, setReplies] = useState<Record<
-    string,
-    Thing<CommentData> | Thing<MoreChildrenData>
-  > | null>(null);
+  const [replies, setReplies] = useState<Record<string, CommentOrMore> | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const { target, postName, postTitle } = useParams<{
     target: string;
@@ -34,7 +50,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
     const commentReplies = await redditAPI.getMoreComments(linkId, children);
     if (commentReplies.status === 200) {
       const commentRepliesKeyed = arrayToObject(
-        commentReplies.data.json.data.things,
+        commentReplies.data.json.data.things as CommentOrMore[],
         'name'
       );
 
@@ -44,12 +60,13 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
   };
 
   if (moreList.data.id === '_') {
-    const parantID = moreList.data.parent_id.split('_')[1];
+    const parantID = moreList.data.parent_id?.split('_')[1];
 
     return (
       <div className="comments-more">
         <Button
-          as={Link}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          as={Link as any}
           className="mb-2"
           size="sm"
           to={`/r/${target}/comments/${postName}/${postTitle}/${parantID}`}

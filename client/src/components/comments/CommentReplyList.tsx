@@ -4,28 +4,29 @@ import type {
   CommentData,
   MoreChildrenData,
 } from '@/types/redditApi';
-import { keyEntryChildren } from '@/common';
 import CommentsRender from './CommentsRender';
+
+type CommentOrMore = Thing<CommentData> | Thing<MoreChildrenData>;
 
 interface CommentReplyListProps {
   linkId: string;
   replies: Listing<CommentData | MoreChildrenData>;
 }
 
-interface KeyedReplies {
-  data: {
-    children: Record<string, Thing<CommentData> | Thing<MoreChildrenData>>;
-  };
-}
-
 function CommentReplyList({ replies, linkId }: CommentReplyListProps) {
-  const keyedReplies = keyEntryChildren(replies) as KeyedReplies;
+  // Convert array to keyed object
+  const keyedReplies = replies.data.children.reduce<
+    Record<string, CommentOrMore>
+  >(
+    (acc, item) => ({
+      ...acc,
+      [item.data.name]: item as CommentOrMore,
+    }),
+    {}
+  );
+
   return (
-    <CommentsRender
-      linkId={linkId}
-      listType="reply"
-      posts={keyedReplies.data.children}
-    />
+    <CommentsRender linkId={linkId} listType="reply" posts={keyedReplies} />
   );
 }
 

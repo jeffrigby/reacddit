@@ -1,23 +1,27 @@
 import { createSelector } from '@reduxjs/toolkit';
 import isEmpty from 'lodash/isEmpty';
+import type { RootState } from '@/types/redux';
+import type { SubredditData } from '@/types/redditApi';
 
-const currentSubredditSelector = (state) => state.currentSubreddit;
-const subredditsSelector = (state) => state.subreddits;
-const listingsFilterSelector = (state) => state.listingsFilter;
-const filterTextSelector = (state) => state.subredditsFilter.filterText;
-const locationKeySelector = (state, locationKey) => locationKey;
+const currentSubredditSelector = (state: RootState) => state.currentSubreddit;
+const subredditsSelector = (state: RootState) => state.subreddits;
+const listingsFilterSelector = (state: RootState) => state.listingsFilter;
+const filterTextSelector = (state: RootState) =>
+  state.subredditsFilter.filterText;
+const locationKeySelector = (_state: RootState, locationKey: string) =>
+  locationKey;
 
 export const getCurrentSubreddit = createSelector(
   [currentSubredditSelector, locationKeySelector],
-  (currentSubreddit, locationKey) => {
-    const key = locationKey || 'front';
-    return currentSubreddit[key] || {};
+  (currentSubreddit, locationKey): Partial<SubredditData> => {
+    const key = locationKey ?? 'front';
+    return currentSubreddit[key] ?? {};
   }
 );
 
 export const getCachedSub = createSelector(
   [subredditsSelector, listingsFilterSelector],
-  (subs, filter) => {
+  (subs, filter): Partial<SubredditData> => {
     if (subs.status !== 'loaded') {
       return {};
     }
@@ -32,7 +36,10 @@ export const getCachedSub = createSelector(
 
 export const filterSubs = createSelector(
   [subredditsSelector, filterTextSelector],
-  (subredditsStore, filterText) => {
+  (
+    subredditsStore,
+    filterText
+  ): Record<string, SubredditData> | Record<string, never> => {
     const { subreddits } = subredditsStore;
     if (isEmpty(subreddits)) {
       return {};
@@ -49,7 +56,7 @@ export const filterSubs = createSelector(
             .toLowerCase()
             .indexOf(filterText.toLowerCase()) > -1
       )
-      .reduce(
+      .reduce<Record<string, SubredditData>>(
         (obj, key) => ({
           ...obj,
           [key]: subreddits[key],

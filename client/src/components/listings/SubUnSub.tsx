@@ -7,15 +7,11 @@ import { useLocation, useParams } from 'react-router';
 import { produce } from 'immer';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import type { SubredditData } from '@/types/redditApi';
+import type { SubredditsState } from '@/types/redux';
 import { subredditsData } from '../../redux/actions/subreddits';
 import { currentSubreddit } from '../../redux/actions/listings';
 import RedditAPI from '../../reddit/redditAPI';
 import { getCurrentSubreddit } from '../../redux/selectors/subredditSelectors';
-
-interface SubredditsState {
-  subreddits: Record<string, SubredditData>;
-  [key: string]: unknown;
-}
 
 /**
  * Custom hook to handle subreddit subscription
@@ -76,9 +72,7 @@ function SubUnSub() {
   const about = useAppSelector((state) =>
     getCurrentSubreddit(state, location.key)
   );
-  const subreddits = useAppSelector(
-    (state) => state.subreddits
-  ) as SubredditsState;
+  const subreddits = useAppSelector((state) => state.subreddits);
   const { status: bearerStatus } = useAppSelector(
     (state) => state.redditBearer
   );

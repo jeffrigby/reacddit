@@ -7,7 +7,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 import type { AppDispatch } from '@/types/redux';
-import type { SubredditData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { subredditsData } from '@/redux/actions/subreddits';
 import { favorite } from '@/reddit/redditApiTs';
@@ -17,17 +16,9 @@ interface SubFavoriteProps {
   srName: string;
 }
 
-interface SubredditsState {
-  status: string;
-  subreddits: Record<string, SubredditData>;
-  lastUpdated: number;
-}
-
 function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
   const me = useAppSelector((state) => state.redditMe?.me);
-  const subreddits = useAppSelector(
-    (state) => state.subreddits as SubredditsState
-  );
+  const subreddits = useAppSelector((state) => state.subreddits);
   const dispatch = useDispatch<AppDispatch>();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

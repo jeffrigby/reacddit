@@ -4,6 +4,7 @@ import _trimEnd from 'lodash/trimEnd';
 import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import type { SubredditData } from '@/types/redditApi';
+import type { LastUpdatedState } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
 import { getDiffClassName, buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
@@ -14,12 +15,6 @@ interface NavigationItemProps {
   trigger: boolean;
 }
 
-interface LastUpdatedState {
-  [key: string]: {
-    lastPost: number;
-  };
-}
-
 function getLastUpdated(
   lastUpdated: LastUpdatedState,
   subreddit: SubredditData
@@ -28,12 +23,12 @@ function getLastUpdated(
     return 0;
   }
 
-  return lastUpdated[subreddit.name] ? lastUpdated[subreddit.name].lastPost : 0;
+  return lastUpdated[subreddit.name]?.lastPost ?? 0;
 }
 
 function NavigationItem({ item, trigger }: NavigationItemProps) {
   const sort = useAppSelector((state) => state.listingsFilter.sort);
-  const me = useAppSelector((state) => state.redditMe.me);
+  const me = useAppSelector((state) => state.redditMe?.me);
   const lastUpdated = useAppSelector((state) =>
     getLastUpdated(state.lastUpdated, item)
   );
@@ -48,7 +43,7 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
       ? `/${_trim(item.url, '/')}/posts/${_trim(sortPath, '/')}`
       : `/${_trim(item.url, '/')}/${_trim(sortPath, '/')}`;
   const classNameStr = getDiffClassName(lastUpdated, trigger);
-  const subLabel = classNameStr.includes('sub-new') ? 'New' : null;
+  const subLabel = classNameStr.includes('sub-new') ? 'New' : undefined;
 
   let { title } = item;
   if (lastUpdated !== 0) {
