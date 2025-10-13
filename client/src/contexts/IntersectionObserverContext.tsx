@@ -7,29 +7,6 @@ import {
   useCallback,
   useMemo,
 } from 'react';
-import type { LinkData, CommentData } from './types/redditApi';
-
-// Post context data interface
-export interface PostContextData {
-  post: {
-    data: LinkData | CommentData;
-    kind: string;
-  };
-  isLoaded: boolean;
-  actionable: boolean;
-}
-
-// Posts contexts
-export const PostsContextData = createContext<PostContextData | object>({});
-export const PostsContextActionable = createContext<boolean | object>({});
-export const PostsContextVisible = createContext<boolean | object>({});
-export const PostsContextStatus = createContext<string | object>({});
-export const PostsContextContent = createContext<PostContextData | object>({});
-
-// Listings contexts
-export const ListingsContextLastExpanded = createContext<
-  [string, (value: string) => void] | object
->({});
 
 // IntersectionObserver context types
 type ObserverCallback = (isIntersecting: boolean) => void;

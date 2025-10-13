@@ -57,13 +57,13 @@
 
 .sort-menu {
   .active {
-    background-color: white;
-    color: #212529;
+    background-color: var(--bs-dropdown-link-hover-bg);
+    color: var(--bs-dropdown-link-hover-color);
   }
 
   .sort-active {
-    background-color: #0d6efd;
-    color: white;
+    background-color: var(--bs-primary);
+    color: var(--bs-white);
   }
 
   .subsortlinks .sort-active .sort-title:before {
