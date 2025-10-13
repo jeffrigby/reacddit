@@ -3,17 +3,13 @@
  */
 import type { ThunkDispatch } from '@reduxjs/toolkit';
 import type { AnyAction } from 'redux';
+import type { MultiRedditsState } from '@/redux/slices/multiRedditsSlice';
 import type {
   ListingsFilter,
   ListingsData,
   ListingsState as ListingsStateEntry,
 } from './listings';
-import type {
-  SubredditData,
-  AccountData,
-  LabeledMultiData,
-  Thing,
-} from './redditApi';
+import type { SubredditData, AccountData } from './redditApi';
 
 /**
  * Subreddit data as stored in Redux state
@@ -85,12 +81,7 @@ export interface RootState {
     id?: string;
     error?: string;
   };
-  redditMultiReddits?: {
-    multis?: Thing<LabeledMultiData>[];
-    status?: string;
-    lastUpdated?: number;
-    error?: string;
-  };
+  redditMultiReddits: MultiRedditsState;
   subreddits: SubredditsState;
   subredditsFilter: SubredditsFilterState;
   lastUpdated: LastUpdatedState;

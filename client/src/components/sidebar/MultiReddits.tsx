@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactElement, KeyboardEvent } from 'react';
-import { useDispatch } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCaretDown,
@@ -9,9 +8,8 @@ import {
   faPlus,
   faMinus,
 } from '@fortawesome/free-solid-svg-icons';
-import type { AppDispatch } from '@/types/redux';
-import { useAppSelector } from '@/redux/hooks';
-import { redditFetchMultis } from '../../redux/actions/reddit';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
 import MultiRedditsItem from './MultiRedditsItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsAdd from './MultiRedditsAdd';
@@ -27,12 +25,12 @@ function MultiReddits(): ReactElement | null {
 
   const multireddits = useAppSelector((state) => state.redditMultiReddits);
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     async function getMultis(): Promise<void> {
       if (redditBearer.status === 'auth') {
-        await dispatch(redditFetchMultis());
+        await dispatch(fetchMultiReddits());
         setLoading(false);
       }
     }
@@ -42,7 +40,7 @@ function MultiReddits(): ReactElement | null {
 
   const reloadMultis = useCallback(async (): Promise<void> => {
     setLoading(true);
-    await dispatch(redditFetchMultis(true));
+    await dispatch(fetchMultiReddits(true));
     setLoading(false);
   }, [dispatch]);
 
@@ -77,7 +75,7 @@ function MultiReddits(): ReactElement | null {
 
   if (
     redditBearer.status !== 'auth' ||
-    !multireddits ||
+    multireddits.status !== 'succeeded' ||
     multiItems.length === 0
   ) {
     return null;

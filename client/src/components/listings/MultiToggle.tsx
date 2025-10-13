@@ -4,8 +4,8 @@ import { Form, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
 import RedditAPI from '../../reddit/redditAPI';
-import { redditFetchMultis } from '../../redux/actions/reddit';
 
 interface MultiToggleProps {
   srName: string;
@@ -39,12 +39,12 @@ function MultiToggle({ srName }: MultiToggleProps) {
   if (
     isEmpty(about) ||
     redditBearer.status !== 'auth' ||
-    multis?.status !== 'loaded'
+    multis.status !== 'succeeded'
   ) {
     return null;
   }
 
-  if (!multis?.multis) {
+  if (!multis.multis || multis.multis.length === 0) {
     return null;
   }
 
@@ -54,7 +54,7 @@ function MultiToggle({ srName }: MultiToggleProps) {
       : await RedditAPI.multiRemoveSubreddit(e.target.value, srName);
 
     if (rsp.status === 200 || rsp.status === 201) {
-      await dispatch(redditFetchMultis(true));
+      await dispatch(fetchMultiReddits(true));
     }
   };
 

@@ -5,8 +5,8 @@ import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router';
 import { useAppDispatch } from '@/redux/hooks';
 import type { LabeledMultiData } from '@/types/redditApi';
+import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
 import RedditAPI from '../../reddit/redditAPI';
-import { redditFetchMultis } from '../../redux/actions/reddit';
 
 interface MultiDeleteProps {
   multi: LabeledMultiData;
@@ -18,7 +18,7 @@ function MultiDelete({ multi }: MultiDeleteProps) {
 
   const deleteMulti = async () => {
     await RedditAPI.multiDelete(multi.path);
-    dispatch(redditFetchMultis(true));
+    dispatch(fetchMultiReddits(true));
     navigate('/');
   };
 
