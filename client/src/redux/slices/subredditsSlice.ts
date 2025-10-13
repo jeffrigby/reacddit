@@ -75,6 +75,7 @@ export interface SubredditsState extends EntityState<SubredditData, string> {
   lastUpdatedTracking: LastUpdatedTracking;
   lastUpdatedTime: number;
   lastUpdatedRunning: boolean;
+  lastUpdatedError: string | null; // Errors from background polling
 }
 
 /**
@@ -102,6 +103,7 @@ const initialState: SubredditsState = subredditsAdapter.getInitialState({
   lastUpdatedTracking: {},
   lastUpdatedTime: 0,
   lastUpdatedRunning: false,
+  lastUpdatedError: null,
 });
 
 /**
@@ -119,6 +121,8 @@ const mapSubreddits = (
 
 /**
  * Helper: Fetch all subreddits with pagination (handles Reddit's 100 sub limit)
+ *
+ * OPTIMIZED: Collects all pages then spreads once (was spreading on each iteration)
  */
 const subredditsAll = async (
   where: string,
@@ -126,7 +130,7 @@ const subredditsAll = async (
 ): Promise<Record<string, SubredditData>> => {
   let init = true;
   let qsAfter: string | null = null;
-  let subreddits: Record<string, SubredditData> = {};
+  const allMapped: Record<string, SubredditData>[] = [];
 
   const newOptions = options ?? {};
 
@@ -135,11 +139,12 @@ const subredditsAll = async (
     newOptions.after = qsAfter;
     const srs = await RedditAPI.subreddits(where, newOptions);
     const mapped = mapSubreddits(srs.data.children);
-    subreddits = { ...mapped, ...subreddits };
+    allMapped.push(mapped);
     qsAfter = srs.data.after ?? null;
   }
 
-  return subreddits;
+  // Spread once at the end instead of on each iteration
+  return Object.assign({}, ...allMapped);
 };
 
 /**
@@ -221,8 +226,9 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
     return;
   }
 
-  // Set running flag via action creator type (slice defined below)
+  // Set running flag and clear previous errors
   dispatch({ type: 'subreddits/lastUpdatedRunningSet', payload: true });
+  dispatch({ type: 'subreddits/lastUpdatedErrorSet', payload: null });
 
   try {
     // Create subreddit lookup requests
@@ -237,16 +243,18 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
         return;
       }
 
-      const subredditName = subreddit.display_name.toLowerCase();
+      // CRITICAL: Use fullname (name field like 't5_2r0ij') as the key
+      // Components expect this format in lastUpdatedTracking lookups
+      const subredditFullname = subreddit.name;
 
       // Check if this subreddit needs updating based on expiration
-      if (shouldUpdate(lastUpdatedTracking, subredditName)) {
+      if (shouldUpdate(lastUpdatedTracking, subredditFullname)) {
         // Check if it's a subreddit or a user
         if (subreddit.url.match(/^\/user\//)) {
           lookups.push({
             type: 'friend',
             path: subreddit.url.replace(/^\/user\/|\/$/g, ''),
-            id: subredditName,
+            id: subredditFullname,
           });
           return;
         }
@@ -254,7 +262,7 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
         lookups.push({
           type: 'subreddit',
           path: subreddit.url.replace(/^\/r\/|\/$/g, ''),
-          id: subredditName,
+          id: subredditFullname,
         });
       }
     });
@@ -265,6 +273,10 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
       // CRITICAL: 2-5 second random delay for rate limiting
       const toUpdate = await getLastUpdatedWithDelay(type, path, id, 2, 5);
       if (toUpdate !== null) {
+        // PERFORMANCE NOTE: Dispatching individually (not batched)
+        // This creates one action per subreddit (up to 100 actions).
+        // Tradeoff: Progressive UI updates (good UX) vs batching (fewer re-renders).
+        // Current approach chosen for better perceived performance.
         dispatch({ type: 'subreddits/lastUpdatedSet', payload: toUpdate });
       }
     };
@@ -280,7 +292,10 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
 
     await Promise.all(fetchPromises);
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Error fetching last updated';
     console.error('Error fetching last updated', error);
+    dispatch({ type: 'subreddits/lastUpdatedErrorSet', payload: errorMessage });
   } finally {
     // Clear running flag
     dispatch({ type: 'subreddits/lastUpdatedRunningSet', payload: false });
@@ -329,6 +344,14 @@ const subredditsSlice = createSlice({
     },
 
     /**
+     * Set error state for fetchSubredditsLastUpdated
+     * Allows components to display error messages for failed background polling
+     */
+    lastUpdatedErrorSet(state, action: PayloadAction<string | null>) {
+      state.lastUpdatedError = action.payload;
+    },
+
+    /**
      * Clear all subreddits data
      */
     subredditsCleared(state) {
@@ -340,6 +363,7 @@ const subredditsSlice = createSlice({
       state.lastUpdatedTracking = {};
       state.lastUpdatedTime = 0;
       state.lastUpdatedRunning = false;
+      state.lastUpdatedError = null;
     },
   },
   extraReducers: (builder) => {
@@ -378,6 +402,7 @@ export const {
   lastUpdatedSet,
   lastUpdatedCleared,
   lastUpdatedRunningSet,
+  lastUpdatedErrorSet,
   subredditsCleared,
 } = subredditsSlice.actions;
 
@@ -414,6 +439,9 @@ export const selectLastUpdatedTracking = (state: RootState) =>
 
 export const selectLastUpdatedTime = (state: RootState) =>
   state.subreddits.lastUpdatedTime;
+
+export const selectLastUpdatedError = (state: RootState) =>
+  state.subreddits.lastUpdatedError;
 
 /**
  * Memoized Selectors
@@ -460,23 +488,3 @@ export const selectFilteredSubreddits = createSelector(
     );
   }
 );
-
-/**
- * Get subreddit keys (display names) as array
- */
-export const selectSubredditKeys = createSelector(
-  [selectSubredditIds],
-  (ids) => ids
-);
-
-/**
- * Get cached subreddit by target name from listingsFilter
- * Used for getting subreddit info when viewing a subreddit page
- */
-export const selectCachedSubreddit = (target: string) =>
-  createSelector([selectSubredditEntities], (entities) => {
-    if (!target) {
-      return null;
-    }
-    return entities[target.toLowerCase()] ?? null;
-  });
