@@ -17,7 +17,11 @@ import reportWebVitals from './reportWebVitals';
 
 const { hash, search } = window.location;
 
-const parsed = queryString.parse(search);
+const parsed = queryString.parse(search) as {
+  logout?: string;
+  login?: string;
+  cb?: string;
+};
 
 // Start at the top of the page
 scrollToPosition(0, 0);
@@ -34,6 +38,11 @@ if (parsed.login !== undefined) {
 }
 
 const container = document.getElementById('root');
+
+if (!container) {
+  throw new Error('Root element not found');
+}
+
 const root = createRoot(container);
 
 if (parsed.login !== undefined || parsed.logout !== undefined) {
