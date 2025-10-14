@@ -16,9 +16,7 @@ import meReducer from './slices/redditMeSlice';
  * - Automatic redux-thunk middleware
  * - Development-mode checks for mutations and serializability
  */
-const configureReduxStore = (
-  initialState?: PreloadedState<Omit<RootState, 'api'>>
-) =>
+const makeStore = (initialState?: PreloadedState<Omit<RootState, 'api'>>) =>
   configureStore({
     reducer: {
       listings: listingsReducer,
@@ -32,13 +30,24 @@ const configureReduxStore = (
     preloadedState: initialState,
   });
 
-// Create store instance for the application
-export const store = configureReduxStore();
+// Infer types from the store factory (best practice)
+export type AppStore = ReturnType<typeof makeStore>;
+export type RootState = ReturnType<AppStore['getState']>;
+export type AppDispatch = AppStore['dispatch'];
 
-// Infer types from the store itself (best practice)
-export type AppStore = typeof store;
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+// Store instance - will be set in index.js with persisted state
+export let store: AppStore;
+
+/**
+ * Initialize the store with optional persisted state
+ * This should be called once from index.js
+ */
+export function initializeStore(
+  preloadedState?: PreloadedState<Omit<RootState, 'api'>>
+): AppStore {
+  store = makeStore(preloadedState);
+  return store;
+}
 
 // Export factory function as default for testing
-export default configureReduxStore;
+export default makeStore;

@@ -150,7 +150,7 @@ function FilterReddits() {
         onChange={filterReddits}
         onFocus={setFocus}
       />
-      {(filter.active || filter.filterText) && (
+      {(filter.active ?? filter.filterText) && (
         <FontAwesomeIcon
           aria-hidden
           aria-label="Clear Filter Box"

@@ -8,9 +8,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../redux/hooks';
 import {
-  listingData,
-  listingStatus,
-} from '../../../redux/selectors/listingsSelector';
+  selectListingData,
+  selectListingStatus,
+} from '../../../redux/slices/listingsSlice';
 
 type ListingStatus =
   | 'error'
@@ -77,8 +77,8 @@ function PostsLoadingStatus(): ReactElement | null {
 
   // Combine selectors to reduce re-renders
   const { data, status } = useAppSelector((state) => ({
-    data: listingData(state, location.key),
-    status: listingStatus(state, location.key),
+    data: selectListingData(state, location.key),
+    status: selectListingStatus(state, location.key),
   }));
 
   // Memoize statusInfo to prevent recalculation on every render

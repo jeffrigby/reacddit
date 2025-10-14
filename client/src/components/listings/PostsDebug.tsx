@@ -6,9 +6,9 @@ import { useLocation, useParams } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
 import {
-  listingData,
-  listingState,
-} from '../../redux/selectors/listingsSelector';
+  selectListingData,
+  selectUiState,
+} from '../../redux/slices/listingsSlice';
 
 function PostsDebug() {
   const [closed, setClosed] = useState(true);
@@ -20,9 +20,11 @@ function PostsDebug() {
     (state) => state.listings.currentFilter
   );
   const listingsState = useAppSelector((state) =>
-    listingState(state, location.key)
+    selectUiState(state, location.key)
   );
-  const data = useAppSelector((state) => listingData(state, location.key));
+  const data = useAppSelector((state) =>
+    selectListingData(state, location.key)
+  );
 
   const { actionable, focused, visible } = listingsState;
 

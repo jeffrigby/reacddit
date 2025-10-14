@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
 import { useLocation } from 'react-router';
 import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
-import { listingData } from '../../../redux/selectors/listingsSelector';
+import { selectListingData } from '../../../redux/slices/listingsSlice';
 import { IntersectionObserverProvider } from '../../../contexts';
 import { useAppSelector } from '../../../redux/hooks';
 import PostsLoadingStatus from './PostsLoadingStatus';
@@ -22,7 +22,7 @@ function Posts(): ReactElement {
   // Combine selectors to reduce re-renders
   const { listType, data } = useAppSelector((state) => ({
     listType: state.listings.currentFilter.listType,
-    data: listingData(state, location.key) as ListingDataResponse,
+    data: selectListingData(state, location.key) as ListingDataResponse,
   }));
 
   const { children: entriesObject, originalPost } = data;

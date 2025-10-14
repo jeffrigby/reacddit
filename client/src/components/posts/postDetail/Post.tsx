@@ -24,11 +24,11 @@ import {
   useIntersectionObservers,
 } from '../../../contexts';
 import { hotkeyStatus } from '../../../common';
-import { listingStatus } from '../../../redux/selectors/listingsSelector';
 import {
-  postActionable,
-  postFocused,
-} from '../../../redux/selectors/postSelectors';
+  selectListingStatus,
+  selectPostFocused,
+  selectPostActionable,
+} from '../../../redux/slices/listingsSlice';
 import CommentReplyList from '../../comments/CommentReplyList';
 import { useAppSelector } from '../../../redux/hooks';
 import type {
@@ -126,13 +126,13 @@ function Post({
 
   const siteSettings = useAppSelector((state) => state.siteSettings);
   const listingsStatus = useAppSelector((state) =>
-    listingStatus(state, location.key)
+    selectListingStatus(state, location.key)
   );
   const focused = useAppSelector((state) =>
-    postFocused(state, postName, idx, location.key)
+    selectPostFocused(state, postName, idx, location.key)
   );
   const actionable = useAppSelector((state) =>
-    postActionable(state, postName, idx, location.key)
+    selectPostActionable(state, postName, idx, location.key)
   );
 
   const [lastExpanded, setLastExpanded] = useContext(

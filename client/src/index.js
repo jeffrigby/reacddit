@@ -6,8 +6,8 @@ import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
 import { BrowserRouter } from 'react-router-dom';
 import queryString from 'query-string';
-import { store } from './redux/configureStore';
-import { saveState } from './redux/localStorage';
+import { initializeStore } from './redux/configureStore';
+import { loadState, saveState } from './redux/localStorage';
 import './styles/bootstrap.scss';
 import './styles/main.scss';
 import Root from './components/layout/Root';
@@ -55,12 +55,13 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     window.history.replaceState({}, document.title, hash.substring(1));
   }
 
-  // Note: We don't use loadState() anymore since the store is a singleton
-  // exported from configureStore.ts. State persistence works through the
-  // subscribe mechanism below, which saves state on every change.
-  // On initial load, the store starts with default state, and localStorage
-  // persistence ensures settings are maintained across sessions.
+  // Load persisted state from localStorage
+  const persistedState = loadState();
 
+  // Initialize store with persisted state
+  const store = initializeStore(persistedState);
+
+  // Subscribe to store changes and persist to localStorage
   store.subscribe(
     throttle(() => {
       const state = store.getState();

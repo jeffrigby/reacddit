@@ -87,14 +87,14 @@ function NavigationAccount(): ReactElement | null {
 
   const caretIcon = showNavAccountMenu ? faCaretDown : faCaretRight;
 
-  const karmaTotal = (me.link_karma || 0) + (me.comment_karma || 0);
-  const joinedDate = formatDistanceToNow((me.created_utc || 0) * 1000);
+  const karmaTotal = (me.link_karma ?? 0) + (me.comment_karma ?? 0);
+  const joinedDate = formatDistanceToNow((me.created_utc ?? 0) * 1000);
   const accountInfo = `
       ${karmaTotal.toLocaleString()} Karma
       <br />
-      ${(me.link_karma || 0).toLocaleString()} Post Karma
+      ${(me.link_karma ?? 0).toLocaleString()} Post Karma
       <br />
-      ${(me.comment_karma || 0).toLocaleString()} Comment Karma
+      ${(me.comment_karma ?? 0).toLocaleString()} Comment Karma
       <br />
       Joined ${joinedDate} ago
   `;

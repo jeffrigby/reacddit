@@ -728,6 +728,50 @@ export const selectFilter = createSelector(
   (filter) => filter
 );
 
+/**
+ * Post-specific selectors for focus and actionable state
+ * Used for keyboard navigation and post interactions
+ */
+const postFocusedSelector = (
+  state: RootState,
+  postName: string,
+  idx: number,
+  locationKey: string
+) => {
+  const key = locationKey ?? 'front';
+  const listingState = state.listings?.uiStateByLocation[key];
+  if (!listingState) {
+    return idx === 0;
+  }
+  const { focused } = listingState;
+  return !focused ? idx === 0 : focused === postName;
+};
+
+const postActionableSelector = (
+  state: RootState,
+  postName: string,
+  idx: number,
+  locationKey: string
+) => {
+  const key = locationKey ?? 'front';
+  const listingState = state.listings?.uiStateByLocation[key];
+  if (!listingState) {
+    return idx === 0;
+  }
+  const { actionable } = listingState;
+  return !actionable ? idx === 0 : actionable === postName;
+};
+
+export const selectPostFocused = createSelector(
+  [postFocusedSelector],
+  (focused) => focused
+);
+
+export const selectPostActionable = createSelector(
+  [postActionableSelector],
+  (actionable) => actionable
+);
+
 // =============================================================================
 // Reducer Export
 // =============================================================================
