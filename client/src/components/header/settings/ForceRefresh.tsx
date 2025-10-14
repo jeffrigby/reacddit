@@ -1,23 +1,29 @@
 import { Button, Dropdown } from 'react-bootstrap';
 import { useAppSelector } from '@/redux/hooks';
-import { unregister } from '@/serviceWorkerRegistration';
 
 /* global BUILDTIME */
 
-const reload = () => {
-  if (caches) {
-    caches.keys().then((names) => {
-      names.forEach((name) => caches.delete(name));
-    });
-  }
-  unregister();
-  setTimeout(() => {
-    window.location.reload();
-  }, 1000);
-};
-
 function ForceRefresh() {
   const debug = useAppSelector((state) => state.siteSettings.debug);
+
+  const reload = async () => {
+    // Clear all caches
+    if (caches) {
+      const names = await caches.keys();
+      await Promise.all(names.map((name) => caches.delete(name)));
+    }
+
+    // Unregister service worker
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((reg) => reg.unregister()));
+    }
+
+    // Reload the page
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
 
   return (
     <div>

@@ -51,24 +51,12 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new WorkboxWebpackPlugin.GenerateSW({
-      cacheId: 'reacddit',
-      cleanupOutdatedCaches: true,
-      clientsClaim: true,
+    new WorkboxWebpackPlugin.InjectManifest({
+      swSrc: paths.swSrc,
+      swDest: 'service-worker.js',
       exclude: [/\.map$/, /asset-manifest\.json$/],
-      navigateFallback: `/index.html`,
-      skipWaiting: true,
       maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       dontCacheBustURLsMatching: /\.[0-9a-f]{8}\./,
-      navigateFallbackDenylist: [
-        // Exclude URLs starting with /_, as they're likely an API call
-        new RegExp('^/_'),
-        // Ignore the API
-        new RegExp('^/api'),
-        // Exclude URLs containing a dot, as they're likely a resource in
-        // public/ and not a SPA route
-        new RegExp('/[^/]+\\.[^/]+$'),
-      ],
     }),
     new MiniCssExtractPlugin({
       // Options similar to the same options in webpackOptions.output

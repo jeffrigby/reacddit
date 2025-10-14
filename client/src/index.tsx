@@ -6,13 +6,13 @@ import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
 import { BrowserRouter } from 'react-router-dom';
 import queryString from 'query-string';
+import { Workbox } from 'workbox-window';
 import { initializeStore } from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
 import { scrollToPosition } from './common';
 import './styles/bootstrap.scss';
 import './styles/main.scss';
 import Root from './components/layout/Root';
-import { register as serviceWorkerRegister } from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
 const { hash, search } = window.location;
@@ -86,16 +86,21 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     }, 1000)
   );
 
+  // Initialize Workbox for service worker updates
+  let wb: Workbox | null = null;
+  if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+    wb = new Workbox('/service-worker.js');
+    wb.register();
+  }
+
   root.render(
     <Provider store={store}>
       <BrowserRouter>
-        <Root />
+        <Root workbox={wb} />
       </BrowserRouter>
     </Provider>
   );
 }
-
-serviceWorkerRegister();
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

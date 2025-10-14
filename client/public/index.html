@@ -2,20 +2,48 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>reacddit</title>
-    <meta name="Description" content="Reddit client built with ReactJS." />
+    <title>Reacddit - Enhanced Reddit Client</title>
+    <meta
+      name="description"
+      content="Reacddit is a React-based Reddit client with enhanced media viewing, supporting more embedded content types than the official Reddit app."
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link rel="canonical" href="https://reacdd.it/" />
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://reacdd.it/" />
+    <meta property="og:title" content="Reacddit - Enhanced Reddit Client" />
+    <meta
+      property="og:description"
+      content="A React-based Reddit client with enhanced media viewing and support for more embedded content types."
+    />
+    <meta
+      property="og:image"
+      content="https://reacdd.it/static/pwa/android-chrome-512x512.png"
+    />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Reacddit - Enhanced Reddit Client" />
+    <meta
+      name="twitter:description"
+      content="A React-based Reddit client with enhanced media viewing."
+    />
+    <meta
+      name="twitter:image"
+      content="https://reacdd.it/static/pwa/android-chrome-512x512.png"
+    />
+
     <script
       src="/static/js/init.js"
       type="application/javascript"
       defer
     ></script>
     <link rel="stylesheet" href="/static/css/base.css" />
-
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
 
     <!-- Icons -->
     <link
@@ -38,18 +66,9 @@
     <link rel="manifest" href="/static/pwa/manifest.json" />
     <link rel="shortcut icon" href="/static/pwa/favicon.ico" />
 
+    <!-- Theme colors for PWA -->
     <meta
       name="theme-color"
-      content="#343a40"
-      media="(prefers-color-scheme: dark)"
-    />
-    <meta
-      name="theme-color"
-      content="#ffffff"
-      media="(prefers-color-scheme: light)"
-    />
-    <meta
-      name="background-color"
       content="#343a40"
       media="(prefers-color-scheme: dark)"
     />
@@ -266,14 +285,15 @@
       id="splash"
       class="d-flex flex-column justify-content-center align-items-center vh-100 text-white"
     >
-      <div class="landing-icon mb-3"></div>
+      <div id="landing-icon" class="landing-icon mb-3"></div>
       <noscript>
         <div>The internet doesn't work without JS. Turn it on!</div>
       </noscript>
       <div class="d-none text-center" id="error-loading">
-        <p>Damn. Something isn't right.</p>
+        <p>Hmm, something went wrong loading the app.</p>
+        <p class="small">Try reloading to fix it.</p>
         <button class="btn btn-primary m-2" type="button" id="force-refresh">
-          Reload
+          Reload App
         </button>
       </div>
     </div>

@@ -1,23 +1,38 @@
 {
+  "id": "/?pwa=1",
   "name": "Reacddit",
   "short_name": "Reacddit",
-  "description": "A Reddit client built in reactjs.",
+  "description": "A Reddit client built in ReactJS with enhanced media viewing",
+  "categories": ["entertainment", "news"],
   "icons": [
     {
       "src": "/static/pwa/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/static/pwa/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/pwa/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/pwa/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "theme_color": "#343a40",
   "background_color": "#343a40",
   "display": "standalone",
-  "orientation": "portrait",
   "handle_links": "preferred",
   "launch_handler": {
     "client_mode": ["navigate-existing", "auto"]

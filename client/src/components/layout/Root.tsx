@@ -1,11 +1,21 @@
+import type { Workbox } from 'workbox-window';
 import { ModalProvider } from '@/contexts/ModalContext';
+import { WorkboxProvider } from '@/serviceWorker/WorkboxContext';
+import ServiceWorkerUpdate from '@/serviceWorker/update';
 import App from './App';
 
-function Root() {
+interface RootProps {
+  workbox: Workbox | null;
+}
+
+function Root({ workbox }: RootProps) {
   return (
-    <ModalProvider>
-      <App />
-    </ModalProvider>
+    <WorkboxProvider workbox={workbox}>
+      <ModalProvider>
+        <App />
+        <ServiceWorkerUpdate />
+      </ModalProvider>
+    </WorkboxProvider>
   );
 }
 
