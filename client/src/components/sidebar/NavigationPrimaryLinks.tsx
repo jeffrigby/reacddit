@@ -40,15 +40,15 @@ function NavigationPrimaryLinks(): ReactElement {
       if (e) {
         e.preventDefault();
       }
-      if (isEmpty(subreddits.subreddits)) {
+      if (isEmpty(subreddits.entities)) {
         return false;
       }
 
       const qs = queryString.parse(query);
 
-      const keys = Object.keys(subreddits.subreddits);
+      const keys = Object.keys(subreddits.entities);
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
-      const randomSubreddit = subreddits.subreddits[randomKey];
+      const randomSubreddit = subreddits.entities[randomKey];
 
       const sortTopQS =
         (sort === 'top' || sort === 'controversial') && qs.t
@@ -60,7 +60,7 @@ function NavigationPrimaryLinks(): ReactElement {
       const url = randomSubreddit.url + newSort + sortTopQS;
       return navigate(url);
     },
-    [navigate, query, sort, subreddits.subreddits]
+    [navigate, query, sort, subreddits.entities]
   );
 
   const getLoginUrl = useCallback((): string => {
