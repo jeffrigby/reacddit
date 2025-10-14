@@ -71,37 +71,25 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
 
   const next = useCallback(() => {
     if (settings.view === 'expanded') {
-      nextEntry(listingsCurrentState.focused);
+      nextEntry(prevState.current.focused);
     } else {
       const nextId = nextEntryCollapsed(lastExpanded, setLastExpanded);
       if (nextId) {
         setLastExpandedRedux(nextId);
       }
     }
-  }, [
-    settings.view,
-    listingsCurrentState.focused,
-    lastExpanded,
-    setLastExpanded,
-    setLastExpandedRedux,
-  ]);
+  }, [settings.view, lastExpanded, setLastExpanded, setLastExpandedRedux]);
 
   const prev = useCallback(() => {
     if (settings.view === 'expanded') {
-      prevEntry(listingsCurrentState.focused);
+      prevEntry(prevState.current.focused);
     } else {
       const prevId = prevEntryCollapsed(lastExpanded, setLastExpanded);
       if (prevId) {
         setLastExpandedRedux(prevId);
       }
     }
-  }, [
-    settings.view,
-    listingsCurrentState.focused,
-    lastExpanded,
-    setLastExpanded,
-    setLastExpandedRedux,
-  ]);
+  }, [settings.view, lastExpanded, setLastExpanded, setLastExpandedRedux]);
 
   // Set some hotkeys
   const hotkeys = useCallback(
@@ -214,18 +202,30 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   // works with thresholds and rootMargin but can't provide the exact positioning logic
   // needed for keyboard navigation and the condensed view mode.
   const throttledUpdate = useMemo(
-    () => throttle(monitorEntries, 500),
+    () =>
+      throttle(monitorEntries, 150, {
+        leading: true,
+        trailing: true,
+      }),
     [monitorEntries]
   );
 
   useEffect(() => {
     forceDelayedUpdate();
-    window.addEventListener('resize', throttledUpdate, false);
-    document.addEventListener('scroll', throttledUpdate, false);
+
+    // After Bootstrap migration, scroll events fire on document with body as the scrolling element
+    // We listen on document with capture phase to ensure we catch all scroll events
+    const handleScroll = () => {
+      throttledUpdate();
+    };
+
+    window.addEventListener('resize', throttledUpdate);
+    document.addEventListener('scroll', handleScroll, true);
 
     return () => {
-      window.removeEventListener('resize', throttledUpdate, false);
-      document.removeEventListener('scroll', throttledUpdate, false);
+      window.removeEventListener('resize', throttledUpdate);
+      document.removeEventListener('scroll', handleScroll, true);
+      throttledUpdate.cancel?.();
     };
   }, [forceDelayedUpdate, throttledUpdate]);
 

@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
-import { hotkeyStatus } from '@/common';
+import { hotkeyStatus, scrollToPosition } from '@/common';
 
 type ViewModeType = 'expanded' | 'condensed';
 
@@ -19,7 +19,7 @@ function ViewMode() {
   const dispatch = useAppDispatch();
 
   const toggleView = async (view: ViewModeType) => {
-    window.scrollTo(0, 0);
+    scrollToPosition(0, 0);
     await dispatch(siteSettingsChanged({ view }));
   };
 

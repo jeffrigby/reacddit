@@ -4,7 +4,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useModals } from '@/contexts/ModalContext';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
-import { hotkeyStatus } from '@/common';
+import { hotkeyStatus, scrollToPosition } from '@/common';
 
 function AutoRefresh() {
   const stream = useAppSelector((state) => state.siteSettings.stream);
@@ -12,7 +12,7 @@ function AutoRefresh() {
   const { setShowAutoRefresh } = useModals();
 
   const autoRefreshToggle = () => {
-    window.scrollTo(0, 0);
+    scrollToPosition(0, 0);
     dispatch(siteSettingsChanged({ stream: !stream }));
   };
 

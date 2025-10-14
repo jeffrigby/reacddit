@@ -7,6 +7,7 @@ import {
   fetchListingsNew,
   selectListingStatus,
 } from '@/redux/slices/listingsSlice';
+import { scrollToPosition } from '@/common';
 
 function Reload() {
   const stream = useAppSelector((state) => state.siteSettings.stream);
@@ -20,7 +21,7 @@ function Reload() {
   const variant = stream ? 'primary' : 'secondary';
 
   const refresh = async (): Promise<void> => {
-    window.scrollTo(0, 0);
+    scrollToPosition(0, 0);
     await dispatch(fetchListingsNew({ location }));
   };
 

@@ -1,5 +1,41 @@
 import { produce } from 'immer';
 
+/**
+ * Get the actual scrolling element
+ * After Bootstrap 5 migration, body element has the scroll, not window
+ */
+function getScrollContainer(): Element {
+  const body = document.body;
+  const html = document.documentElement;
+
+  // Bootstrap 5 reboot sets overflow on body, making it the scroll container
+  if (body.scrollHeight > body.clientHeight) {
+    return body;
+  }
+
+  return html;
+}
+
+/**
+ * Scroll to a specific position
+ * Use this instead of window.scrollTo() after Bootstrap 5 migration
+ */
+export function scrollToPosition(x: number, y: number): void {
+  const scrollContainer = getScrollContainer();
+  scrollContainer.scrollLeft = x;
+  scrollContainer.scrollTop = y;
+}
+
+/**
+ * Scroll by a relative amount
+ * Use this instead of window.scrollBy() after Bootstrap 5 migration
+ */
+export function scrollByAmount(x: number, y: number): void {
+  const scrollContainer = getScrollContainer();
+  scrollContainer.scrollLeft += x;
+  scrollContainer.scrollTop += y;
+}
+
 interface MenusStorage {
   [menuID: string]: boolean;
 }

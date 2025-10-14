@@ -113,6 +113,10 @@ body.search-active {
   }
 }
 
+[data-bs-theme='dark'] #search.search-focused #search-clear {
+  color: white;
+}
+
 @media (max-width: 767.98px) {
   header {
     flex-wrap: wrap-reverse;

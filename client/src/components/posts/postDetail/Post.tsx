@@ -23,7 +23,7 @@ import {
   ListingsContextLastExpanded,
   useIntersectionObservers,
 } from '../../../contexts';
-import { hotkeyStatus } from '../../../common';
+import { hotkeyStatus, scrollByAmount } from '../../../common';
 import {
   selectListingStatus,
   selectPostFocused,
@@ -261,7 +261,7 @@ function Post({
           // Top is above the top of the screen
           if (top < 50 || bottomPos > -10) {
             const scrollBy = top - 50;
-            window.scrollBy({ top: scrollBy, left: 0 });
+            scrollByAmount(0, scrollBy);
             return true;
           }
           return false;

@@ -4,6 +4,7 @@ import _trimEnd from 'lodash/trimEnd';
 import parse from 'url-parse';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { scrollToPosition } from '@/common';
 
 interface NavigationGenericNavItemProps {
   to: string;
@@ -22,6 +23,11 @@ interface NavigationGenericNavItemProps {
 
 function closeMenu(): void {
   document.body.classList.remove('show-menu');
+}
+
+function handleNavigationClick(): void {
+  closeMenu();
+  scrollToPosition(0, 0);
 }
 
 function NavigationGenericNavItem({
@@ -70,7 +76,7 @@ function NavigationGenericNavItem({
               pathname: url.pathname,
               search: url.query,
             }}
-            onClick={closeMenu}
+            onClick={handleNavigationClick}
           >
             {iconElement} {text}
           </NavLink>

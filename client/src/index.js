@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import queryString from 'query-string';
 import { initializeStore } from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
+import { scrollToPosition } from './common';
 import './styles/bootstrap.scss';
 import './styles/main.scss';
 import Root from './components/layout/Root';
@@ -19,7 +20,7 @@ const { hash, search } = window.location;
 const parsed = queryString.parse(search);
 
 // Start at the top of the page
-window.scrollTo(0, 0);
+scrollToPosition(0, 0);
 
 if (parsed.logout !== undefined) {
   localStorage.clear();

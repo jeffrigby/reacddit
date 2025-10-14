@@ -150,14 +150,17 @@ function FilterReddits() {
         onChange={filterReddits}
         onFocus={setFocus}
       />
-      {(filter.active ?? filter.filterText) && (
+      {filter.filterText && (
         <FontAwesomeIcon
           aria-hidden
           aria-label="Clear Filter Box"
           className="form-control-clear filter-clear"
           icon={faTimesCircle}
           role="button"
-          onClick={clearSearch}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            clearSearch();
+          }}
         />
       )}
     </div>

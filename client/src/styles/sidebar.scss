@@ -41,7 +41,7 @@ $sidebar-width: 14rem;
   z-index: 5;
   height: calc(100vh - 3rem);
   overflow: hidden !important;
-  border-right: 1px solid $border-color;
+  border-right: 1px solid var(--bs-border-color);
   background-color: var(--navigation-background-color, pink);
 }
 

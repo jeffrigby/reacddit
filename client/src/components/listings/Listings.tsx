@@ -10,6 +10,7 @@ import {
 } from '@/redux/slices/listingsSlice';
 import ListingsLogic from './ListingsLogic';
 import { hotkeyStatus } from '../../common';
+import { scrollToPosition } from '../posts/PostsFunctions';
 import ListingsHeader from './ListingsHeader';
 import PostsDebug from './PostsDebug';
 import '../../styles/listings.scss';
@@ -136,11 +137,11 @@ function Listings({ match }: ListingsProps) {
         try {
           switch (pressedKey) {
             case '.':
-              window.scrollTo(0, 0);
+              scrollToPosition(0, 0);
               dispatch(fetchListingsNew({ location }));
               break;
             case '/':
-              window.scrollTo(0, document.body.scrollHeight);
+              scrollToPosition(0, document.body.scrollHeight);
               break;
             default:
               break;

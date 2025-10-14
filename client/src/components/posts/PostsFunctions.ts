@@ -1,7 +1,57 @@
 import isNil from 'lodash/isNil';
 
 /**
- * Load the next entry in expanded view mode.
+ * Check if an element is a top-level entry (not a nested comment).
+ * On comments pages, this filters out threaded replies with the comment-child class.
+ * This ensures j/k navigation only moves between top-level items.
+ */
+function isTopLevelEntry(element: Element): boolean {
+  return (
+    element.classList.contains('entry') &&
+    !element.classList.contains('comment-child')
+  );
+}
+
+/**
+ * Get the actual scrolling element
+ * After Bootstrap 5 migration, body element has the scroll, not window
+ */
+function getScrollContainer(): Element {
+  // Modern Bootstrap sets overflow on body, making it the scroll container
+  const body = document.body;
+  const html = document.documentElement;
+
+  // Check if body is scrollable
+  if (body.scrollHeight > body.clientHeight) {
+    return body;
+  }
+
+  return html;
+}
+
+/**
+ * Scroll to a specific position
+ * Use this instead of window.scrollTo() after Bootstrap 5 migration
+ */
+export function scrollToPosition(x: number, y: number): void {
+  const scrollContainer = getScrollContainer();
+  scrollContainer.scrollLeft = x;
+  scrollContainer.scrollTop = y;
+}
+
+/**
+ * Scroll by a relative amount
+ * Use this instead of window.scrollBy() after Bootstrap 5 migration
+ */
+export function scrollByAmount(x: number, y: number): void {
+  const scrollContainer = getScrollContainer();
+  scrollContainer.scrollLeft += x;
+  scrollContainer.scrollTop += y;
+}
+
+/**
+ * Navigate to the next top-level entry (skips nested comments).
+ * This ensures j/k only navigate between top-level items, not threaded replies.
  */
 export function nextEntry(focused: string | null): void {
   if (isNil(focused)) {
@@ -13,26 +63,31 @@ export function nextEntry(focused: string | null): void {
     return;
   }
 
-  const next = current.nextElementSibling;
-
-  if (next?.classList.contains('entry')) {
-    const scrollBy = next.getBoundingClientRect().top - 50;
-    window.scrollBy({ top: scrollBy, left: 0 });
-  } else {
-    window.scrollTo(0, document.body.scrollHeight);
+  // Find the next top-level entry (skip comment-child elements)
+  let next = current.nextElementSibling;
+  while (next && !isTopLevelEntry(next)) {
+    next = next.nextElementSibling;
   }
+
+  if (next) {
+    const scrollBy = next.getBoundingClientRect().top - 50;
+    const scrollContainer = getScrollContainer();
+    scrollContainer.scrollTop += scrollBy;
+  }
+  // No more entries - do nothing (removed "jump to bottom" behavior)
 }
 
 /**
- * Load the next entry when in collapsed view mode.
+ * Navigate to next top-level entry in collapsed view mode (skips nested comments).
  */
 export function nextEntryCollapsed(
   lastExpanded: string | null,
   setLastExpanded: (id: string) => void
 ): string | null {
-  // Open up the first one.
+  // Open up the first top-level entry
   if (!lastExpanded) {
-    const first = document.getElementsByClassName('entry')[0];
+    const entries = Array.from(document.getElementsByClassName('entry'));
+    const first = entries.find((entry) => isTopLevelEntry(entry));
     if (isNil(first)) {
       return null;
     }
@@ -45,8 +100,13 @@ export function nextEntryCollapsed(
     return null;
   }
 
-  const next = current.nextElementSibling;
-  if (next?.classList.contains('entry')) {
+  // Find next top-level entry (skip comment-child elements)
+  let next = current.nextElementSibling;
+  while (next && !isTopLevelEntry(next)) {
+    next = next.nextElementSibling;
+  }
+
+  if (next) {
     setLastExpanded(next.id);
     return next.id;
   }
@@ -55,7 +115,8 @@ export function nextEntryCollapsed(
 }
 
 /**
- * Previous entry in expanded view mode.
+ * Navigate to the previous top-level entry (skips nested comments).
+ * This ensures j/k only navigate between top-level items, not threaded replies.
  */
 export function prevEntry(focused: string | null): void {
   if (isNil(focused)) {
@@ -67,24 +128,27 @@ export function prevEntry(focused: string | null): void {
     return;
   }
 
-  const prev = current.previousElementSibling;
-  // Is this the last one?
-  if (isNil(prev) || !prev.classList.contains('entry')) {
-    return;
+  // Find the previous top-level entry (skip comment-child elements)
+  let prev = current.previousElementSibling;
+  while (prev && !isTopLevelEntry(prev)) {
+    prev = prev.previousElementSibling;
   }
 
-  const scrollBy = prev.getBoundingClientRect().top - 50;
-  window.scrollBy({ top: scrollBy, left: 0 });
+  if (prev) {
+    const scrollBy = prev.getBoundingClientRect().top - 50;
+    const scrollContainer = getScrollContainer();
+    scrollContainer.scrollTop += scrollBy;
+  }
+  // No previous entry - do nothing
 }
 
 /**
- * Load the previous entry in collapsed view mode
+ * Navigate to previous top-level entry in collapsed view mode (skips nested comments).
  */
 export function prevEntryCollapsed(
   lastExpanded: string | null,
   setLastExpanded: (id: string) => void
 ): string | null {
-  // Open up the first one.
   if (!lastExpanded) {
     return null;
   }
@@ -94,8 +158,13 @@ export function prevEntryCollapsed(
     return null;
   }
 
-  const prev = current.previousElementSibling;
-  if (prev?.classList.contains('entry')) {
+  // Find previous top-level entry (skip comment-child elements)
+  let prev = current.previousElementSibling;
+  while (prev && !isTopLevelEntry(prev)) {
+    prev = prev.previousElementSibling;
+  }
+
+  if (prev) {
     setLastExpanded(prev.id);
     return prev.id;
   }
@@ -109,6 +178,7 @@ interface ListingState {
 
 /**
  * Get the current listing state.
+ * Only considers top-level entries (skips nested comments with comment-child class).
  */
 export function getCurrentListingState(
   currentState: ListingState | Record<string, never>,
@@ -119,7 +189,12 @@ export function getCurrentListingState(
   if (postsCollection.length === 0) {
     return {};
   }
-  const posts = Array.from(postsCollection);
+
+  // Filter to only top-level entries (skip nested comments)
+  const posts = Array.from(postsCollection).filter((post) =>
+    isTopLevelEntry(post)
+  );
+
   let focused = '';
   let actionable: string | null = null;
   let prevPostId: string | null = null;
