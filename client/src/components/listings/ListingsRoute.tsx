@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useParams, useLocation } from 'react-router';
 import { useAppDispatch } from '@/redux/hooks';
-import { setHistory } from '../../redux/slices/historySlice';
+import { historyPathAdded } from '../../redux/slices/historySlice';
 import Listings from './Listings';
 import NotFound404 from '../../NotFound404';
 
@@ -19,7 +19,8 @@ function ListingsRoute({
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(setHistory(location));
+    // Track the current path in history
+    dispatch(historyPathAdded(location.pathname));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 

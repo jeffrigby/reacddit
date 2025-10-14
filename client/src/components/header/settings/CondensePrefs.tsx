@@ -1,33 +1,34 @@
-import { useDispatch, useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-import type { AppDispatch, RootState } from '@/types/redux';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useModals } from '@/contexts/ModalContext';
-import { siteSettings } from '@/redux/slices/siteSettingsSlice';
+import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 
 function CondensePrefs() {
-  const condenseStickySetting = useSelector(
-    (state: RootState) => state.siteSettings.condenseSticky
+  const condenseStickySetting = useAppSelector(
+    (state) => state.siteSettings.condenseSticky
   );
-  const condenseDuplicatesSetting = useSelector(
-    (state: RootState) => state.siteSettings.condenseDuplicate
+  const condenseDuplicatesSetting = useAppSelector(
+    (state) => state.siteSettings.condenseDuplicate
   );
-  const condensePinnedSetting = useSelector(
-    (state: RootState) => state.siteSettings.condensePinned
+  const condensePinnedSetting = useAppSelector(
+    (state) => state.siteSettings.condensePinned
   );
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const { setShowCondenseHelp } = useModals();
 
   const toggleDupe = () => {
-    dispatch(siteSettings({ condenseDuplicate: !condenseDuplicatesSetting }));
+    dispatch(
+      siteSettingsChanged({ condenseDuplicate: !condenseDuplicatesSetting })
+    );
   };
 
   const toggleSticky = () => {
-    dispatch(siteSettings({ condenseSticky: !condenseStickySetting }));
+    dispatch(siteSettingsChanged({ condenseSticky: !condenseStickySetting }));
   };
 
   const togglePinned = () => {
-    dispatch(siteSettings({ condensePinned: !condensePinnedSetting }));
+    dispatch(siteSettingsChanged({ condensePinned: !condensePinnedSetting }));
   };
 
   return (

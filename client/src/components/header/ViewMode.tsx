@@ -1,28 +1,26 @@
 import type { MouseEvent } from 'react';
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCompressArrowsAlt,
   faExpandArrowsAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import type { AppDispatch, RootState } from '@/types/redux';
-import { siteSettings } from '@/redux/slices/siteSettingsSlice';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '@/common';
 
 type ViewModeType = 'expanded' | 'condensed';
 
 function ViewMode() {
-  const siteSettingsView = useSelector(
-    (state: RootState) =>
-      (state.siteSettings.view as ViewModeType) || 'expanded'
+  const siteSettingsView = useAppSelector(
+    (state) => (state.siteSettings.view as ViewModeType) || 'expanded'
   );
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   const toggleView = async (view: ViewModeType) => {
     window.scrollTo(0, 0);
-    await dispatch(siteSettings({ view }));
+    await dispatch(siteSettingsChanged({ view }));
   };
 
   const handleButtonClick =

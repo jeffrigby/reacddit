@@ -8,7 +8,6 @@ import {
   useCallback,
   type SyntheticEvent,
 } from 'react';
-import { useSelector } from 'react-redux';
 import throttle from 'lodash/throttle';
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -22,7 +21,7 @@ import VideoDebug from './VideoDebug';
 import VideoAudioButton from './VideoAudioButton';
 import VideoControlBar from './VideoControlBar';
 import { PostsContextData } from '../../../../contexts';
-import type { RootState } from '../../../../types/redux';
+import { useAppSelector } from '../../../../redux/hooks';
 import type { VideoContent, BufferRange, BufferData } from './types';
 
 // Type definitions
@@ -109,9 +108,9 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
   const stalledTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const debug = useSelector((state: RootState) => state.siteSettings.debug);
-  const autoplay = useSelector(
-    (state: RootState) => state.siteSettings.autoplay as boolean
+  const debug = useAppSelector((state) => state.siteSettings.debug);
+  const autoplay = useAppSelector(
+    (state) => state.siteSettings.autoplay as boolean
   );
 
   const [muted, setMuted] = useState(true);

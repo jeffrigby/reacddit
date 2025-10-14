@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch, RootState } from '@/types/redux';
-import { siteSettings } from '@/redux/slices/siteSettingsSlice';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '@/common';
 
 interface DebugModeProps {
@@ -9,13 +8,11 @@ interface DebugModeProps {
 }
 
 function DebugMode({ className = '' }: DebugModeProps) {
-  const debug = useSelector(
-    (state: RootState) => state.siteSettings.debug ?? false
-  );
-  const dispatch = useDispatch<AppDispatch>();
+  const debug = useAppSelector((state) => state.siteSettings.debug ?? false);
+  const dispatch = useAppDispatch();
 
   const debugToggle = () => {
-    dispatch(siteSettings({ debug: !debug }));
+    dispatch(siteSettingsChanged({ debug: !debug }));
   };
 
   const hotkeys = (event: KeyboardEvent) => {

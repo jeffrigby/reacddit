@@ -232,7 +232,7 @@ export const fetchListingsNext = createAsyncThunk<
 >('listings/fetchNext', async ({ location }, { getState }) => {
   const state = getState();
   const locationKey = location.key ?? 'front';
-  const currentData = state.listingsByLocation?.[locationKey];
+  const currentData = state.listings.listingsByLocation?.[locationKey];
 
   if (!currentData) {
     throw new Error(
@@ -251,7 +251,7 @@ export const fetchListingsNext = createAsyncThunk<
   };
 
   // Fetch next page
-  const entries = await getContent(state.currentFilter, params);
+  const entries = await getContent(state.listings.currentFilter, params);
 
   return {
     locationKey,
@@ -287,7 +287,7 @@ export const fetchListingsNew = createAsyncThunk<
   async ({ location, stream = false }, { getState, rejectWithValue }) => {
     const state = getState();
     const locationKey = location.key ?? 'front';
-    const currentData = state.listingsByLocation?.[locationKey];
+    const currentData = state.listings.listingsByLocation?.[locationKey];
 
     if (!currentData) {
       return rejectWithValue('No current data to refresh');
@@ -316,7 +316,7 @@ export const fetchListingsNew = createAsyncThunk<
     };
 
     // Fetch new posts
-    const entries = await getContent(state.currentFilter, params);
+    const entries = await getContent(state.listings.currentFilter, params);
     const newPostCount = Object.keys(entries.data.children).length;
 
     return {

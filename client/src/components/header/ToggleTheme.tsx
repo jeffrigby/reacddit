@@ -2,16 +2,15 @@ import { useEffect } from 'react';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch, RootState } from '@/types/redux';
-import { siteSettings } from '@/redux/slices/siteSettingsSlice';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 
 type ThemeType = 'dark' | 'light';
 
 function ToggleTheme() {
-  const dispatch = useDispatch<AppDispatch>();
-  const siteSettingsTheme = useSelector(
-    (state: RootState) => state.siteSettings.theme as ThemeType | undefined
+  const dispatch = useAppDispatch();
+  const siteSettingsTheme = useAppSelector(
+    (state) => state.siteSettings.theme as ThemeType | undefined
   );
 
   useEffect(() => {
@@ -25,7 +24,7 @@ function ToggleTheme() {
 
   const toggleTheme = () => {
     const newTheme: ThemeType = siteSettingsTheme === 'dark' ? 'light' : 'dark';
-    dispatch(siteSettings({ theme: newTheme }));
+    dispatch(siteSettingsChanged({ theme: newTheme }));
   };
 
   const themeIcon = siteSettingsTheme === 'dark' ? faSun : faMoon;

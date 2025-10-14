@@ -1,6 +1,5 @@
 import { useMemo, useCallback, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { useDispatch } from 'react-redux';
 import { formatDistanceToNow } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -17,8 +16,7 @@ import {
   selectLastUpdatedTracking,
   fetchSubreddits,
 } from '@/redux/slices/subredditsSlice';
-import type { AppDispatch } from '@/types/redux';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
@@ -33,7 +31,7 @@ function useFriends() {
   const allSubreddits = useAppSelector(selectAllSubreddits);
   const subredditsStatus = useAppSelector(selectSubredditsStatus);
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   const toggleShowFriends = useCallback(() => {
     const newShowFriends = !showFriends;

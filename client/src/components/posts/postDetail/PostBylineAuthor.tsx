@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
@@ -14,7 +13,7 @@ import {
   fetchSubreddits,
   selectSubredditById,
 } from '../../../redux/slices/subredditsSlice';
-import { useAppSelector } from '../../../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../../../redux/hooks';
 
 interface PostBylineAuthorProps {
   author: string;
@@ -36,7 +35,7 @@ function PostBylineAuthor({
   flair = null,
   isSubmitter = false,
 }: PostBylineAuthorProps): React.JSX.Element {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const redditBearer = useAppSelector((state) => state.redditBearer);
 
   const authorSub = useMemo(() => `u_${author.toLowerCase()}`, [author]);

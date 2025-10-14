@@ -1,12 +1,10 @@
-import { useDispatch } from 'react-redux';
 import { useCallback, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import type { MouseEvent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
-import type { AppDispatch } from '@/types/redux';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { fetchSubreddits } from '@/redux/slices/subredditsSlice';
 import { favorite } from '@/reddit/redditApiTs';
 
@@ -18,7 +16,7 @@ interface SubFavoriteProps {
 function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
   const me = useAppSelector((state) => state.redditMe?.me);
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

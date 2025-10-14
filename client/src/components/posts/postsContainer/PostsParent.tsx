@@ -1,8 +1,7 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import type { RootState } from '../../../types/redux';
+import { useAppSelector } from '../../../redux/hooks';
 import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
 import Post from '../postDetail/Post';
 
@@ -41,8 +40,8 @@ function renderCommentLinks(
  * This is a component to render the parent post for comments and duplicates
  */
 function PostsParent({ post }: PostsParentProps): ReactElement | null {
-  const listingsFilter = useSelector(
-    (state: RootState) => state.listings.currentFilter
+  const listingsFilter = useAppSelector(
+    (state) => state.listings.currentFilter
   );
   const { listType, comment } = listingsFilter;
 

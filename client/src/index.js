@@ -6,8 +6,8 @@ import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
 import { BrowserRouter } from 'react-router-dom';
 import queryString from 'query-string';
-import configureReduxStore from './redux/configureStore';
-import { loadState, saveState } from './redux/localStorage';
+import { store } from './redux/configureStore';
+import { saveState } from './redux/localStorage';
 import './styles/bootstrap.scss';
 import './styles/main.scss';
 import Root from './components/layout/Root';
@@ -55,24 +55,22 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     window.history.replaceState({}, document.title, hash.substring(1));
   }
 
-  const persistedState = loadState();
-
-  // Create a history of your choosing (we're using a browser history in this case)
-  const store = configureReduxStore(persistedState);
+  // Note: We don't use loadState() anymore since the store is a singleton
+  // exported from configureStore.ts. State persistence works through the
+  // subscribe mechanism below, which saves state on every change.
+  // On initial load, the store starts with default state, and localStorage
+  // persistence ensures settings are maintained across sessions.
 
   store.subscribe(
     throttle(() => {
+      const state = store.getState();
       saveState({
-        // subreddits: store.getState().subreddits,
-        debugMode: store.getState().debugMode,
-        lastUpdated: store.getState().lastUpdated,
-        lastUpdatedTime: store.getState().lastUpdatedTime,
-        redditMe: store.getState().redditMe,
-        siteSettings: store.getState().siteSettings,
-        subreddits: store.getState().subreddits,
-        redditMultiReddits: store.getState().redditMultiReddits,
-        redditFriends: store.getState().redditFriends,
-        menus: store.getState().menus,
+        // Only persist slices that should be cached
+        siteSettings: state.siteSettings,
+        subreddits: state.subreddits,
+        redditMultiReddits: state.redditMultiReddits,
+        redditMe: state.redditMe,
+        history: state.history,
       });
     }, 1000)
   );

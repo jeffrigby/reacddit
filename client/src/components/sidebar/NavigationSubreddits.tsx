@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 import isEmpty from 'lodash/isEmpty';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -10,8 +9,7 @@ import {
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
 import type { SubredditData } from '@/types/redditApi';
-import type { AppDispatch } from '@/types/redux';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   fetchSubreddits,
   fetchSubredditsLastUpdated,
@@ -28,7 +26,7 @@ function NavigationSubReddits() {
   const subredditsStatus = useAppSelector(selectSubredditsStatus);
   const filter = useAppSelector(selectSubredditsFilter);
   const filteredSubreddits = useAppSelector(selectFilteredSubreddits);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
 

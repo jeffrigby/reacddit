@@ -1,15 +1,12 @@
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch, RootState } from '@/types/redux';
-import { siteSettings } from '@/redux/slices/siteSettingsSlice';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 
 function AutoPlay() {
-  const autoplay = useSelector(
-    (state: RootState) => state.siteSettings.autoplay
-  );
-  const dispatch = useDispatch<AppDispatch>();
+  const autoplay = useAppSelector((state) => state.siteSettings.autoplay);
+  const dispatch = useAppDispatch();
 
   const autoPlayToggle = () => {
-    dispatch(siteSettings({ autoplay: !autoplay }));
+    dispatch(siteSettingsChanged({ autoplay: !autoplay }));
   };
 
   return (

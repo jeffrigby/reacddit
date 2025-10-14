@@ -1,21 +1,19 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-import type { AppDispatch } from '@/types/redux';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useModals } from '@/contexts/ModalContext';
-import { siteSettings } from '@/redux/slices/siteSettingsSlice';
+import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus } from '@/common';
 
 function AutoRefresh() {
   const stream = useAppSelector((state) => state.siteSettings.stream);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const { setShowAutoRefresh } = useModals();
 
   const autoRefreshToggle = () => {
     window.scrollTo(0, 0);
-    dispatch(siteSettings({ stream: !stream }));
+    dispatch(siteSettingsChanged({ stream: !stream }));
   };
 
   const hotkeys = (event: KeyboardEvent) => {

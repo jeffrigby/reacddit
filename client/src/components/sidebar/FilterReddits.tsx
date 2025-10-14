@@ -1,11 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
-import type { AppDispatch } from '@/types/redux';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   filterUpdated,
   selectSubredditsFilter,
@@ -15,7 +13,7 @@ import { hotkeyStatus } from '@/common';
 function FilterReddits() {
   const filterInput = useRef<HTMLInputElement>(null);
   const filter = useAppSelector(selectSubredditsFilter);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   /**
