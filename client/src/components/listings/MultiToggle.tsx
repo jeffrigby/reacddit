@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
 import { selectSubredditData } from '@/redux/slices/listingsSlice';
 import { multiAddSubreddit, multiRemoveSubreddit } from '@/reddit/redditApiTs';
+import type { Thing, LabeledMultiData } from '@/types/redditApi';
 
 interface MultiToggleProps {
   srName: string;
@@ -69,7 +70,7 @@ function MultiToggle({ srName }: MultiToggleProps) {
   const getSubreddits = (subs: Array<{ name: string }>) =>
     subs.map((sub) => sub.name);
 
-  const menuItems = multis.multis.map((item) => {
+  const menuItems = multis.multis.map((item: Thing<LabeledMultiData>) => {
     const key = `${item.data.display_name}-${item.data.created}-${srName}`;
     const subNames = getSubreddits(item.data.subreddits);
     const checked = subNames.includes(srName);

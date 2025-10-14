@@ -15,3 +15,8 @@
  * This maintains backward compatibility for files that import from here
  */
 export type { RootState, AppDispatch, AppStore } from '@/redux/configureStore';
+
+/**
+ * Re-export SubredditFilterState from subredditsSlice for backward compatibility
+ */
+export type { SubredditFilterState } from '@/redux/slices/subredditsSlice';

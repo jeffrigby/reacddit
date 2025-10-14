@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import isEmpty from 'lodash/isEmpty';
-import type { SubredditsFilterState } from '@/types/redux';
+import type { SubredditFilterState } from '@/types/redux';
 import type { BearerState } from '@/redux/slices/redditBearerSlice';
 import MultiReddits from '../sidebar/MultiReddits';
 import NavigationPrimaryLinks from '../sidebar/NavigationPrimaryLinks';
@@ -11,7 +11,7 @@ import '../../styles/sidebar.scss';
 
 interface NavigationProps {
   redditBearer: BearerState;
-  subredditsFilter: SubredditsFilterState;
+  subredditsFilter: SubredditFilterState;
 }
 
 function Navigation({ redditBearer, subredditsFilter }: NavigationProps) {
