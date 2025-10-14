@@ -68,4 +68,19 @@ div#entries {
       max-height: inherit !important;
     }
   }
+
+  // Inline embeds styling
+  .inlineLinks {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+
+    nav[aria-label='Inline-Link Pagination'] {
+      margin-bottom: 0.75rem;
+    }
+
+    .inline-render {
+      margin-bottom: 0.5rem;
+    }
+  }
 }

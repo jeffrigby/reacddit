@@ -733,47 +733,100 @@ export const selectFilter = createSelector(
 );
 
 /**
+ * Combined selector for Posts component
+ * Returns both listType and listing data together to prevent unnecessary re-renders
+ */
+export const selectPostsData = createSelector(
+  [
+    selectCurrentFilter,
+    selectListingsByLocation,
+    (_state: RootState, locationKey: string) => locationKey,
+  ],
+  (currentFilter, listingsByLocation, locationKey) => {
+    const key = locationKey ?? 'front';
+    const data = listingsByLocation[key] ?? {
+      before: null,
+      after: null,
+      children: {},
+      status: 'unloaded' as ListingsStatus,
+      saved: 0,
+      fetchType: 'init' as const,
+    };
+
+    return {
+      listType: currentFilter.listType,
+      data,
+    };
+  }
+);
+
+/**
+ * Combined selector for PostsLoadingStatus component
+ * Returns both data and status together to prevent unnecessary re-renders
+ */
+export const selectListingDataAndStatus = createSelector(
+  [
+    selectListingsByLocation,
+    (_state: RootState, locationKey: string) => locationKey,
+  ],
+  (listingsByLocation, locationKey) => {
+    const key = locationKey ?? 'front';
+    const data = listingsByLocation[key] ?? {
+      before: null,
+      after: null,
+      children: {},
+      status: 'unloaded' as ListingsStatus,
+      saved: 0,
+      fetchType: 'init' as const,
+    };
+
+    return {
+      data,
+      status: data.status ?? ('unloaded' as ListingsStatus),
+    };
+  }
+);
+
+/**
  * Post-specific selectors for focus and actionable state
  * Used for keyboard navigation and post interactions
  */
-const postFocusedSelector = (
-  state: RootState,
-  postName: string,
-  idx: number,
-  locationKey: string
-) => {
-  const key = locationKey ?? 'front';
-  const listingState = state.listings?.uiStateByLocation[key];
-  if (!listingState) {
-    return idx === 0;
-  }
-  const { focused } = listingState;
-  return !focused ? idx === 0 : focused === postName;
-};
-
-const postActionableSelector = (
-  state: RootState,
-  postName: string,
-  idx: number,
-  locationKey: string
-) => {
-  const key = locationKey ?? 'front';
-  const listingState = state.listings?.uiStateByLocation[key];
-  if (!listingState) {
-    return idx === 0;
-  }
-  const { actionable } = listingState;
-  return !actionable ? idx === 0 : actionable === postName;
-};
-
 export const selectPostFocused = createSelector(
-  [postFocusedSelector],
-  (focused) => focused
+  [
+    (state: RootState) => state.listings?.uiStateByLocation,
+    (_state: RootState, postName: string) => postName,
+    (_state: RootState, _postName: string, idx: number) => idx,
+    (_state: RootState, _postName: string, _idx: number, locationKey: string) =>
+      locationKey,
+  ],
+  (uiStateByLocation, postName, idx, locationKey) => {
+    const key = locationKey ?? 'front';
+    const listingState = uiStateByLocation?.[key];
+    if (!listingState) {
+      return idx === 0;
+    }
+    const { focused } = listingState;
+    return !focused ? idx === 0 : focused === postName;
+  }
 );
 
 export const selectPostActionable = createSelector(
-  [postActionableSelector],
-  (actionable) => actionable
+  [
+    (state: RootState) => state.listings?.uiStateByLocation,
+    (_state: RootState, postName: string) => postName,
+    (_state: RootState, _postName: string, idx: number) => idx,
+    (_state: RootState, _postName: string, _idx: number, locationKey: string) =>
+      locationKey,
+  ],
+  (uiStateByLocation, postName, idx, locationKey) => {
+    const key = locationKey ?? 'front';
+    const listingState = uiStateByLocation?.[key];
+    if (!listingState) {
+      return idx === 0;
+    }
+    const { actionable } = listingState;
+    return !actionable ? idx === 0 : actionable === postName;
+  }
 );
 
 // =============================================================================

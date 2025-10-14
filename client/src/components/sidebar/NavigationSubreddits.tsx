@@ -13,6 +13,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   fetchSubreddits,
   fetchSubredditsLastUpdated,
+  lastUpdatedCleared,
   selectSubredditsStatus,
   selectSubredditsFilter,
   selectFilteredSubreddits,
@@ -44,8 +45,13 @@ function NavigationSubReddits() {
     };
   }, [dispatch, where]);
 
-  const reloadSubreddits = useCallback(() => {
-    dispatch(fetchSubreddits({ reset: true, where }));
+  const reloadSubreddits = useCallback(async () => {
+    // Clear the lastUpdated cache to force immediate re-check of all subreddits
+    dispatch(lastUpdatedCleared());
+    // Wait for subreddits to load before fetching lastUpdated
+    await dispatch(fetchSubreddits({ reset: true, where }));
+    // Trigger immediate fetch of lastUpdated timestamps
+    dispatch(fetchSubredditsLastUpdated());
   }, [dispatch, where]);
 
   useEffect(() => {

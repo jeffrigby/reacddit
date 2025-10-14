@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
 import { useLocation } from 'react-router';
 import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
-import { selectListingData } from '../../../redux/slices/listingsSlice';
+import { selectPostsData } from '../../../redux/slices/listingsSlice';
 import { IntersectionObserverProvider } from '../../../contexts';
 import { useAppSelector } from '../../../redux/hooks';
 import PostsLoadingStatus from './PostsLoadingStatus';
@@ -19,11 +19,10 @@ interface ListingDataResponse {
 function Posts(): ReactElement {
   const location = useLocation();
 
-  // Combine selectors to reduce re-renders
-  const { listType, data } = useAppSelector((state) => ({
-    listType: state.listings.currentFilter.listType,
-    data: selectListingData(state, location.key) as ListingDataResponse,
-  }));
+  // Use memoized combined selector to prevent unnecessary re-renders
+  const { listType, data } = useAppSelector((state) =>
+    selectPostsData(state, location.key)
+  ) as { listType: string; data: ListingDataResponse };
 
   const { children: entriesObject, originalPost } = data;
 

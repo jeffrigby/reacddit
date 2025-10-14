@@ -362,6 +362,8 @@ const subredditsSlice = createSlice({
     lastUpdatedCleared(state) {
       state.lastUpdatedTracking = {};
       state.lastUpdatedTime = 0;
+      // Reset the running flag to allow fetchSubredditsLastUpdated to run
+      state.lastUpdatedRunning = false;
     },
 
     /**

@@ -111,6 +111,7 @@ function getLastUpdatedEntry(entry: {
  * Calculate when to recheck the last updated post based on post age.
  *
  * Cache Expiration Strategy:
+ * - lastPost = 0 (no posts): Expire in 24 hours (empty/private subreddit)
  * - Post < 30 minutes old: Expire at exactly 30 minutes
  * - Post < 1 hour old: Expire at exactly 1 hour
  * - Post > 1 hour old: Expire in 1 hour from now
@@ -118,12 +119,18 @@ function getLastUpdatedEntry(entry: {
  * This ensures more frequent checks for active subreddits and less frequent
  * checks for inactive ones.
  *
- * @param lastPost - Unix timestamp (seconds) of the last post
+ * @param lastPost - Unix timestamp (seconds) of the last post, or 0 if no posts
  * @returns Unix timestamp (seconds) when this cache entry should expire
  */
 export function getExpiredTime(lastPost: number | undefined): number {
   if (lastPost === undefined) {
     return Date.now() / 1000 + 3600; // Default: expire in 1 hour
+  }
+
+  // If lastPost is 0, it means no posts exist (empty/private subreddit)
+  // Don't check again for 24 hours to avoid wasting API calls
+  if (lastPost === 0) {
+    return Date.now() / 1000 + 86400; // Expire in 24 hours
   }
 
   const nowSec = Date.now() / 1000;
@@ -188,11 +195,12 @@ export async function getLastUpdated(
       }
     }
 
-    // No posts found - set a far future date so we don't keep checking
+    // No posts found - return 0 to indicate no posts exist
     // This happens for empty/private subreddits
+    // The getDiffClassName function handles lastPost: 0 correctly by not adding any class
     return {
       id,
-      lastPost: Date.now() / 1000 + 86400, // 24 hours from now
+      lastPost: 0,
     };
   } catch (error: unknown) {
     // Handle errors gracefully to avoid breaking the entire batch
@@ -200,7 +208,7 @@ export async function getLastUpdated(
       const axiosError = error as { name?: string; code?: string };
 
       // If it's a 400 error, it's probably a private/banned subreddit
-      // Don't try again for 24 hours
+      // Return 0 to indicate no accessible posts
       if (
         axiosError.name === 'AxiosError' &&
         axiosError.code === 'ERR_BAD_REQUEST'
@@ -211,7 +219,7 @@ export async function getLastUpdated(
         });
         return {
           id,
-          lastPost: Date.now() / 1000 + 86400,
+          lastPost: 0,
         };
       }
     }

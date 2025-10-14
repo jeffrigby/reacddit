@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faChevronLeft,
+  faChevronRight,
+} from '@fortawesome/free-solid-svg-icons';
 import Content from '../Content';
 
 interface ResolvedContent {
@@ -79,8 +84,7 @@ function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
               type="button"
               onClick={prevEntry}
             >
-              <span aria-hidden="true">&laquo;</span>
-              <span className="sr-only">Previous</span>
+              <FontAwesomeIcon icon={faChevronLeft} />
             </button>
           </li>
           <li className="page-item">
@@ -95,8 +99,7 @@ function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
               type="button"
               onClick={nextEntry}
             >
-              <span aria-hidden="true">&raquo;</span>
-              <span className="sr-only">Next</span>
+              <FontAwesomeIcon icon={faChevronRight} />
             </button>
           </li>
         </ul>

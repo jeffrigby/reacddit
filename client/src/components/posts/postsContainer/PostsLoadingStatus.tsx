@@ -7,10 +7,7 @@ import {
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '../../../redux/hooks';
-import {
-  selectListingData,
-  selectListingStatus,
-} from '../../../redux/slices/listingsSlice';
+import { selectListingDataAndStatus } from '../../../redux/slices/listingsSlice';
 
 type ListingStatus =
   | 'error'
@@ -75,11 +72,10 @@ function getStatusInfo(status: string, data: ListingData): StatusInfo | null {
 function PostsLoadingStatus(): ReactElement | null {
   const location = useLocation();
 
-  // Combine selectors to reduce re-renders
-  const { data, status } = useAppSelector((state) => ({
-    data: selectListingData(state, location.key),
-    status: selectListingStatus(state, location.key),
-  }));
+  // Use memoized combined selector to prevent unnecessary re-renders
+  const { data, status } = useAppSelector((state) =>
+    selectListingDataAndStatus(state, location.key)
+  );
 
   // Memoize statusInfo to prevent recalculation on every render
   const statusInfo = useMemo(() => getStatusInfo(status, data), [status, data]);

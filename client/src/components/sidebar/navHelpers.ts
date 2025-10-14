@@ -36,14 +36,15 @@ export function getDiffClassName(
   if (lastUpdated > 0) {
     const seconds = lastUpdatedDiff(lastUpdated);
 
-    if (seconds >= DEAD_THRESHOLD) {
-      classes.push('sub-dead');
-    } else if (seconds >= STALE_THRESHOLD) {
-      classes.push('sub-stale');
-    } else if (seconds <= NEW_THRESHOLD) {
+    // Check in order from most recent to oldest
+    if (seconds <= NEW_THRESHOLD) {
       classes.push('sub-new');
     } else if (seconds <= TODAY_THRESHOLD) {
       classes.push('sub-today');
+    } else if (seconds >= DEAD_THRESHOLD) {
+      classes.push('sub-dead');
+    } else if (seconds >= STALE_THRESHOLD) {
+      classes.push('sub-stale');
     }
   }
 
