@@ -8,7 +8,7 @@ import {
   faCaretDown,
   faCaretLeft,
 } from '@fortawesome/free-solid-svg-icons';
-import RedditAPI from '@/reddit/redditAPI';
+import { followUser } from '@/reddit/redditApiTs';
 import { setMenuStatus, getMenuStatus } from '@/common';
 import {
   selectAllSubreddits,
@@ -43,7 +43,7 @@ function useFriends() {
     async (name: string) => {
       const nameLower = name.toLowerCase();
       try {
-        await RedditAPI.followUser(nameLower, 'unsub');
+        await followUser(nameLower, 'unsub');
         // Refetch subreddits after unfollowing (cache will be updated)
         const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
         dispatch(fetchSubreddits({ reset: true, where }));

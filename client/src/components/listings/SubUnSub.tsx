@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import type { SubredditData } from '@/types/redditApi';
 import { fetchSubreddits } from '@/redux/slices/subredditsSlice';
 import { selectSubredditData } from '@/redux/slices/listingsSlice';
-import RedditAPI from '../../reddit/redditAPI';
+import { subscribe as subscribeApi } from '@/reddit/redditApiTs';
 
 /**
  * Custom hook to handle subreddit subscription
@@ -19,7 +19,7 @@ function useSubscribe() {
   const redditBearer = useAppSelector((state) => state.redditBearer);
   return useCallback(
     async (about: SubredditData) => {
-      await RedditAPI.subscribe(about.name, 'sub');
+      await subscribeApi(about.name, 'sub');
       const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
       dispatch(fetchSubreddits({ reset: true, where }));
     },
@@ -36,7 +36,7 @@ function useUnsubscribe() {
   const redditBearer = useAppSelector((state) => state.redditBearer);
   return useCallback(
     async (about: SubredditData) => {
-      await RedditAPI.subscribe(about.name, 'unsub');
+      await subscribeApi(about.name, 'unsub');
       const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
       dispatch(fetchSubreddits({ reset: true, where }));
     },

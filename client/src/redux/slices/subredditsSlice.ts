@@ -26,7 +26,7 @@ import {
 import pLimit from 'p-limit';
 import type { RootState } from '@/types/redux';
 import type { SubredditData, Thing } from '@/types/redditApi';
-import RedditAPI from '@/reddit/redditAPI';
+import { subreddits } from '@/reddit/redditApiTs';
 import {
   getLastUpdatedWithDelay,
   shouldUpdate,
@@ -160,7 +160,7 @@ const subredditsAll = async (
   while (init || qsAfter) {
     init = false;
     newOptions.after = qsAfter;
-    const srs = await RedditAPI.subreddits(where, newOptions);
+    const srs = await subreddits(where, newOptions);
     const mapped = mapSubreddits(srs.data.children);
     allMapped.push(mapped);
     qsAfter = srs.data.after ?? null;

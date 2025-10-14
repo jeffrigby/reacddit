@@ -23,7 +23,34 @@ import {
   type SubredditRulesResponse,
   type SubredditTrafficResponse,
   type SubredditSettingsResponse,
+  type SearchParams,
+  type SearchResponseWithUrl,
+  type SubredditListingsParams,
+  type ListingResponseWithUrl,
+  type LinkData,
+  type CommentData,
+  type UserActivityParams,
+  type DuplicatesParams,
+  type Listing,
+  type CommentsResponse,
+  type MultiMineParams,
+  type ApiResponse,
+  type Thing,
+  type LabeledMultiData,
+  type MultiInfoResponse,
+  type SubredditsListingParams,
+  type SubredditsListingResponse,
+  type SubscribeParams,
+  type SubscribeResponse,
+  type FriendsList,
+  type MoreChildrenParams,
+  type MoreChildrenResponse,
 } from '@/types/redditApi';
+
+// Constants
+const FORM_URLENCODED_HEADERS = {
+  'Content-Type': 'application/x-www-form-urlencoded',
+} as const;
 
 // Utility function to clean null/empty values from params
 export function setParams(
@@ -185,9 +212,7 @@ export async function favorite(
   const response = await redditAPI.post(
     '/api/favorite',
     queryString.stringify(data),
-    {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    }
+    { headers: FORM_URLENCODED_HEADERS }
   );
 
   // If the response is not 200, throw an error
@@ -228,11 +253,7 @@ export async function searchSubreddits(
   const response = await redditAPI.post(
     '/api/search_subreddits',
     queryString.stringify(params),
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    }
+    { headers: FORM_URLENCODED_HEADERS }
   );
 
   return response.data;
@@ -257,11 +278,7 @@ export async function vote(
   const response = await redditAPI.post(
     '/api/vote',
     queryString.stringify(params),
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    }
+    { headers: FORM_URLENCODED_HEADERS }
   );
 
   return response.data;
@@ -285,11 +302,7 @@ export async function save(
   const response = await redditAPI.post(
     '/api/save',
     queryString.stringify(params),
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    }
+    { headers: FORM_URLENCODED_HEADERS }
   );
 
   return response.data;
@@ -304,11 +317,7 @@ export async function unsave(id: UnsaveParams['id']): Promise<UnsaveResponse> {
   const response = await redditAPI.post(
     '/api/unsave',
     queryString.stringify({ id }),
-    {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    }
+    { headers: FORM_URLENCODED_HEADERS }
   );
 
   return response.data;
@@ -347,4 +356,522 @@ export async function subredditAbout(
 
   const response = await redditAPI.get(url, { params });
   return response.data;
+}
+
+/**
+ * Search for posts within a subreddit or sitewide
+ * @param target - The subreddit name (without r/ prefix), or null for sitewide search
+ * @param options - Search parameters including query, sort, time range, etc.
+ * @returns Promise with search results and request URL
+ */
+export async function getListingSearch(
+  target: string | null,
+  options: Partial<SearchParams>
+): Promise<SearchResponseWithUrl> {
+  const defaults: Partial<SearchParams> = {
+    after: undefined,
+    before: undefined,
+    category: undefined,
+    count: 0,
+    include_facets: false,
+    limit: 25,
+    q: '',
+    restrict_sr: true,
+    show: 'all',
+    sr_detail: false,
+    t: undefined,
+    type: undefined,
+    raw_json: 1,
+    sort: 'relevance',
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const url = target ? `r/${target}/search` : 'search';
+  const response = await redditAPI.get(url, { params });
+  const query = queryString.stringify(params);
+
+  return {
+    ...response.data,
+    requestUrl: `${url}?${query}`,
+  };
+}
+
+/**
+ * Search for posts within a multireddit
+ * @param user - The username who owns the multi ('me' for current user)
+ * @param target - The multireddit name
+ * @param options - Search parameters
+ * @returns Promise with search results and request URL
+ */
+export async function getListingSearchMulti(
+  user: string,
+  target: string,
+  options: Partial<SearchParams>
+): Promise<SearchResponseWithUrl> {
+  const defaults: Partial<SearchParams> & { is_multi?: 1 } = {
+    after: undefined,
+    before: undefined,
+    category: undefined,
+    count: 0,
+    include_facets: false,
+    limit: 25,
+    q: '',
+    restrict_sr: true,
+    show: 'all',
+    sr_detail: false,
+    t: undefined,
+    type: undefined,
+    raw_json: 1,
+    sort: 'relevance',
+    is_multi: 1,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const url =
+    user === 'me'
+      ? `me/m/${target}/search`
+      : `/user/${user}/m/${target}/search`;
+
+  const response = await redditAPI.get(url, { params });
+  const query = queryString.stringify(params);
+
+  return {
+    ...response.data,
+    requestUrl: `${url}?${query}`,
+  };
+}
+
+/**
+ * Get listings for a subreddit
+ * @param subreddit - The subreddit name (without r/ prefix), or null for frontpage
+ * @param sort - Sort order (hot, new, top, rising, controversial, etc.)
+ * @param options - Pagination and filter options
+ * @returns Promise with subreddit listings and request URL
+ */
+export async function getListingSubreddit(
+  subreddit: string | null,
+  sort: string,
+  options: Partial<SubredditListingsParams> = {}
+): Promise<ListingResponseWithUrl<LinkData>> {
+  const defaults: Partial<SubredditListingsParams> = {
+    after: undefined,
+    before: undefined,
+    count: 0,
+    include_categories: false,
+    limit: 25,
+    show: 'all',
+    sr_detail: false,
+    raw_json: 1,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const url = subreddit ? `/r/${subreddit}/${sort}` : sort;
+  const response = await redditAPI.get(url, { params });
+  const query = queryString.stringify(params);
+
+  return {
+    ...response.data,
+    requestUrl: `${url}?${query}`,
+  };
+}
+
+/**
+ * Get listings for a multireddit
+ * @param user - The username who owns the multi ('me' for current user)
+ * @param name - The multireddit name
+ * @param sort - Sort order
+ * @param options - Pagination and filter options
+ * @returns Promise with multireddit listings and request URL
+ */
+export async function getListingMulti(
+  user: string,
+  name: string,
+  sort: string,
+  options: Partial<SubredditListingsParams> = {}
+): Promise<ListingResponseWithUrl<LinkData>> {
+  const defaults: Partial<SubredditListingsParams> = {
+    after: undefined,
+    before: undefined,
+    count: 0,
+    include_categories: false,
+    limit: 25,
+    show: 'all',
+    sr_detail: false,
+    raw_json: 1,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const url =
+    user === 'me' ? `me/m/${name}/${sort}` : `user/${user}/m/${name}/${sort}`;
+
+  const response = await redditAPI.get(url, { params });
+  const query = queryString.stringify(params);
+
+  return {
+    ...response.data,
+    requestUrl: `${url}?${query}`,
+  };
+}
+
+/**
+ * Get user activity listings (posts, comments, etc.)
+ * @param user - The username
+ * @param type - Activity type (submitted, comments, overview, gilded, etc.)
+ * @param sort - Sort order
+ * @param options - Pagination and filter options
+ * @returns Promise with user activity listings and request URL
+ */
+export async function getListingUser(
+  user: string,
+  type: string,
+  sort: string,
+  options: Partial<UserActivityParams> = {}
+): Promise<ListingResponseWithUrl<LinkData | CommentData>> {
+  const defaults: Partial<UserActivityParams> = {
+    after: undefined,
+    before: undefined,
+    count: 0,
+    include_categories: false,
+    limit: 25,
+    show: undefined,
+    sr_detail: false,
+    raw_json: 1,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const url = `user/${user}/${type}?sort=${sort}`;
+  const response = await redditAPI.get(url, { params });
+  const query = queryString.stringify(params);
+
+  return {
+    ...response.data,
+    requestUrl: `${url}?${query}`,
+  };
+}
+
+/**
+ * Get duplicate/crosspost listings for a post
+ * @param article - The post ID (without t3_ prefix)
+ * @param options - Filter and pagination options
+ * @returns Promise with duplicates and request URL (returns tuple with original post and duplicates)
+ */
+export async function getListingDuplicates(
+  article: string,
+  options: Partial<DuplicatesParams> = {}
+): Promise<[Listing<LinkData>, Listing<LinkData>] & { requestUrl: string }> {
+  const defaults: Partial<DuplicatesParams> = {
+    after: undefined,
+    before: undefined,
+    count: 0,
+    crossposts_only: false,
+    sort: 'num_comments',
+    limit: 25,
+    show: 'all',
+    sr: undefined,
+    sr_detail: false,
+    raw_json: 1,
+    article_id: article,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const url = `duplicates/${article}`;
+  const response = await redditAPI.get(url, { params });
+  const query = queryString.stringify(params);
+
+  const result = response.data as [Listing<LinkData>, Listing<LinkData>] & {
+    requestUrl: string;
+  };
+  result.requestUrl = `${url}?${query}`;
+
+  return result;
+}
+
+/**
+ * Get comments for a post
+ * @param target - The subreddit name
+ * @param postName - The post ID (without t3_ prefix)
+ * @param comment - Optional specific comment ID to focus on
+ * @param options - Query parameters
+ * @returns Promise with comments and request URL (returns tuple with post and comments)
+ */
+export async function getComments(
+  target: string,
+  postName: string,
+  comment: string | null,
+  options: Record<string, unknown> = {}
+): Promise<CommentsResponse & { requestUrl: string }> {
+  const defaults = {
+    raw_json: 1 as const,
+    comment: comment ?? undefined,
+  };
+
+  const params = setParams(defaults, options);
+
+  const url = `r/${target}/comments/${postName}/`;
+  const response = await redditAPI.get(url, { params });
+  const query = queryString.stringify(params);
+
+  const result = response.data as CommentsResponse & { requestUrl: string };
+  result.requestUrl = `${url}?${query}`;
+
+  return result;
+}
+
+/**
+ * Load more comments (expand "load more comments" links)
+ * @param linkID - The post fullname (t3_xxx)
+ * @param children - Array of comment IDs to load
+ * @param options - Additional parameters
+ * @returns Promise with more comments data
+ */
+export async function getMoreComments(
+  linkID: string,
+  children: string[],
+  options: Partial<MoreChildrenParams> = {}
+): Promise<MoreChildrenResponse> {
+  const defaults: Partial<MoreChildrenParams> = {
+    link_id: linkID as `t3_${string}`,
+    children: children.join(','),
+    raw_json: 1,
+    api_type: 'json',
+    depth: undefined,
+    id: undefined,
+    limit_children: false,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const response = await redditAPI.get('api/morechildren', { params });
+  return response.data;
+}
+
+/**
+ * Get the logged-in user's multireddits
+ * @param options - Query parameters
+ * @returns Promise with array of multireddits
+ */
+export async function multiMine(
+  options: Partial<MultiMineParams> = {}
+): Promise<Thing<LabeledMultiData>[]> {
+  const defaults: MultiMineParams = {
+    expand_srs: false,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const url = '/api/multi/mine';
+  const response = await redditAPI.get(url, { params });
+  return response.data;
+}
+
+/**
+ * Create a new multireddit (custom feed)
+ * @param name - Multireddit name (max 50 characters)
+ * @param description - Description in markdown format
+ * @param visibility - Visibility setting (private, public, or hidden)
+ * @returns Promise with API response
+ */
+export async function multiAdd(
+  name: string,
+  description: string,
+  visibility: 'private' | 'public' | 'hidden'
+): Promise<ApiResponse> {
+  const url = '/api/multi';
+  const data = {
+    model: JSON.stringify({
+      description_md: description,
+      display_name: name,
+      visibility,
+    }),
+  };
+
+  const response = await redditAPI.post(url, queryString.stringify(data), {
+    headers: FORM_URLENCODED_HEADERS,
+  });
+
+  return response.data;
+}
+
+/**
+ * Delete a multireddit
+ * @param multipath - The multireddit path (e.g., /user/username/m/multiname)
+ * @returns Promise with API response
+ */
+export async function multiDelete(multipath: string): Promise<ApiResponse> {
+  const path = multipath.replace(/^\/+/, '');
+  const url = `/api/multi/${path}`;
+  const response = await redditAPI.delete(url);
+  return response.data;
+}
+
+/**
+ * Get information about a multireddit
+ * @param multiPath - The multireddit path
+ * @returns Promise with multireddit information
+ */
+export async function multiInfo(multiPath: string): Promise<MultiInfoResponse> {
+  const url = `/api/multi/${multiPath}`;
+  const response = await redditAPI.get(url);
+  return response.data;
+}
+
+/**
+ * Add a subreddit to a multireddit
+ * @param multiPath - The full path of the multireddit
+ * @param srName - The subreddit name (without r/ prefix)
+ * @returns Promise with API response
+ */
+export async function multiAddSubreddit(
+  multiPath: string,
+  srName: string
+): Promise<ApiResponse> {
+  const cleanPath = multiPath.replace(/(^\/|\/$)/g, '');
+  const url = `/api/multi/${cleanPath}//r/${srName}`;
+  const data = { model: JSON.stringify({ name: srName }) };
+
+  const response = await redditAPI.put(url, queryString.stringify(data), {
+    headers: FORM_URLENCODED_HEADERS,
+  });
+
+  return response.data;
+}
+
+/**
+ * Remove a subreddit from a multireddit
+ * @param multiPath - The full path of the multireddit
+ * @param srName - The subreddit name (without r/ prefix)
+ * @returns Promise with API response
+ */
+export async function multiRemoveSubreddit(
+  multiPath: string,
+  srName: string
+): Promise<ApiResponse> {
+  const cleanPath = multiPath.replace(/(^\/|\/$)/g, '');
+  const url = `/api/multi/${cleanPath}/r/${srName}`;
+  const response = await redditAPI.delete(url);
+  return response.data;
+}
+
+/**
+ * Get subreddits list (user's subscriptions or popular/default lists)
+ * @param where - Type of subreddits (subscriber, contributer, moderator, streams, default, popular, etc.)
+ * @param options - Pagination options
+ * @returns Promise with subreddits list
+ */
+export async function subreddits(
+  where: string,
+  options: Partial<SubredditsListingParams> = {}
+): Promise<SubredditsListingResponse> {
+  const defaults: Partial<SubredditsListingParams> = {
+    limit: 100,
+    count: undefined,
+    before: undefined,
+    after: undefined,
+    show: undefined,
+    sr_detail: undefined,
+    raw_json: 1,
+  };
+
+  const params = setParams(
+    defaults as unknown as Record<string, unknown>,
+    options as Record<string, unknown>
+  );
+
+  const mine = where.match(/subscriber|contributer|moderator|streams/);
+  const url =
+    mine === null ? `/subreddits/${where}` : `/subreddits/mine/${where}`;
+
+  const response = await redditAPI.get(url, { params });
+  return response.data;
+}
+
+/**
+ * Subscribe or unsubscribe from a subreddit or user
+ * @param name - The subreddit/user name or fullname
+ * @param action - 'sub' to subscribe, 'unsub' to unsubscribe
+ * @param type - 'sr' for fullname (t5_xxx), 'sr_name' for display name
+ * @returns Promise with API response
+ */
+export async function subscribe(
+  name: string,
+  action: 'sub' | 'unsub' = 'sub',
+  type: 'sr' | 'sr_name' = 'sr'
+): Promise<SubscribeResponse> {
+  const validActions: Array<'sub' | 'unsub'> = ['sub', 'unsub'];
+  const validTypes: Array<'sr' | 'sr_name'> = ['sr', 'sr_name'];
+
+  if (!validActions.includes(action)) {
+    throw new Error('Invalid action passed to subscribe');
+  }
+
+  if (!validTypes.includes(type)) {
+    throw new Error('Invalid type passed to subscribe');
+  }
+
+  const params: SubscribeParams = { action };
+  if (type === 'sr') {
+    params.sr = name as `t5_${string}`;
+  } else {
+    params.sr_name = name;
+  }
+
+  const response = await redditAPI.post(
+    '/api/subscribe',
+    queryString.stringify(params),
+    { headers: FORM_URLENCODED_HEADERS }
+  );
+
+  return response.data;
+}
+
+/**
+ * Get the user's friend list (DEPRECATED by Reddit)
+ * @returns Promise with friends list
+ */
+export async function friends(): Promise<FriendsList> {
+  const response = await redditAPI.get('api/v1/me/friends');
+  return response.data;
+}
+
+/**
+ * Follow or unfollow a user
+ * @param name - The username to follow/unfollow
+ * @param action - 'sub' to follow, 'unsub' to unfollow
+ * @returns Promise with API response
+ */
+export async function followUser(
+  name: string,
+  action: 'sub' | 'unsub' = 'sub'
+): Promise<SubscribeResponse> {
+  return subscribe(name, action, 'sr_name');
 }

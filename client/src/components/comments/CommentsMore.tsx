@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
-import redditAPI from '@/reddit/redditAPI';
+import { getMoreComments } from '@/reddit/redditApiTs';
 import CommentsRender from './CommentsRender';
 
 type CommentOrMore = Thing<CommentData> | Thing<MoreChildrenData>;
@@ -45,16 +45,22 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
     postTitle: string;
   }>();
 
-  const getMoreComments = async () => {
+  const loadMoreComments = async () => {
     setLoading(true);
-    const commentReplies = await redditAPI.getMoreComments(linkId, children);
-    if (commentReplies.status === 200) {
-      const commentRepliesKeyed = arrayToObject(
-        commentReplies.data.json.data.things as CommentOrMore[],
-        'name'
-      );
+    try {
+      const commentReplies = await getMoreComments(linkId, children);
 
-      setReplies(commentRepliesKeyed);
+      if (commentReplies.json.data?.things) {
+        const commentRepliesKeyed = arrayToObject(
+          commentReplies.json.data.things as CommentOrMore[],
+          'name'
+        );
+
+        setReplies(commentRepliesKeyed);
+      }
+    } catch (error) {
+      console.error('Failed to load more comments:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -89,7 +95,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
         disabled={loading}
         size="sm"
         variant="outline-secondary"
-        onClick={getMoreComments}
+        onClick={loadMoreComments}
       >
         {loading ? (
           <>Fetchng more comments.</>

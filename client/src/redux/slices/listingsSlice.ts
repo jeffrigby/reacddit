@@ -18,7 +18,16 @@ import type {
   Listing,
 } from '@/types/redditApi';
 import type { ListingsFilter, ListingsState } from '@/types/listings';
-import RedditAPI from '@/reddit/redditAPI';
+import {
+  getListingSubreddit,
+  getListingMulti,
+  getListingUser,
+  getListingSearch,
+  getListingSearchMulti,
+  getListingDuplicates,
+  getComments,
+  subredditAbout,
+} from '@/reddit/redditApiTs';
 import { keyEntryChildren } from '@/common';
 
 const MAX_HISTORY_LOCATIONS = 7;
@@ -95,13 +104,13 @@ async function getContent(
 
   switch (listType) {
     case 'r':
-      entries = await RedditAPI.getListingSubreddit(target, sort, params);
+      entries = await getListingSubreddit(target, sort, params);
       break;
     case 'm':
-      entries = await RedditAPI.getListingMulti(user, target, sort, params);
+      entries = await getListingMulti(user, target, sort, params);
       break;
     case 'u':
-      entries = await RedditAPI.getListingUser(
+      entries = await getListingUser(
         user,
         target === 'posts' ? 'submitted' : target,
         sort,
@@ -110,11 +119,11 @@ async function getContent(
       break;
     case 's':
       entries = multi
-        ? await RedditAPI.getListingSearchMulti(user, target, params)
-        : await RedditAPI.getListingSearch(target, params);
+        ? await getListingSearchMulti(user, target, params)
+        : await getListingSearch(target, params);
       break;
     case 'duplicates': {
-      const dupes = await RedditAPI.getListingDuplicates(target, params);
+      const dupes = await getListingDuplicates(target, params);
       entries = {
         ...dupes[1],
         originalPost: dupes[0],
@@ -123,12 +132,7 @@ async function getContent(
       break;
     }
     case 'comments': {
-      const comments = await RedditAPI.getComments(
-        target,
-        postName,
-        comment,
-        params
-      );
+      const comments = await getComments(target, postName, comment, params);
       entries = {
         ...comments[1],
         originalPost: comments[0],
@@ -157,7 +161,7 @@ async function getSubredditAbout(
     return {};
   }
 
-  const about = await RedditAPI.subredditAbout(target);
+  const about = await subredditAbout(target);
   return about.data;
 }
 export const fetchListingsInitial = createAsyncThunk<

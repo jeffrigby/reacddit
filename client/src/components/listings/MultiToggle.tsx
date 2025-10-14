@@ -7,7 +7,7 @@ import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
 import { selectSubredditData } from '@/redux/slices/listingsSlice';
-import RedditAPI from '../../reddit/redditAPI';
+import { multiAddSubreddit, multiRemoveSubreddit } from '@/reddit/redditApiTs';
 
 interface MultiToggleProps {
   srName: string;
@@ -54,12 +54,15 @@ function MultiToggle({ srName }: MultiToggleProps) {
   }
 
   const addRemove = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rsp = e.target.checked
-      ? await RedditAPI.multiAddSubreddit(e.target.value, srName)
-      : await RedditAPI.multiRemoveSubreddit(e.target.value, srName);
+    try {
+      await (e.target.checked
+        ? multiAddSubreddit(e.target.value, srName)
+        : multiRemoveSubreddit(e.target.value, srName));
 
-    if (rsp.status === 200 || rsp.status === 201) {
       await dispatch(fetchMultiReddits(true));
+    } catch (error) {
+      console.error('Failed to update multi subreddit:', error);
+      // Note: Checkbox state will be corrected when multis refresh
     }
   };
 

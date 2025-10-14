@@ -8,7 +8,7 @@ import {
   faUserMinus,
   faUserPlus,
 } from '@fortawesome/free-solid-svg-icons';
-import RedditAPI from '../../../reddit/redditAPI';
+import { followUser as followUserApi } from '@/reddit/redditApiTs';
 import {
   fetchSubreddits,
   selectSubredditById,
@@ -53,7 +53,7 @@ function PostBylineAuthor({
   const unfollowUser = async (name: string): Promise<void> => {
     try {
       setIsFollowing(false); // Optimistic update
-      await RedditAPI.followUser(name, 'unsub');
+      await followUserApi(name, 'unsub');
       // Refetch subreddits to update cache
       const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
       dispatch(fetchSubreddits({ reset: true, where }));
@@ -66,7 +66,7 @@ function PostBylineAuthor({
   const followUser = async (name: string): Promise<void> => {
     try {
       setIsFollowing(true); // Optimistic update
-      await RedditAPI.followUser(name, 'sub');
+      await followUserApi(name, 'sub');
       // Refetch subreddits to update cache
       const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
       dispatch(fetchSubreddits({ reset: true, where }));

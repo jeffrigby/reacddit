@@ -53,7 +53,7 @@ function genNavItems(multiRedditSubs: SubredditItem[]): ReactElement[] {
 function MultiRedditsSubs({
   multiRedditSubs,
 }: MultiRedditsSubsProps): ReactElement | null {
-  if (!multiRedditSubs || multiRedditSubs.length === 0) {
+  if (multiRedditSubs?.length === 0) {
     return null;
   }
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAppSelector } from '@/redux/hooks';
 import type { LabeledMultiData } from '@/types/redditApi';
-import RedditAPI from '../../reddit/redditAPI';
+import { multiInfo } from '@/reddit/redditApiTs';
 import MultiDelete from './MultiDelete';
 
 function ListingsHeaderMulti() {
@@ -30,11 +30,14 @@ function ListingsHeaderMulti() {
 
     let isSubscribed = true;
     const getCurrentMulti = async () => {
-      const multiLookup = await RedditAPI.multiInfo(`user/${name}/m/${target}`);
-      if (multiLookup.status === 200) {
+      try {
+        const multiLookup = await multiInfo(`user/${name}/m/${target}`);
         if (isSubscribed) {
-          setCurrentMulti(multiLookup.data.data);
+          setCurrentMulti(multiLookup.data);
         }
+      } catch (error) {
+        console.error('Failed to load multi info:', error);
+        // Keep currentMulti as null to show loading placeholder
       }
     };
 

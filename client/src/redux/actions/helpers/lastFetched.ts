@@ -17,7 +17,7 @@
  * @module lastFetched
  */
 
-import RedditAPI from '@/reddit/redditAPI';
+import { getListingSubreddit, getListingUser } from '@/reddit/redditApiTs';
 import type { Thing, LinkData } from '@/types/redditApi';
 
 /**
@@ -160,11 +160,11 @@ export async function getLastUpdated(
     let listing;
 
     if (type === 'subreddit') {
-      listing = await RedditAPI.getListingSubreddit(path, 'new', {
+      listing = await getListingSubreddit(path, 'new', {
         limit: 5,
       });
     } else if (type === 'friend') {
-      listing = await RedditAPI.getListingUser(path, 'submitted', 'new', {
+      listing = await getListingUser(path, 'submitted', 'new', {
         limit: 10,
       });
     } else {

@@ -3,7 +3,7 @@ import type { ReactElement, ChangeEvent } from 'react';
 import { Form, Dropdown, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import RedditAPI from '../../reddit/redditAPI';
+import { multiAdd } from '@/reddit/redditApiTs';
 
 interface MultiRedditsAddProps {
   setShowAdd: (show: boolean) => void;
@@ -39,7 +39,7 @@ function MultiRedditsAdd({
     const name = nameInput.current.value;
     const desc = descriptionTextarea.current.value;
     const visibleStatus = visibility ? 'private' : 'public';
-    await RedditAPI.multiAdd(name, desc, visibleStatus);
+    await multiAdd(name, desc, visibleStatus);
     setShowAdd(false);
     reloadMultis();
   }, [visibility, setShowAdd, reloadMultis]);

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router';
 import { useAppDispatch } from '@/redux/hooks';
 import type { LabeledMultiData } from '@/types/redditApi';
 import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
-import RedditAPI from '../../reddit/redditAPI';
+import { multiDelete } from '@/reddit/redditApiTs';
 
 interface MultiDeleteProps {
   multi: LabeledMultiData;
@@ -17,7 +17,7 @@ function MultiDelete({ multi }: MultiDeleteProps) {
   const navigate = useNavigate();
 
   const deleteMulti = async () => {
-    await RedditAPI.multiDelete(multi.path);
+    await multiDelete(multi.path);
     dispatch(fetchMultiReddits(true));
     navigate('/');
   };

@@ -10,7 +10,7 @@ import {
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/types/redux';
 import type { Thing, LabeledMultiData } from '@/types/redditApi';
-import RedditAPI from '@/reddit/redditAPI';
+import { multiMine } from '@/reddit/redditApiTs';
 
 /**
  * State shape for multiReddits slice
@@ -51,7 +51,7 @@ export const fetchMultiReddits = createAsyncThunk<
     // Note: reset parameter is used by condition function below, not here
     try {
       // Fetch fresh data from Reddit API
-      const multis = await RedditAPI.multiMine({ expand_srs: true });
+      const multis = await multiMine({ expand_srs: true });
       return multis;
     } catch (error) {
       return rejectWithValue(
