@@ -9,7 +9,7 @@ interface IFrameContent {
   height?: number;
   allow?: string;
   sandbox?: string;
-  referrerPolicy?: ReferrerPolicy;
+  referrerPolicy?: ReferrerPolicy | string;
   loading?: 'lazy' | 'eager';
   iframeStyle?: CSSProperties;
   onLoad?: () => void;

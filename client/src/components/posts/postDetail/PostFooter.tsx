@@ -9,17 +9,18 @@ import { PostsContextData } from '../../../contexts';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
 import type { LinkData, CommentData } from '../../../types/redditApi';
+import type { EmbedContent } from '../embeds/types';
 
 interface PostFooterProps {
   debug: boolean;
-  renderedContent?: Record<string, unknown> | null;
+  renderedContent?: EmbedContent;
   setShowVisToggle: (show: boolean) => void;
   showVisToggle: boolean;
 }
 
 function PostFooter({
   debug,
-  renderedContent = null,
+  renderedContent,
   setShowVisToggle,
   showVisToggle,
 }: PostFooterProps): React.JSX.Element | null {
@@ -31,7 +32,7 @@ function PostFooter({
   const [copied, setCopied] = useState(false);
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
-  const copyTimeoutRef = useRef<NodeJS.Timeout>();
+  const copyTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     return () => {

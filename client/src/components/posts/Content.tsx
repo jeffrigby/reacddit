@@ -64,7 +64,10 @@ function Content({ content = null }: ContentProps) {
         break;
       case 'social':
         contentRendered = (
-          <Social network={content.network} url={content.url} />
+          <Social
+            network={content.network as 'x' | 'instagram' | 'facebook'}
+            url={content.url}
+          />
         );
         break;
       case 'httpserror':

@@ -42,7 +42,6 @@ function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
     sources.push({ type: 'video/mp4', src: media.fallback_url });
 
     return {
-      media,
       width: media.width,
       height: media.height,
       hasAudio: !media.is_gif || false,

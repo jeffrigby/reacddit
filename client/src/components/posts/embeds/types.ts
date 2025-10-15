@@ -42,6 +42,12 @@ export interface ImageEmbedContent extends BaseEmbedContent {
   width?: number;
   height?: number;
   title?: string;
+  imgurRenderType?:
+    | 'imgurGifVPath'
+    | 'imgurMP4Path'
+    | 'imgurMP4'
+    | 'albumMP4'
+    | 'imgurImagePath';
 }
 
 // Video embed content

@@ -6,13 +6,13 @@ export interface VideoSource {
 }
 
 export interface VideoContent {
-  id: string;
-  width: number;
-  height: number;
+  id?: string;
+  width?: number;
+  height?: number;
   sources: VideoSource[];
-  hasAudio: boolean;
+  hasAudio?: boolean;
   audioWarning?: boolean;
-  thumb?: string;
+  thumb?: string | null;
 }
 
 export interface Buffer {

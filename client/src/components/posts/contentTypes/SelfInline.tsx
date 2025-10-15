@@ -5,14 +5,15 @@ import {
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 import Content from '../Content';
+import type { EmbedContent } from '../embeds/types';
 
 interface ResolvedContent {
-  content: unknown;
+  content: EmbedContent;
   link: string;
 }
 
 interface SelfInlineProps {
-  inline: Array<Promise<unknown>>;
+  inline: EmbedContent[];
   inlineLinks: string[];
   name: string;
 }
@@ -22,18 +23,16 @@ function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
   const [resolvedContent, setResolvedContent] = useState<ResolvedContent[]>([]);
 
   useEffect(() => {
-    Promise.all(inline).then((content) => {
-      const resolved: ResolvedContent[] = [];
-      content.forEach((value, key) => {
-        if (value) {
-          resolved.push({
-            content: value,
-            link: inlineLinks[key],
-          });
-        }
-      });
-      setResolvedContent(resolved);
+    const resolved: ResolvedContent[] = [];
+    inline.forEach((value, key) => {
+      if (value) {
+        resolved.push({
+          content: value,
+          link: inlineLinks[key],
+        });
+      }
     });
+    setResolvedContent(resolved);
   }, [inline, inlineLinks]);
 
   const totalLinks = resolvedContent.length;

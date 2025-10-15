@@ -27,7 +27,9 @@ const REDDIT_KIND = {
 
 // LRU cache for embed content to avoid re-processing same URLs
 // Configured for long browsing sessions with lots of embedded content
-const embedCache = new LRUCache<string, EmbedContent>({
+// Note: We use NonNullable<EmbedContent> as the cache value type since LRUCache
+// requires value types to extend {}. We handle null by checking if cached value is undefined.
+const embedCache = new LRUCache<string, NonNullable<EmbedContent>>({
   max: 500, // Store up to 500 most recent embeds
   ttl: 1000 * 60 * 15, // 15 minute TTL (embeds rarely change)
   updateAgeOnGet: true, // Refresh TTL when accessing cached items
@@ -342,7 +344,10 @@ async function RenderContent(
   try {
     if (kind === REDDIT_KIND.COMMENT) {
       // const getInline = inlineLinks(entry);
-      const content = await getContent({ greedyDomain: 'comment' }, entry);
+      const content = await getContent(
+        { greedyDomain: 'comment', domain: 'comment' },
+        entry
+      );
       const commentInlineLinks = await inlineLinks(entry, kind);
       if (commentInlineLinks.inline.length > 0 && content) {
         result = {
@@ -353,26 +358,25 @@ async function RenderContent(
       } else {
         result = content;
       }
-      embedCache.set(cacheKey, result);
+      if (result !== null) {
+        embedCache.set(cacheKey, result);
+      }
       return result;
     }
 
     // Only process links (not comments) in this branch
     if (!isLinkData(entry)) {
-      embedCache.set(cacheKey, null);
       return null;
     }
 
     const { domain, selftext_html: selfTextHtml } = entry;
 
     if (!domain) {
-      embedCache.set(cacheKey, null);
       return null;
     }
 
     const keys = getKeys(domain);
     if (!keys) {
-      embedCache.set(cacheKey, null);
       return null;
     }
 
@@ -386,17 +390,20 @@ async function RenderContent(
           inline: getInline.inline,
           inlineLinks: getInline.renderedLinks,
         } as EmbedContent;
-        embedCache.set(cacheKey, result);
+        if (result !== null) {
+          embedCache.set(cacheKey, result);
+        }
         return result;
       }
     }
 
     result = nonSSLFallback(content, entry);
-    embedCache.set(cacheKey, result);
+    if (result !== null) {
+      embedCache.set(cacheKey, result);
+    }
     return result;
   } catch (e) {
     console.error(e);
-    embedCache.set(cacheKey, null);
   }
   return null;
 }

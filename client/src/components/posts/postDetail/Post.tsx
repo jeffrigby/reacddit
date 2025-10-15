@@ -37,14 +37,10 @@ import type {
   Listing,
   MoreChildrenData,
 } from '../../../types/redditApi';
-
-interface RenderedContent {
-  inline?: Array<Promise<unknown> | unknown>;
-  [key: string]: unknown;
-}
+import type { EmbedContent } from '../embeds/types';
 
 interface UseRenderedContentReturn {
-  renderedContent: RenderedContent | null;
+  renderedContent: EmbedContent;
 }
 
 function useRenderedContent(
@@ -52,8 +48,7 @@ function useRenderedContent(
   kind: string,
   expand: boolean
 ): UseRenderedContentReturn {
-  const [renderedContent, setRenderedContent] =
-    useState<RenderedContent | null>(null);
+  const [renderedContent, setRenderedContent] = useState<EmbedContent>(null);
 
   // Used for debugging offscreen elements.
   const isRendered = useRef(false);
@@ -78,12 +73,15 @@ function useRenderedContent(
         return;
       }
 
-      if (getContent.inline) {
-        getContent.inline = await Promise.all(
+      // Only SelfTextContent has inline property
+      if (getContent && 'inline' in getContent && getContent.inline) {
+        const resolvedInline = await Promise.all(
           getContent.inline.map(
             async (value: Promise<unknown> | unknown) => await value
           )
         );
+        // Type assertion since we know SelfTextContent.inline is EmbedContent[]
+        getContent.inline = resolvedInline as EmbedContent[];
       }
 
       setRenderedContent(getContent);
@@ -124,7 +122,7 @@ function Post({
   const params = useParams<{ listType?: string }>();
 
   const postRef = useRef<HTMLDivElement>(null);
-  const minHeightRef = useRef<number>();
+  const minHeightRef = useRef<number | undefined>(undefined);
 
   const siteSettings = useAppSelector((state) => state.siteSettings);
   const listingsStatus = useAppSelector((state) =>
@@ -443,14 +441,11 @@ function Post({
             <div className="entry-after-header">
               {expand && (
                 <>
-                  <Content
-                    content={renderedContent as Record<string, unknown>}
-                    key={data.id}
-                  />
+                  <Content content={renderedContent} key={data.id} />
 
                   <PostFooter
                     debug={siteSettings.debug}
-                    renderedContent={renderedContent as Record<string, unknown>}
+                    renderedContent={renderedContent}
                     setShowVisToggle={setShowVisToggle}
                     showVisToggle={showVisToggle}
                   />

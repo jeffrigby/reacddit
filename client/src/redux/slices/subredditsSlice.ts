@@ -259,21 +259,26 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
       }> = [];
 
       Object.values(entities).forEach((subreddit) => {
+        // Type guard: EntityAdapter's entities can have undefined values
         if (!subreddit) {
           return;
         }
 
+        // After the null check, TypeScript should know this is SubredditData
+        // but we need to help it with proper typing
+        const subredditData = subreddit as SubredditData;
+
         // CRITICAL: Use fullname (name field like 't5_2r0ij') as the key
         // Components expect this format in lastUpdatedTracking lookups
-        const subredditFullname = subreddit.name;
+        const subredditFullname = subredditData.name;
 
         // Check if this subreddit needs updating based on expiration
         if (shouldUpdate(lastUpdatedTracking, subredditFullname)) {
           // Check if it's a subreddit or a user
-          if (subreddit.url.match(/^\/user\//)) {
+          if (subredditData.url.match(/^\/user\//)) {
             lookups.push({
               type: 'friend',
-              path: subreddit.url.replace(/^\/user\/|\/$/g, ''),
+              path: subredditData.url.replace(/^\/user\/|\/$/g, ''),
               id: subredditFullname,
             });
             return;
@@ -281,7 +286,7 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
 
           lookups.push({
             type: 'subreddit',
-            path: subreddit.url.replace(/^\/r\/|\/$/g, ''),
+            path: subredditData.url.replace(/^\/r\/|\/$/g, ''),
             id: subredditFullname,
           });
         }

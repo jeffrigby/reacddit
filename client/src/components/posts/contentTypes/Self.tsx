@@ -10,13 +10,14 @@ import {
 import { PostsContextData } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
 import SelfInline from './SelfInline';
+import type { EmbedContent } from '../embeds/types';
 import '../../../styles/self.scss';
 
 interface SelfContent {
   expand?: boolean;
   html?: string;
-  inline: Array<Promise<unknown>>;
-  inlineLinks: string[];
+  inline: EmbedContent[];
+  inlineLinks?: string[];
 }
 
 interface SelfProps {
@@ -126,13 +127,14 @@ function Self({ name, content }: SelfProps) {
   const rawhtml = cleanLinks(html);
 
   const renderedHTML = <div dangerouslySetInnerHTML={{ __html: rawhtml }} />;
-  const inlineRendered = content.inline.length ? (
-    <SelfInline
-      inline={content.inline}
-      inlineLinks={content.inlineLinks}
-      name={name}
-    />
-  ) : null;
+  const inlineRendered =
+    content.inline.length && content.inlineLinks ? (
+      <SelfInline
+        inline={content.inline}
+        inlineLinks={content.inlineLinks}
+        name={name}
+      />
+    ) : null;
 
   const showMore =
     specs?.selfHTML && specs.self && specs.selfHTML - specs.self > 10;

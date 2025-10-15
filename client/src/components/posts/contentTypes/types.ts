@@ -6,7 +6,7 @@
  * Content for HTTPSError component
  */
 export interface HTTPSErrorContent {
-  src: string;
+  src?: string;
 }
 
 /**
@@ -21,11 +21,17 @@ export interface RawHTMLContent {
  */
 export interface RedditGalleryMediaItem {
   preview: {
-    u: string;
+    url: string;
+    width: number;
+    height: number;
   };
   thumb: {
-    u: string;
+    url: string;
+    width: number;
+    height: number;
   };
+  // Legacy support for 'u' property
+  u?: string;
 }
 
 /**
@@ -40,7 +46,7 @@ export interface RedditGalleryContent {
  */
 export interface ImageContent {
   src: string;
-  title: string;
+  title?: string;
   width?: number;
   height?: number;
   class?: string;

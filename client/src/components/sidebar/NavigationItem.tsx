@@ -28,7 +28,11 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
 
   const query = queryString.parse(location.search);
   const { t } = query;
-  const sortPath = buildSortPath(sort, t);
+  // Convert null to undefined and filter out null values from arrays
+  const timeFilter = Array.isArray(t)
+    ? t.filter((item): item is string => item !== null)
+    : (t ?? undefined);
+  const sortPath = buildSortPath(sort, timeFilter);
 
   const href =
     item.subreddit_type === 'user'

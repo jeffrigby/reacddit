@@ -19,7 +19,7 @@ interface PostExpandContractProps {
   /** Whether the post/comment is currently expanded */
   expand: boolean;
   /** Callback to toggle the expanded state */
-  toggleView: () => void;
+  toggleView: (event: React.MouseEvent | React.KeyboardEvent) => void;
   /** Reddit kind identifier - 't1' for comments, others for posts */
   kind: RedditExpandableKind;
 }

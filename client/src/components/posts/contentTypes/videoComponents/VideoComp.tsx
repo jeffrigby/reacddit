@@ -180,12 +180,12 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     getSetBuffer();
   }, [getSetBuffer, playing, currentTime, duration, canPlay, canPlayThrough]);
 
-  const { width, height, sources } = content;
+  const { width = 16, height = 9, sources } = content;
 
   const contStyle = useMemo<React.CSSProperties>(
     () => ({
       aspectRatio: `${width}/${height}`,
-      maxHeight: height < 740 ? height : undefined,
+      maxHeight: height && height < 740 ? height : undefined,
     }),
     [width, height]
   );
