@@ -514,7 +514,7 @@ export const selectFilteredSubreddits = createSelector(
     }
 
     const filterLower = filter.filterText.toLowerCase();
-    return subreddits.filter((sub) =>
+    return subreddits.filter((sub: SubredditData) =>
       sub.display_name.toLowerCase().includes(filterLower)
     );
   }

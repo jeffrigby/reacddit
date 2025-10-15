@@ -92,7 +92,10 @@ function NavigationSubReddits() {
       favorites: SubredditData[];
       regular: SubredditData[];
     }>(
-      (acc, item) => {
+      (
+        acc: { favorites: SubredditData[]; regular: SubredditData[] },
+        item: SubredditData
+      ) => {
         if (item.subreddit_type === 'user') {
           return acc;
         }
@@ -111,7 +114,7 @@ function NavigationSubReddits() {
 
     // Render favorites
     if (favorites.length > 0) {
-      favorites.forEach((sub) => {
+      favorites.forEach((sub: SubredditData) => {
         const trigger = filter.activeIndex === pos && filterActive;
         items.push(
           <NavigationItem item={sub} key={sub.name} trigger={trigger} />
@@ -126,7 +129,7 @@ function NavigationSubReddits() {
     }
 
     // Render regular subreddits
-    regular.forEach((sub) => {
+    regular.forEach((sub: SubredditData) => {
       const trigger = filter.activeIndex === pos && filterActive;
       items.push(
         <NavigationItem item={sub} key={sub.name} trigger={trigger} />

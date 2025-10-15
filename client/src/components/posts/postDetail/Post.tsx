@@ -80,7 +80,9 @@ function useRenderedContent(
 
       if (getContent.inline) {
         getContent.inline = await Promise.all(
-          getContent.inline.map(async (value) => await value)
+          getContent.inline.map(
+            async (value: Promise<unknown> | unknown) => await value
+          )
         );
       }
 

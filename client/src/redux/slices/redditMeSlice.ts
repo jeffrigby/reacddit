@@ -74,7 +74,7 @@ export const fetchMe = createAsyncThunk<
         return true;
       } // Allow forced refresh
 
-      const state = getState();
+      const state = getState() as RootState;
       const currentMe = state.redditMe;
       const currentBearer = state.redditBearer;
       const isAuth = currentBearer.status === 'auth';

@@ -377,6 +377,20 @@ export interface LinkData {
     | 'rich:video'
     | 'gallery';
 
+  // Gallery posts
+  is_gallery?: boolean;
+  media_metadata?: Record<
+    string,
+    {
+      status: string;
+      e: string;
+      m?: string;
+      p?: Array<{ x: number; y: number; u: string }>;
+      s?: { x: number; y: number; u: string; gif?: string; mp4?: string };
+      id: string;
+    }
+  >;
+
   // Crossposting
   crosspost_parent_list?: LinkData[];
   crosspost_parent?: `t3_${string}`;

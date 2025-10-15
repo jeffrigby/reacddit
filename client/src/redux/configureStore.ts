@@ -1,5 +1,4 @@
 import { configureStore } from '@reduxjs/toolkit';
-import type { PreloadedState } from '@reduxjs/toolkit';
 import listingsReducer from './slices/listingsSlice';
 import siteSettingsReducer from './slices/siteSettingsSlice';
 import historyReducer from './slices/historySlice';
@@ -16,8 +15,8 @@ import meReducer from './slices/redditMeSlice';
  * - Automatic redux-thunk middleware
  * - Development-mode checks for mutations and serializability
  */
-const makeStore = (initialState?: PreloadedState<Omit<RootState, 'api'>>) =>
-  configureStore({
+function makeStore(initialState?: Partial<RootState>) {
+  return configureStore({
     reducer: {
       listings: listingsReducer,
       siteSettings: siteSettingsReducer,
@@ -29,6 +28,7 @@ const makeStore = (initialState?: PreloadedState<Omit<RootState, 'api'>>) =>
     },
     preloadedState: initialState,
   });
+}
 
 // Infer types from the store factory (best practice)
 export type AppStore = ReturnType<typeof makeStore>;
@@ -42,9 +42,7 @@ export let store: AppStore;
  * Initialize the store with optional persisted state
  * This should be called once from index.js
  */
-export function initializeStore(
-  preloadedState?: PreloadedState<Omit<RootState, 'api'>>
-): AppStore {
+export function initializeStore(preloadedState?: Partial<RootState>): AppStore {
   store = makeStore(preloadedState);
   return store;
 }

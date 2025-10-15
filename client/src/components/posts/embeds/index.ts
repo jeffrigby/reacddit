@@ -183,7 +183,7 @@ async function inlineLinks(
   const inline: EmbedContent[] = [];
   const renderedLinks: string[] = [];
 
-  results.forEach((result) => {
+  results.forEach((result: { url: string; content: EmbedContent } | null) => {
     if (result) {
       renderedLinks.push(result.url);
       inline.push(result.content);

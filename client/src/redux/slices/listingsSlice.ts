@@ -104,26 +104,35 @@ async function getContent(
 
   switch (listType) {
     case 'r':
-      entries = await getListingSubreddit(target, sort, params);
+      entries = await getListingSubreddit(
+        target ?? 'all',
+        sort ?? 'hot',
+        params
+      );
       break;
     case 'm':
-      entries = await getListingMulti(user, target, sort, params);
+      entries = await getListingMulti(
+        user ?? '',
+        target ?? '',
+        sort ?? 'hot',
+        params
+      );
       break;
     case 'u':
       entries = await getListingUser(
-        user,
-        target === 'posts' ? 'submitted' : target,
-        sort,
+        user ?? '',
+        target === 'posts' ? 'submitted' : (target ?? 'submitted'),
+        sort ?? 'hot',
         params
       );
       break;
     case 's':
       entries = multi
-        ? await getListingSearchMulti(user, target, params)
-        : await getListingSearch(target, params);
+        ? await getListingSearchMulti(user ?? '', target ?? '', params)
+        : await getListingSearch(target ?? '', params);
       break;
     case 'duplicates': {
-      const dupes = await getListingDuplicates(target, params);
+      const dupes = await getListingDuplicates(target ?? '', params);
       entries = {
         ...dupes[1],
         originalPost: dupes[0],
@@ -132,7 +141,12 @@ async function getContent(
       break;
     }
     case 'comments': {
-      const comments = await getComments(target, postName, comment, params);
+      const comments = await getComments(
+        target ?? '',
+        postName ?? '',
+        comment ?? '',
+        params
+      );
       entries = {
         ...comments[1],
         originalPost: comments[0],

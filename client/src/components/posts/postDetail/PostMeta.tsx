@@ -24,7 +24,7 @@ function PostMeta(): React.JSX.Element {
   return (
     <>
       <PostByline data={data} kind={kind} />
-      {crossPost && (
+      {crossPost && data.crosspost_parent_list && (
         <div>
           <FontAwesomeIcon
             className="pe-2"

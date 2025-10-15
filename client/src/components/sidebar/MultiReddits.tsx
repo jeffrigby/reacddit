@@ -71,10 +71,12 @@ function MultiReddits(): ReactElement | null {
       return [];
     }
 
-    return multireddits.multis.map((item) => {
-      const key = `${item.data.display_name}-${item.data.created}`;
-      return <MultiRedditsItem item={item} key={key} />;
-    });
+    return multireddits.multis.map(
+      (item: { data: { display_name: string; created: number } }) => {
+        const key = `${item.data.display_name}-${item.data.created}`;
+        return <MultiRedditsItem item={item} key={key} />;
+      }
+    );
   }, [multireddits?.multis]);
 
   if (
