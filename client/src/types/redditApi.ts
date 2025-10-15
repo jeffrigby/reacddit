@@ -81,44 +81,101 @@ export type ApiError =
 // -----------------------------------------------------------------------------
 
 export interface CommentData {
+  // Core identification
   id: string;
   name: `t1_${string}`;
+
+  // Author information
   author: string;
   author_fullname?: `t2_${string}`;
+  author_is_blocked?: boolean;
+  author_premium?: boolean;
+  author_patreon_flair?: boolean;
+  is_submitter?: boolean;
+
+  // Author flair
   author_flair_text?: string | null;
   author_flair_css_class?: string | null;
+  author_flair_background_color?: string | null;
+  author_flair_template_id?: string | null;
+  author_flair_type?: 'text' | 'richtext';
+  author_flair_richtext?: RichTextFlair[];
+
+  // Content
   body: string;
   body_html?: string;
+
+  // Timestamps
   created: number;
   created_utc: number;
+  edited: boolean | number;
+
+  // Voting and scores
   ups: number;
   downs: number;
   score: number;
+  score_hidden?: boolean;
+  controversiality?: number;
+  likes?: boolean | null;
+
+  // Location in thread
   permalink: string;
   parent_id: `t1_${string}` | `t3_${string}`;
+  link_id?: `t3_${string}`;
+  depth?: number;
+
+  // Subreddit
   subreddit: string;
   subreddit_id: `t5_${string}`;
   subreddit_name_prefixed: string;
   subreddit_type?: SubredditType;
+
+  // Thread structure
   replies?: Listing<CommentData | MoreChildrenData> | '';
-  link_id?: `t3_${string}`;
+
+  // Display state
+  collapsed?: boolean;
+  collapsed_reason?: string | null;
+  collapsed_reason_code?: string | null;
+  collapsed_because_crowd_control?: string | null;
+
+  // Status flags
+  stickied?: boolean;
+  locked?: boolean;
+  saved?: boolean;
+  distinguished?: 'moderator' | 'admin' | 'special' | null;
+
+  // Awards and gilding
+  gilded: number;
+  all_awardings?: unknown[];
+  associated_award?: unknown | null;
+  awarders?: unknown[];
+  gildings?: Record<string, number>;
+  top_awarded_type?: string | null;
+  total_awards_received?: number;
+  can_gild?: boolean;
+
+  // Moderation
   banned_by?: string | null;
   approved_by?: string | null;
   approved_at_utc?: number | null;
   banned_at_utc?: number | null;
   can_mod_post?: boolean;
-  distinguished?: 'moderator' | 'admin' | 'special' | null;
-  edited: boolean | number;
-  gilded: number;
-  likes?: boolean | null;
+  mod_note?: string | null;
+  mod_reason_by?: string | null;
+  mod_reason_title?: string | null;
+  mod_reports?: Array<[string, string]>;
   num_reports?: number | null;
-  saved?: boolean;
-  stickied?: boolean;
-  depth?: number;
-  collapsed?: boolean;
-  collapsed_reason?: string | null;
-  score_hidden?: boolean;
-  controversiality?: number;
+  removal_reason?: string | null;
+  report_reasons?: string[] | null;
+  user_reports?: Array<[string, number]>;
+
+  // Misc metadata
+  send_replies?: boolean;
+  no_follow?: boolean;
+  comment_type?: string | null;
+  treatment_tags?: string[];
+  unrepliable_reason?: string | null;
 }
 
 export interface MoreChildrenData {
@@ -131,35 +188,43 @@ export interface MoreChildrenData {
 }
 
 export interface AccountData {
+  // Core identification
   id: string;
   name: string;
+  can_edit_name?: boolean;
+
+  // Status flags
   is_employee: boolean;
   is_friend?: boolean;
   is_mod: boolean;
   is_gold: boolean;
   is_sponsor?: boolean;
   is_suspended?: boolean;
+
+  // Timestamps
   created: number;
   created_utc: number;
+
+  // Karma
   link_karma: number;
   comment_karma: number;
   total_karma?: number;
   awardee_karma?: number;
   awarder_karma?: number;
+
+  // Verification
   verified?: boolean;
+  has_verified_email: boolean | null;
+
+  // Profile images
   icon_img: string;
   pref_show_snoovatar?: boolean;
   snoovatar_img?: string;
   snoovatar_size?: [number, number] | null;
+
+  // Preferences
   over_18?: boolean;
-  has_verified_email: boolean | null;
   can_create_subreddit?: boolean;
-  coins?: number;
-  gold_creddits?: number;
-  gold_expiration?: number | null;
-  features?: Record<string, boolean | Record<string, unknown>>;
-  inbox_count?: number;
-  has_mail?: boolean;
   pref_nightmode?: boolean;
   pref_autoplay?: boolean;
   pref_video_autoplay?: boolean;
@@ -170,9 +235,13 @@ export interface AccountData {
   pref_show_trending?: boolean;
   pref_show_twitter?: boolean;
   pref_top_karma_subreddits?: boolean;
-  subreddit?: UserProfileSubredditData;
-  accept_followers?: boolean;
-  force_password_reset?: boolean;
+
+  // Gold/Premium
+  coins?: number;
+  gold_creddits?: number;
+  gold_expiration?: number | null;
+
+  // Subscriptions
   has_android_subscription?: boolean;
   has_external_account?: boolean;
   has_gold_subscription?: boolean;
@@ -181,6 +250,17 @@ export interface AccountData {
   has_stripe_subscription?: boolean;
   has_subscribed?: boolean;
   has_subscribed_to_premium?: boolean;
+
+  // Mail and messaging
+  inbox_count?: number;
+  has_mail?: boolean;
+  has_mod_mail?: boolean;
+  new_modmail_exists?: boolean;
+
+  // Features and settings
+  features?: Record<string, boolean | Record<string, unknown>>;
+  accept_followers?: boolean;
+  force_password_reset?: boolean;
   has_visited_new_profile?: boolean;
   hide_from_robots?: boolean;
   in_beta?: boolean;
@@ -189,11 +269,18 @@ export interface AccountData {
   num_friends?: number;
   oauth_client_id?: string;
   password_set?: boolean;
+
+  // UI state
   seen_give_award_tooltip?: boolean;
   seen_layout_switch?: boolean;
   seen_premium_adblock_modal?: boolean;
   seen_redesign_modal?: boolean;
   seen_subreddit_chat_ftux?: boolean;
+
+  // User subreddit/profile
+  subreddit?: UserProfileSubredditData;
+
+  // Moderation
   suspension_expiration_utc?: number | null;
 }
 
@@ -207,38 +294,103 @@ export interface UserProfileSubredditData extends SubredditData {
 }
 
 export interface LinkData {
+  // Core identification
   id: string;
   name: `t3_${string}`;
   title: string;
+
+  // Author information
   author: string;
   author_fullname?: `t2_${string}`;
+  author_is_blocked?: boolean;
+  author_premium?: boolean;
+  author_patreon_flair?: boolean;
+
+  // Author flair
   author_flair_text?: string | null;
   author_flair_css_class?: string | null;
+  author_flair_background_color?: string | null;
+  author_flair_template_id?: string | null;
+  author_flair_text_color?: 'dark' | 'light' | null;
+  author_flair_type?: 'text' | 'richtext';
+  author_flair_richtext?: RichTextFlair[];
+
+  // Timestamps
   created: number;
   created_utc: number;
+  edited?: boolean | number;
+
+  // Voting and scores
   ups: number;
   downs: number;
   score: number;
+  upvote_ratio?: number;
+  hide_score?: boolean;
+  likes?: boolean | null;
+
+  // Comments
   num_comments: number;
+  num_crossposts?: number;
+
+  // URLs and navigation
   permalink: string;
   url: string;
+  url_overridden_by_dest?: string;
+  domain: string;
+
+  // Content
   selftext: string;
   selftext_html: string | null;
   is_self: boolean;
+
+  // Content type flags
   is_video: boolean;
   is_original_content?: boolean;
   is_meta?: boolean;
   is_reddit_media_domain?: boolean;
   is_robot_indexable?: boolean;
-  domain: string;
+  is_created_from_ads_ui?: boolean;
+  is_crosspostable?: boolean;
+
+  // Subreddit
   subreddit: string;
   subreddit_id: `t5_${string}`;
   subreddit_name_prefixed: string;
   subreddit_subscribers?: number;
   subreddit_type?: SubredditType;
+
+  // Media
   thumbnail: string;
   thumbnail_height?: number | null;
   thumbnail_width?: number | null;
+  media?: Media | null;
+  media_embed?: MediaEmbed;
+  secure_media?: Media | null;
+  secure_media_embed?: MediaEmbed;
+  preview?: Preview;
+  media_only?: boolean;
+  post_hint?:
+    | 'self'
+    | 'link'
+    | 'image'
+    | 'hosted:video'
+    | 'rich:video'
+    | 'gallery';
+
+  // Crossposting
+  crosspost_parent_list?: LinkData[];
+  crosspost_parent?: `t3_${string}`;
+
+  // Link flair
+  link_flair_text?: string | null;
+  link_flair_css_class?: string | null;
+  link_flair_template_id?: string | null;
+  link_flair_richtext?: RichTextFlair[];
+  link_flair_text_color?: 'dark' | 'light';
+  link_flair_background_color?: string;
+  link_flair_type?: 'text' | 'richtext';
+
+  // Status flags
   stickied: boolean;
   locked: boolean;
   over_18: boolean;
@@ -247,39 +399,55 @@ export interface LinkData {
   visited?: boolean;
   pinned?: boolean;
   archived?: boolean;
-  can_gild?: boolean;
-  gilded: number;
-  likes?: boolean | null;
+  quarantine?: boolean;
+
+  // User actions
   saved?: boolean;
   clicked?: boolean;
-  media?: Media | null;
-  media_embed?: MediaEmbed;
-  secure_media?: Media | null;
-  secure_media_embed?: MediaEmbed;
-  preview?: Preview;
-  post_hint?:
-    | 'self'
-    | 'link'
-    | 'image'
-    | 'hosted:video'
-    | 'rich:video'
-    | 'gallery';
-  crosspost_parent_list?: LinkData[];
-  crosspost_parent?: `t3_${string}`;
-  link_flair_text?: string | null;
-  link_flair_css_class?: string | null;
-  link_flair_template_id?: string | null;
-  link_flair_richtext?: RichTextFlair[];
-  link_flair_text_color?: 'dark' | 'light';
-  link_flair_background_color?: string;
+  send_replies?: boolean;
+
+  // Awards and gilding
+  gilded: number;
+  all_awardings?: unknown[];
+  awarders?: unknown[];
+  gildings?: Record<string, number>;
+  top_awarded_type?: string | null;
+  total_awards_received?: number;
+  can_gild?: boolean;
+
+  // Moderation
+  banned_by?: string | null;
+  approved_by?: string | null;
+  approved_at_utc?: number | null;
+  banned_at_utc?: number | null;
+  can_mod_post?: boolean;
+  distinguished?: 'moderator' | 'admin' | 'special' | null;
+  mod_note?: string | null;
+  mod_reason_by?: string | null;
+  mod_reason_title?: string | null;
+  mod_reports?: Array<[string, string]>;
+  num_reports?: number | null;
+  removal_reason?: string | null;
+  removed_by?: string | null;
+  removed_by_category?: string | null;
+  report_reasons?: string[] | null;
+  user_reports?: Array<[string, string, boolean, boolean]>;
+
+  // Display and categorization
+  category?: string | null;
+  content_categories?: string[] | null;
+  discussion_type?: string | null;
   suggested_sort?: string | null;
+  contest_mode?: boolean;
+  allow_live_comments?: boolean;
+
+  // Misc metadata
   view_count?: number | null;
   whitelist_status?: string | null;
-  contest_mode?: boolean;
-  mod_reports?: Array<[string, string]>;
-  user_reports?: Array<[string, string, boolean, boolean]>;
-  num_reports?: number | null;
-  distinguished?: 'moderator' | 'admin' | 'special' | null;
+  wls?: number | null;
+  pwls?: number | null;
+  no_follow?: boolean;
+  treatment_tags?: string[];
 }
 
 export interface RichTextFlair {

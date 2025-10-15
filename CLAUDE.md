@@ -107,7 +107,35 @@ The API requires Reddit OAuth2 setup:
 
 - All the Reddit types are stored in @client/src/types/redditApi.ts This may not be complete, and was based of the documentation here: https://www.reddit.com/dev/api/ When converting components and the API to TS please use these types. If you see something wrong with the types please let me know, as I may have missed something.
 
+## Agent Documentation
+
+### agentDocs/ Directory
+
+The `/agentDocs/` directory contains **AI agent-specific analysis, research, and planning documents** that are NOT part of the general codebase documentation. This directory is:
+
+- **Gitignored** - Not committed to the repository
+- **Agent-specific** - Context for AI assistants, not human developers
+- **Temporary/research** - Analysis documents, migration plans, best practices research
+
+**When to save docs in `/agentDocs/`:**
+- Migration planning documents (e.g., Redux migration strategies)
+- Analysis of third-party libraries and best practices
+- Agent research and decision-making context
+- Temporary investigation findings
+
+**When NOT to use `/agentDocs/`:**
+- General project documentation (use root or subdirectory READMEs)
+- User-facing guides
+- API documentation (use inline JSDoc or dedicated docs/)
+- Anything that should be committed to git
+
+### Examples of agentDocs/ Files:
+- `REDUX_BEST_PRACTICES.md` - Research on Redux Toolkit patterns
+- `RTK_QUERY_MIGRATION.md` - Analysis of migrating to RTK Query
+- `BOOTSTRAP_MIGRATION_PLAN.md` - TypeScript migration planning
+
 ## Claude Memory Notes
 
 - Always reference the latest documentation for packages using the context7 MCP.
 - For Reddit API testing and type validation, see `/reddit-api-tester/CLAUDE.md`
+- Save agent-specific analysis and research docs to `/agentDocs/` (gitignored)

@@ -30,9 +30,17 @@ npm run test-api test -- --include-auth
 
 # Validate types and save raw responses
 npm run test-api test -- --validate-types --save-raw
+
+# 🆕 NEW: Run dynamic tests with fresh content (no archived posts!)
+npm run test-api test -- --reddit --dynamic --cleanup
+
+# 🆕 Test write operations safely
+npm run test-api test -- --reddit --dynamic --endpoints "vote,save,unsave" --cleanup
 ```
 
 **Note**: The tool uses the `test` subcommand by default if no command is specified, so `npm run test-api` is equivalent to `npm run test-api test`.
+
+**🆕 Dynamic Testing**: Use `--dynamic` flag to automatically fetch fresh content for testing. This ensures tests always use valid, non-archived post IDs. See [DYNAMIC_TESTING.md](./DYNAMIC_TESTING.md) for details.
 
 ## Authentication Methods
 

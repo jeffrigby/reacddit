@@ -160,9 +160,9 @@
     {
       "endpoint": "/api/info",
       "method": "GET",
-      "description": "Get info about a specific post to verify it exists",
+      "description": "Get info about a specific post (uses dynamic POST_ID)",
       "params": {
-        "id": "t3_1lpcc40",
+        "id": "{{POST_ID}}",
         "raw_json": 1
       },
       "requiresAuth": false,
@@ -171,9 +171,9 @@
     {
       "endpoint": "/api/vote",
       "method": "POST",
-      "description": "Upvote a post",
+      "description": "Upvote a post (dynamic POST_ID)",
       "body": {
-        "id": "t3_1lpcc40",
+        "id": "{{POST_ID}}",
         "dir": 1
       },
       "requiresAuth": true,
@@ -182,9 +182,9 @@
     {
       "endpoint": "/api/vote",
       "method": "POST",
-      "description": "Remove vote from a post",
+      "description": "Remove vote from a post (dynamic POST_ID)",
       "body": {
-        "id": "t3_1lpcc40",
+        "id": "{{POST_ID}}",
         "dir": 0
       },
       "requiresAuth": true,
@@ -193,13 +193,103 @@
     {
       "endpoint": "/api/vote",
       "method": "POST",
-      "description": "Downvote a post",
+      "description": "Downvote a post (dynamic POST_ID)",
       "body": {
-        "id": "t3_1lpcc40",
+        "id": "{{POST_ID}}",
         "dir": -1
       },
       "requiresAuth": true,
       "expectedType": "VoteResponse"
+    },
+    {
+      "endpoint": "/api/save",
+      "method": "POST",
+      "description": "Save a post (dynamic POST_ID)",
+      "body": {
+        "id": "{{POST_ID}}"
+      },
+      "requiresAuth": true,
+      "expectedType": "SaveResponse"
+    },
+    {
+      "endpoint": "/api/unsave",
+      "method": "POST",
+      "description": "Unsave a post (dynamic POST_ID)",
+      "body": {
+        "id": "{{POST_ID}}"
+      },
+      "requiresAuth": true,
+      "expectedType": "UnsaveResponse"
+    },
+    {
+      "endpoint": "/api/multi/mine",
+      "method": "GET",
+      "description": "Get user's multireddits",
+      "params": {
+        "expand_srs": false,
+        "raw_json": 1
+      },
+      "requiresAuth": true,
+      "expectedType": "Thing<LabeledMultiData>[]"
+    },
+    {
+      "endpoint": "/api/search_subreddits",
+      "method": "POST",
+      "description": "Search for subreddits",
+      "body": {
+        "query": "javascript",
+        "exact": false,
+        "include_over_18": false,
+        "raw_json": 1
+      },
+      "requiresAuth": false,
+      "expectedType": "SearchSubredditsResponse"
+    },
+    {
+      "endpoint": "/user/{{USERNAME}}/submitted",
+      "method": "GET",
+      "description": "Get user's submitted posts (dynamic USERNAME)",
+      "params": {
+        "limit": 5,
+        "raw_json": 1
+      },
+      "requiresAuth": true,
+      "expectedType": "Listing<LinkData>"
+    },
+    {
+      "endpoint": "/r/{{POST_WITH_COMMENTS_SUBREDDIT}}/comments/{{POST_WITH_COMMENTS_ID}}",
+      "method": "GET",
+      "description": "Get full comment tree from post with many comments (dynamic)",
+      "params": {
+        "limit": 100,
+        "raw_json": 1
+      },
+      "requiresAuth": false,
+      "expectedType": "CommentsResponse"
+    },
+    {
+      "endpoint": "/api/morechildren",
+      "method": "GET",
+      "description": "Load more comment children (dynamic)",
+      "params": {
+        "api_type": "json",
+        "link_id": "t3_{{POST_WITH_COMMENTS_ID}}",
+        "children": "{{MORE_CHILDREN_IDS}}",
+        "raw_json": 1
+      },
+      "requiresAuth": false,
+      "expectedType": "MoreChildrenResponse"
+    },
+    {
+      "endpoint": "/user/{{USERNAME}}/comments",
+      "method": "GET",
+      "description": "Get user's comment history (dynamic USERNAME)",
+      "params": {
+        "limit": 10,
+        "raw_json": 1
+      },
+      "requiresAuth": true,
+      "expectedType": "Listing<CommentData>"
     }
   ]
 }

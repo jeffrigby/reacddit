@@ -7,6 +7,7 @@ import { TokenManager } from './token-manager.js';
 import { RedditAPITester, EndpointConfig } from './api-tester.js';
 import { TypeValidator } from './type-validator.js';
 import { ReportGenerator } from './report-generator.js';
+import { DynamicTestRunner } from './dynamic-test-runner.js';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -87,10 +88,31 @@ async function runTests(options: any) {
     endpointsToTest = endpointsToTest.filter(e => !e.requiresAuth);
   }
 
-  console.log(`📋 Testing ${endpointsToTest.length} endpoints...\n`);
+  // Run API tests (dynamic or static)
+  let testResults;
 
-  // Run API tests
-  const testResults = await apiTester.testMultipleEndpoints(endpointsToTest);
+  if (options.dynamic) {
+    // Use dynamic test runner
+    const dynamicRunner = new DynamicTestRunner(apiTester);
+    testResults = await dynamicRunner.runDynamicTests(endpointsToTest, {
+      cleanup: options.cleanup,
+      testSubreddit: options.testSubreddit || 'test',
+      verbose: options.verbose
+    });
+
+    // Show variables used
+    if (options.verbose) {
+      console.log('\n📌 Variables used in dynamic tests:');
+      const variables = dynamicRunner.getVariables();
+      Object.entries(variables).forEach(([key, value]) => {
+        console.log(`  ${key}: ${value}`);
+      });
+      console.log();
+    }
+  } else {
+    console.log(`📋 Testing ${endpointsToTest.length} endpoints...\n`);
+    testResults = await apiTester.testMultipleEndpoints(endpointsToTest);
+  }
 
 
   // Validate types if requested
@@ -152,6 +174,9 @@ program
   .option('-v, --validate-types', 'Validate response types against TypeScript definitions')
   .option('-s, --save-raw', 'Save raw API responses')
   .option('-a, --include-auth', 'Include endpoints that require authentication (will fail with anonymous token)')
+  .option('-d, --dynamic', 'Use dynamic test runner (fetches fresh content for template variables)')
+  .option('-c, --cleanup', 'Clean up test data after dynamic tests (remove votes, unsave posts)')
+  .option('--test-subreddit <subreddit>', 'Subreddit to use for dynamic tests (default: test)')
   .option('--verbose', 'Show detailed output for all endpoints')
   .action(runTests);
 

@@ -50,3 +50,6 @@ stats.json
 /reddit-api-tester/results/
 /reddit-api-tester/.token-cache.json
 /reddit-api-tester/dist/
+
+# Agent-specific documentation (not general codebase docs)
+/agentDocs/

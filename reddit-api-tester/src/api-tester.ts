@@ -179,11 +179,11 @@ export class RedditAPITester {
     try {
       console.log(`Testing wrapper method: ${methodName}...`);
       const response = await methodFn();
-      
+
       result.success = true;
       result.response = response;
       result.responseTime = Date.now() - startTime;
-      
+
       console.log(`✓ Success: ${methodName} (${result.responseTime}ms)`);
     } catch (error) {
       result.responseTime = Date.now() - startTime;
@@ -193,5 +193,213 @@ export class RedditAPITester {
 
     this.results.push(result);
     return result;
+  }
+
+  /**
+   * Fetch a recent post from a subreddit for testing
+   * @param subreddit - Subreddit to fetch from (default: 'test')
+   * @param limit - Number of posts to fetch (default: 1)
+   * @returns Post ID without the 't3_' prefix, or null if none found
+   */
+  async fetchRecentPost(subreddit = 'test', limit = 1): Promise<string | null> {
+    try {
+      console.log(`📥 Fetching recent post from /r/${subreddit}...`);
+      const response = await this.axiosInstance.get(`/r/${subreddit}/new`, {
+        params: { limit, raw_json: 1 }
+      });
+
+      const posts = response.data?.data?.children;
+      if (!posts || posts.length === 0) {
+        console.warn('⚠️  No posts found in subreddit');
+        return null;
+      }
+
+      const postId = posts[0].data.id;
+      const postTitle = posts[0].data.title?.substring(0, 50) || 'Untitled';
+      console.log(`✓ Found post: ${postId} - "${postTitle}..."`);
+
+      return postId;
+    } catch (error) {
+      console.error('✗ Failed to fetch recent post:', error instanceof Error ? error.message : error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch a recent comment from a post for testing
+   * @param subreddit - Subreddit name
+   * @param postId - Post ID (without t3_ prefix)
+   * @returns Comment ID without the 't1_' prefix, or null if none found
+   */
+  async fetchRecentComment(subreddit: string, postId: string): Promise<string | null> {
+    try {
+      console.log(`📥 Fetching comments from post ${postId}...`);
+      const response = await this.axiosInstance.get(`/r/${subreddit}/comments/${postId}`, {
+        params: { limit: 1, raw_json: 1 }
+      });
+
+      // Comments are in the second element of the response array
+      const comments = response.data[1]?.data?.children;
+      if (!comments || comments.length === 0) {
+        console.warn('⚠️  No comments found in post');
+        return null;
+      }
+
+      const commentId = comments[0].data.id;
+      const commentBody = comments[0].data.body?.substring(0, 50) || 'Empty comment';
+      console.log(`✓ Found comment: ${commentId} - "${commentBody}..."`);
+
+      return commentId;
+    } catch (error) {
+      console.error('✗ Failed to fetch recent comment:', error instanceof Error ? error.message : error);
+      return null;
+    }
+  }
+
+  /**
+   * Clean up test data by removing votes and unsaving posts
+   * @param postId - Post ID with or without 't3_' prefix
+   */
+  async cleanupTestPost(postId: string): Promise<void> {
+    const fullname = postId.startsWith('t3_') ? postId : `t3_${postId}`;
+
+    try {
+      console.log(`🧹 Cleaning up test data for ${postId}...`);
+
+      // Remove vote (set dir to 0)
+      const voteData = new URLSearchParams();
+      voteData.append('id', fullname);
+      voteData.append('dir', '0');
+
+      await this.axiosInstance.post('/api/vote', voteData, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+
+      // Unsave the post
+      const unsaveData = new URLSearchParams();
+      unsaveData.append('id', fullname);
+
+      await this.axiosInstance.post('/api/unsave', unsaveData, {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+
+      console.log('✓ Cleanup complete');
+    } catch (error) {
+      console.warn('⚠️  Cleanup failed (this is usually okay):', error instanceof Error ? error.message : error);
+    }
+  }
+
+  /**
+   * Get the authenticated username
+   * @returns Username or null if not authenticated
+   */
+  async getAuthenticatedUser(): Promise<string | null> {
+    try {
+      const response = await this.axiosInstance.get('/api/v1/me', {
+        params: { raw_json: 1 }
+      });
+
+      const username = response.data?.name;
+      if (username) {
+        console.log(`✓ Authenticated as: ${username}`);
+        return username;
+      }
+
+      return null;
+    } catch (error) {
+      console.warn('⚠️  Could not get authenticated user');
+      return null;
+    }
+  }
+
+  /**
+   * Fetch a post with a substantial number of comments for testing
+   * @param subreddit - Subreddit to fetch from (default: 'programming')
+   * @param minComments - Minimum number of comments required (default: 50)
+   * @returns Object with post ID, subreddit, and number of comments, or null if none found
+   */
+  async fetchPostWithComments(
+    subreddit = 'programming',
+    minComments = 50
+  ): Promise<{ postId: string; subreddit: string; numComments: number; title: string } | null> {
+    try {
+      console.log(`📥 Fetching post with ${minComments}+ comments from /r/${subreddit}...`);
+      const response = await this.axiosInstance.get(`/r/${subreddit}/hot`, {
+        params: { limit: 25, raw_json: 1 }
+      });
+
+      const posts = response.data?.data?.children;
+      if (!posts || posts.length === 0) {
+        console.warn('⚠️  No posts found in subreddit');
+        return null;
+      }
+
+      // Find first post with enough comments
+      const postWithComments = posts.find(
+        (post: any) => post.data.num_comments >= minComments
+      );
+
+      if (!postWithComments) {
+        console.warn(`⚠️  No posts found with ${minComments}+ comments`);
+        return null;
+      }
+
+      const postId = postWithComments.data.id;
+      const numComments = postWithComments.data.num_comments;
+      const title = postWithComments.data.title?.substring(0, 50) || 'Untitled';
+      console.log(`✓ Found post: ${postId} with ${numComments} comments - "${title}..."`);
+
+      return { postId, subreddit, numComments, title };
+    } catch (error) {
+      console.error('✗ Failed to fetch post with comments:', error instanceof Error ? error.message : error);
+      return null;
+    }
+  }
+
+  /**
+   * Extract "more children" IDs from a comments response for testing
+   * @param subreddit - Subreddit name
+   * @param postId - Post ID (without t3_ prefix)
+   * @returns Comma-separated list of child comment IDs, or null if none found
+   */
+  async extractMoreChildrenIds(subreddit: string, postId: string): Promise<string | null> {
+    try {
+      console.log(`📥 Fetching comment tree to extract "more children" IDs...`);
+      const response = await this.axiosInstance.get(`/r/${subreddit}/comments/${postId}`, {
+        params: { limit: 10, raw_json: 1 }
+      });
+
+      // Comments are in the second element of the response array
+      const commentsListing = response.data[1];
+      if (!commentsListing?.data?.children) {
+        console.warn('⚠️  No comments found in post');
+        return null;
+      }
+
+      // Find "more" children objects
+      const moreChildren = commentsListing.data.children.filter(
+        (child: any) => child.kind === 'more'
+      );
+
+      if (moreChildren.length === 0) {
+        console.warn('⚠️  No "more children" found');
+        return null;
+      }
+
+      // Get the first "more" object's children IDs
+      const childrenIds = moreChildren[0].data.children;
+      if (!childrenIds || childrenIds.length === 0) {
+        console.warn('⚠️  "More children" object has no child IDs');
+        return null;
+      }
+
+      const childrenList = childrenIds.slice(0, 10).join(','); // Limit to first 10 for testing
+      console.log(`✓ Found ${childrenIds.length} more children IDs (using first 10)`);
+
+      return childrenList;
+    } catch (error) {
+      console.error('✗ Failed to extract more children IDs:', error instanceof Error ? error.message : error);
+      return null;
+    }
   }
 }
