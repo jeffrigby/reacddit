@@ -1,5 +1,4 @@
 import { getPublicSuffix, getDomain } from 'tldts';
-import stripTags from 'locutus/php/strings/strip_tags';
 import parse from 'url-parse';
 import { LRUCache } from 'lru-cache';
 import type { LinkData, CommentData } from '../../../types/redditApi';
@@ -123,11 +122,44 @@ function getKeys(url: string): DomainKeys | null {
   return { domain, greedyDomain };
 }
 
+/**
+ * Extract URLs from HTML content using modern DOMParser
+ * More robust than regex-based approaches, handles malformed HTML gracefully
+ * @param html - HTML string to extract URLs from
+ * @returns Array of URLs found in anchor tags
+ */
+function extractUrlsFromHtml(html: string): string[] {
+  if (!html) {
+    return [];
+  }
+
+  try {
+    // Use native DOMParser for proper HTML parsing
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // Get all anchor tags
+    const anchors = Array.from(doc.querySelectorAll('a'));
+
+    // Extract href attributes, filter for valid HTTP(S) URLs
+    const urls = anchors
+      .map((a) => a.href)
+      .filter((href) => href?.match(/^https?:\/\//));
+
+    return urls;
+  } catch (e) {
+    console.error('Error parsing HTML for URLs:', e);
+    // Fallback to regex if DOMParser fails (shouldn't happen in browsers)
+    return (html.match(URL_REGEX) ?? []).filter((url) =>
+      url.match(/^https?:\/\//)
+    );
+  }
+}
+
 async function inlineLinks(
   entry: LinkData | CommentData,
   kind: string
 ): Promise<InlineLinksResult> {
-  // Remove the end </a> to fix a bug with the regex
   const textContent =
     kind === REDDIT_KIND.COMMENT
       ? isCommentData(entry)
@@ -136,10 +168,9 @@ async function inlineLinks(
       : isLinkData(entry)
         ? entry.selftext_html
         : '';
-  const text = stripTags(textContent ?? '', '<a>').replace(/<\/a>/g, ' ');
 
-  // const links = getUrls(text);
-  const links = text.match(URL_REGEX) ?? [];
+  // Extract URLs using modern DOMParser instead of strip_tags + regex
+  const links = extractUrlsFromHtml(textContent ?? '');
 
   const dupes: string[] = [];
 
