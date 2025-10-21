@@ -90,7 +90,7 @@ function Listings({ match }: ListingsProps) {
       fetchListingsInitial({
         filters: newFilter,
         location,
-        siteSettings: settings,
+        siteSettings: { view: settings.view },
       })
     );
   }, [
