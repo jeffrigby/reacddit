@@ -8,6 +8,6 @@ dotenv.config({
 });
 
 // Dynamically import the app after setting the environment variables
-const { default: app } = await import("./src/app.mjs");
+const { default: app } = await import("./src/app.js");
 
 createServer(app.callback()).listen(process.env.PORT);

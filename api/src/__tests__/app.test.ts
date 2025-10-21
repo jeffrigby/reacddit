@@ -8,6 +8,7 @@ import {
   vi,
 } from "vitest";
 import request from "supertest";
+import type { AxiosInstance } from "axios";
 
 // Set up environment variables before importing the app
 // This follows Vitest best practices for environment variable mocking
@@ -18,7 +19,7 @@ beforeAll(() => {
   vi.stubEnv("REDDIT_CALLBACK_URI", "http://localhost:3001/api/callback");
   vi.stubEnv(
     "REDDIT_SCOPE",
-    "identity,mysubreddits,vote,subscribe,read,history,save",
+    "identity,mysubreddits,vote,subscribe,read,history,save"
   );
   vi.stubEnv("CLIENT_PATH", "http://localhost:3000");
   vi.stubEnv("SALT", "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM");
@@ -31,8 +32,8 @@ beforeAll(() => {
 });
 
 // Mock the util module
-vi.mock("../util.mjs", () => {
-  const mockAxiosInstance = {
+vi.mock("../util.js", () => {
+  const mockAxiosInstance: Partial<AxiosInstance> = {
     post: vi.fn(),
     get: vi.fn(),
   };
@@ -56,29 +57,29 @@ vi.mock("../util.mjs", () => {
 });
 
 // Mock koa-session with proper session handling
-let sessionStore = {};
+let sessionStore: Record<string, { state: string | null; token: unknown }> = {};
 vi.mock("koa-session", () => ({
-  default: () => (ctx, next) => {
+  default: () => (ctx: { headers: Record<string, string>; session: { state: string | null; token: unknown } }, next: () => Promise<void>) => {
     // Simple session implementation for testing
     const sessionId = ctx.headers["x-session-id"] || "test-session";
     if (!sessionStore[sessionId]) {
       sessionStore[sessionId] = { state: null, token: null };
     }
-    ctx.session = sessionStore[sessionId];
+    ctx.session = sessionStore[sessionId]!;
     return next();
   },
 }));
 
 // Now import the app and get access to the mocked axios instance
-import app from "../app.mjs";
-import { axiosInstance } from "../util.mjs";
+import app from "../app.js";
+import { axiosInstance } from "../util.js";
 
 describe("API Endpoints", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStore = {}; // Reset session store
-    axiosInstance.post.mockReset();
-    axiosInstance.get.mockReset();
+    (axiosInstance.post as ReturnType<typeof vi.fn>).mockReset();
+    (axiosInstance.get as ReturnType<typeof vi.fn>).mockReset();
   });
 
   afterEach(() => {
@@ -95,7 +96,7 @@ describe("API Endpoints", () => {
         scope: "*",
       };
 
-      axiosInstance.post.mockResolvedValueOnce({
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         data: mockRedditResponse,
       });
 
@@ -114,13 +115,13 @@ describe("API Endpoints", () => {
     it("should handle Reddit API errors gracefully", async () => {
       // Mock axios to throw an error
       const mockAxiosError = new Error("Reddit API error");
-      mockAxiosError.response = {
+      (mockAxiosError as Error & { response?: { status: number; statusText: string; data: { error: string } } }).response = {
         status: 401,
         statusText: "Unauthorized",
         data: { error: "invalid_client" },
       };
 
-      axiosInstance.post.mockRejectedValueOnce(mockAxiosError);
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(mockAxiosError);
 
       const response = await request(app.callback())
         .get("/api/bearer")
@@ -138,7 +139,7 @@ describe("API Endpoints", () => {
         expires_in: 3600,
       };
 
-      axiosInstance.post.mockResolvedValueOnce({
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         data: mockRedditResponse,
       });
 
@@ -159,12 +160,12 @@ describe("API Endpoints", () => {
         .set("x-session-id", "test-session-1")
         .expect(302);
 
-      expect(response.headers.location).toContain(
-        "reddit.com/api/v1/authorize",
+      expect(response.headers["location"]).toContain(
+        "reddit.com/api/v1/authorize"
       );
       // The client_id will be undefined due to env var issues, but the URL structure is correct
-      expect(response.headers.location).toContain("client_id=");
-      expect(response.headers.location).toContain("redirect_uri=");
+      expect(response.headers["location"]).toContain("client_id=");
+      expect(response.headers["location"]).toContain("redirect_uri=");
     });
 
     it("should handle callback with valid code and state", async () => {
@@ -175,7 +176,7 @@ describe("API Endpoints", () => {
         .set("x-session-id", sessionId);
 
       // Extract state from the redirect URL
-      const locationHeader = loginResponse.headers.location;
+      const locationHeader = loginResponse.headers["location"] as string;
       const stateMatch = locationHeader.match(/state=([^&]+)/);
       const state = stateMatch ? stateMatch[1] : "test-state";
 
@@ -188,7 +189,7 @@ describe("API Endpoints", () => {
         scope: "identity",
       };
 
-      axiosInstance.post.mockResolvedValueOnce({
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         data: mockTokenResponse,
       });
 
@@ -198,7 +199,7 @@ describe("API Endpoints", () => {
         .expect(302);
 
       // The CLIENT_PATH is undefined, so we just check for the login suffix
-      expect(response.headers.location).toContain("/?login");
+      expect(response.headers["location"]).toContain("/?login");
     });
 
     it("should handle callback errors", async () => {
@@ -209,7 +210,7 @@ describe("API Endpoints", () => {
       expect(response.body).toHaveProperty("status", "error");
       // When only error is provided without code/state, it triggers the missing params error
       expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
+        "Code and/or state query strings missing"
       );
     });
 
@@ -220,7 +221,7 @@ describe("API Endpoints", () => {
 
       expect(response.body).toHaveProperty("status", "error");
       expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
+        "Code and/or state query strings missing"
       );
     });
   });
@@ -232,11 +233,12 @@ describe("API Endpoints", () => {
       // No redirect happens when no token exists, so we get a 404
     });
 
-    it("should successfully logout with valid token (fails due to cookie signing in test env)", async () => {
+    it("should successfully logout with valid token", async () => {
       const sessionId = "test-session-logout";
 
       // Set up a session with a token
       sessionStore[sessionId] = {
+        state: null,
         token: {
           access_token: "test-access-token",
           refresh_token: "test-refresh-token",
@@ -246,22 +248,23 @@ describe("API Endpoints", () => {
       };
 
       // Mock successful token revocation
-      axiosInstance.post.mockResolvedValueOnce({ data: {} });
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ data: {} });
 
-      await request(app.callback())
+      const response = await request(app.callback())
         .get("/api/logout")
         .set("x-session-id", sessionId)
-        .expect(500); // Fails due to cookie signing issues in test environment
+        .expect(302);
 
-      // The logout logic runs but fails when trying to clear cookies
-      // In a real environment with proper SALT, this would be a 302 redirect
+      // Should redirect to CLIENT_PATH/?logout
+      expect(response.headers["location"]).toContain("/?logout");
     });
 
-    it("should handle logout even when token revocation fails (fails due to cookie signing)", async () => {
+    it("should handle logout even when token revocation fails", async () => {
       const sessionId = "test-session-logout-fail";
 
       // Set up a session with a token
       sessionStore[sessionId] = {
+        state: null,
         token: {
           access_token: "test-access-token",
           refresh_token: "test-refresh-token",
@@ -271,15 +274,15 @@ describe("API Endpoints", () => {
       };
 
       // Mock failed token revocation
-      axiosInstance.post.mockRejectedValueOnce(new Error("Revocation failed"));
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Revocation failed"));
 
-      await request(app.callback())
+      const response = await request(app.callback())
         .get("/api/logout")
         .set("x-session-id", sessionId)
-        .expect(500); // Fails due to cookie signing issues in test environment
+        .expect(302);
 
-      // The logout logic runs but fails when trying to clear cookies
-      // In a real environment with proper SALT, this would be a 302 redirect
+      // Should still redirect even when revocation fails (graceful error handling)
+      expect(response.headers["location"]).toContain("/?logout");
     });
   });
 
@@ -288,7 +291,7 @@ describe("API Endpoints", () => {
       const sessionId = "test-session-invalid-state";
 
       // Set up session with a different state
-      sessionStore[sessionId] = { state: "valid-state-123" };
+      sessionStore[sessionId] = { state: "valid-state-123", token: null };
 
       const response = await request(app.callback())
         .get("/api/callback?code=test-code&state=invalid-state-456")
@@ -305,13 +308,13 @@ describe("API Endpoints", () => {
         .get("/api/login")
         .set("x-session-id", sessionId);
 
-      const locationHeader = loginResponse.headers.location;
+      const locationHeader = loginResponse.headers["location"] as string;
       const stateMatch = locationHeader.match(/state=([^&]+)/);
       const state = stateMatch ? stateMatch[1] : "test-state";
 
       // Mock failed token exchange
-      axiosInstance.post.mockRejectedValueOnce(
-        new Error("Token exchange failed"),
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error("Token exchange failed")
       );
 
       const response = await request(app.callback())
@@ -325,7 +328,7 @@ describe("API Endpoints", () => {
     it("should handle callback with Reddit error parameter", async () => {
       const response = await request(app.callback())
         .get(
-          "/api/callback?error=access_denied&error_description=User%20denied%20access",
+          "/api/callback?error=access_denied&error_description=User%20denied%20access"
         )
         .expect(500);
 
@@ -344,7 +347,7 @@ describe("API Endpoints", () => {
         scope: "*",
       };
 
-      axiosInstance.post.mockResolvedValueOnce({
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         data: mockRedditResponse,
       });
 
@@ -366,7 +369,7 @@ describe("API Endpoints", () => {
         scope: "*",
       };
 
-      axiosInstance.post.mockResolvedValueOnce({
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         data: mockRedditResponse,
       });
 
@@ -399,7 +402,7 @@ describe("API Endpoints", () => {
 
       expect(response.body).toHaveProperty("status", "error");
       expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
+        "Code and/or state query strings missing"
       );
     });
 
@@ -432,7 +435,7 @@ describe("API Endpoints", () => {
         expires_in: 3600,
       };
 
-      axiosInstance.post.mockResolvedValueOnce({
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         data: mockRedditResponse,
       });
 

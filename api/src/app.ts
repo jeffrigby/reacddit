@@ -4,73 +4,69 @@ import session from "koa-session";
 import logger from "koa-logger";
 import { randomUUID } from "crypto";
 import qs from "qs";
+import { config } from "./config.js";
 import {
   axiosInstance,
-  checkEnvErrors,
   encryptToken,
   decryptToken,
   isTokenExpired,
   addExtraInfoToToken,
-} from "./util.mjs";
+} from "./util.js";
+import type {
+  ExtendedToken,
+  RedditAccessTokenResponse,
+  BearerTokenResponse,
+  CookieStorage,
+} from "./types/reddit.js";
+import type { SessionData } from "./types/session.js";
+import { AxiosError, type AxiosResponse } from "axios";
 
-const {
-  REDDIT_CLIENT_ID,
-  REDDIT_CALLBACK_URI,
-  REDDIT_SCOPE,
-  CLIENT_PATH,
-  SALT,
-  SESSION_LENGTH_SECS,
-} = process.env;
-
-checkEnvErrors();
-
-const CONFIG = {
-  key: "reacddit:sess" /** (string) cookie key (default is koa:sess) */,
-  /** (number || 'session') maxAge in ms (default is 1 day) */
-  /** 'session' will result in a cookie that expires when session/browser is closed */
-  /** Warning: If a session cookie is stolen, this cookie will never expire */
-  maxAge: SESSION_LENGTH_SECS * 1000,
-  autoCommit: true /** (boolean) automatically commit headers (default true) */,
-  overwrite: true /** (boolean) can overwrite or not (default true) */,
-  httpOnly: true /** (boolean) httpOnly or not (default true) */,
-  signed: true /** (boolean) signed or not (default true) */,
-  rolling: true /** (boolean) Force a session identifier cookie to be set on every response.
-   The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
-  renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
-   (default is false) */,
-  encode: (rawData) => {
-    // Use your encryptToken function
-    const encrypted = encryptToken(rawData);
-    // Return a stringified version of the whole encrypted object
-    return JSON.stringify(encrypted);
-  },
-  decode: (stringifiedEncryptedData) => {
-    // Parse the stringified encrypted object
-    const encryptedData = JSON.parse(stringifiedEncryptedData);
-    // Use your decryptToken function
-    return decryptToken(encryptedData);
-  },
-};
-
-const scope =
-  REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save";
+function getSessionConfig() {
+  return {
+    key: "reacddit:sess" /** (string) cookie key (default is koa:sess) */,
+    /** (number || 'session') maxAge in ms (default is 1 day) */
+    /** 'session' will result in a cookie that expires when session/browser is closed */
+    /** Warning: If a session cookie is stolen, this cookie will never expire */
+    maxAge: config.SESSION_LENGTH_SECS * 1000,
+    autoCommit: true /** (boolean) automatically commit headers (default true) */,
+    overwrite: true /** (boolean) can overwrite or not (default true) */,
+    httpOnly: true /** (boolean) httpOnly or not (default true) */,
+    signed: true /** (boolean) signed or not (default true) */,
+    rolling: true /** (boolean) Force a session identifier cookie to be set on every response.
+     The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
+    renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
+     (default is false) */,
+    encode: (rawData: unknown): string => {
+      // Use your encryptToken function
+      const encrypted = encryptToken(rawData);
+      // Return a stringified version of the whole encrypted object
+      return JSON.stringify(encrypted);
+    },
+    decode: (stringifiedEncryptedData: string): unknown => {
+      // Parse the stringified encrypted object
+      const encryptedData = JSON.parse(stringifiedEncryptedData);
+      // Use your decryptToken function
+      return decryptToken(encryptedData);
+    },
+  };
+}
 
 /**
  * Set the session information
- * @param {object} token - The token object to store in the session
- * @param {object} ctx - The Koa context
+ * @param token - The token object to store in the session
+ * @param ctx - The Koa context
  */
-const setSession = (token, ctx) => {
+function setSession(token: ExtendedToken, ctx: Koa.Context): void {
   ctx.session.token = token;
-};
+}
 
 /**
  * Set the client-accessible cookie with token information
- * @param {object} token - The token object
- * @param {object} ctx - The Koa context
+ * @param token - The token object
+ * @param ctx - The Koa context
  */
-const setCookie = (token, ctx) => {
-  const cookieStorage = {
+function setCookie(token: ExtendedToken, ctx: Koa.Context): void {
+  const cookieStorage: CookieStorage = {
     accessToken: token.access_token,
     expires: token.expires,
     auth: token.auth,
@@ -80,108 +76,121 @@ const setCookie = (token, ctx) => {
   const tokenJson = JSON.stringify(cookieStorage);
 
   const expireDate = new Date();
-  const expiryTime = expireDate.getTime() + SESSION_LENGTH_SECS * 1000;
+  const expiryTime = expireDate.getTime() + config.SESSION_LENGTH_SECS * 1000;
   expireDate.setTime(expiryTime);
 
   ctx.cookies.set("token", tokenJson, {
-    maxAge: SESSION_LENGTH_SECS * 1000,
+    maxAge: config.SESSION_LENGTH_SECS * 1000,
     expires: expireDate,
     httpOnly: false,
     secure: true,
     overwrite: true,
   });
-};
+}
 
 /**
  * Set both the session and cookie with token information
  * The session is encrypted, while the cookie is accessible to the client
- * @param {object} token - The token object
- * @param {object} ctx - The Koa context
+ * @param token - The token object
+ * @param ctx - The Koa context
  */
-const setSessAndCookie = (token, ctx) => {
+function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): void {
   try {
     setSession(token, ctx);
     setCookie(token, ctx);
   } catch (error) {
     console.error("Error setting session and cookie:", error);
   }
-};
+}
 
 /**
  * Asynchronously requests an anonymous access token from Reddit.
  *
- * @throws {Error} If the request to Reddit API fails.
- * @returns {Promise<Object>} A Promise that resolves to an object representing the access token.
+ * @throws If the request to Reddit API fails.
+ * @returns A Promise that resolves to an object representing the access token.
  */
-const getAnonToken = async () => {
+async function getAnonToken(): Promise<{ token: RedditAccessTokenResponse }> {
   // Request parameters
   const params = new URLSearchParams();
   params.append("grant_type", "client_credentials");
-  params.append("scope", scope);
+  params.append("scope", config.REDDIT_SCOPE);
 
   try {
-    const res = await axiosInstance.post("/api/v1/access_token", params);
-    return addExtraInfoToToken({ token: res.data }, false);
+    const res: AxiosResponse<RedditAccessTokenResponse> =
+      await axiosInstance.post("/api/v1/access_token", params);
+    return { token: res.data };
   } catch (error) {
-    if (error?.message) {
+    if (error instanceof Error) {
       console.error("Error: Anon Access Token error", error.message);
     }
-    if (error?.response?.data) {
+    if (error instanceof AxiosError && error.response) {
       console.error("Error response from Reddit:", error.response.data);
     }
     throw new Error("Failed to retrieve anonymous access token from Reddit.");
   }
-};
+}
 
 /**
  * Revokes a token
- * @param {string} token - The token to revoke
- * @param {string} tokenType - The token type hint ('access_token' or 'refresh_token')
- * @returns {Promise<void>}
- * @throws {Error} If token revocation fails
+ * @param token - The token to revoke
+ * @param tokenType - The token type hint ('access_token' or 'refresh_token')
+ * @throws If token revocation fails
  */
-const revokeToken = async (token, tokenType) => {
+async function revokeToken(
+  token: string,
+  tokenType: "access_token" | "refresh_token",
+): Promise<void> {
   try {
     await axiosInstance.post("/api/v1/revoke_token", {
       token,
       token_type_hint: tokenType,
     });
   } catch (error) {
-    console.error("Revoke Token error", error.message);
-    throw new Error(`Failed to revoke ${tokenType}: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Revoke Token error", errorMessage);
+    throw new Error(`Failed to revoke ${tokenType}: ${errorMessage}`);
   }
-};
+}
 
 /**
  * Refresh an existing token with the refresh token
- * @param {Object} prevToken - The previous token object containing refresh_token
- * @returns {Promise<Object>} The refreshed token object with updated expiry
- * @throws {Error} If token refresh fails
+ * @param prevToken - The previous token object containing refresh_token
+ * @returns The refreshed token object with updated expiry
+ * @throws If token refresh fails or refresh_token is missing
  */
-const getRefreshToken = async (prevToken) => {
-  const { refresh_token } = prevToken;
+async function getRefreshToken(
+  prevToken: ExtendedToken,
+): Promise<RedditAccessTokenResponse> {
+  if (!prevToken.refresh_token) {
+    throw new Error("Cannot refresh token: refresh_token is missing");
+  }
 
   const params = new URLSearchParams();
   params.append("grant_type", "refresh_token");
-  params.append("refresh_token", refresh_token);
+  params.append("refresh_token", prevToken.refresh_token);
 
   try {
-    const newToken = await axiosInstance.post("/api/v1/access_token", params);
+    const newToken: AxiosResponse<RedditAccessTokenResponse> =
+      await axiosInstance.post("/api/v1/access_token", params);
     // Only auth tokens have a refresh token
-    return addExtraInfoToToken(newToken.data, true);
+    return newToken.data;
   } catch (error) {
-    console.error("Refresh Access Token error", error.message);
-    throw new Error(`Failed to refresh token: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Refresh Access Token error", errorMessage);
+    throw new Error(`Failed to refresh token: ${errorMessage}`);
   }
-};
+}
 
 /**
  * Generate an object to return.
- * @param {Object} token - The access token object
- * @param {Object} [params={}] - Optional parameters to include
- * @returns {Object} - Combined object with access token properties and optional parameters
+ * @param token - The access token object
+ * @param params - Optional parameters to include
+ * @returns Combined object with access token properties and optional parameters
  */
-const getBearer = (token, params = {}) => {
+function getBearer(
+  token: ExtendedToken,
+  params: Partial<BearerTokenResponse> = {},
+): BearerTokenResponse {
   // Check for required properties
   if (!token.access_token) {
     throw new Error("Missing access token");
@@ -199,45 +208,42 @@ const getBearer = (token, params = {}) => {
     accessToken: access_token,
     expires,
     auth,
+    type: "new",
+    loginUrl: "",
     ...params,
   };
-};
+}
 
 /**
  * Generate the login URL to return with anon tokens
- * @param ctx
- * @returns {String}
+ * @param ctx - The Koa context
+ * @returns Login URL string
  */
-const getLoginUrl = (ctx) => {
+function getLoginUrl(ctx: Koa.Context): string {
   const state = ctx.session.state || randomUUID();
   ctx.session.state = state;
 
   // Construct the query parameters
   const queryParams = new URLSearchParams({
-    client_id: REDDIT_CLIENT_ID,
+    client_id: config.REDDIT_CLIENT_ID,
     response_type: "code",
     state,
-    redirect_uri: REDDIT_CALLBACK_URI,
+    redirect_uri: config.REDDIT_CALLBACK_URI,
     duration: "permanent",
-    scope: scope.split(",").join(" "),
+    scope: config.REDDIT_SCOPE.split(",").join(" "),
   });
 
   // Construct the full authorization URL
   return `https://www.reddit.com/api/v1/authorize?${queryParams.toString()}`;
-};
+}
 
-const app = new Koa();
+const app = new Koa<Koa.DefaultState, Koa.Context & { session: SessionData }>();
 app.proxy = true;
 
-app.keys = [SALT];
-app.use(session(CONFIG, app));
+app.keys = [config.SALT];
+app.use(session(getSessionConfig(), app));
 app.use(async (ctx, next) => {
-  // Always read from process.env for consistency
-  // This ensures the value is always current
-  const clientPath = process.env.CLIENT_PATH;
-  if (clientPath) {
-    ctx.set("Access-Control-Allow-Origin", clientPath);
-  }
+  ctx.set("Access-Control-Allow-Origin", config.CLIENT_PATH);
   ctx.set("Access-Control-Allow-Methods", "GET");
   await next();
 });
@@ -266,7 +272,7 @@ router.get("/api/callback", async (ctx) => {
   const savedState = ctx.session.state;
   ctx.session.state = null;
 
-  const handleError = (message, status = 500) => {
+  const handleError = (message: string, status = 500): void => {
     console.error(message);
     ctx.status = status;
     ctx.body = { status: "error", message };
@@ -291,15 +297,13 @@ router.get("/api/callback", async (ctx) => {
   // Everything looks great. Let's try to get the code.
   const options = {
     grant_type: "authorization_code",
-    code,
-    redirect_uri: REDDIT_CALLBACK_URI,
+    code: code as string,
+    redirect_uri: config.REDDIT_CALLBACK_URI,
   };
 
   try {
-    const AccessToken = await axiosInstance.post(
-      "/api/v1/access_token",
-      qs.stringify(options),
-    );
+    const AccessToken: AxiosResponse<RedditAccessTokenResponse> =
+      await axiosInstance.post("/api/v1/access_token", qs.stringify(options));
 
     const { data } = AccessToken;
     console.log("TOKEN RETRIEVED SUCCESSFULLY.");
@@ -309,11 +313,13 @@ router.get("/api/callback", async (ctx) => {
       console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
       const accessToken = addExtraInfoToToken(data, true);
       setSessAndCookie(accessToken, ctx);
-      ctx.redirect(`${CLIENT_PATH}/?login`);
+      ctx.redirect(`${config.CLIENT_PATH}/?login`);
       return;
     }
   } catch (exception) {
-    return handleError(`ACCESS TOKEN ERROR ${exception.message}`);
+    const errorMessage =
+      exception instanceof Error ? exception.message : String(exception);
+    return handleError(`ACCESS TOKEN ERROR ${errorMessage}`);
   }
 
   ctx.body = "callback";
@@ -321,68 +327,77 @@ router.get("/api/callback", async (ctx) => {
 
 /**
  * Helper function to set the session, cookie and response body
- * @param {object} token - The token object
- * @param {object} ctx - The Koa context
- * @param {string} type - The type of token response ('new', 'cached', 'refresh', 'newanon')
+ * @param token - The token object
+ * @param ctx - The Koa context
+ * @param type - The type of token response ('new', 'cached', 'refresh', 'newanon')
  */
-const setSessionAndRespond = (token, ctx, type) => {
+function setSessionAndRespond(
+  token: ExtendedToken,
+  ctx: Koa.Context,
+  type: BearerTokenResponse["type"],
+): void {
   setSessAndCookie(token, ctx);
   ctx.body = getBearer(token, { type, loginUrl: getLoginUrl(ctx) });
-};
+}
 
 /**
  * Helper function to handle the scenario when there's no token available.
  * Grants an anonymous token and sets the session.
- * @param {object} ctx - The Koa context
+ * @param ctx - The Koa context
  */
-const getAnonTokenAndSetSession = async (ctx) => {
+async function getAnonTokenAndSetSession(ctx: Koa.Context): Promise<void> {
   console.log("ANON TOKEN GRANTED");
   const anonToken = await getAnonToken();
   setSessionAndRespond(addExtraInfoToToken(anonToken.token, false), ctx, "new");
-};
+}
 
 /**
  * Helper function to handle the scenario when the token isn't expired.
  * Returns the cached token from the session.
- * @param {object} ctx - The Koa context
- * @param {object} token - The token object
+ * @param ctx - The Koa context
+ * @param token - The token object
  */
-const returnCachedTokenAndSetSession = async (ctx, token) => {
+async function returnCachedTokenAndSetSession(
+  ctx: Koa.Context,
+  token: ExtendedToken,
+): Promise<void> {
   console.log("CACHED TOKEN RETURNED");
   await setSessionAndRespond(token, ctx, "cached");
-};
+}
 
 /**
  * Helper function to handle the scenario when the token is expired or refresh is forced.
  * Attempts to refresh the token if a refresh_token exists, otherwise gets an anonymous token.
- * @param {object} ctx - The Koa context
- * @param {object} token - The token object
- * @param {boolean} forceRefresh - Whether the refresh was explicitly requested
+ * @param ctx - The Koa context
+ * @param token - The token object
+ * @param forceRefresh - Whether the refresh was explicitly requested
  */
-const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
+async function refreshOrGetAnonTokenAndSetSession(
+  ctx: Koa.Context,
+  token: ExtendedToken,
+  forceRefresh: boolean,
+): Promise<void> {
   if (token.refresh_token) {
     try {
       const refreshedTokenResult = await getRefreshToken(token);
 
-      const newToken = {
+      const newToken: ExtendedToken = {
         ...refreshedTokenResult,
         refresh_token: token.refresh_token,
+        expires: addExtraInfoToToken(refreshedTokenResult, true).expires,
+        auth: true,
       };
 
       const message = forceRefresh
         ? "FORCED REFRESH. NEW TOKEN GRANTED"
         : "TOKEN EXPIRED. NEW TOKEN GRANTED";
       console.log(message);
-      await setSessionAndRespond(
-        addExtraInfoToToken(newToken, true),
-        ctx,
-        "refresh",
-      );
+      await setSessionAndRespond(newToken, ctx, "refresh");
     } catch {
       console.log("REFRESH TOKEN ERROR. GETTING ANON TOKEN.");
       const anonToken = await getAnonToken();
       await setSessionAndRespond(
-        addExtraInfoToToken(anonToken.token),
+        addExtraInfoToToken(anonToken.token, false),
         ctx,
         "new",
       );
@@ -396,7 +411,7 @@ const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
       "newanon",
     );
   }
-};
+}
 
 /**
  * GET /api/bearer
@@ -407,7 +422,7 @@ const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
  */
 router.get("/api/bearer", async (ctx) => {
   const token = ctx.session.token;
-  const forceRefresh = ctx.query.refresh !== undefined;
+  const forceRefresh = ctx.query["refresh"] !== undefined;
 
   // Case 1: No existing token. Get an anon token.
   if (!token) {
@@ -438,25 +453,31 @@ router.get("/api/logout", async (ctx) => {
     // Try to revoke tokens, but don't fail if revocation fails
     try {
       // Revoke the access token and the refresh token in parallel
-      const revokePromises = [];
+      const revokePromises: Promise<void>[] = [];
       if (token.access_token) {
         revokePromises.push(
           revokeToken(token.access_token, "access_token").catch((error) => {
-            console.error("Failed to revoke access token:", error.message);
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
+            console.error("Failed to revoke access token:", errorMessage);
           }),
         );
       }
       if (token.refresh_token) {
         revokePromises.push(
           revokeToken(token.refresh_token, "refresh_token").catch((error) => {
-            console.error("Failed to revoke refresh token:", error.message);
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
+            console.error("Failed to revoke refresh token:", errorMessage);
           }),
         );
       }
       await Promise.all(revokePromises);
     } catch (error) {
       // Log the error but do not re-throw it
-      console.error("Error occurred while revoking tokens: ", error.message);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("Error occurred while revoking tokens: ", errorMessage);
       // Even if an error occurred, we still want to clear the session and cookie
     }
 
@@ -465,7 +486,7 @@ router.get("/api/logout", async (ctx) => {
     ctx.cookies.set("token", null, { overwrite: true });
 
     // Redirect the user to the logout page
-    return ctx.redirect(`${CLIENT_PATH}/?logout`);
+    return ctx.redirect(`${config.CLIENT_PATH}/?logout`);
   }
 });
 
