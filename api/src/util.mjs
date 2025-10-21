@@ -6,12 +6,11 @@ const {
   REDDIT_CLIENT_ID,
   REDDIT_CLIENT_SECRET,
   REDDIT_CALLBACK_URI,
-  REDDIT_SCOPE,
   CLIENT_PATH,
   SALT,
   SESSION_LENGTH_SECS,
+  TOKEN_EXPIRY_PADDING_SECS,
   PORT,
-  DEBUG,
   ENCRYPTION_ALGORITHM,
   IV_LENGTH,
 } = process.env;
@@ -61,10 +60,14 @@ export function addExtraInfoToToken(token, auth = false) {
   };
 }
 
+/**
+ * Validates environment variables and exits with error messages if any are invalid
+ * @throws {void} Calls process.exit(1) if validation fails
+ */
 export function checkEnvErrors() {
   const checks = [
     {
-      condition: SALT.length !== 32,
+      condition: !SALT || SALT.length !== 32,
       message: "The SALT must be exactly 32 characters.",
     },
     {
@@ -80,14 +83,34 @@ export function checkEnvErrors() {
     },
     {
       condition:
+        !SESSION_LENGTH_SECS ||
         !Number.isInteger(Number(SESSION_LENGTH_SECS)) ||
         !(parseInt(SESSION_LENGTH_SECS) > 0),
       message: "SESSION_LENGTH_SECS must be a valid positive integer.",
     },
     {
+      condition:
+        !TOKEN_EXPIRY_PADDING_SECS ||
+        !Number.isInteger(Number(TOKEN_EXPIRY_PADDING_SECS)) ||
+        !(parseInt(TOKEN_EXPIRY_PADDING_SECS) >= 0),
+      message:
+        "TOKEN_EXPIRY_PADDING_SECS must be a valid non-negative integer.",
+    },
+    {
       condition: !CLIENT_PATH,
       message:
-        "You must set your client path. This is the path to the client app in ../client This is to handle redirects.",
+        "You must set your CLIENT_PATH. This is the URL to the client app (used for redirects and CORS).",
+    },
+    {
+      condition: !ENCRYPTION_ALGORITHM,
+      message: "ENCRYPTION_ALGORITHM must be set (default: aes-256-cbc).",
+    },
+    {
+      condition:
+        !IV_LENGTH ||
+        !Number.isInteger(Number(IV_LENGTH)) ||
+        !(parseInt(IV_LENGTH) > 0),
+      message: "IV_LENGTH must be a valid positive integer (default: 16).",
     },
   ];
 

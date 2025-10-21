@@ -20,7 +20,6 @@ const {
   CLIENT_PATH,
   SALT,
   SESSION_LENGTH_SECS,
-  TOKEN_EXPIRY_PADDING_SECS,
 } = process.env;
 
 checkEnvErrors();
@@ -58,17 +57,17 @@ const scope =
 
 /**
  * Set the session information
- * @param {object} token
- * @param ctx
+ * @param {object} token - The token object to store in the session
+ * @param {object} ctx - The Koa context
  */
 const setSession = (token, ctx) => {
   ctx.session.token = token;
 };
 
 /**
- * Set the cookie
- * @param {object} token
- * @param ctx
+ * Set the client-accessible cookie with token information
+ * @param {object} token - The token object
+ * @param {object} ctx - The Koa context
  */
 const setCookie = (token, ctx) => {
   const cookieStorage = {
@@ -94,10 +93,10 @@ const setCookie = (token, ctx) => {
 };
 
 /**
- * Set the session and cookie objects with
- * the token info. The bearer is left unencrypted.
- * @param token
- * @param ctx
+ * Set both the session and cookie with token information
+ * The session is encrypted, while the cookie is accessible to the client
+ * @param {object} token - The token object
+ * @param {object} ctx - The Koa context
  */
 const setSessAndCookie = (token, ctx) => {
   try {
@@ -106,37 +105,6 @@ const setSessAndCookie = (token, ctx) => {
   } catch (error) {
     console.error("Error setting session and cookie:", error);
   }
-};
-
-/**
- * Checks if the token is expired. Pads the expiry time by 5 minutes.
- * @param {Object} token - The token object
- * @returns {boolean} - Returns true if the token is expired, false otherwise
- */
-const isTokenExpired = (token) => {
-  if (!token || !token.expires) {
-    return true;
-  }
-  const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
-  // Pad it by 5 minutes.
-  return token.expires - TOKEN_EXPIRY_PADDING_SECS <= now;
-};
-
-/**
- * Adds additional info to the token object
- * @param {Object} token - The token object
- * @param {boolean} auth - If the token is authorized
- * @returns {Object} - The token object with additional info
- */
-const addExtraInfoToToken = (token, auth = false) => {
-  const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
-  const expires = now + token.expires_in - 120;
-
-  return {
-    ...token,
-    expires,
-    auth,
-  };
 };
 
 /**
@@ -278,17 +246,22 @@ app.use(logger());
 const router = new Router();
 
 /**
- * Forward to the Reddit login page
+ * GET /api/login
+ * Redirects to the Reddit authorization page to begin OAuth flow
+ * @route GET /api/login
  */
-router.get("/api/login", (ctx, next) => {
+router.get("/api/login", (ctx) => {
   const authorizationUri = getLoginUrl(ctx);
   ctx.redirect(authorizationUri);
 });
 
 /**
- * Get the bearer token
+ * GET /api/callback
+ * OAuth callback endpoint - handles the redirect from Reddit after user authorization
+ * Exchanges the authorization code for an access token
+ * @route GET /api/callback
  */
-router.get("/api/callback", async (ctx, next) => {
+router.get("/api/callback", async (ctx) => {
   const { code, state, error } = ctx.query;
   const savedState = ctx.session.state;
   ctx.session.state = null;
@@ -346,7 +319,12 @@ router.get("/api/callback", async (ctx, next) => {
   ctx.body = "callback";
 });
 
-// Helper function to set the session, cookie and response body
+/**
+ * Helper function to set the session, cookie and response body
+ * @param {object} token - The token object
+ * @param {object} ctx - The Koa context
+ * @param {string} type - The type of token response ('new', 'cached', 'refresh', 'newanon')
+ */
 const setSessionAndRespond = (token, ctx, type) => {
   setSessAndCookie(token, ctx);
   ctx.body = getBearer(token, { type, loginUrl: getLoginUrl(ctx) });
@@ -354,6 +332,7 @@ const setSessionAndRespond = (token, ctx, type) => {
 
 /**
  * Helper function to handle the scenario when there's no token available.
+ * Grants an anonymous token and sets the session.
  * @param {object} ctx - The Koa context
  */
 const getAnonTokenAndSetSession = async (ctx) => {
@@ -364,6 +343,7 @@ const getAnonTokenAndSetSession = async (ctx) => {
 
 /**
  * Helper function to handle the scenario when the token isn't expired.
+ * Returns the cached token from the session.
  * @param {object} ctx - The Koa context
  * @param {object} token - The token object
  */
@@ -374,9 +354,10 @@ const returnCachedTokenAndSetSession = async (ctx, token) => {
 
 /**
  * Helper function to handle the scenario when the token is expired or refresh is forced.
+ * Attempts to refresh the token if a refresh_token exists, otherwise gets an anonymous token.
  * @param {object} ctx - The Koa context
  * @param {object} token - The token object
- * @param {boolean} forceRefresh - The flag that indicates whether the refresh is forced
+ * @param {boolean} forceRefresh - Whether the refresh was explicitly requested
  */
 const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
   if (token.refresh_token) {
@@ -397,7 +378,7 @@ const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
         ctx,
         "refresh",
       );
-    } catch (error) {
+    } catch {
       console.log("REFRESH TOKEN ERROR. GETTING ANON TOKEN.");
       const anonToken = await getAnonToken();
       await setSessionAndRespond(
@@ -418,9 +399,13 @@ const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
 };
 
 /**
- * Get a bearer token
+ * GET /api/bearer
+ * Returns a valid bearer token (either from cache, refreshed, or new anonymous)
+ * Query params:
+ *   - refresh: if present, forces a token refresh
+ * @route GET /api/bearer
  */
-router.get("/api/bearer", async (ctx, next) => {
+router.get("/api/bearer", async (ctx) => {
   const token = ctx.session.token;
   const forceRefresh = ctx.query.refresh !== undefined;
 
@@ -442,9 +427,11 @@ router.get("/api/bearer", async (ctx, next) => {
 });
 
 /**
- * Log a user out by revoking their access and refresh tokens, clearing the session, and deleting the token cookie.
+ * GET /api/logout
+ * Logs out the user by revoking their tokens, clearing the session, and redirecting to the client
+ * @route GET /api/logout
  */
-router.get("/api/logout", async (ctx, next) => {
+router.get("/api/logout", async (ctx) => {
   const token = ctx.session.token;
 
   if (token) {

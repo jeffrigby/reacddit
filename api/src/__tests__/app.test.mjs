@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, vi } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  vi,
+} from "vitest";
 import request from "supertest";
 
 // Set up environment variables before importing the app
@@ -8,7 +16,10 @@ beforeAll(() => {
   vi.stubEnv("REDDIT_CLIENT_SECRET", "test-client-secret");
   vi.stubEnv("REDDIT_USER_AGENT", "test-user-agent");
   vi.stubEnv("REDDIT_CALLBACK_URI", "http://localhost:3001/api/callback");
-  vi.stubEnv("REDDIT_SCOPE", "identity,mysubreddits,vote,subscribe,read,history,save");
+  vi.stubEnv(
+    "REDDIT_SCOPE",
+    "identity,mysubreddits,vote,subscribe,read,history,save",
+  );
   vi.stubEnv("CLIENT_PATH", "http://localhost:3000");
   vi.stubEnv("SALT", "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM");
   vi.stubEnv("SESSION_LENGTH_SECS", "604800");
@@ -31,6 +42,16 @@ vi.mock("../util.mjs", () => {
     checkEnvErrors: vi.fn(),
     encryptToken: vi.fn(() => ({ iv: "mock-iv", token: "mock-encrypted" })),
     decryptToken: vi.fn(() => ({ mock: "decrypted-token" })),
+    isTokenExpired: vi.fn((token) => {
+      if (!token || !token.expires) return true;
+      const now = Date.now() / 1000;
+      return token.expires - 300 <= now;
+    }),
+    addExtraInfoToToken: vi.fn((token, auth = false) => {
+      const now = Date.now() / 1000;
+      const expires = now + token.expires_in - 120;
+      return { ...token, expires, auth };
+    }),
   };
 });
 
