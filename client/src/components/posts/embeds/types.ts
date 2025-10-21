@@ -14,19 +14,19 @@ export interface GalleryMediaItem {
   key: string;
   type: string;
   source: {
-    url: string;
-    width: number;
-    height: number;
+    u: string;
+    x: number;
+    y: number;
   };
   thumb: {
-    url: string;
-    width: number;
-    height: number;
+    u: string;
+    x: number;
+    y: number;
   };
   preview: {
-    url: string;
-    width: number;
-    height: number;
+    u: string;
+    x: number;
+    y: number;
   };
 }
 

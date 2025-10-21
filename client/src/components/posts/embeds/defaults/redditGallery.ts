@@ -6,14 +6,14 @@ interface MediaMetadataItem {
   status: string;
   e: string;
   s: {
-    url: string;
-    width: number;
-    height: number;
+    u: string;
+    x: number;
+    y: number;
   };
   p: Array<{
-    url: string;
-    width: number;
-    height: number;
+    u: string;
+    x: number;
+    y: number;
   }>;
 }
 

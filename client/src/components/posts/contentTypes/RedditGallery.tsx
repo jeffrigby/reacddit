@@ -18,8 +18,8 @@ function RedditGallery({ content }: RedditGalleryProps) {
   const images = useMemo<GalleryImage[]>(
     () =>
       media.map((val) => ({
-        original: val.preview.url,
-        thumbnail: val.thumb.url,
+        original: val.preview.u,
+        thumbnail: val.thumb.u,
       })),
     [media]
   );
