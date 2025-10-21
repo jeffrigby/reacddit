@@ -53,3 +53,5 @@ stats.json
 
 # Agent-specific documentation (not general codebase docs)
 /agentDocs/
+/.claude/
+/.cursor/

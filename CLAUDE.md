@@ -102,10 +102,19 @@ The API requires Reddit OAuth2 setup:
 
 ## Build System
 
+**Client:**
 - Webpack 5 with custom configuration in `client/webpack/`
 - ESBuild loader for TypeScript/JavaScript
 - Bundle analyzer available via `npm run profile`
-- Production deployments use AWS SAM (`api/template.yaml`)
+
+**Production Deployment:**
+- SAM template (`api/template.yaml`) provisions complete AWS infrastructure:
+  - Lambda function (OAuth API)
+  - S3 bucket (static site hosting)
+  - CloudFront distribution (CDN with multi-origin: S3 for client, Lambda for `/api/*`)
+  - Origin Access Control, IAM roles, SSL via ACM
+- Client build uploaded to S3 at `/dist` path
+- Environment variables stored in AWS Systems Manager Parameter Store
 
 ## Key Files to Understand
 

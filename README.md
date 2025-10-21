@@ -12,8 +12,8 @@ reacddit is a monorepo containing an OAuth2 API (for Reddit authentication) and 
 
 - **Frontend**: React 19, Redux Toolkit, React Router 7, TypeScript
 - **Build System**: Webpack 5 with ESBuild loader
-- **Backend**: Koa.js OAuth2 server (TypeScript)
-- **Deployment**: AWS Lambda with SAM/CloudFormation
+- **Backend**: Koa.js OAuth2 server (TypeScript) - [API docs](api/README.md)
+- **Deployment**: AWS Lambda with SAM/CloudFormation - [Deployment guide](DEPLOYMENT.md)
 - **PWA**: Full Progressive Web App support with service workers
 
 ## Features
@@ -78,29 +78,9 @@ The API requires Reddit OAuth2 credentials:
 3. Configure `CLIENT_PATH`, `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_CALLBACK_URI`
 4. Test at `http://localhost:3001/api/bearer`
 
-### SSL Requirement
-**SSL is required to run reacddit.** Since the app loads HTTPS iframes and embedded content, the main site must also be served over HTTPS to avoid mixed content blocking.
+For detailed API configuration and environment variables, see [api/README.md](api/README.md).
 
-**Recommended setup:**
-1. Run the dev servers (client on port 3000, API on port 3001)
-2. Use a reverse proxy (nginx, Apache, Caddy, etc.) to:
-   - Proxy requests to the dev servers
-   - Terminate SSL and apply your certificate
-   - Serve the site over HTTPS
-   - Enable WebSocket support for Webpack HMR (Hot Module Replacement)
-
-**Important proxy configuration notes:**
-- **API routes**: Proxy `/api` requests to the API server (port 3001)
-- **Client routes**: Proxy all other requests to the client server (port 3000)
-- **WebSocket support**: Configure WebSocket proxying for `/ws` and `/sockjs-node` endpoints (required for HMR during development)
-- **HTTP/2**: Enable HTTP/2 for better performance
-
-**SSL certificate options:**
-- [Let's Encrypt](https://letsencrypt.org/) (recommended and free)
-- Any valid SSL certificate from a certificate authority
-- Self-signed certificate for local development (will show browser warnings)
-
-See `nginx.conf.example` in the repo for a complete nginx configuration example.
+**Note:** SSL is required to run reacddit (for HTTPS iframes and embedded content). See [DEPLOYMENT.md](DEPLOYMENT.md) for local SSL setup and production deployment instructions.
 
 ## Current Limitations
 
