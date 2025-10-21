@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { Link, useParams } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router-dom';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
 import { getMoreComments } from '@/reddit/redditApiTs';
 import CommentsRender from './CommentsRender';
@@ -71,8 +71,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
     return (
       <div className="comments-more">
         <Button
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          as={Link as any}
+          as={NavLink}
           className="mb-2"
           size="sm"
           to={`/r/${target}/comments/${postName}/${postTitle}/${parantID}`}
@@ -98,7 +97,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
         onClick={loadMoreComments}
       >
         {loading ? (
-          <>Fetchng more comments.</>
+          <>Fetching more comments.</>
         ) : (
           <>{count.toLocaleString()} more replies.</>
         )}

@@ -1,4 +1,11 @@
-import { memo, useContext, useEffect, useState, useCallback } from 'react';
+import {
+  memo,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useOptimistic,
+} from 'react';
 import type { MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -95,16 +102,32 @@ function PostVote() {
   const { data } = post;
   const actionable = useContext(PostsContextActionable) as boolean;
 
-  const [ups, setUps] = useState(data.ups);
-  const [likes, setLikes] = useState<boolean | null>(data.likes ?? null);
+  const [voteState, setVoteState] = useState<VoteState>({
+    ups: data.ups,
+    likes: data.likes ?? null,
+  });
+
+  const [optimisticVoteState, setOptimisticVoteState] = useOptimistic(
+    voteState,
+    (state: VoteState, newDir: VoteDirection) => {
+      const effectiveDir: VoteDirection =
+        state.likes === (newDir === 1) ? 0 : newDir;
+      return getNewState(effectiveDir, state.ups, state.likes);
+    }
+  );
 
   const expired = Date.now() / 1000 - data.created_utc;
   const sixmonthSeconds = 182.5 * 86400; // I don't know when reddit exactly cuts it off.
   const disabled = bearer.status !== 'auth' || expired > sixmonthSeconds;
 
-  const upIcon = likes === true ? faArrowAltCircleUp : farArrowAltCircleUp;
+  const upIcon =
+    optimisticVoteState.likes === true
+      ? faArrowAltCircleUp
+      : farArrowAltCircleUp;
   const downIcon =
-    likes === false ? faArrowAltCircleDown : farArrowAltCircleDown;
+    optimisticVoteState.likes === false
+      ? faArrowAltCircleDown
+      : farArrowAltCircleDown;
 
   const vote = useCallback(
     async (dir: VoteDirection) => {
@@ -112,23 +135,21 @@ function PostVote() {
         return;
       }
 
-      // Check if this has already been voted on
-      const newDir: VoteDirection = likes === (dir === 1) ? 0 : dir;
-
-      const newState = getNewState(newDir, ups, likes ?? null);
-      setLikes(newState.likes);
-      setUps(newState.ups);
+      setOptimisticVoteState(dir); // Instant UI update
 
       try {
-        await voteAPI(data.name, newDir);
+        const effectiveDir: VoteDirection =
+          voteState.likes === (dir === 1) ? 0 : dir;
+        await voteAPI(data.name, effectiveDir);
+
+        // Update actual state after success
+        setVoteState(getNewState(effectiveDir, voteState.ups, voteState.likes));
       } catch (error) {
-        // Revert state on error
-        setLikes(likes);
-        setUps(ups);
+        // useOptimistic automatically rolls back on error
         console.error('Vote failed:', error);
       }
     },
-    [bearer.status, data.name, likes, ups]
+    [bearer.status, data.name, voteState, setOptimisticVoteState]
   );
 
   useEffect(() => {
@@ -180,7 +201,7 @@ function PostVote() {
         {' '}
         <FontAwesomeIcon icon={upIcon} />{' '}
       </Button>
-      <span>{ups.toLocaleString()}</span>
+      <span>{optimisticVoteState.ups.toLocaleString()}</span>
       <Button
         aria-label="Vote Down"
         className="shadow-none"

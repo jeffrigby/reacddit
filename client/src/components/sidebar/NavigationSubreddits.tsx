@@ -149,11 +149,7 @@ function NavigationSubReddits() {
 
   let content: React.ReactElement | undefined;
   if (subredditsStatus === 'loading' || subredditsStatus === 'idle') {
-    // content = (
-    //   <div className="alert alert-info" id="subreddits-loading" role="alert">
-    //     <FontAwesomeIcon icon={faSpinner} spin /> Loading Subreddits
-    //   </div>
-    // );
+    // No loading UI
   } else if (subredditsStatus === 'failed') {
     content = (
       <div

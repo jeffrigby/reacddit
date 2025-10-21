@@ -105,7 +105,7 @@ async function getContent(
   switch (listType) {
     case 'r':
       entries = await getListingSubreddit(
-        target ?? 'all',
+        target,
         sort ?? 'hot',
         params
       );
@@ -307,18 +307,7 @@ export const fetchListingsNew = createAsyncThunk<
     const locationKey = location.key ?? 'front';
     const currentData = state.listings.listingsByLocation?.[locationKey];
 
-    if (!currentData) {
-      return rejectWithValue('No current data to refresh');
-    }
-
-    const { children, status } = currentData;
-
-    // Only fetch if currently loaded
-    if (status !== 'loaded' && status !== 'loadedAll') {
-      return rejectWithValue('Cannot refresh while loading');
-    }
-
-    const childKeys = Object.keys(children);
+    const childKeys = Object.keys(currentData?.children ?? {});
     if (childKeys.length === 0) {
       return rejectWithValue('No posts to use as reference');
     }
@@ -342,6 +331,27 @@ export const fetchListingsNew = createAsyncThunk<
       entries,
       newPostCount,
     };
+  },
+  {
+    condition: ({ location }, { getState }) => {
+      const state = getState();
+      const locationKey = location.key ?? 'front';
+      const currentData = state.listings.listingsByLocation?.[locationKey];
+
+      // Don't fetch if no data exists
+      if (!currentData) {
+        return false;
+      }
+
+      const { status } = currentData;
+
+      // Don't fetch if already loading
+      if (status !== 'loaded' && status !== 'loadedAll') {
+        return false;
+      }
+
+      return true;
+    },
   }
 );
 

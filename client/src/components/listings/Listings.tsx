@@ -104,7 +104,7 @@ function Listings({ match }: ListingsProps) {
     dispatch,
     postName,
     comment,
-    settings,
+    settings.view, // Only depend on view, not all settings
   ]);
 
   // Check if I should stream entries

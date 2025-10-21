@@ -79,11 +79,8 @@ function Search() {
   };
 
   const blurSearch = () => {
-    // delayed to allow button onclicks to trigger.
-    setTimeout(() => {
-      document.body.classList.remove('search-active');
-      setFocused(false);
-    }, 250);
+    document.body.classList.remove('search-active');
+    setFocused(false);
   };
 
   const clearSearch = () => {
@@ -242,7 +239,10 @@ function Search() {
               disabled={!search}
               size="sm"
               variant="primary"
-              onClick={searchTarget}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                searchTarget();
+              }}
             >
               Search in /r/{listingsFilter.target} {!isMobile && <>⏎</>}
             </Button>
@@ -251,7 +251,10 @@ function Search() {
             disabled={!search}
             size="sm"
             variant="primary"
-            onClick={searchEverywhere}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              searchEverywhere();
+            }}
           >
             Search Everywhere {!isMobile && <>⇧⏎</>}
           </Button>

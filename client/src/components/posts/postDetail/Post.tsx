@@ -310,7 +310,6 @@ function Post({
     }
   }, [data, navigate]);
 
-  // @todo is there a way around pop up blockers?
   const openReddit = useCallback(() => {
     window.open(`https://www.reddit.com${data.permalink}`, '_blank');
   }, [data.permalink]);

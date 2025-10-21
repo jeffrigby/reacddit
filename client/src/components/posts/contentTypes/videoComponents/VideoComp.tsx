@@ -132,7 +132,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   });
 
   useEffect(() => {
-    // @todo this seems like a dumb way to handle not firing.
+    // Prevent effect re-firing by tracking autoplay state separately
     if (!videoRef.current || autoplay === autoplayState) {
       return;
     }

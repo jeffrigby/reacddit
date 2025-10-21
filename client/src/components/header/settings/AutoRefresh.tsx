@@ -1,10 +1,9 @@
-import { useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useModals } from '@/contexts/ModalContext';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
-import { hotkeyStatus, scrollToPosition } from '@/common';
+import { scrollToPosition } from '@/common';
 
 function AutoRefresh() {
   const stream = useAppSelector((state) => state.siteSettings.stream);
@@ -15,27 +14,6 @@ function AutoRefresh() {
     scrollToPosition(0, 0);
     dispatch(siteSettingsChanged({ stream: !stream }));
   };
-
-  const hotkeys = (event: KeyboardEvent) => {
-    if (hotkeyStatus()) {
-      const pressedKey = event.key;
-      try {
-        if (pressedKey === '>') {
-          autoRefreshToggle();
-        }
-      } catch (e) {
-        console.error('Error in auto-refresh hotkeys', e);
-      }
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener('keydown', hotkeys);
-    return () => {
-      document.removeEventListener('keydown', hotkeys);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="auto-refresh">

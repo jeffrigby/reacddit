@@ -1,8 +1,10 @@
 import { memo, StrictMode, useState, useEffect, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { store } from '@/redux/configureStore';
 import { fetchBearer } from '@/redux/slices/redditBearerSlice';
 import { fetchMe } from '@/redux/slices/redditMeSlice';
-import { hotkeyStatus } from '@/common';
+import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
+import { hotkeyStatus, scrollToPosition } from '@/common';
 import { useModals } from '@/contexts/ModalContext';
 import Navigation from './Navigation';
 import Header from './Header';
@@ -27,12 +29,29 @@ function App() {
       const pressedKey = event.key;
 
       if (hotkeyStatus()) {
-        if (pressedKey === '?') {
-          setShowHotkeys(true);
+        switch (pressedKey) {
+          case '?':
+            setShowHotkeys(true);
+            break;
+          case '>': {
+            // Toggle auto-refresh - read current state from Redux store
+            const currentStream = store.getState().siteSettings.stream;
+            scrollToPosition(0, 0);
+            dispatch(siteSettingsChanged({ stream: !currentStream }));
+            break;
+          }
+          case 'Î': {
+            // opt-shift-d - Toggle debug mode - read current state from Redux store
+            const currentDebug = store.getState().siteSettings.debug ?? false;
+            dispatch(siteSettingsChanged({ debug: !currentDebug }));
+            break;
+          }
+          default:
+            break;
         }
       }
     },
-    [setShowHotkeys]
+    [setShowHotkeys, dispatch]
   );
 
   const getToken = useCallback(async () => {

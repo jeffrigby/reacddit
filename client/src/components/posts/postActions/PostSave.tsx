@@ -1,4 +1,11 @@
-import { memo, useContext, useEffect, useState, useCallback } from 'react';
+import {
+  memo,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useOptimistic,
+} from 'react';
 import type { MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -24,7 +31,11 @@ function PostSave() {
   const { data } = post;
   const actionable = useContext(PostsContextActionable) as boolean;
 
-  const [saved, setSaved] = useState(data.saved);
+  const [savedState, setSavedState] = useState(data.saved);
+  const [optimisticSaved, setOptimisticSaved] = useOptimistic(
+    savedState,
+    (_, newSaved: boolean) => newSaved
+  );
 
   const { name } = data;
 
@@ -33,20 +44,25 @@ function PostSave() {
       return;
     }
 
+    const newSavedState = !optimisticSaved;
+    setOptimisticSaved(newSavedState); // Instant UI update
+
     try {
-      if (saved) {
-        await unsaveAPI(name);
-        setSaved(false);
-        // @todo Update redux
-      } else {
+      if (newSavedState) {
         await saveAPI(name);
-        setSaved(true);
-        // @todo Update redux
+      } else {
+        await unsaveAPI(name);
       }
+
+      setSavedState(newSavedState);
+
+      // @todo Update redux - create Redux action for this
+      // dispatch(postSavedToggled({ postId: name, saved: newSavedState }));
     } catch (error) {
       console.error('Failed to save/unsave post:', error);
+      // useOptimistic automatically rolls back on error
     }
-  }, [bearer.status, name, saved]);
+  }, [bearer.status, name, optimisticSaved, setOptimisticSaved]);
 
   useEffect(() => {
     const hotkeys = (event: KeyboardEvent) => {
@@ -72,8 +88,8 @@ function PostSave() {
     triggerSave();
   };
 
-  const saveIcon = saved === true ? faBookmark : farBookmark;
-  const title = saved === true ? 'Unsave Post (s)' : 'Save Post (s)';
+  const saveIcon = optimisticSaved === true ? faBookmark : farBookmark;
+  const title = optimisticSaved === true ? 'Unsave Post (s)' : 'Save Post (s)';
 
   if (bearer.status !== 'auth') {
     return null;
