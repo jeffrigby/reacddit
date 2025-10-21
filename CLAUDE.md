@@ -4,13 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Reacddit is a Reddit client built with React that provides enhanced media viewing with support for many more embedded content types than the official Reddit app. This is a monorepo containing:
+Reacddit is a Reddit client built with React that provides enhanced media viewing with support for many more embedded content types than the official Reddit app.
 
-- **Frontend** (`client/`): React 19 + Redux Toolkit client with TypeScript migration in progress - **primary development focus**
-- **Backend** (`api/`): Koa.js OAuth2 server for Reddit API authentication - **stable, minimal changes needed**
-- **Deployment**: AWS Lambda with SAM/CloudFormation
+**Monorepo Structure:**
+- **`client/`**: React 19 + Redux Toolkit + TypeScript - primary development area
+- **`api/`**: Koa.js OAuth2 server (TypeScript) - handles Reddit authentication only
+- **Deployment**: AWS Lambda via SAM/CloudFormation
 
-**Development Focus**: Most work happens in the `client/` directory. The API is stable and primarily needs package updates. Future plans include converting the API to TypeScript.
+**Tech Stack:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Webpack 5, Koa.js
 
 ## Development Commands
 
@@ -32,12 +33,15 @@ npm run lint              # Prettier formatting + ESLint (ALWAYS run after chang
 
 **API** (`cd api/`):
 ```bash
-npm start                 # Development server with nodemon
+npm start                 # Development server with nodemon + tsx
+npm run type-check        # TypeScript type checking
+npm run test              # Run tests with Vitest
+npm run build             # SAM build for Lambda deployment
 ```
 
 ## Code Quality Requirements
 
-**CRITICAL**: Always run `npm run lint` in the client directory after making any changes. ESLint v9 with flat config enforces strict code quality standards.
+**CRITICAL**: Always run `npm run lint` in the client directory after making changes. ESLint v9 with flat config enforces strict standards. Zero warnings/errors required before committing.
 
 ## Architecture
 
@@ -54,25 +58,39 @@ npm start                 # Development server with nodemon
 - React.memo for performance optimization
 
 ### Embed System
-The project's key differentiator is its sophisticated embed system:
-- Plugin-based architecture in `client/src/posts/embeds/`
-- Domain-specific handlers in `domains/` (YouTube, Twitter, Instagram, etc.)
-- Adult content domains separated in `domains_custom/`
-- Webpack's require.context enables dynamic loading
+**Key differentiator:** Sophisticated plugin-based architecture for rendering embedded content.
+
+**Architecture:**
+- Entry point: `client/src/posts/embeds/index.ts`
+- Domain handlers: `domains/` (YouTube, Twitter, Instagram, etc.)
+- Adult content: `domains_custom/` (separate directory)
+- Dynamic loading via Webpack's `require.context`
+- Each domain handler exports a render function that returns `{type, ...content}` or null
+
+**Adding new embeds:** Create `domains/[domain].ts` with a default export render function
 
 ### Routing
 - React Router 7 with dynamic route generation
 - Supports Reddit URL patterns: `/r/subreddit`, `/u/user`, `/m/multi`
 - Route validation system
 
-## TypeScript Migration (Current Phase)
+## TypeScript Standards
 
-Currently converting JS files to TypeScript:
-- Target ES2023 features with strict type checking
+**Strict Configuration:**
+- Target ES2023 with strict mode enabled
+- Zero `any` types policy - always define proper types
+- Explicit parameter and return types required on all functions
+
+**Conventions:**
 - Function declarations preferred over arrow functions for components
-- Explicit parameter and return types required
-- Shared types in `client/src/types/`
+- `.tsx` for React components, `.ts` for utilities and modules
 - Proper event handler typing (e.g., `MouseEvent<HTMLButtonElement>`)
+- Use `interface` for object shapes/component props, `type` for unions/primitives
+- Typed Redux selectors: `useSelector((state: RootState) => state.something)`
+
+**Shared Types:**
+- `client/src/types/` - Client types (Reddit API, app state, etc.)
+- `api/src/types/` - API types (Reddit OAuth, sessions, config)
 
 ## OAuth Setup (API)
 
@@ -91,51 +109,41 @@ The API requires Reddit OAuth2 setup:
 
 ## Key Files to Understand
 
-- `client/src/components/layout/App.js` - Main app component and routing
-- `client/src/redux/configureStore.js` - Redux store configuration
-- `client/src/posts/embeds/index.js` - Embed system entry point
-- `api/src/app.mjs` - Koa.js OAuth server
+- `client/src/components/layout/App.tsx` - Main app component and routing
+- `client/src/redux/configureStore.ts` - Redux store configuration
+- `client/src/posts/embeds/index.ts` - Embed system entry point
+- `api/src/app.ts` - Koa.js OAuth server (fully TypeScript)
+- `api/src/config.ts` - Centralized environment configuration with validation
 - `client/webpack/webpack.common.js` - Build configuration
 
 ## Features Not Yet Implemented
 
-- Comments viewing/posting (planned for next major release)
-- Content creation (posts, comments)
+- Creating posts or comments (viewing, voting, and saving are supported)
 - Full mobile testing on Android
 
-## Types and API References
+## Reddit API Types
 
-- All the Reddit types are stored in client/src/types/redditApi.ts This may not be complete, and was based of the documentation here: https://www.reddit.com/dev/api/ When converting components and the API to TS please use these types. If you see something wrong with the types please let me know, as I may have missed something.
+**Location:** `client/src/types/redditApi.ts`
 
-## Agent Documentation
+All Reddit API types are centralized here. Based on https://www.reddit.com/dev/api/ but may be incomplete. Always use these types for Reddit data structures. If you find missing or incorrect types, flag them for review.
 
-### agentDocs/ Directory
+## Agent Documentation (`/agentDocs/`)
 
-The `/agentDocs/` directory contains **AI agent-specific analysis, research, and planning documents** that are NOT part of the general codebase documentation. This directory is:
+**Purpose:** AI agent-specific research, analysis, and planning documents (gitignored, not for humans)
 
-- **Gitignored** - Not committed to the repository
-- **Agent-specific** - Context for AI assistants, not human developers
-- **Temporary/research** - Analysis documents, migration plans, best practices research
+**Save here:**
+- Migration planning and analysis
+- Third-party library research
+- Best practices investigations
+- Temporary audit/investigation findings
 
-**When to save docs in `/agentDocs/`:**
-- Migration planning documents (e.g., Redux migration strategies)
-- Analysis of third-party libraries and best practices
-- Agent research and decision-making context
-- Temporary investigation findings
-
-**When NOT to use `/agentDocs/`:**
-- General project documentation (use root or subdirectory READMEs)
+**Do NOT save here:**
+- General project docs (use README files)
 - User-facing guides
-- API documentation (use inline JSDoc or dedicated docs/)
 - Anything that should be committed to git
 
-### Examples of agentDocs/ Files:
-- `REDUX_BEST_PRACTICES.md` - Research on Redux Toolkit patterns
-- `RTK_QUERY_MIGRATION.md` - Analysis of migrating to RTK Query
-- `BOOTSTRAP_MIGRATION_PLAN.md` - TypeScript migration planning
+## Important Notes
 
-## Claude Memory Notes
-
-- Always reference the latest documentation for packages using the context7 MCP.
-- For Reddit API testing and type validation, see `/reddit-api-tester/CLAUDE.md`
-- Save agent-specific analysis and research docs to `/agentDocs/` (gitignored)
+- **Package docs:** Always fetch latest documentation using context7 MCP
+- **Reddit API testing:** See `/reddit-api-tester/CLAUDE.md` for testing utilities
+- **Research docs:** Save analysis/research to `/agentDocs/` (gitignored)

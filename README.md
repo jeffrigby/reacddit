@@ -10,9 +10,9 @@ reacddit is a monorepo containing an OAuth2 API (for Reddit authentication) and 
 
 ## Tech Stack
 
-- **Frontend**: React 19, Redux Toolkit, React Router 7, TypeScript (migration in progress)
+- **Frontend**: React 19, Redux Toolkit, React Router 7, TypeScript
 - **Build System**: Webpack 5 with ESBuild loader
-- **Backend**: Koa.js OAuth2 server
+- **Backend**: Koa.js OAuth2 server (TypeScript)
 - **Deployment**: AWS Lambda with SAM/CloudFormation
 - **PWA**: Full Progressive Web App support with service workers
 
@@ -104,16 +104,16 @@ See `nginx.conf.example` in the repo for a complete nginx configuration example.
 
 ## Current Limitations
 
-- **Read-only interface**: This is a viewing and browsing client only. No posting, commenting, voting, or account modifications are supported
+- **Content creation**: This client supports voting, saving posts, and other interactions, but does not support creating posts or comments
 - **Browser support**: Only tested on the latest versions of Chrome, Firefox, and Safari. No plans to support older browsers
 - **Mobile testing**: Limited Android testing. Please report any bugs you find!
 
 ## Roadmap
 
 The project is undergoing active modernization:
-1. **Current**: Converting JavaScript to TypeScript for better type safety
+1. **Completed**: Full TypeScript migration for both client and API
 2. **Next**: Migrating from Webpack to Vite for improved build performance
-3. **Future**: Convert API to TypeScript, add write capabilities (voting, posting, commenting)
+3. **Future**: Add content creation capabilities (posting, commenting)
 
 ## Inspiration
 

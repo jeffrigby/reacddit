@@ -1,12 +1,6 @@
 # Reacddit Client - Development Guide
 
-**Note**: This is a monorepo. Most development work happens in this `client/` directory. The `api/` directory contains a stable Koa.js OAuth server that rarely needs changes beyond package updates.
-
-## Project Roadmap
-This project is undergoing a multi-step modernization:
-1. **Current Phase**: Converting JavaScript files to TypeScript for better type safety
-2. **Next Phase**: Migrating from Webpack to Vite for improved build performance  
-3. **Future Phases**: Convert API to TypeScript, additional modernization as needed
+React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embedding.
 
 ## Build Commands
 - `npm start` - Start development server
@@ -14,52 +8,61 @@ This project is undergoing a multi-step modernization:
 - `npm run profile` - Build with bundle analyzer
 - `npm run lint` - Run Prettier formatting and ESLint checks with auto-fixing
 
-## Code Style
-- **Formatting**: Uses Prettier with semi:true, singleQuote:true, trailingComma:es5
-- **Linting**: ESLint v9 with flat config (eslint.config.mjs)
-- **ESLint Plugins**: react, react-hooks, jsx-a11y, prettier, import
-- **Linting Process**: Always run Prettier first, then ESLint
-- **Imports**: Group imports by: npm packages, local modules, CSS/assets
-- **Component Structure**: Functional components with hooks preferred
-- **Naming**: camelCase for variables/functions, PascalCase for components
-- **Types**: TypeScript for all components and functions
+## Code Style & Quality
 
-## Code Quality
-- **IMPORTANT**: After making code changes, always run `npm run lint` to ensure consistent formatting
-- ESLint is configured to warn on Prettier formatting issues
-- Pull requests should have no ESLint warnings or errors
+**Formatting (Prettier):**
+- `semi: true`, `singleQuote: true`, `trailingComma: es5`
 
+**Linting (ESLint v9):**
+- **CRITICAL**: Run `npm run lint` after changes - zero warnings/errors required
+- Flat config in `eslint.config.mjs`
+- Plugins: react, react-hooks, jsx-a11y, prettier, import
 
-## TypeScript Guidelines
-- Target ES2023 features
-- Use strict type checking
-- Prefer function declarations over arrow functions for components
-- Avoid React.FC in favor of explicit props interfaces
-- Use type for literal types, unions, and primitive types
-- Use interfaces for object shapes and component props
-- Add explicit parameter and return types to functions
-- Properly type event handlers (e.g., MouseEvent<HTMLButtonElement>)
-- Place shared types in src/types directory
-- Use useSelector((state: RootState) => state.something) pattern
+**Import Order:**
+1. npm packages
+2. Local modules
+3. CSS/assets
+
+**Naming:**
+- `camelCase` - variables, functions
+- `PascalCase` - components
+
+## TypeScript Standards
+
+**Configuration:**
+- ES2023 target with strict mode
+- Zero `any` types - always define proper types
+- Explicit return types required
+
+**Conventions:**
+- Function declarations (not arrow functions) for components
+- No `React.FC` - use explicit props interfaces
+- `interface` for object shapes/props, `type` for unions/primitives
+- `.tsx` for components, `.ts` for utilities
+- Event handlers: `MouseEvent<HTMLButtonElement>`, etc.
+- Redux selectors: `useSelector((state: RootState) => state.something)`
+
+**Shared Types:** `src/types/` directory
 
 ## Error Handling
 - Use try/catch for async operations
 - Include descriptive error messages
 - Use status properties in state objects for loading/error states
 
-## State Management
-- Redux for global state (using Redux Toolkit)
+## Architecture
+
+**State Management:**
+- Redux Toolkit for global state (`src/redux/slices/`)
 - React context for component-specific state
-- Immer for immutable state updates
-- Cache invalidation uses timestamp-based expiration
+- Immer for immutable updates (built into RTK)
+- Timestamp-based cache invalidation
 
-## File Organization
-- Component-first structure
-- Feature-based folder organization
-- Keep related files close together
-- Presentational/container component separation
+**File Organization:**
+- Feature-based structure (`src/components/[feature]/`)
+- Presentational/container separation
+- Keep related files together
 
-## Performance
-- Use React.memo for expensive renders
-- Implement debouncing for search inputs
-- Lazy-load components when possible
+**Performance:**
+- `React.memo` for expensive renders
+- Debounce search inputs
+- Lazy-load routes/components where beneficial
