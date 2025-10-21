@@ -104,11 +104,7 @@ async function getContent(
 
   switch (listType) {
     case 'r':
-      entries = await getListingSubreddit(
-        target,
-        sort ?? 'hot',
-        params
-      );
+      entries = await getListingSubreddit(target, sort ?? 'hot', params);
       break;
     case 'm':
       entries = await getListingMulti(

@@ -102,7 +102,9 @@ function Help() {
                 </div>
                 <div className="col-md-6">Saved</div>
               </div>
-              <h5 className="mt-3 border-bottom text-center">Filter Subreddits</h5>
+              <h5 className="mt-3 border-bottom text-center">
+                Filter Subreddits
+              </h5>
               <div className="d-flex mb-1">
                 <div className="col-md-6 text-end pe-2">
                   <kbd>shift</kbd> + <kbd>f</kbd>

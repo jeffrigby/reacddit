@@ -102,7 +102,6 @@ module.exports = {
       inject: true,
       template: paths.appHtml,
     }),
-    // new CleanTerminalPlugin(),
     new CaseSensitivePathsPlugin(),
   ],
 };

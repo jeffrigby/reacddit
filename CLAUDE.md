@@ -105,7 +105,7 @@ The API requires Reddit OAuth2 setup:
 
 ## Types and API References
 
-- All the Reddit types are stored in @client/src/types/redditApi.ts This may not be complete, and was based of the documentation here: https://www.reddit.com/dev/api/ When converting components and the API to TS please use these types. If you see something wrong with the types please let me know, as I may have missed something.
+- All the Reddit types are stored in client/src/types/redditApi.ts This may not be complete, and was based of the documentation here: https://www.reddit.com/dev/api/ When converting components and the API to TS please use these types. If you see something wrong with the types please let me know, as I may have missed something.
 
 ## Agent Documentation
 

@@ -9,6 +9,8 @@ import {
   checkEnvErrors,
   encryptToken,
   decryptToken,
+  isTokenExpired,
+  addExtraInfoToToken,
 } from "./util.mjs";
 
 const {
@@ -19,10 +21,7 @@ const {
   SALT,
   SESSION_LENGTH_SECS,
   TOKEN_EXPIRY_PADDING_SECS,
-  DEBUG,
 } = process.env;
-
-const debugEnabled = DEBUG === "1" || DEBUG === "true" || false;
 
 checkEnvErrors();
 
@@ -168,9 +167,10 @@ const getAnonToken = async () => {
 
 /**
  * Revokes a token
- * @param token
- * @param tokenType
- * @returns {Promise<boolean>}
+ * @param {string} token - The token to revoke
+ * @param {string} tokenType - The token type hint ('access_token' or 'refresh_token')
+ * @returns {Promise<void>}
+ * @throws {Error} If token revocation fails
  */
 const revokeToken = async (token, tokenType) => {
   try {
@@ -178,17 +178,17 @@ const revokeToken = async (token, tokenType) => {
       token,
       token_type_hint: tokenType,
     });
-    return true;
   } catch (error) {
     console.error("Revoke Token error", error.message);
-    return false;
+    throw new Error(`Failed to revoke ${tokenType}: ${error.message}`);
   }
 };
 
 /**
  * Refresh an existing token with the refresh token
- * @returns {Promise<*>}
- * @param prevToken
+ * @param {Object} prevToken - The previous token object containing refresh_token
+ * @returns {Promise<Object>} The refreshed token object with updated expiry
+ * @throws {Error} If token refresh fails
  */
 const getRefreshToken = async (prevToken) => {
   const { refresh_token } = prevToken;
@@ -203,7 +203,7 @@ const getRefreshToken = async (prevToken) => {
     return addExtraInfoToToken(newToken.data, true);
   } catch (error) {
     console.error("Refresh Access Token error", error.message);
-    return false;
+    throw new Error(`Failed to refresh token: ${error.message}`);
   }
 };
 
@@ -380,9 +380,24 @@ const returnCachedTokenAndSetSession = async (ctx, token) => {
  */
 const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
   if (token.refresh_token) {
-    const refreshedTokenResult = await getRefreshToken(token);
+    try {
+      const refreshedTokenResult = await getRefreshToken(token);
 
-    if (!refreshedTokenResult) {
+      const newToken = {
+        ...refreshedTokenResult,
+        refresh_token: token.refresh_token,
+      };
+
+      const message = forceRefresh
+        ? "FORCED REFRESH. NEW TOKEN GRANTED"
+        : "TOKEN EXPIRED. NEW TOKEN GRANTED";
+      console.log(message);
+      await setSessionAndRespond(
+        addExtraInfoToToken(newToken, true),
+        ctx,
+        "refresh",
+      );
+    } catch (error) {
       console.log("REFRESH TOKEN ERROR. GETTING ANON TOKEN.");
       const anonToken = await getAnonToken();
       await setSessionAndRespond(
@@ -390,23 +405,7 @@ const refreshOrGetAnonTokenAndSetSession = async (ctx, token, forceRefresh) => {
         ctx,
         "new",
       );
-      return;
     }
-
-    const newToken = {
-      ...refreshedTokenResult,
-      refresh_token: token.refresh_token,
-    };
-
-    const message = forceRefresh
-      ? "FORCED REFRESH. NEW TOKEN GRANTED"
-      : "TOKEN EXPIRED. NEW TOKEN GRANTED";
-    console.log(message);
-    await setSessionAndRespond(
-      addExtraInfoToToken(newToken, true),
-      ctx,
-      "refresh",
-    );
   } else {
     console.log("NO REFRESH TOKEN. GETTING ANON TOKEN.");
     const anonToken = await getAnonToken();
@@ -449,15 +448,28 @@ router.get("/api/logout", async (ctx, next) => {
   const token = ctx.session.token;
 
   if (token) {
+    // Try to revoke tokens, but don't fail if revocation fails
     try {
       // Revoke the access token and the refresh token in parallel
-      await Promise.all([
-        revokeToken(token.access_token, "access_token"),
-        revokeToken(token.refresh_token, "refresh_token"),
-      ]);
+      const revokePromises = [];
+      if (token.access_token) {
+        revokePromises.push(
+          revokeToken(token.access_token, "access_token").catch((error) => {
+            console.error("Failed to revoke access token:", error.message);
+          }),
+        );
+      }
+      if (token.refresh_token) {
+        revokePromises.push(
+          revokeToken(token.refresh_token, "refresh_token").catch((error) => {
+            console.error("Failed to revoke refresh token:", error.message);
+          }),
+        );
+      }
+      await Promise.all(revokePromises);
     } catch (error) {
       // Log the error but do not re-throw it
-      console.error("Error occurred while revoking tokens: ", error);
+      console.error("Error occurred while revoking tokens: ", error.message);
       // Even if an error occurred, we still want to clear the session and cookie
     }
 

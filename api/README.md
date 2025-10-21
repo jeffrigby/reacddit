@@ -7,15 +7,15 @@ Steps to get this running:
 	* HTTP or HTTPS
 	* Any port
 2. Save and make note of the client, secret, and callback. You must enter these identically in .env
-3. Copy .env.dist to .env
+3. Copy .env.example to .env
 4. You can leave the defaults except:
-	* CLIENT_PATH: This is where your front end lives.
-	* REDDIT_CLIENT_ID: Copied from step 2
-	* REDDIT_CLIENT_SECRET: Copied from step 2
-	* REDDIT_CALLBACK_URI: Copied from step 2.
-	* APP_KEY: Any string. This is used for encyption
+	* CLIENT_PATH: This is where your front end lives (optional, defaults set in .env.defaults)
+	* REDDIT_CLIENT_ID: Copied from step 2 (REQUIRED)
+	* REDDIT_CLIENT_SECRET: Copied from step 2 (REQUIRED)
+	* REDDIT_CALLBACK_URI: Copied from step 2 (REQUIRED)
+	* SALT: A random 32-character string for encryption (REQUIRED)
 5. Start the server (see below)
-6. Go to `http://localhost:3000/api/bearer` (replacing localhost with your domain and port) to test. You should see something like the following:
+6. Go to `http://localhost:3001/api/bearer` (replacing localhost with your domain and port) to test. You should see something like the following:
 
 ```json
 {
@@ -27,35 +27,58 @@ Steps to get this running:
 }
 ```
  
-### .env vars (REQUIRED)
-```
-# What URL is the reacddit client running on? This is used for redirects back to the client and setting CORS headers
-CLIENT_PATH=http://localhost:3000
+### Environment Variables
 
-# Get the Reddit client, secret and callback set here: https://www.reddit.com/prefs/apps
-# This must match Exactly.
-REDDIT_CLIENT_ID=XXXXXXXXX
-REDDIT_CLIENT_SECRET=XXXXXXXXXXXX
+The project uses three environment files:
+- **`.env`** - Your local configuration (gitignored, you create this)
+- **`.env.example`** - Template showing required variables (committed to repo)
+- **`.env.defaults`** - Default values for optional settings (committed to repo)
+
+#### Required Variables (must be set in `.env`)
+```bash
+# Get the Reddit client, secret and callback from: https://www.reddit.com/prefs/apps
+# These must match exactly what you configured on Reddit
+REDDIT_CLIENT_ID=your_client_id_here
+REDDIT_CLIENT_SECRET=your_client_secret_here
 REDDIT_CALLBACK_URI=http://localhost:3001/api/callback
 
-# Optional, set change the requested token scope.
+# A 32-character salt for encryption (MUST BE EXACTLY 32 CHARS)
+# Generate a random string for this
+SALT=GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM
+```
+
+#### Optional Variables (defaults in `.env.defaults`)
+```bash
+# What URL is the reacddit client running on?
+# Used for redirects and CORS headers
+# Default: https://localhost
+CLIENT_PATH=http://localhost:3000
+
+# Reddit OAuth scope (comma-separated)
 # Default: identity,mysubreddits,vote,subscribe,read,history,save
 REDDIT_SCOPE=identity,mysubreddits,vote,subscribe,read,history,save
 
-# A random key. These can be any string.
-APP_KEY=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
-
-# A 32 character salt. MUST BE EXACTLY 32 CHARS.
-SALT=GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM
-
-# How long should the session last?
+# Session length in seconds
+# Default: 1209600 (14 days)
 SESSION_LENGTH_SECS=604800
 
-# What port should koa server run on?
+# Token expiry padding in seconds (refresh before actual expiry)
+# Default: 300 (5 minutes)
+TOKEN_EXPIRY_PADDING_SECS=300
+
+# What port should the Koa server run on?
+# Default: 3001
 PORT=3001
 
-# Enable debug mode with additional logging.
+# Enable debug mode with additional logging
+# Default: 0
 DEBUG=0
+
+# Encryption settings (advanced)
+# Default: aes-256-cbc
+ENCRYPTION_ALGORITHM=aes-256-cbc
+# Default: 16
+IV_LENGTH=16
 ```
 
 ### Starting the server

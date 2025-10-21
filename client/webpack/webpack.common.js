@@ -1,9 +1,9 @@
+const path = require('path');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
-const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const postcssNormalize = require('postcss-normalize');
 const CreateFileWebpack = require('create-file-webpack');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
@@ -24,9 +24,7 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 
 // style files regexes
 const cssRegex = /\.css$/;
-const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
-const sassModuleRegex = /\.module\.(scss|sass)$/;
 
 // common function to get style loaders
 const getStyleLoaders = (cssOptions, preProcessor) => {
@@ -114,9 +112,13 @@ module.exports = {
     extensions: ['*', '.js', '.jsx', '.ts', '.tsx', '.css', '.scss'],
     alias: {
       '@': paths.appSrc,
+      '@/types': path.resolve(paths.appSrc, 'types'),
+      '@/redux': path.resolve(paths.appSrc, 'redux'),
+      '@/components': path.resolve(paths.appSrc, 'components'),
+      '@/common': path.resolve(paths.appSrc, 'common.js'),
+      '@/test': path.resolve(paths.appSrc, 'test'),
     },
   },
-  resolveLoader: {},
   module: {
     strictExportPresence: true,
     rules: [
@@ -165,10 +167,8 @@ module.exports = {
           // In production, we use MiniCSSExtractPlugin to extract that CSS
           // to a file, but in development "style" loader enables hot editing
           // of CSS.
-          // By default we support CSS Modules with the extension .module.css
           {
             test: cssRegex,
-            exclude: cssModuleRegex,
             use: getStyleLoaders({
               importLoaders: 1,
               sourceMap: isEnvProduction
@@ -180,27 +180,10 @@ module.exports = {
             // Remove this when webpack adds a warning or an error for this.
             // See https://github.com/webpack/webpack/issues/6571
             sideEffects: true,
-          },
-          // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
-          // using the extension .module.css
-          {
-            test: cssModuleRegex,
-            use: getStyleLoaders({
-              importLoaders: 1,
-              sourceMap: isEnvProduction
-                ? shouldUseSourceMap
-                : isEnvDevelopment,
-              modules: {
-                getLocalIdent: getCSSModuleLocalIdent,
-              },
-            }),
           },
           // Opt-in support for SASS (using .scss or .sass extensions).
-          // By default we support SASS Modules with the
-          // extensions .module.scss or .module.sass
           {
             test: sassRegex,
-            exclude: sassModuleRegex,
             use: getStyleLoaders(
               {
                 importLoaders: 3,
@@ -215,23 +198,6 @@ module.exports = {
             // Remove this when webpack adds a warning or an error for this.
             // See https://github.com/webpack/webpack/issues/6571
             sideEffects: true,
-          },
-          // Adds support for CSS Modules, but using SASS
-          // using the extension .module.scss or .module.sass
-          {
-            test: sassModuleRegex,
-            use: getStyleLoaders(
-              {
-                importLoaders: 3,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
-                modules: {
-                  getLocalIdent: getCSSModuleLocalIdent,
-                },
-              },
-              'sass-loader'
-            ),
           },
           // "file" loader makes sure those assets get served by WebpackDevServer.
           // When you `import` an asset, you get its (virtual) filename.
@@ -326,9 +292,6 @@ module.exports = {
       cwd: paths.appPath,
       emitError: true,
       emitWarning: isEnvDevelopment,
-      // failOnWarning: isEnvProduction,
-      // failOnError: isEnvProduction,
     }),
   ],
-  // performance: false,
 };

@@ -29,6 +29,38 @@ export const axiosInstance = axios.create({
 
 const red = chalk.red;
 
+/**
+ * Checks if the token is expired. Pads the expiry time by TOKEN_EXPIRY_PADDING_SECS.
+ * @param {Object} token - The token object
+ * @returns {boolean} - Returns true if the token is expired, false otherwise
+ */
+export function isTokenExpired(token) {
+  const { TOKEN_EXPIRY_PADDING_SECS } = process.env;
+
+  if (!token || !token.expires) {
+    return true;
+  }
+  const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
+  return token.expires - parseInt(TOKEN_EXPIRY_PADDING_SECS) <= now;
+}
+
+/**
+ * Adds additional info to the token object (expires timestamp and auth flag)
+ * @param {Object} token - The token object from Reddit API
+ * @param {boolean} auth - If the token is authorized (true) or anonymous (false)
+ * @returns {Object} - The token object with additional info (expires, auth)
+ */
+export function addExtraInfoToToken(token, auth = false) {
+  const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
+  const expires = now + token.expires_in - 120;
+
+  return {
+    ...token,
+    expires,
+    auth,
+  };
+}
+
 export function checkEnvErrors() {
   const checks = [
     {
@@ -86,8 +118,9 @@ export const encryptToken = (token) => {
 
 /**
  * Decrypt the session token cookie
- * @param {object} encryptedToken The encrypted token
- * @returns {any|null} The decrypted token or null if the token is invalid
+ * @param {object} encryptedToken - The encrypted token object with iv and token properties
+ * @returns {any} The decrypted token object
+ * @throws {Error} If the token is invalid or decryption fails
  */
 export const decryptToken = (encryptedToken) => {
   if (
@@ -95,21 +128,23 @@ export const decryptToken = (encryptedToken) => {
     encryptedToken.iv === undefined ||
     encryptedToken.token === undefined
   ) {
-    return null;
+    throw new Error("Invalid encrypted token: missing iv or token");
   }
-  const iv = Buffer.from(encryptedToken.iv, "hex");
-  const encryptedText = Buffer.from(encryptedToken.token, "hex");
-  const decipher = createDecipheriv(
-    ENCRYPTION_ALGORITHM,
-    Buffer.from(SALT),
-    iv,
-  );
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
+
   try {
+    const iv = Buffer.from(encryptedToken.iv, "hex");
+    const encryptedText = Buffer.from(encryptedToken.token, "hex");
+    const decipher = createDecipheriv(
+      ENCRYPTION_ALGORITHM,
+      Buffer.from(SALT),
+      iv,
+    );
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+
     return JSON.parse(decrypted.toString());
   } catch (error) {
-    console.error("Failed to parse decrypted token:", error);
-    return null;
+    console.error("Failed to decrypt token:", error.message);
+    throw new Error(`Token decryption failed: ${error.message}`);
   }
 };
