@@ -2,7 +2,6 @@ import type { LinkData } from '../../../../types/redditApi';
 import type { IFrameEmbedContent } from '../types';
 
 function redditMediaEmbed(entry: LinkData): IFrameEmbedContent | null {
-  // Get it out of media embed:
   if (entry.media_embed?.content) {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = entry.media_embed.content;

@@ -72,7 +72,7 @@ export const fetchMe = createAsyncThunk<
     condition: (reset = false, { getState }) => {
       if (reset) {
         return true;
-      } // Allow forced refresh
+      }
 
       const state = getState() as RootState;
       const currentMe = state.redditMe;
@@ -95,29 +95,22 @@ export const fetchMe = createAsyncThunk<
         if (!isAuth) {
           const anonExpired =
             Date.now() > currentMe.lastUpdated + CACHE_EXPIRATION_ANON;
-          return anonExpired; // Only run if cache expired
+          return anonExpired;
         }
 
         // For authenticated users, cache as long as bearer matches
-        // Note: We can only reach here if isAuth is true (due to above check)
-        return currentMe.id !== currentBearer.bearer; // Only run if bearer changed
+        return currentMe.id !== currentBearer.bearer;
       }
 
-      return true; // Run if status is idle or other cases
+      return true;
     },
   }
 );
 
-/**
- * Me (user account) slice
- */
 const meSlice = createSlice({
   name: 'me',
   initialState,
   reducers: {
-    /**
-     * Clear user account data
-     */
     meCleared(state) {
       state.me = null;
       state.status = 'idle';
@@ -155,20 +148,12 @@ const meSlice = createSlice({
   },
 });
 
-// Export actions
 export const { meCleared } = meSlice.actions;
 
-// Export reducer
 export default meSlice.reducer;
 
-/**
- * Selectors
- */
-
-// Base selector
 export const selectMeState = (state: RootState): MeState => state.redditMe;
 
-// Individual property selectors
 export const selectMe = (state: RootState): AccountData | null =>
   state.redditMe.me;
 
@@ -181,25 +166,16 @@ export const selectMeError = (state: RootState): string | null =>
 export const selectMeLastUpdated = (state: RootState): number =>
   state.redditMe.lastUpdated;
 
-/**
- * Memoized selector to check if user data is loaded
- */
 export const selectMeLoaded = createSelector(
   [selectMeStatus],
   (status) => status === 'succeeded'
 );
 
-/**
- * Memoized selector to check if user data is loading
- */
 export const selectMeLoading = createSelector(
   [selectMeStatus],
   (status) => status === 'loading'
 );
 
-/**
- * Memoized selector to get username
- */
 export const selectUsername = createSelector(
   [selectMe],
   (me) => me?.name ?? null

@@ -47,37 +47,24 @@ const initialState: SiteSettingsState = {
   autoRefresh: false,
 };
 
-/**
- * Site settings slice
- */
 const siteSettingsSlice = createSlice({
   name: 'siteSettings',
   initialState,
   reducers: {
-    /**
-     * Update one or more site settings
-     * Uses Immer for immutable updates
-     */
     siteSettingsChanged(
       state,
       action: PayloadAction<Partial<SiteSettingsState>>
     ) {
-      // Immer allows direct assignment
       Object.assign(state, action.payload);
     },
 
-    /**
-     * Reset all settings to defaults
-     */
     siteSettingsReset(state) {
       return initialState;
     },
   },
 });
 
-// Export actions
 export const { siteSettingsChanged, siteSettingsReset } =
   siteSettingsSlice.actions;
 
-// Export reducer
 export default siteSettingsSlice.reducer;

@@ -33,7 +33,6 @@ function getMeta(url: string): Promise<ImageMetadata> {
     const img = new Image();
     img.onload = () => resolve({ width: img.width, height: img.height });
     img.onerror = (error) => {
-      // Clean up handlers on error
       img.onload = null;
       img.onerror = null;
       reject(error);
@@ -51,7 +50,6 @@ function ImageComp({ content }: ImageCompProps) {
   );
 
   useEffect(() => {
-    // Skip if we already have the aspect ratio
     if (aspectRatio) {
       return;
     }

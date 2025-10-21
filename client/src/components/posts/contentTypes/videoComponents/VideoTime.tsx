@@ -35,7 +35,6 @@ interface VideoTimeProps {
 }
 
 function VideoTime({ currentTime, duration }: VideoTimeProps) {
-  // Figure out the times
   const durationPretty = convertSeconds(duration);
   const currentTimePretty = currentTime ? convertSeconds(currentTime) : '00:00';
 

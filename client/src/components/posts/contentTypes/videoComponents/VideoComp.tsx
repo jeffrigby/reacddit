@@ -192,14 +192,10 @@ function VideoComp({ link = '', content }: VideoCompProps) {
 
   const videoId = `video-${content.id}`;
 
-  // In a const so I can pass it to the play button
   const toggleManualStop = useCallback((stopped: boolean) => {
     setManualStop(stopped);
   }, []);
 
-  /**
-   * Toggle lock to set the controls
-   */
   const toggleLock = useCallback(() => {
     if (!videoRef.current) {
       return;
@@ -215,9 +211,6 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     setCtrLock(!ctrLock);
   }, [ctrLock]);
 
-  /**
-   * Set the muted state if the volume is manually changed.
-   */
   const eventVolumeChange = () => {
     if (videoRef.current) {
       setMuted(videoRef.current.muted);
@@ -230,7 +223,6 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   };
 
   const eventWaiting = () => {
-    // Clear any existing timeout
     if (waitingTimeout.current) {
       clearTimeout(waitingTimeout.current);
     }
@@ -243,7 +235,6 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   };
 
   const eventStalled = () => {
-    // Clear any existing timeout
     if (stalledTimeout.current) {
       clearTimeout(stalledTimeout.current);
     }
@@ -270,14 +261,11 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     []
   );
 
-  // Cleanup effect for all timeouts and throttled functions
   useEffect(() => {
     return () => {
-      // Cancel throttled functions
       getSetBuffer.cancel();
       throttledTime.cancel();
 
-      // Clear all timeouts
       if (isPlayingTimeout.current) {
         clearTimeout(isPlayingTimeout.current);
       }
@@ -367,8 +355,6 @@ function VideoComp({ link = '', content }: VideoCompProps) {
         onTimeUpdate={eventTimeUpdate}
         onVolumeChange={eventVolumeChange}
         onWaiting={eventWaiting}
-        // poster={content.thumb}
-        // preload="auto"
       >
         {videoSources}
       </video>

@@ -64,7 +64,7 @@ export const fetchMultiReddits = createAsyncThunk<
     condition: (reset = false, { getState }) => {
       if (reset) {
         return true;
-      } // Allow forced refresh
+      }
 
       const state = getState();
       const currentState = state.redditMultiReddits;
@@ -81,10 +81,10 @@ export const fetchMultiReddits = createAsyncThunk<
       if (currentState.status === 'succeeded') {
         const cacheExpired =
           Date.now() > currentState.lastUpdated + CACHE_EXPIRATION;
-        return cacheExpired; // Only run if cache expired
+        return cacheExpired;
       }
 
-      return true; // Run if status is idle
+      return true;
     },
   }
 );
@@ -96,9 +96,6 @@ const multiRedditsSlice = createSlice({
   name: 'multiReddits',
   initialState,
   reducers: {
-    /**
-     * Clear all multiReddits data
-     */
     multiRedditsCleared(state) {
       state.multis = [];
       state.status = 'idle';
@@ -131,21 +128,13 @@ const multiRedditsSlice = createSlice({
   },
 });
 
-// Export actions
 export const { multiRedditsCleared } = multiRedditsSlice.actions;
 
-// Export reducer
 export default multiRedditsSlice.reducer;
 
-/**
- * Selectors
- */
-
-// Base selector
 export const selectMultiRedditsState = (state: RootState): MultiRedditsState =>
   state.redditMultiReddits;
 
-// Individual property selectors
 export const selectMultis = (state: RootState): Thing<LabeledMultiData>[] =>
   state.redditMultiReddits.multis;
 
@@ -159,25 +148,16 @@ export const selectMultiRedditsError = (state: RootState): string | null =>
 export const selectMultiRedditsLastUpdated = (state: RootState): number =>
   state.redditMultiReddits.lastUpdated;
 
-/**
- * Memoized selector to check if multiReddits are loaded
- */
 export const selectMultiRedditsLoaded = createSelector(
   [selectMultiRedditsStatus],
   (status) => status === 'succeeded'
 );
 
-/**
- * Memoized selector to check if multiReddits are loading
- */
 export const selectMultiRedditsLoading = createSelector(
   [selectMultiRedditsStatus],
   (status) => status === 'loading'
 );
 
-/**
- * Memoized selector to check if cache is expired
- */
 export const selectMultiRedditsCacheExpired = createSelector(
   [selectMultiRedditsLastUpdated],
   (lastUpdated) => Date.now() > lastUpdated + CACHE_EXPIRATION

@@ -66,7 +66,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
   };
 
   if (moreList.data.id === '_') {
-    const parantID = moreList.data.parent_id?.split('_')[1];
+    const parentID = moreList.data.parent_id?.split('_')[1];
 
     return (
       <div className="comments-more">
@@ -74,7 +74,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
           as={NavLink}
           className="mb-2"
           size="sm"
-          to={`/r/${target}/comments/${postName}/${postTitle}/${parantID}`}
+          to={`/r/${target}/comments/${postName}/${postTitle}/${parentID}`}
           variant="outline-secondary"
         >
           Continue This Thread

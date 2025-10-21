@@ -59,7 +59,6 @@ function getEmbedId(entry: LinkData): string | false {
     return embedSrcClean.split('.')[0];
   } catch (e) {
     console.error(`IMGUR: Error getting embed ID: ${e}`);
-    // Ignore warning and continue
   }
   return false;
 }
@@ -74,7 +73,6 @@ async function render(
 
   const id = cleanedPath.split('.')[0];
 
-  // Try to get width and height
   let width = 1024;
   let height = 768;
 
@@ -84,7 +82,6 @@ async function render(
     height = h;
   }
 
-  // Check for gifv content;
   if (cleanedPath.match(/gifv$/)) {
     const mp4Filename = cleanedPath.replace(/gifv$/, 'mp4');
     const mp4 = `https://i.imgur.com/${mp4Filename}`;
@@ -100,7 +97,6 @@ async function render(
     };
   }
 
-  // Check for mp4 content
   if (cleanedPath.match(/mp4$/)) {
     const mp4 = `https://i.imgur.com/${cleanedPath}`;
     const sources = [{ type: 'video/mp4', src: mp4 }];
@@ -114,10 +110,8 @@ async function render(
     };
   }
 
-  // This is sooo hacky but it works. For now.
-  // Check if an MP4 exists. If it does render it.
-  // This is to cover cases when the image is animated
-  // But Reddit doesn't have a video embed for it.
+  // Check if an MP4 exists for animated images without a video embed.
+  // This is to cover cases when the image is animated but Reddit doesn't have a video embed for it.
   if (
     !cleanedPath.match(/[gif|jpg|jpeg|mp4|gifv]$/) &&
     !cleanedPath.startsWith('a/') &&
@@ -129,7 +123,7 @@ async function render(
     }
   }
 
-  // Look for album MP4. This works sometimes. Last ditch effort.
+  // Try to extract MP4 from album embeds (last resort for album videos)
   if (cleanedPath.startsWith('a/')) {
     const embedID = getEmbedId(entry);
     if (embedID) {
@@ -140,7 +134,6 @@ async function render(
     }
   }
 
-  // Fallback video content
   try {
     const video = redditVideoPreview(entry);
     if (video) {
@@ -153,7 +146,6 @@ async function render(
     console.error(e);
   }
 
-  // Check for preview image:
   try {
     const { url } = entry;
     const urlParsed = parse(url);

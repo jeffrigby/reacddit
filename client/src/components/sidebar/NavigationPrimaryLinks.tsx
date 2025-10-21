@@ -89,7 +89,6 @@ function NavigationPrimaryLinks(): ReactElement {
       const { key } = event;
 
       if (hotkeyStatus()) {
-        // Navigation key commands
         if (lastKeyPressed.current === 'g') {
           switch (key) {
             case 'h':

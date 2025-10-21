@@ -48,7 +48,6 @@ function Listings({ match }: ListingsProps) {
   const { listType, sort, target, user, userType, multi, postName, comment } =
     match;
 
-  // Set title for detail pages
   useEffect(() => {
     if (data.originalPost) {
       const origTitle = data.originalPost.data.title;
@@ -57,7 +56,6 @@ function Listings({ match }: ListingsProps) {
     }
   }, [data.originalPost]);
 
-  // Set the new filter and fetch data
   useEffect(() => {
     let listingType = listType ?? 'r';
     if (listType === 'user') {
@@ -83,10 +81,8 @@ function Listings({ match }: ListingsProps) {
       comment: comment ?? '',
     };
 
-    // Scroll to top when navigating to new listing
     scrollToPosition(0, 0);
 
-    // Set filter and fetch in same effect to avoid race conditions
     dispatch(filterChanged(newFilter));
     setLastExpanded('');
     dispatch(
@@ -107,13 +103,11 @@ function Listings({ match }: ListingsProps) {
     dispatch,
     postName,
     comment,
-    settings.view, // Only depend on view, not all settings
+    settings.view,
   ]);
 
-  // Check if I should stream entries
   useEffect(() => {
     const streamNewPosts = async () => {
-      // Don't stream when you scroll down.
       if (window.scrollY > 10) {
         return;
       }
@@ -129,10 +123,8 @@ function Listings({ match }: ListingsProps) {
         clearInterval(streamNewPostsInterval);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.stream, dispatch]);
+  }, [settings.stream, dispatch, location]);
 
-  // Set some hotkeys
   const hotkeys = useCallback(
     (event: KeyboardEvent) => {
       if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {

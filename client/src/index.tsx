@@ -23,7 +23,6 @@ const parsed = queryString.parse(search) as {
   cb?: string;
 };
 
-// Start at the top of the page
 scrollToPosition(0, 0);
 
 if (parsed.logout !== undefined) {
@@ -46,10 +45,8 @@ if (!container) {
 const root = createRoot(container);
 
 if (parsed.login !== undefined || parsed.logout !== undefined) {
-  // Don't render anything if logging out/in.
   root.render(<div className="app-loading" />);
 } else {
-  // Clear the local/session cache. Mostly for debugging or a weird cookie mismatch.
   const cookieToken = cookies.get('token');
 
   if (parsed.cb !== undefined || cookieToken === undefined) {
@@ -57,26 +54,18 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     sessionStorage.clear();
   }
 
-  // Check for hash, this is for cloudflare caching.
-  // Set up a page rule for https://mydomain.com/* -> https://mydomain.com/#$1
-  // This allows all request to come through to / allowing the CDN to cache
-  // Everything.
   if (hash) {
     window.history.replaceState({}, document.title, hash.substring(1));
   }
 
-  // Load persisted state from localStorage
   const persistedState = loadState();
 
-  // Initialize store with persisted state
   const store = initializeStore(persistedState);
 
-  // Subscribe to store changes and persist to localStorage
   store.subscribe(
     throttle(() => {
       const state = store.getState();
       saveState({
-        // Only persist slices that should be cached
         siteSettings: state.siteSettings,
         subreddits: state.subreddits,
         redditMultiReddits: state.redditMultiReddits,
@@ -86,7 +75,6 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
     }, 1000)
   );
 
-  // Initialize Workbox for service worker updates
   let wb: Workbox | null = null;
   if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
     wb = new Workbox('/service-worker.js');
@@ -102,7 +90,4 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   );
 }
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

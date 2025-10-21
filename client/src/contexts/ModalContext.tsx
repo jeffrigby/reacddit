@@ -22,7 +22,6 @@ export function ModalProvider({ children }: { children: ReactNode }) {
   const [showAutoRefresh, setShowAutoRefresh] = useState(false);
   const [showCondenseHelp, setShowCondenseHelp] = useState(false);
 
-  // Optimize with useMemo to prevent unnecessary re-renders
   const value = useMemo(
     () => ({
       showHotkeys,

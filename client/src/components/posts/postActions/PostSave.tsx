@@ -55,12 +55,8 @@ function PostSave() {
       }
 
       setSavedState(newSavedState);
-
-      // @todo Update redux - create Redux action for this
-      // dispatch(postSavedToggled({ postId: name, saved: newSavedState }));
     } catch (error) {
       console.error('Failed to save/unsave post:', error);
-      // useOptimistic automatically rolls back on error
     }
   }, [bearer.status, name, optimisticSaved, setOptimisticSaved]);
 

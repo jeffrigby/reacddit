@@ -1,7 +1,6 @@
 import { createContext } from 'react';
 import type { LinkData, CommentData } from '@/types/redditApi';
 
-// Post context data interface
 export interface PostContextData {
   post: {
     data: LinkData | CommentData;
@@ -11,7 +10,6 @@ export interface PostContextData {
   actionable: boolean;
 }
 
-// Posts contexts
 export const PostsContextData = createContext<PostContextData | object>({});
 export const PostsContextActionable = createContext<boolean | object>({});
 export const PostsContextVisible = createContext<boolean | object>({});

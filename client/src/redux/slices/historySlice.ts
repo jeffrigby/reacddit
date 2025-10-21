@@ -19,32 +19,20 @@ const initialState: HistoryState = {
   paths: [],
 };
 
-/**
- * History slice
- */
 const historySlice = createSlice({
   name: 'history',
   initialState,
   reducers: {
-    /**
-     * Add a new path to the history
-     * Uses Immer for immutable updates
-     */
     historyPathAdded(state, action: PayloadAction<string>) {
       state.paths.push(action.payload);
     },
 
-    /**
-     * Clear all history paths
-     */
     historyCleared(state) {
       state.paths = [];
     },
   },
 });
 
-// Export actions
 export const { historyPathAdded, historyCleared } = historySlice.actions;
 
-// Export reducer
 export default historySlice.reducer;

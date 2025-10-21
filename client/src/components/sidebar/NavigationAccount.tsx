@@ -39,9 +39,7 @@ function NavigationAccount(): ReactElement | null {
       const pressedKey = event.key;
 
       if (hotkeyStatus()) {
-        // Navigation key commands
         if (lastKeyPressed.current === 'g') {
-          // Logged in only
           if (me?.name) {
             const { name } = me;
             switch (pressedKey) {

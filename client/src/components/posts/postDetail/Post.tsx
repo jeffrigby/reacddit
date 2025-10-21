@@ -49,20 +49,16 @@ function useRenderedContent(
   expand: boolean
 ): UseRenderedContentReturn {
   const [renderedContent, setRenderedContent] = useState<EmbedContent>(null);
-
-  // Used for debugging offscreen elements.
   const isRendered = useRef(false);
 
   useEffect(() => {
     const getRenderedContent = async (): Promise<void> => {
-      // This is when there is no body.
       const linkData = data as LinkData;
       if (linkData.is_self && !linkData.selftext) {
         isRendered.current = true;
         return;
       }
 
-      // Get the content from the crosspost
       const getContent =
         linkData.crosspost_parent && linkData.crosspost_parent_list?.[0]
           ? await renderContent(linkData.crosspost_parent_list[0], 't3')
@@ -73,14 +69,12 @@ function useRenderedContent(
         return;
       }
 
-      // Only SelfTextContent has inline property
       if (getContent && 'inline' in getContent && getContent.inline) {
         const resolvedInline = await Promise.all(
           getContent.inline.map(
             async (value: Promise<unknown> | unknown) => await value
           )
         );
-        // Type assertion since we know SelfTextContent.inline is EmbedContent[]
         getContent.inline = resolvedInline as EmbedContent[];
       }
 
@@ -241,7 +235,6 @@ function Post({
   useEffect(() => {
     let reposInt: NodeJS.Timeout | undefined;
     if (siteSettings.view === 'condensed' && lastExpanded) {
-      // Close one that was already open.
       if (expand && data.name !== lastExpanded) {
         setExpand(false);
       } else if (data.name === lastExpanded && !expand) {
@@ -258,7 +251,6 @@ function Post({
           const { top, bottom } = lastExpandedPost.getBoundingClientRect();
           const bottomPos = bottom - window.innerHeight;
 
-          // Top is above the top of the screen
           if (top < 50 || bottomPos > -10) {
             const scrollBy = top - 50;
             scrollByAmount(0, scrollBy);
@@ -369,10 +361,6 @@ function Post({
   ]);
 
   const isLoaded = hide ? false : shouldLoad;
-  // const isActionable =
-  //   siteSettings.view === 'expanded' ? actionable : lastExpanded === data.name;
-  // const isFocused =
-  //   siteSettings.view === 'expanded' ? focused : lastExpanded === data.name;
 
   const commentDepth = kind === 't1' ? (data as CommentData).depth : undefined;
   const classArray = classNames('entry', 'list-group-item', `kind-${kind}`, {
@@ -415,7 +403,6 @@ function Post({
 
   const postContext = useMemo(
     () => ({ post, isLoaded, actionable }),
-    // content: renderedContent,
     [actionable, isLoaded, post]
   );
 

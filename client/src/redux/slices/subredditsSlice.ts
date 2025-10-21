@@ -7,13 +7,6 @@
  * - Subreddit filtering for sidebar navigation
  * - Last updated timestamps for each subreddit (for "new post" indicators)
  * - Cache management with 24-hour expiration
- *
- * Migration from legacy code:
- * - Consolidated 4 separate reducers into 1 slice
- * - Replaced module-level state with Redux state
- * - Added EntityAdapter for normalized state and O(1) lookups
- * - Used condition functions for smart cache management
- * - Preserved rate limiting for Reddit API compliance
  */
 import {
   createSlice,
@@ -126,11 +119,6 @@ const initialState: SubredditsState = subredditsAdapter.getInitialState({
   lastUpdatedError: null,
 });
 
-/**
- * Helper: Map Reddit API response children to normalized record
- * @param children - Array of Thing<SubredditData> from Reddit API
- * @returns Record keyed by lowercase display_name
- */
 const mapSubreddits = (
   children: Thing<SubredditData>[]
 ): Record<string, SubredditData> => {
@@ -143,9 +131,7 @@ const mapSubreddits = (
 };
 
 /**
- * Helper: Fetch all subreddits with pagination (handles Reddit's 100 sub limit)
- *
- * OPTIMIZED: Collects all pages then spreads once (was spreading on each iteration)
+ * Fetch all subreddits with pagination (handles Reddit's 100 sub limit)
  */
 const subredditsAll = async (
   where: string,
@@ -166,7 +152,6 @@ const subredditsAll = async (
     qsAfter = srs.data.after ?? null;
   }
 
-  // Spread once at the end instead of on each iteration
   return Object.assign({}, ...allMapped);
 };
 
@@ -264,8 +249,6 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
           return;
         }
 
-        // After the null check, TypeScript should know this is SubredditData
-        // but we need to help it with proper typing
         const subredditData = subreddit as SubredditData;
 
         // CRITICAL: Use fullname (name field like 't5_2r0ij') as the key
@@ -404,7 +387,6 @@ const subredditsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // fetchSubreddits
       .addCase(fetchSubreddits.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -413,7 +395,6 @@ const subredditsSlice = createSlice({
         fetchSubreddits.fulfilled,
         (state, action: PayloadAction<Record<string, SubredditData>>) => {
           state.status = 'succeeded';
-          // Set all subreddits in normalized state (EntityAdapter handles sorting)
           subredditsAdapter.setAll(state, action.payload);
           state.error = null;
           state.lastUpdated = Date.now();
@@ -426,9 +407,6 @@ const subredditsSlice = createSlice({
           action.error.message ??
           'Failed to fetch subreddits';
       });
-
-    // fetchSubredditsLastUpdated doesn't need extra reducers
-    // It dispatches lastUpdatedSet actions during execution
   },
 });
 
@@ -445,10 +423,6 @@ export const {
 // Export reducer
 export default subredditsSlice.reducer;
 
-/**
- * Base Selectors
- */
-
 // Entity adapter selectors
 export const {
   selectAll: selectAllSubreddits,
@@ -457,7 +431,6 @@ export const {
   selectEntities: selectSubredditEntities,
 } = subredditsAdapter.getSelectors((state: RootState) => state.subreddits);
 
-// Individual property selectors
 export const selectSubredditsStatus = (state: RootState) =>
   state.subreddits.status;
 
@@ -479,38 +452,21 @@ export const selectLastUpdatedTime = (state: RootState) =>
 export const selectLastUpdatedError = (state: RootState) =>
   state.subreddits.lastUpdatedError;
 
-/**
- * Memoized Selectors
- */
-
-/**
- * Check if subreddits are loaded
- */
 export const selectSubredditsLoaded = createSelector(
   [selectSubredditsStatus],
   (status) => status === 'succeeded'
 );
 
-/**
- * Check if subreddits are loading
- */
 export const selectSubredditsLoading = createSelector(
   [selectSubredditsStatus],
   (status) => status === 'loading'
 );
 
-/**
- * Check if cache is expired
- */
 export const selectSubredditsCacheExpired = createSelector(
   [selectSubredditsLastUpdated],
   (lastUpdated) => Date.now() > lastUpdated + CACHE_EXPIRATION
 );
 
-/**
- * Get filtered subreddits based on filter text
- * Returns all subreddits if filter is empty
- */
 export const selectFilteredSubreddits = createSelector(
   [selectAllSubreddits, selectSubredditsFilter],
   (subreddits, filter) => {
@@ -524,9 +480,3 @@ export const selectFilteredSubreddits = createSelector(
     );
   }
 );
-
-/**
- * @deprecated Use selectSubredditIds directly from EntityAdapter instead.
- * This selector is redundant and only adds an extra layer.
- * Kept for backward compatibility but will be removed in future refactor.
- */

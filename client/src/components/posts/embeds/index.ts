@@ -298,8 +298,6 @@ async function getContent(
     console.error(e);
   }
 
-  // console.log('NOTFOUND', keys.domain, keys.greedyDomain, entry.url);
-
   // Fallback video content (only for links)
   if (isLinkData(entry)) {
     try {
@@ -374,7 +372,6 @@ async function RenderContent(
 
   try {
     if (kind === REDDIT_KIND.COMMENT) {
-      // const getInline = inlineLinks(entry);
       const content = await getContent(
         { greedyDomain: 'comment', domain: 'comment' },
         entry

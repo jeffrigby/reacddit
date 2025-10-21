@@ -10,8 +10,6 @@ import {
 import request from "supertest";
 import type { AxiosInstance } from "axios";
 
-// Set up environment variables before importing the app
-// This follows Vitest best practices for environment variable mocking
 beforeAll(() => {
   vi.stubEnv("REDDIT_CLIENT_ID", "test-client-id");
   vi.stubEnv("REDDIT_CLIENT_SECRET", "test-client-secret");
@@ -31,7 +29,6 @@ beforeAll(() => {
   vi.stubEnv("IV_LENGTH", "16");
 });
 
-// Mock the util module
 vi.mock("../util.js", () => {
   const mockAxiosInstance: Partial<AxiosInstance> = {
     post: vi.fn(),
@@ -56,11 +53,9 @@ vi.mock("../util.js", () => {
   };
 });
 
-// Mock koa-session with proper session handling
 let sessionStore: Record<string, { state: string | null; token: unknown }> = {};
 vi.mock("koa-session", () => ({
   default: () => (ctx: { headers: Record<string, string>; session: { state: string | null; token: unknown } }, next: () => Promise<void>) => {
-    // Simple session implementation for testing
     const sessionId = ctx.headers["x-session-id"] || "test-session";
     if (!sessionStore[sessionId]) {
       sessionStore[sessionId] = { state: null, token: null };
@@ -70,7 +65,6 @@ vi.mock("koa-session", () => ({
   },
 }));
 
-// Now import the app and get access to the mocked axios instance
 import app from "../app.js";
 import { axiosInstance } from "../util.js";
 
@@ -88,7 +82,6 @@ describe("API Endpoints", () => {
 
   describe("GET /api/bearer", () => {
     it("should return a bearer token with valid credentials", async () => {
-      // Mock successful Reddit API response
       const mockRedditResponse = {
         access_token: "test-access-token",
         token_type: "bearer",
@@ -113,7 +106,6 @@ describe("API Endpoints", () => {
     });
 
     it("should handle Reddit API errors gracefully", async () => {
-      // Mock axios to throw an error
       const mockAxiosError = new Error("Reddit API error");
       (mockAxiosError as Error & { response?: { status: number; statusText: string; data: { error: string } } }).response = {
         status: 401,
@@ -133,7 +125,6 @@ describe("API Endpoints", () => {
     });
 
     it("should include CORS headers (even if undefined due to env vars)", async () => {
-      // Mock successful Reddit API response
       const mockRedditResponse = {
         access_token: "test-token",
         expires_in: 3600,
@@ -169,18 +160,15 @@ describe("API Endpoints", () => {
     });
 
     it("should handle callback with valid code and state", async () => {
-      // First, make a request to /api/login to set up the session state
       const sessionId = "test-session-callback";
       const loginResponse = await request(app.callback())
         .get("/api/login")
         .set("x-session-id", sessionId);
 
-      // Extract state from the redirect URL
       const locationHeader = loginResponse.headers["location"] as string;
       const stateMatch = locationHeader.match(/state=([^&]+)/);
       const state = stateMatch ? stateMatch[1] : "test-state";
 
-      // Mock successful token exchange
       const mockTokenResponse = {
         access_token: "test-access-token",
         refresh_token: "test-refresh-token",
@@ -229,14 +217,11 @@ describe("API Endpoints", () => {
   describe("Logout", () => {
     it("should handle logout when no token exists", async () => {
       await request(app.callback()).get("/api/logout").expect(404);
-
-      // No redirect happens when no token exists, so we get a 404
     });
 
     it("should successfully logout with valid token", async () => {
       const sessionId = "test-session-logout";
 
-      // Set up a session with a token
       sessionStore[sessionId] = {
         state: null,
         token: {
@@ -247,7 +232,6 @@ describe("API Endpoints", () => {
         },
       };
 
-      // Mock successful token revocation
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ data: {} });
 
       const response = await request(app.callback())
@@ -255,14 +239,12 @@ describe("API Endpoints", () => {
         .set("x-session-id", sessionId)
         .expect(302);
 
-      // Should redirect to CLIENT_PATH/?logout
       expect(response.headers["location"]).toContain("/?logout");
     });
 
     it("should handle logout even when token revocation fails", async () => {
       const sessionId = "test-session-logout-fail";
 
-      // Set up a session with a token
       sessionStore[sessionId] = {
         state: null,
         token: {
@@ -273,7 +255,6 @@ describe("API Endpoints", () => {
         },
       };
 
-      // Mock failed token revocation
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Revocation failed"));
 
       const response = await request(app.callback())
@@ -290,7 +271,6 @@ describe("API Endpoints", () => {
     it("should handle callback with invalid state", async () => {
       const sessionId = "test-session-invalid-state";
 
-      // Set up session with a different state
       sessionStore[sessionId] = { state: "valid-state-123", token: null };
 
       const response = await request(app.callback())
@@ -312,7 +292,6 @@ describe("API Endpoints", () => {
       const stateMatch = locationHeader.match(/state=([^&]+)/);
       const state = stateMatch ? stateMatch[1] : "test-state";
 
-      // Mock failed token exchange
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
         new Error("Token exchange failed")
       );
@@ -339,7 +318,6 @@ describe("API Endpoints", () => {
 
   describe("Token Management", () => {
     it("should handle expired tokens in bearer endpoint", async () => {
-      // Mock Reddit API response with very short expiry
       const mockRedditResponse = {
         access_token: "test-access-token",
         token_type: "bearer",
@@ -355,7 +333,6 @@ describe("API Endpoints", () => {
         .get("/api/bearer")
         .expect(200);
 
-      // Should still return a response, but with expired token
       expect(response.body).toHaveProperty("accessToken");
       expect(response.body).toHaveProperty("expires");
       expect(response.body.expires).toBeLessThan(Date.now() / 1000);
@@ -377,7 +354,6 @@ describe("API Endpoints", () => {
         .get("/api/bearer")
         .expect(200);
 
-      // Validate response structure
       expect(response.body.accessToken).toBe("test-access-token");
       expect(typeof response.body.expires).toBe("number");
       expect(response.body.loginUrl).toContain("reddit.com/api/v1/authorize");
@@ -386,7 +362,7 @@ describe("API Endpoints", () => {
 
   describe("HTTP Methods", () => {
     it("should reject POST requests to GET-only endpoints", async () => {
-      await request(app.callback()).post("/api/bearer").expect(405); // Koa returns 405 for unsupported methods
+      await request(app.callback()).post("/api/bearer").expect(405);
     });
 
     it("should reject PUT requests to GET-only endpoints", async () => {
@@ -412,7 +388,6 @@ describe("API Endpoints", () => {
         .get(`/api/callback?code=test-code&state=${longState}`)
         .expect(500);
 
-      // Should handle gracefully (current implementation will treat as missing session state)
       expect(response.body).toHaveProperty("status", "error");
     });
   });
@@ -429,7 +404,6 @@ describe("API Endpoints", () => {
 
   describe("Security", () => {
     it("should include CORS headers (even if undefined due to env vars)", async () => {
-      // Mock successful Reddit API response
       const mockRedditResponse = {
         access_token: "test-token",
         expires_in: 3600,

@@ -21,7 +21,6 @@ function FilterReddits() {
    */
   const filterReddits = (event: React.ChangeEvent<HTMLInputElement>) => {
     const filterText = event.target.value;
-    // Always reset the index.
     const activeIndex = 0;
     if (!filterText) {
       dispatch(filterUpdated({ filterText: '', activeIndex }));
@@ -78,7 +77,6 @@ function FilterReddits() {
             break;
         }
       } else if (filter.active) {
-        // Filter is active
         switch (pressedKey) {
           case 'ArrowUp': {
             const activeIndex = filter.activeIndex - 1;

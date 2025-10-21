@@ -35,8 +35,6 @@ function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
   }
 
   const search = queryString.parse(location.search) as QueryParams;
-
-  // Generate Link
   const sortPath = buildSortPath(sort, search.t);
   const navTo = `/me/m/${item.data.name}/${sortPath}`;
 

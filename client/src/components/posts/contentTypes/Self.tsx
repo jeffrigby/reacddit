@@ -72,7 +72,6 @@ const cleanLinks = (html: string): string => {
 
 function Self({ name, content }: SelfProps) {
   const postContext = useContext(PostsContextData) as PostContextData;
-  // const load = postContext.isLoaded;
 
   const [showAll, setShowAll] = useState(
     content ? (content.expand ?? false) : false

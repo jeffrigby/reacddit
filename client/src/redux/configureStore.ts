@@ -30,12 +30,10 @@ function makeStore(initialState?: Partial<RootState>) {
   });
 }
 
-// Infer types from the store factory (best practice)
 export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore['getState']>;
 export type AppDispatch = AppStore['dispatch'];
 
-// Store instance - will be set in index.js with persisted state
 export let store: AppStore;
 
 /**
@@ -47,5 +45,4 @@ export function initializeStore(preloadedState?: Partial<RootState>): AppStore {
   return store;
 }
 
-// Export factory function as default for testing
 export default makeStore;

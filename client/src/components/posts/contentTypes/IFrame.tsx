@@ -43,8 +43,6 @@ function IFrame({
   const { title } = postContext.post.data;
 
   const style: CSSProperties = {};
-
-  // Default aspect ratio is 16:9
   style.aspectRatio = `${width}/${height}`;
 
   const { isLoaded } = postContext;

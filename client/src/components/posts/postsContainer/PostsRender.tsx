@@ -21,12 +21,10 @@ function PostsRender({
   return useMemo(() => {
     const links = new Set<string>();
 
-    // Remove the "more" posts
     const filteredPosts = Object.values(posts).filter(
       (post) => post.kind !== 'more'
     );
 
-    // Render the posts and find duplicates
     return filteredPosts.map((post, idx) => {
       const {
         kind,

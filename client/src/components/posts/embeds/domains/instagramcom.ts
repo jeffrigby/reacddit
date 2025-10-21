@@ -1,24 +1,14 @@
 import type { LinkData } from '../../../../types/redditApi';
 
 function render(entry: LinkData): null {
-  // This doesn't work for some reason
-
   const { url } = entry;
-  // const urlParsed = parse(url);
-  // const { pathname, origin } = urlParsed;
 
   if (!url) {
     return null;
   }
 
-  // This doesn't work for some reason
+  // Instagram embeds don't work - social media embed rendering issues
   return null;
-
-  // return {
-  //   type: 'social',
-  //   network: 'instagram',
-  //   url: `${origin}${pathname}`,
-  // };
 }
 
 export default render;

@@ -28,7 +28,6 @@ class EmbedErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    // Log error to console for debugging
     console.error('Social media embed error:', error, errorInfo);
   }
 

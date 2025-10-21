@@ -8,7 +8,6 @@ interface PostTimeAgoProps {
 
 function PostTimeAgo({ createdUtc }: PostTimeAgoProps): React.JSX.Element {
   const timeago = formatDistanceToNow(createdUtc * 1000);
-  // gotta be a better way to do this, but, whatever
   const timeagoshort = timeago
     .replace(/less than a minute?/g, '<1M')
     .replace(/seconds?/g, 'S')

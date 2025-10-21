@@ -25,7 +25,6 @@ function VideoBufferBar({
 
   const triggerSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    // where is this progress bar on the page:
     const percent =
       (e.pageX - e.currentTarget.getBoundingClientRect().left) /
       e.currentTarget.offsetWidth;
@@ -33,9 +32,7 @@ function VideoBufferBar({
     seek(seekTime);
   };
 
-  // Memoize buffer bars to prevent recreation on every render
   const bars = useMemo(() => {
-    // Figure out buffer bars
     if (buffers.buffers.length === 0 || buffers.status === 'full') {
       return [<div className="buffer-bar buffer-bar-full" key="buffer-full" />];
     }
@@ -51,7 +48,6 @@ function VideoBufferBar({
     });
   }, [buffers.buffers, buffers.status]);
 
-  // Memoize progress bar style
   const progressBarStyle = useMemo(() => {
     const progressMarginRight = 100 - (currentTime / duration) * 100;
     return {

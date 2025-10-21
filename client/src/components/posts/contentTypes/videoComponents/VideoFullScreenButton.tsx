@@ -9,9 +9,6 @@ interface VideoFullScreenButtonProps {
 }
 
 function VideoFullScreenButton({ videoRef }: VideoFullScreenButtonProps) {
-  /**
-   * Toggle full screen
-   */
   const toggleFullscreen = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 

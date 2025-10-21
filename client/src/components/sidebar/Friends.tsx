@@ -44,7 +44,6 @@ function useFriends() {
       const nameLower = name.toLowerCase();
       try {
         await followUser(nameLower, 'unsub');
-        // Refetch subreddits after unfollowing (cache will be updated)
         const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
         dispatch(fetchSubreddits({ reset: true, where }));
       } catch (error) {

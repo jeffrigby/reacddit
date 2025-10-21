@@ -40,18 +40,15 @@ function ImgurAlbum({ content }: ImgurAlbumProps) {
   };
 
   const { contStyle, ratioStyle } = useMemo(() => {
-    // Create a mutable copy of the content dimensions
     let coverHeight = content.cover_height;
     let coverWidth = content.cover_width;
 
-    // Limit the height of images
     const maxHeight = 650;
     if (coverHeight > maxHeight) {
       coverWidth = (coverWidth * maxHeight) / coverHeight;
       coverHeight = maxHeight;
     }
 
-    // Further limit if still too tall
     const width =
       coverHeight > 800 ? (coverWidth * 800) / coverHeight : coverWidth;
 
@@ -65,21 +62,17 @@ function ImgurAlbum({ content }: ImgurAlbumProps) {
   const totalSlides = content.images_count;
   const currentSlide = imgNum + 1;
 
-  // Prepare current image for rendering - use imgNum directly as dependency
   const imageToRender = useMemo(() => {
     const currentImage = content.images[imgNum];
     const img = { ...currentImage };
     if (!img.animated) {
-      // Full Image - grabbing 1024x1024 version
       img.src = `//i.imgur.com/${img.id}h.jpg`;
     }
     return img;
   }, [content.images, imgNum]);
 
-  // Render either video or image based on type
   const render = useMemo(() => {
     if (imageToRender.animated) {
-      // For animated images, ensure we have the required VideoContent properties
       const videoContent: VideoContent = {
         id: imageToRender.id,
         width: imageToRender.width ?? 0,
@@ -92,7 +85,6 @@ function ImgurAlbum({ content }: ImgurAlbumProps) {
       return <VideoComp content={videoContent} key={imageToRender.id} />;
     }
 
-    // For static images
     const imageContent: ImageContent = {
       src: imageToRender.src ?? '',
       title: '', // Imgur albums don't typically have individual titles

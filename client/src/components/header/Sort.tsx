@@ -117,7 +117,6 @@ function Sort() {
   const genLink = (sort: string, t?: string): To => {
     const { listType, target, userType } = listingsFilter;
     const qs = queryString.parse(search);
-    // add the timeline if requested.
     if (t) {
       qs.t = t;
     }

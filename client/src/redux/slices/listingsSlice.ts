@@ -1,8 +1,3 @@
-/**
- * Modern Redux Toolkit slice for Reddit listings
- * Consolidates: listingsFilter, currentSubreddit, listingsState, listingsRedditEntries, listingsRedditStatus
- */
-
 import type { PayloadAction } from '@reduxjs/toolkit';
 import {
   createSlice,
@@ -256,7 +251,6 @@ export const fetchListingsNext = createAsyncThunk<
 
   const { after } = currentData;
 
-  // Parse query string and add pagination params
   const qs = queryString.parse(location.search);
   const params: Record<string, unknown> = {
     ...qs,
@@ -264,7 +258,6 @@ export const fetchListingsNext = createAsyncThunk<
     after,
   };
 
-  // Fetch next page
   const entries = await getContent(state.listings.currentFilter, params);
 
   return {
@@ -273,10 +266,6 @@ export const fetchListingsNext = createAsyncThunk<
   };
 });
 
-/**
- * Fetch new listings (refresh/reload)
- * Returns count of new posts
- */
 export const fetchListingsNew = createAsyncThunk<
   {
     locationKey: string;
@@ -310,7 +299,6 @@ export const fetchListingsNew = createAsyncThunk<
 
     const before = childKeys[0];
 
-    // Parse query string and add params
     const qs = queryString.parse(location.search);
     const params: Record<string, unknown> = {
       ...qs,
@@ -318,7 +306,6 @@ export const fetchListingsNew = createAsyncThunk<
       before,
     };
 
-    // Fetch new posts
     const entries = await getContent(state.listings.currentFilter, params);
     const newPostCount = Object.keys(entries.data.children).length;
 
@@ -334,14 +321,12 @@ export const fetchListingsNew = createAsyncThunk<
       const locationKey = location.key ?? 'front';
       const currentData = state.listings.listingsByLocation?.[locationKey];
 
-      // Don't fetch if no data exists
       if (!currentData) {
         return false;
       }
 
       const { status } = currentData;
 
-      // Don't fetch if already loading
       if (status !== 'loaded' && status !== 'loadedAll') {
         return false;
       }
@@ -350,10 +335,6 @@ export const fetchListingsNew = createAsyncThunk<
     },
   }
 );
-
-// =============================================================================
-// Slice
-// =============================================================================
 
 const initialState: ListingsSliceState = {
   currentFilter: {
@@ -370,16 +351,10 @@ const listingsSlice = createSlice({
   name: 'listings',
   initialState,
   reducers: {
-    /**
-     * Set the current filter
-     */
     filterChanged(state, action: PayloadAction<ListingsFilter>) {
       state.currentFilter = action.payload;
     },
 
-    /**
-     * Set UI state for a location
-     */
     uiStateUpdated(
       state,
       action: PayloadAction<{ key: string; uiState: ListingsState }>
@@ -390,7 +365,6 @@ const listingsSlice = createSlice({
         saved: Date.now(),
       };
 
-      // Prune old UI states
       state.uiStateByLocation = pruneLocationData(
         state.uiStateByLocation,
         MAX_HISTORY_LOCATIONS,
@@ -398,9 +372,6 @@ const listingsSlice = createSlice({
       );
     },
 
-    /**
-     * Update specific post entries across locations
-     */
     postEntriesUpdated(
       state,
       action: PayloadAction<{
@@ -429,9 +400,6 @@ const listingsSlice = createSlice({
       });
     },
 
-    /**
-     * Clear cached data for a specific location
-     */
     locationCleared(state, action: PayloadAction<string>) {
       const locationKey = action.payload;
       delete state.listingsByLocation[locationKey];
@@ -439,9 +407,6 @@ const listingsSlice = createSlice({
       delete state.uiStateByLocation[locationKey];
     },
 
-    /**
-     * Clear all cached listings
-     */
     allListingsCleared(state) {
       state.listingsByLocation = {};
       state.subredditsByLocation = {};
@@ -450,15 +415,11 @@ const listingsSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    // ==========================================================================
-    // fetchListingsInitial
-    // ==========================================================================
     builder
       .addCase(fetchListingsInitial.pending, (state, action) => {
         const { location } = action.meta.arg;
         const locationKey = location.key ?? 'front';
 
-        // Initialize or update status
         if (!state.listingsByLocation[locationKey]) {
           state.listingsByLocation[locationKey] = {
             before: null,
@@ -476,13 +437,11 @@ const listingsSlice = createSlice({
         const { locationKey, entries, subreddit } = action.payload;
         const { listType } = action.meta.arg.filters;
 
-        // Prepare data
         const data = {
           ...entries.data,
           requestUrl: entries.requestUrl,
         };
 
-        // Add original post for comments/duplicates
         if (
           entries.originalPost &&
           (listType === 'duplicates' || listType === 'comments')
@@ -493,7 +452,6 @@ const listingsSlice = createSlice({
         const hasMore = !!data.after;
         const status: ListingsStatus = hasMore ? 'loaded' : 'loadedAll';
 
-        // Update listings data
         state.listingsByLocation[locationKey] = {
           before: data.before,
           after: data.after,
@@ -505,7 +463,6 @@ const listingsSlice = createSlice({
           status,
         };
 
-        // Update subreddit info if provided
         if (Object.keys(subreddit).length > 0) {
           state.subredditsByLocation[locationKey] = {
             ...subreddit,
@@ -513,7 +470,6 @@ const listingsSlice = createSlice({
           } as CachedSubredditData;
         }
 
-        // Prune old locations
         state.listingsByLocation = pruneLocationData(
           state.listingsByLocation,
           MAX_HISTORY_LOCATIONS,
@@ -534,9 +490,6 @@ const listingsSlice = createSlice({
         }
       });
 
-    // ==========================================================================
-    // fetchListingsNext
-    // ==========================================================================
     builder
       .addCase(fetchListingsNext.pending, (state, action) => {
         const { location } = action.meta.arg;
@@ -551,7 +504,6 @@ const listingsSlice = createSlice({
         const location = state.listingsByLocation[locationKey];
 
         if (location) {
-          // Merge new children with existing
           location.children = {
             ...location.children,
             ...entries.data.children,
@@ -570,9 +522,6 @@ const listingsSlice = createSlice({
         }
       });
 
-    // ==========================================================================
-    // fetchListingsNew
-    // ==========================================================================
     builder
       .addCase(fetchListingsNew.pending, (state, action) => {
         const { location, stream } = action.meta.arg;
@@ -592,7 +541,6 @@ const listingsSlice = createSlice({
           return;
         }
 
-        // If no new posts, just update status
         if (newPostCount === 0) {
           location.status = 'loaded';
           return;
@@ -644,10 +592,6 @@ const listingsSlice = createSlice({
   },
 });
 
-// =============================================================================
-// Actions Export
-// =============================================================================
-
 export const {
   filterChanged,
   uiStateUpdated,
@@ -656,11 +600,6 @@ export const {
   allListingsCleared,
 } = listingsSlice.actions;
 
-// =============================================================================
-// Selectors
-// =============================================================================
-
-// Base selectors
 const selectListingsByLocation = (state: RootState) =>
   state.listings?.listingsByLocation ?? {};
 const selectSubredditsByLocation = (state: RootState) =>
@@ -674,7 +613,6 @@ const selectCurrentFilter = (state: RootState) =>
     sort: 'hot',
   };
 
-// Memoized selectors with location key parameter
 export const selectListingData = createSelector(
   [
     selectListingsByLocation,
@@ -752,10 +690,6 @@ export const selectFilter = createSelector(
   (filter) => filter
 );
 
-/**
- * Combined selector for Posts component
- * Returns both listType and listing data together to prevent unnecessary re-renders
- */
 export const selectPostsData = createSelector(
   [
     selectCurrentFilter,
@@ -780,10 +714,6 @@ export const selectPostsData = createSelector(
   }
 );
 
-/**
- * Combined selector for PostsLoadingStatus component
- * Returns both data and status together to prevent unnecessary re-renders
- */
 export const selectListingDataAndStatus = createSelector(
   [
     selectListingsByLocation,
@@ -807,10 +737,6 @@ export const selectListingDataAndStatus = createSelector(
   }
 );
 
-/**
- * Post-specific selectors for focus and actionable state
- * Used for keyboard navigation and post interactions
- */
 export const selectPostFocused = createSelector(
   [
     (state: RootState) => state.listings?.uiStateByLocation,
@@ -848,9 +774,5 @@ export const selectPostActionable = createSelector(
     return !actionable ? idx === 0 : actionable === postName;
   }
 );
-
-// =============================================================================
-// Reducer Export
-// =============================================================================
 
 export default listingsSlice.reducer;

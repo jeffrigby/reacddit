@@ -28,7 +28,6 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
 
   const query = queryString.parse(location.search);
   const { t } = query;
-  // Convert null to undefined and filter out null values from arrays
   const timeFilter = Array.isArray(t)
     ? t.filter((item): item is string => item !== null)
     : (t ?? undefined);

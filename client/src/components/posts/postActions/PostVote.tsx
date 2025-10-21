@@ -117,7 +117,7 @@ function PostVote() {
   );
 
   const expired = Date.now() / 1000 - data.created_utc;
-  const sixmonthSeconds = 182.5 * 86400; // I don't know when reddit exactly cuts it off.
+  const sixmonthSeconds = 182.5 * 86400;
   const disabled = bearer.status !== 'auth' || expired > sixmonthSeconds;
 
   const upIcon =
@@ -142,10 +142,8 @@ function PostVote() {
           voteState.likes === (dir === 1) ? 0 : dir;
         await voteAPI(data.name, effectiveDir);
 
-        // Update actual state after success
         setVoteState(getNewState(effectiveDir, voteState.ups, voteState.likes));
       } catch (error) {
-        // useOptimistic automatically rolls back on error
         console.error('Vote failed:', error);
       }
     },

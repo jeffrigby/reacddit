@@ -38,10 +38,8 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
         setIsLoading(true);
         setError(null);
 
-        // Call Reddit API to update favorite status
         await favorite(newFavoriteState, srName);
 
-        // Refetch subreddits to get updated favorite status
         const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
         dispatch(fetchSubreddits({ reset: true, where }));
       } catch (err) {

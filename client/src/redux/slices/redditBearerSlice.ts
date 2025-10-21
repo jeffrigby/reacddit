@@ -83,7 +83,7 @@ export const fetchBearer = createAsyncThunk<
     condition: async (force, { getState }) => {
       if (force) {
         return true;
-      } // Allow forced refresh
+      }
 
       const state = getState();
       const currentBearer = state.redditBearer;
@@ -105,29 +105,22 @@ export const fetchBearer = createAsyncThunk<
         const loginURL = getLoginUrl();
         const newStatus = auth ? 'auth' : 'anon';
 
-        // Only run if something changed
         return (
           currentBearer.bearer !== token ||
           currentBearer.status !== newStatus ||
           currentBearer.loginURL !== loginURL
         );
       } catch {
-        return true; // Run on error to update error state
+        return true;
       }
     },
   }
 );
 
-/**
- * Bearer token slice
- */
 const bearerSlice = createSlice({
   name: 'bearer',
   initialState,
   reducers: {
-    /**
-     * Clear bearer token data
-     */
     bearerCleared(state) {
       state.bearer = null;
       state.status = 'idle';
@@ -167,21 +160,13 @@ const bearerSlice = createSlice({
   },
 });
 
-// Export actions
 export const { bearerCleared } = bearerSlice.actions;
 
-// Export reducer
 export default bearerSlice.reducer;
 
-/**
- * Selectors
- */
-
-// Base selector
 export const selectBearerState = (state: RootState): BearerState =>
   state.redditBearer;
 
-// Individual property selectors
 export const selectBearer = (state: RootState): string | null =>
   state.redditBearer.bearer;
 
@@ -194,17 +179,11 @@ export const selectLoginURL = (state: RootState): string | null =>
 export const selectBearerError = (state: RootState): string | null =>
   state.redditBearer.error;
 
-/**
- * Memoized selector to check if user is authenticated
- */
 export const selectIsAuth = createSelector(
   [selectBearerStatus],
   (status) => status === 'auth'
 );
 
-/**
- * Memoized selector to check if bearer is loading
- */
 export const selectBearerLoading = createSelector(
   [selectBearerStatus],
   (status) => status === 'loading' || status === 'idle'

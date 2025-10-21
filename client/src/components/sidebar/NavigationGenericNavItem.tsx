@@ -47,7 +47,6 @@ function NavigationGenericNavItem({
   const titleNew = title ?? text;
   const linkClassNames = `nav-link${classes ? ` ${classes}` : ''}`;
 
-  // Support both new icon prop and legacy iconClass for backwards compatibility
   const iconElement = icon ? (
     <FontAwesomeIcon className="fa-fw" icon={icon} />
   ) : iconClass ? (

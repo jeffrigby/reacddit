@@ -59,8 +59,6 @@ function Header() {
     </NavLink>
   );
 
-  // removed `history.length > 2 &&` when upgrading to react-router v6
-  // @todo do I need to check this?
   const backButton = location.state?.showBack && (
     <div>
       <Button

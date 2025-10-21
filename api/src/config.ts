@@ -108,7 +108,6 @@ function validateEnv(): void {
  * @throws Calls process.exit(1) if validation fails
  */
 function loadConfig(): AppConfig {
-  // Validate first - will exit if invalid (skips in test mode)
   validateEnv();
 
   const {

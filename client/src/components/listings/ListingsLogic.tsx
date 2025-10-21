@@ -50,7 +50,6 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   const scrollResize = useRef(true);
 
   const contextValue = useContext(ListingsContextLastExpanded);
-  // Type guard to check if we have the tuple [string, function]
   const [lastExpanded, setLastExpanded] = Array.isArray(contextValue)
     ? (contextValue as [string, (value: string) => void])
     : (['', () => {}] as [string, (value: string) => void]);
@@ -134,8 +133,6 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
     }
     scrollResize.current = false;
 
-    // getCurrentListingState only needs focused and actionable properties
-    // Ensure actionable is string | null (not number)
     const simplifiedState = {
       focused: prevState.current.focused,
       actionable:
@@ -149,7 +146,6 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
       lastExpanded
     );
 
-    // Merge the partial state from getCurrentListingState with existing state
     const newState: ExtendedListingsState = {
       ...prevState.current,
       ...(partialState as { focused: string; actionable: string | null }),
@@ -168,21 +164,17 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
       prevState.current = newState;
     }
 
-    // Check if iframe is focused. If it is, unfocus it so hotkeys work.
     unfocusIFrame();
 
     if (settings.autoplay) {
-      // This is for a weird iOS/PWA bug that occasionally stops videos.
       autoPlayVideos();
     }
 
     scrollResize.current = true;
   }, [dispatch, lastExpanded, locationKey, settings.autoplay, settings.view]);
 
-  // Use ResizeObserver to trigger updates when DOM changes instead of polling with setTimeout
   const forceDelayedUpdate = useCallback(() => {
     monitorEntries();
-    // Single delayed update to catch any late-rendering content
     setTimeout(monitorEntries, 500);
   }, [monitorEntries]);
 
@@ -213,8 +205,6 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   useEffect(() => {
     forceDelayedUpdate();
 
-    // After Bootstrap migration, scroll events fire on document with body as the scrolling element
-    // We listen on document with capture phase to ensure we catch all scroll events
     const handleScroll = () => {
       throttledUpdate();
     };
@@ -229,14 +219,11 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
     };
   }, [forceDelayedUpdate, throttledUpdate]);
 
-  // Monitor iframe focus on user interaction instead of polling
   useEffect(() => {
     const handleUserInteraction = () => {
-      // Check if iframe is focused. If it is, unfocus it so hotkeys work.
       unfocusIFrame();
     };
 
-    // Check on common user interactions instead of polling
     document.addEventListener('click', handleUserInteraction);
     document.addEventListener('keydown', handleUserInteraction);
 
@@ -246,8 +233,6 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
     };
   }, []);
 
-  // Effect to trigger monitor if the saved arg changes.
-  // This is to make sure newly fetched entries render.
   useEffect(() => {
     forceDelayedUpdate();
   }, [forceDelayedUpdate, saved]);

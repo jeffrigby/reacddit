@@ -37,15 +37,11 @@ function getSessionConfig() {
     renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
      (default is false) */,
     encode: (rawData: unknown): string => {
-      // Use your encryptToken function
       const encrypted = encryptToken(rawData);
-      // Return a stringified version of the whole encrypted object
       return JSON.stringify(encrypted);
     },
     decode: (stringifiedEncryptedData: string): unknown => {
-      // Parse the stringified encrypted object
       const encryptedData = JSON.parse(stringifiedEncryptedData);
-      // Use your decryptToken function
       return decryptToken(encryptedData);
     },
   };
@@ -172,7 +168,6 @@ async function getRefreshToken(
   try {
     const newToken: AxiosResponse<RedditAccessTokenResponse> =
       await axiosInstance.post("/api/v1/access_token", params);
-    // Only auth tokens have a refresh token
     return newToken.data;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -294,7 +289,6 @@ router.get("/api/callback", async (ctx) => {
     return handleError("ERROR: THE STATE DOESN'T MATCH.");
   }
 
-  // Everything looks great. Let's try to get the code.
   const options = {
     grant_type: "authorization_code",
     code: code as string,
@@ -309,7 +303,6 @@ router.get("/api/callback", async (ctx) => {
     console.log("TOKEN RETRIEVED SUCCESSFULLY.");
 
     if (data.access_token) {
-      // we are good.
       console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
       const accessToken = addExtraInfoToToken(data, true);
       setSessAndCookie(accessToken, ctx);

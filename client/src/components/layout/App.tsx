@@ -34,14 +34,12 @@ function App() {
             setShowHotkeys(true);
             break;
           case '>': {
-            // Toggle auto-refresh - read current state from Redux store
             const currentStream = store.getState().siteSettings.stream;
             scrollToPosition(0, 0);
             dispatch(siteSettingsChanged({ stream: !currentStream }));
             break;
           }
           case 'Î': {
-            // opt-shift-d - Toggle debug mode - read current state from Redux store
             const currentDebug = store.getState().siteSettings.debug ?? false;
             dispatch(siteSettingsChanged({ debug: !currentDebug }));
             break;
@@ -58,7 +56,6 @@ function App() {
     const bearerResult = await dispatch(fetchBearer());
     if (fetchBearer.fulfilled.match(bearerResult)) {
       setToken(bearerResult.payload.bearer);
-      // Force fetch on initialization to ensure we have fresh user data
       await dispatch(fetchMe(true));
       setLoading(false);
     } else {
@@ -77,7 +74,6 @@ function App() {
     };
   }, [hotkeys]);
 
-  // Get the token and user.
   useEffect(() => {
     getToken();
   }, [getToken]);
@@ -115,7 +111,6 @@ function App() {
     );
   }
 
-  // This is to handle an issue where the account or bearer isn't fetched correctly.
   if (loading || redditBearer.status === 'idle') {
     return null;
   }

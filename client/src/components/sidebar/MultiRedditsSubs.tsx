@@ -25,7 +25,6 @@ function genNavItems(multiRedditSubs: SubredditItem[]): ReactElement[] {
     .sort()
     .map((key) => {
       const subredditName = multiRedditSubsKeyed[key];
-      // Create a minimal SubredditData object with required fields for NavigationItem
       const item: SubredditData = {
         id: subredditName,
         name: `t5_${subredditName}`,

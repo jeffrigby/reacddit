@@ -19,9 +19,6 @@ function VideoAudioButton({
   btnClasses,
   videoRef,
 }: VideoAudioButtonProps) {
-  /**
-   * Toggle sound on and off
-   */
   const toggleSound = () => {
     if (videoRef.current) {
       const video = videoRef.current;

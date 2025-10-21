@@ -12,7 +12,6 @@ function render(entry: LinkData): SocialEmbedContent | null {
   const { pathname, origin } = urlParsed;
   const urlPath = pathname.split('/');
 
-  // urlpath must contain "posts"
   if (!urlPath.includes('posts')) {
     return null;
   }

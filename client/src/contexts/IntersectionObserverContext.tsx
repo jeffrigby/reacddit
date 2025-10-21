@@ -8,7 +8,6 @@ import {
   useMemo,
 } from 'react';
 
-// IntersectionObserver context types
 type ObserverCallback = (isIntersecting: boolean) => void;
 
 interface IntersectionObserverContextValue {
@@ -36,18 +35,14 @@ interface IntersectionObserverProviderProps {
 export function IntersectionObserverProvider({
   children,
 }: IntersectionObserverProviderProps) {
-  // Create two shared observers
   const loadObserverRef = useRef<IntersectionObserver | null>(null);
   const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
 
-  // Track callbacks for each element
   const loadCallbacksRef = useRef<Map<Element, ObserverCallback>>(new Map());
   const visibilityCallbacksRef = useRef<Map<Element, ObserverCallback>>(
     new Map()
   );
 
-  // Lazy initialization during render - ensures observers exist before children mount
-  // This prevents a race condition where child posts try to observe before observers are created
   loadObserverRef.current ??= new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -72,7 +67,6 @@ export function IntersectionObserverProvider({
     { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
   );
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       loadObserverRef.current?.disconnect();
