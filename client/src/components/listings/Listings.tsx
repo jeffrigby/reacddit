@@ -83,6 +83,9 @@ function Listings({ match }: ListingsProps) {
       comment: comment ?? '',
     };
 
+    // Scroll to top when navigating to new listing
+    scrollToPosition(0, 0);
+
     // Set filter and fetch in same effect to avoid race conditions
     dispatch(filterChanged(newFilter));
     setLastExpanded('');

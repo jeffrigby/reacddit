@@ -4,7 +4,6 @@ import _trimEnd from 'lodash/trimEnd';
 import parse from 'url-parse';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { scrollToPosition } from '@/common';
 
 interface NavigationGenericNavItemProps {
   to: string;
@@ -27,7 +26,8 @@ function closeMenu(): void {
 
 function handleNavigationClick(): void {
   closeMenu();
-  scrollToPosition(0, 0);
+  // Don't scroll here - let the Listings component handle scroll after route changes
+  // This prevents flash of old content when scrolling to top before new data loads
 }
 
 function NavigationGenericNavItem({
