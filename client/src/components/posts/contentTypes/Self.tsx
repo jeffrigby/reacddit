@@ -1,5 +1,4 @@
 import { useContext, useState, useRef, useEffect, useCallback } from 'react';
-import throttle from 'lodash/throttle';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -87,26 +86,36 @@ function Self({ name, content }: SelfProps) {
 
   const { post } = postContext;
 
-  const getHeights = () => {
-    const dimensions: Dimensions = {};
-    if (selfRef.current) {
-      dimensions.self = selfRef.current.getBoundingClientRect().height;
-    }
+  // Optimized height calculation to avoid forced reflows
+  // Using ResizeObserver instead of resize listener + throttle
+  const getHeights = useCallback(() => {
+    // Batch layout reads in requestAnimationFrame to avoid forced reflows
+    requestAnimationFrame(() => {
+      const dimensions: Dimensions = {};
+      if (selfRef.current) {
+        dimensions.self = selfRef.current.getBoundingClientRect().height;
+      }
 
-    if (selfHTMLRef.current) {
-      dimensions.selfHTML = selfHTMLRef.current.scrollHeight;
-    }
-    setSpecs(dimensions);
-  };
+      if (selfHTMLRef.current) {
+        dimensions.selfHTML = selfHTMLRef.current.scrollHeight;
+      }
+      setSpecs(dimensions);
+    });
+  }, []);
 
   useEffect(() => {
     getHeights();
-    const throttledGetHeights = throttle(getHeights, 500);
-    window.addEventListener('resize', throttledGetHeights, false);
+
+    // Use ResizeObserver instead of window resize listener for better performance
+    const resizeObserver = new ResizeObserver(getHeights);
+    if (selfRef.current) {
+      resizeObserver.observe(selfRef.current);
+    }
+
     return () => {
-      window.removeEventListener('resize', throttledGetHeights, false);
+      resizeObserver.disconnect();
     };
-  }, []);
+  }, [getHeights]);
 
   const toggleShow = useCallback(() => {
     if (content.expand) {

@@ -15,18 +15,28 @@ function isTopLevelEntry(element: Element): boolean {
 /**
  * Get the actual scrolling element
  * After Bootstrap 5 migration, body element has the scroll, not window
+ * Cached to avoid repeated DOM checks and potential forced reflows
  */
+let cachedScrollContainer: Element | null = null;
+
 function getScrollContainer(): Element {
+  // Return cached value if available
+  if (cachedScrollContainer) {
+    return cachedScrollContainer;
+  }
+
   // Modern Bootstrap sets overflow on body, making it the scroll container
   const body = document.body;
   const html = document.documentElement;
 
   // Check if body is scrollable
   if (body.scrollHeight > body.clientHeight) {
-    return body;
+    cachedScrollContainer = body;
+  } else {
+    cachedScrollContainer = html;
   }
 
-  return html;
+  return cachedScrollContainer;
 }
 
 /**
@@ -52,6 +62,7 @@ export function scrollByAmount(x: number, y: number): void {
 /**
  * Navigate to the next top-level entry (skips nested comments).
  * This ensures j/k only navigate between top-level items, not threaded replies.
+ * Optimized to avoid forced reflows by batching layout reads.
  */
 export function nextEntry(focused: string | null): void {
   if (isNil(focused)) {
@@ -70,9 +81,12 @@ export function nextEntry(focused: string | null): void {
   }
 
   if (next) {
-    const scrollBy = next.getBoundingClientRect().top - 50;
-    const scrollContainer = getScrollContainer();
-    scrollContainer.scrollTop += scrollBy;
+    // Batch layout read in requestAnimationFrame to avoid forced reflow
+    requestAnimationFrame(() => {
+      const scrollBy = next.getBoundingClientRect().top - 50;
+      const scrollContainer = getScrollContainer();
+      scrollContainer.scrollTop += scrollBy;
+    });
   }
   // No more entries - do nothing (removed "jump to bottom" behavior)
 }
@@ -117,6 +131,7 @@ export function nextEntryCollapsed(
 /**
  * Navigate to the previous top-level entry (skips nested comments).
  * This ensures j/k only navigate between top-level items, not threaded replies.
+ * Optimized to avoid forced reflows by batching layout reads.
  */
 export function prevEntry(focused: string | null): void {
   if (isNil(focused)) {
@@ -135,9 +150,12 @@ export function prevEntry(focused: string | null): void {
   }
 
   if (prev) {
-    const scrollBy = prev.getBoundingClientRect().top - 50;
-    const scrollContainer = getScrollContainer();
-    scrollContainer.scrollTop += scrollBy;
+    // Batch layout read in requestAnimationFrame to avoid forced reflow
+    requestAnimationFrame(() => {
+      const scrollBy = prev.getBoundingClientRect().top - 50;
+      const scrollContainer = getScrollContainer();
+      scrollContainer.scrollTop += scrollBy;
+    });
   }
   // No previous entry - do nothing
 }
