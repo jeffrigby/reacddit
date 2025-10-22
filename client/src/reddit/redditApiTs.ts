@@ -116,7 +116,9 @@ export async function getToken(reset = false): Promise<TokenApiResponse> {
   // Check if we need to fetch a new token
   if (storageToken === 'expired' || reset || storageToken === null) {
     try {
-      const response = await axios.get(`${process.env.API_PATH}/bearer`);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_PATH}/bearer`
+      );
       return {
         token: response.data.accessToken,
         cookieTokenParsed,

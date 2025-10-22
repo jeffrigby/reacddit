@@ -11,10 +11,10 @@ reacddit is a monorepo containing an OAuth2 API (for Reddit authentication) and 
 ## Tech Stack
 
 - **Frontend**: React 19, Redux Toolkit, React Router 7, TypeScript
-- **Build System**: Webpack 5 with ESBuild loader
+- **Build System**: Vite 6 with SWC for fast builds and hot module replacement
 - **Backend**: Koa.js OAuth2 server (TypeScript) - [API docs](api/README.md)
 - **Deployment**: AWS Lambda with SAM/CloudFormation - [Deployment guide](DEPLOYMENT.md)
-- **PWA**: Full Progressive Web App support with service workers
+- **PWA**: Full Progressive Web App support with Vite PWA plugin
 
 ## Features
 
@@ -65,9 +65,9 @@ npm run start-api       # API server only (port 3001)
 ### Client Commands
 ```bash
 cd client
-npm start              # Webpack dev server with hot reload
+npm start              # Vite dev server with hot module replacement
 npm run build          # Production build
-npm run profile        # Build with webpack bundle analyzer
+npm run preview        # Preview production build locally
 npm run lint           # Prettier formatting + ESLint (always run after changes!)
 ```
 
@@ -90,9 +90,9 @@ For detailed API configuration and environment variables, see [api/README.md](ap
 
 ## Roadmap
 
-The project is undergoing active modernization:
+The project has undergone active modernization:
 1. **Completed**: Full TypeScript migration for both client and API
-2. **Next**: Migrating from Webpack to Vite for improved build performance
+2. **Completed**: Migrated from Webpack to Vite for improved build performance
 3. **Future**: Add content creation capabilities (posting, commenting)
 
 ## Inspiration

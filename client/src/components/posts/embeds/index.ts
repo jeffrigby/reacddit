@@ -1,6 +1,7 @@
 import { getPublicSuffix, getDomain } from 'tldts';
 import parse from 'url-parse';
 import { LRUCache } from 'lru-cache';
+import urlRegex from 'url-regex-safe';
 import type { LinkData, CommentData } from '../../../types/redditApi';
 import type {
   EmbedContent,
@@ -13,7 +14,6 @@ import redditVideoPreview from './defaults/redditVideoPreview';
 import redditImagePreview from './defaults/redditImagePreview';
 import redditMediaEmbed from './defaults/redditMediaEmbed';
 import redditGallery from './defaults/redditGallery';
-const urlRegex = require('url-regex-safe');
 
 // Compile URL regex once for performance
 const URL_REGEX = urlRegex();

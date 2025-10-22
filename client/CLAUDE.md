@@ -3,9 +3,9 @@
 React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embedding.
 
 ## Build Commands
-- `npm start` - Start development server
-- `npm run build` - Build production bundle
-- `npm run profile` - Build with bundle analyzer
+- `npm start` - Start Vite development server with HMR
+- `npm run build` - Build production bundle with Vite
+- `npm run preview` - Preview production build locally
 - `npm run lint` - Run Prettier formatting and ESLint checks with auto-fixing
 
 ## Code Style & Quality

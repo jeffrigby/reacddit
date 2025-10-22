@@ -67,7 +67,9 @@ function NavigationPrimaryLinks(): ReactElement {
     const { loginURL } = redditBearer;
 
     if (!loginURL) {
-      return process.env.API_PATH ? `${process.env.API_PATH}/login` : '/login';
+      return import.meta.env.VITE_API_PATH
+        ? `${import.meta.env.VITE_API_PATH}/login`
+        : '/login';
     }
 
     if (isMobile) {
@@ -107,7 +109,7 @@ function NavigationPrimaryLinks(): ReactElement {
 
         if (key === 'L') {
           window.location.href = me?.name
-            ? `${process.env.API_PATH}/logout`
+            ? `${import.meta.env.VITE_API_PATH}/logout`
             : getLoginUrl();
         }
 

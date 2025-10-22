@@ -2,7 +2,23 @@
  * Global type declarations for Reacddit
  */
 
+/// <reference types="vite/client" />
+
 declare const BUILDTIME: string;
+
+// Vite environment variables
+interface ImportMetaEnv {
+  readonly VITE_API_PATH: string;
+  readonly VITE_PUBLIC_URL: string;
+  readonly VITE_BUILDTIME: string;
+  readonly MODE: 'development' | 'production';
+  readonly DEV: boolean;
+  readonly PROD: boolean;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
 
 // Extend Window interface with custom properties
 interface Window {

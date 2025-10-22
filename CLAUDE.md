@@ -11,7 +11,7 @@ Reacddit is a Reddit client built with React that provides enhanced media viewin
 - **`api/`**: Koa.js OAuth2 server (TypeScript) - handles Reddit authentication only
 - **Deployment**: AWS Lambda via SAM/CloudFormation
 
-**Tech Stack:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Webpack 5, Koa.js
+**Tech Stack:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 6, Koa.js
 
 ## Development Commands
 
@@ -25,9 +25,9 @@ npm run build-client      # Production build
 
 **Client** (`cd client/`):
 ```bash
-npm start                 # Webpack dev server with hot reload
+npm start                 # Vite dev server with hot module replacement
 npm run build             # Production build
-npm run profile           # Build with webpack bundle analyzer
+npm run preview           # Preview production build locally
 npm run lint              # Prettier formatting + ESLint (ALWAYS run after changes)
 ```
 
@@ -61,10 +61,10 @@ npm run build             # SAM build for Lambda deployment
 **Key differentiator:** Sophisticated plugin-based architecture for rendering embedded content.
 
 **Architecture:**
-- Entry point: `client/src/posts/embeds/index.ts`
+- Entry point: `client/src/components/posts/embeds/index.ts`
 - Domain handlers: `domains/` (YouTube, Twitter, Instagram, etc.)
 - Adult content: `domains_custom/` (separate directory)
-- Dynamic loading via Webpack's `require.context`
+- Dynamic loading via Vite's `import.meta.glob`
 - Each domain handler exports a render function that returns `{type, ...content}` or null
 
 **Adding new embeds:** Create `domains/[domain].ts` with a default export render function
@@ -103,9 +103,10 @@ The API requires Reddit OAuth2 setup:
 ## Build System
 
 **Client:**
-- Webpack 5 with custom configuration in `client/webpack/`
-- ESBuild loader for TypeScript/JavaScript
-- Bundle analyzer available via `npm run profile`
+- Vite 6 with SWC for fast TypeScript/JavaScript compilation
+- Configuration in `client/vite.config.ts`
+- Hot module replacement (HMR) for instant updates during development
+- Vite PWA plugin for Progressive Web App functionality
 
 **Production Deployment:**
 - SAM template (`api/template.yaml`) provisions complete AWS infrastructure:
@@ -120,10 +121,10 @@ The API requires Reddit OAuth2 setup:
 
 - `client/src/components/layout/App.tsx` - Main app component and routing
 - `client/src/redux/configureStore.ts` - Redux store configuration
-- `client/src/posts/embeds/index.ts` - Embed system entry point
+- `client/src/components/posts/embeds/index.ts` - Embed system entry point
 - `api/src/app.ts` - Koa.js OAuth server (fully TypeScript)
 - `api/src/config.ts` - Centralized environment configuration with validation
-- `client/webpack/webpack.common.js` - Build configuration
+- `client/vite.config.ts` - Vite build configuration
 
 ## Features Not Yet Implemented
 

@@ -120,7 +120,7 @@ function NavigationAccount(): ReactElement | null {
               icon={faSignOutAlt}
               text=""
               title="Logout"
-              to={`${process.env.API_PATH}/logout`}
+              to={`${import.meta.env.VITE_API_PATH}/logout`}
             />
           </span>
         </div>

@@ -6,42 +6,42 @@
 // which breaks Bootstrap's internal dependencies.
 
 // Required Core (DO NOT REMOVE - needed for Bootstrap to work)
-@import '~bootstrap/scss/functions';
-@import '~bootstrap/scss/variables';
-@import '~bootstrap/scss/variables-dark';
-@import '~bootstrap/scss/maps';
-@import '~bootstrap/scss/mixins';
-@import '~bootstrap/scss/root';
-@import '~bootstrap/scss/reboot';
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/variables-dark';
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/root';
+@import 'bootstrap/scss/reboot';
 
 // Layout & Grid (USED EXTENSIVELY)
-@import '~bootstrap/scss/type';
-@import '~bootstrap/scss/images';
-@import '~bootstrap/scss/containers';
-@import '~bootstrap/scss/grid';
+@import 'bootstrap/scss/type';
+@import 'bootstrap/scss/images';
+@import 'bootstrap/scss/containers';
+@import 'bootstrap/scss/grid';
 
 // Components (ACTIVELY USED)
-@import '~bootstrap/scss/forms';
-@import '~bootstrap/scss/buttons';
-@import '~bootstrap/scss/button-group';
-@import '~bootstrap/scss/dropdown';
-@import '~bootstrap/scss/modal';
-@import '~bootstrap/scss/close';
-@import '~bootstrap/scss/nav';
-@import '~bootstrap/scss/navbar';
-@import '~bootstrap/scss/card';
-@import '~bootstrap/scss/badge';
-@import '~bootstrap/scss/alert';
-@import '~bootstrap/scss/progress';
-@import '~bootstrap/scss/list-group';
-@import '~bootstrap/scss/pagination';
-@import '~bootstrap/scss/spinners';
-@import '~bootstrap/scss/transitions';
+@import 'bootstrap/scss/forms';
+@import 'bootstrap/scss/buttons';
+@import 'bootstrap/scss/button-group';
+@import 'bootstrap/scss/dropdown';
+@import 'bootstrap/scss/modal';
+@import 'bootstrap/scss/close';
+@import 'bootstrap/scss/nav';
+@import 'bootstrap/scss/navbar';
+@import 'bootstrap/scss/card';
+@import 'bootstrap/scss/badge';
+@import 'bootstrap/scss/alert';
+@import 'bootstrap/scss/progress';
+@import 'bootstrap/scss/list-group';
+@import 'bootstrap/scss/pagination';
+@import 'bootstrap/scss/spinners';
+@import 'bootstrap/scss/transitions';
 
 // Utilities (CRITICAL - used throughout)
-@import '~bootstrap/scss/helpers';
-@import '~bootstrap/scss/utilities';
-@import '~bootstrap/scss/utilities/api';
+@import 'bootstrap/scss/helpers';
+@import 'bootstrap/scss/utilities';
+@import 'bootstrap/scss/utilities/api';
 
 // REMOVED COMPONENTS (not used in this application):
 // - toast (not used)
