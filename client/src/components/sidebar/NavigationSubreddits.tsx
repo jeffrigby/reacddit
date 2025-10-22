@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import isEmpty from 'lodash/isEmpty';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,6 +14,7 @@ import {
   fetchSubreddits,
   fetchSubredditsLastUpdated,
   lastUpdatedCleared,
+  subredditsCleared,
   selectSubredditsStatus,
   selectSubredditsFilter,
   selectFilteredSubreddits,
@@ -30,8 +31,19 @@ function NavigationSubReddits() {
   const dispatch = useAppDispatch();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+  const prevStatusRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Clear subreddits when auth status changes to prevent showing
+    // authenticated user's subreddits when logged out (or vice versa)
+    if (
+      prevStatusRef.current !== null &&
+      prevStatusRef.current !== redditBearer.status
+    ) {
+      dispatch(subredditsCleared());
+    }
+    prevStatusRef.current = redditBearer.status;
+
     dispatch(fetchSubreddits({ reset: false, where }));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 'where' is derived from redditBearer.status
   }, [redditBearer.status, dispatch]);

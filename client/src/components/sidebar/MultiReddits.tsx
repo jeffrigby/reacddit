@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { ReactElement, KeyboardEvent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -9,7 +9,10 @@ import {
   faMinus,
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
+import {
+  fetchMultiReddits,
+  multiRedditsCleared,
+} from '@/redux/slices/multiRedditsSlice';
 import MultiRedditsItem from './MultiRedditsItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsAdd from './MultiRedditsAdd';
@@ -26,8 +29,19 @@ function MultiReddits(): ReactElement | null {
   const multireddits = useAppSelector((state) => state.redditMultiReddits);
   const bearerStatus = useAppSelector((state) => state.redditBearer.status);
   const dispatch = useAppDispatch();
+  const prevStatusRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Clear multireddits when auth status changes to prevent showing
+    // authenticated user's multis when logged out (or vice versa)
+    if (
+      prevStatusRef.current !== null &&
+      prevStatusRef.current !== bearerStatus
+    ) {
+      dispatch(multiRedditsCleared());
+    }
+    prevStatusRef.current = bearerStatus;
+
     async function getMultis(): Promise<void> {
       if (bearerStatus === 'auth') {
         if (multireddits.status === 'idle') {
