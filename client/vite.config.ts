@@ -89,6 +89,21 @@ export default defineConfig(({ mode }) => {
   build: {
     outDir: 'dist',
     sourcemap: false, // Disabled for production builds
+
+    // Target modern browsers to reduce polyfill overhead
+    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
+
+    // Optimize chunking for better caching and tree-shaking
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router', 'react-router-dom'],
+          'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
+          'ui-vendor': ['react-bootstrap', 'bootstrap'],
+        },
+      },
+    },
   },
 
   // Build-time constants

@@ -6,12 +6,8 @@ import {
   useMemo,
   type CSSProperties,
 } from 'react';
-import { PostsContextData } from '../../../contexts';
+import { PostsContextData, type PostContextData } from '../../../contexts';
 import type { ImageContent } from './types';
-
-interface PostContextData {
-  isLoaded: boolean;
-}
 
 interface ImageMetadata {
   width: number;
@@ -42,7 +38,7 @@ function getMeta(url: string): Promise<ImageMetadata> {
 }
 
 function ImageComp({ content }: ImageCompProps) {
-  const { isLoaded } = useContext(PostsContextData) as PostContextData;
+  const { isLoaded, idx } = useContext(PostsContextData) as PostContextData;
   const { title, width, height, src } = content;
 
   const [aspectRatio, setAspectRatio] = useState<number | null>(
@@ -92,7 +88,12 @@ function ImageComp({ content }: ImageCompProps) {
     <div className="media-cont black-bg">
       <div className="media-ratio" style={style}>
         {isLoaded ? (
-          <img alt={title} className={imgClass} src={src} />
+          <img
+            alt={title}
+            className={imgClass}
+            fetchPriority={idx === 0 ? 'high' : 'auto'}
+            src={src}
+          />
         ) : (
           <div className="image-placeholder" style={style} />
         )}

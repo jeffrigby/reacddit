@@ -402,8 +402,8 @@ function Post({
   ) : null;
 
   const postContext = useMemo(
-    () => ({ post, isLoaded, actionable }),
-    [actionable, isLoaded, post]
+    () => ({ post, isLoaded, actionable, idx }),
+    [actionable, isLoaded, post, idx]
   );
 
   return (

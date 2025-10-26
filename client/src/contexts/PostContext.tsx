@@ -8,6 +8,7 @@ export interface PostContextData {
   };
   isLoaded: boolean;
   actionable: boolean;
+  idx: number;
 }
 
 export const PostsContextData = createContext<PostContextData | object>({});

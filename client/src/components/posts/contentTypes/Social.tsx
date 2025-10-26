@@ -1,10 +1,9 @@
-import { Component, useMemo, type ReactNode } from 'react';
-import {
-  XEmbed,
-  InstagramEmbed,
-  FacebookEmbed,
-} from 'react-social-media-embed';
+import { Component, lazy, Suspense, type ReactNode } from 'react';
+import Placeholder from '../Placeholder';
 import type { SocialNetwork } from './types';
+
+// Lazy-load social media embeds to reduce initial bundle size
+const SocialEmbedLoader = lazy(() => import('./SocialEmbedLoader'));
 
 interface EmbedErrorBoundaryProps {
   children: ReactNode;
@@ -46,20 +45,13 @@ interface SocialProps {
 }
 
 function Social({ url, network }: SocialProps) {
-  const embedContent = useMemo(() => {
-    switch (network) {
-      case 'x':
-        return <XEmbed url={url} />;
-      case 'instagram':
-        return <InstagramEmbed url={url} />;
-      case 'facebook':
-        return <FacebookEmbed url={url} />;
-      default:
-        return null;
-    }
-  }, [url, network]);
-
-  return <EmbedErrorBoundary>{embedContent}</EmbedErrorBoundary>;
+  return (
+    <EmbedErrorBoundary>
+      <Suspense fallback={<Placeholder />}>
+        <SocialEmbedLoader network={network} url={url} />
+      </Suspense>
+    </EmbedErrorBoundary>
+  );
 }
 
 export default Social;
