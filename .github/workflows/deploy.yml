@@ -24,9 +24,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ vars.SITE_URL }}
 
     steps:
       # ============================================
