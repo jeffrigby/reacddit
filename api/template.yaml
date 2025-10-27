@@ -4,6 +4,9 @@ Description: >
   This is a SAM template for the Reacddit Backend.
 
 Parameters:
+  DomainAlias:
+    Description: Custom domain alias for CloudFront (e.g., reacdd.it, staging.reacdd.it)
+    Type: String
   AllowedOrigin:
     Description: CORS allowed origin (e.g., https://reacdd.it, https://staging.reacdd.it)
     Type: String
@@ -124,6 +127,8 @@ Resources:
     Properties:
       DistributionConfig:
         Comment: CloudFront Distribution for ReacdditAPIBucket
+        Aliases:
+          - !Ref DomainAlias
         HttpVersion: http2and3
         Origins:
           - DomainName: !GetAtt ReacdditAPIBucket.DomainName

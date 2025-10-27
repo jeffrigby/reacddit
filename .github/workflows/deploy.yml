@@ -107,6 +107,7 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --tags "Project=Reacddit Environment=Production ManagedBy=GitHubActions" \
             --parameter-overrides \
+              DomainAlias=${{ vars.DOMAIN_ALIAS }} \
               AllowedOrigin=${{ vars.ALLOWED_ORIGIN }} \
               ENVSsmParam=${{ vars.API_ENV_SSM_PARAM }}
 
