@@ -46,8 +46,16 @@ export default defineConfig(({ mode }) => {
     {
       name: 'create-build-json',
       closeBundle() {
+        const distPath = path.resolve(__dirname, 'dist');
+        const buildJsonPath = path.join(distPath, 'build.json');
+
+        // Ensure dist directory exists
+        if (!fs.existsSync(distPath)) {
+          fs.mkdirSync(distPath, { recursive: true });
+        }
+
         fs.writeFileSync(
-          path.resolve(__dirname, 'dist/build.json'),
+          buildJsonPath,
           JSON.stringify(new Date().toISOString())
         );
       },
