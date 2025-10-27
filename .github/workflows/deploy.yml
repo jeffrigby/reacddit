@@ -6,7 +6,12 @@ on:
       - master
   workflow_dispatch:  # Allow manual triggers
 
-# CRITICAL: Required for OIDC authentication
+# Prevent concurrent deployments
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false  # Don't cancel in-progress deployments
+
+# Minimal permissions (OIDC + checkout only)
 permissions:
   id-token: write   # Required for AWS OIDC
   contents: read    # Required for actions/checkout
@@ -19,22 +24,28 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
 
     steps:
       # ============================================
       # 1. CHECKOUT & SETUP
       # ============================================
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903  # v6.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: |
+            api/package-lock.json
+            client/package-lock.json
 
       - name: Setup SAM CLI
-        uses: aws-actions/setup-sam@v2
+        uses: aws-actions/setup-sam@c71dd89d980e49367c70391e8ada4353f52f2800  # v2
         with:
           use-installer: true
 
@@ -44,6 +55,10 @@ jobs:
       - name: Install API dependencies
         working-directory: ./api
         run: npm ci
+
+      - name: Validate SAM template
+        working-directory: ./api
+        run: sam validate --lint
 
       - name: Type-check API
         working-directory: ./api
@@ -61,15 +76,17 @@ jobs:
       # 3. AWS AUTHENTICATION (OIDC)
       # ============================================
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5.1.0
+        uses: aws-actions/configure-aws-credentials@00943011d9042930efac3dcd3a170e4273319bc8  # v5.1.0
         with:
-          role-to-assume: arn:aws:iam::964175769513:role/GitHubActionsDeployRole
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ vars.IAM_ROLE_NAME }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: GitHubActions-${{ github.run_id }}
+          role-duration-seconds: 3600
+          mask-aws-account-id: true
 
       - name: Verify AWS Identity
         run: |
-          echo "Authenticated as:"
+          echo "::notice::Authenticated to AWS successfully"
           aws sts get-caller-identity
 
       # ============================================
@@ -77,7 +94,10 @@ jobs:
       # ============================================
       - name: SAM Build
         working-directory: ./api
-        run: sam build
+        run: |
+          sam build \
+            --cached \
+            --parallel
 
       - name: SAM Deploy
         working-directory: ./api
@@ -88,13 +108,16 @@ jobs:
             --no-fail-on-empty-changeset \
             --resolve-s3 \
             --capabilities CAPABILITY_IAM \
+            --tags "Project=Reacddit Environment=Production ManagedBy=GitHubActions" \
             --parameter-overrides \
-              AllowedOrigin=https://reacdd.it \
-              ENVSsmParam=/reacddit/.env
+              AllowedOrigin=${{ vars.ALLOWED_ORIGIN }} \
+              ENVSsmParam=${{ vars.API_ENV_SSM_PARAM }}
 
       - name: Get stack outputs
+        id: stack-outputs
         run: |
           echo "Retrieving stack outputs..."
+
           S3_BUCKET=$(aws cloudformation describe-stacks \
             --stack-name ${{ env.STACK_NAME }} \
             --query 'Stacks[0].Outputs[?OutputKey==`ReacdditAPIBucket`].OutputValue' \
@@ -105,24 +128,37 @@ jobs:
             --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistribution`].OutputValue' \
             --output text)
 
+          CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomain`].OutputValue' \
+            --output text)
+
+          # Validate outputs exist
+          if [ -z "$S3_BUCKET" ] || [ -z "$CLOUDFRONT_ID" ]; then
+            echo "::error::Failed to retrieve stack outputs"
+            exit 1
+          fi
+
           echo "S3_BUCKET=$S3_BUCKET" >> $GITHUB_ENV
           echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_ID" >> $GITHUB_ENV
+          echo "CLOUDFRONT_DOMAIN=$CLOUDFRONT_DOMAIN" >> $GITHUB_ENV
 
-          echo "✓ S3 Bucket: $S3_BUCKET"
-          echo "✓ CloudFront Distribution: $CLOUDFRONT_ID"
+          echo "::notice::S3 Bucket: $S3_BUCKET"
+          echo "::notice::CloudFront Distribution: $CLOUDFRONT_ID"
+          echo "::notice::CloudFront Domain: $CLOUDFRONT_DOMAIN"
 
       # ============================================
       # 5. BUILD & DEPLOY CLIENT (REACT APP)
       # ============================================
-      - name: Fetch client environment variables from SSM
+      - name: Create client environment file
+        working-directory: ./client
         run: |
-          echo "Fetching production environment variables..."
-          aws ssm get-parameter \
-            --name "/reacddit/client/.env" \
-            --with-decryption \
-            --query 'Parameter.Value' \
-            --output text > ./client/.env
-          echo "✓ Environment variables loaded"
+          echo "Creating production environment file..."
+          cat > .env << EOF
+          VITE_API_PATH=${{ vars.VITE_API_PATH }}
+          VITE_PUBLIC_URL=${{ vars.VITE_PUBLIC_URL }}
+          EOF
+          echo "::notice::Environment file created"
 
       - name: Build React app
         working-directory: ./client
@@ -137,44 +173,62 @@ jobs:
             --content-type "text/html"
 
           # Upload hashed assets (JS, CSS, build metadata) with long cache (1 year, immutable)
+          # Note: build.json is intentionally cached to verify cache invalidation works
           aws s3 sync dist/ s3://${{ env.S3_BUCKET }}/dist/ \
             --exclude "index.html" \
             --exclude "*.map" \
             --cache-control "max-age=31536000, immutable" \
             --delete
 
-          # Upload source maps separately (no cache)
+          # Upload source maps separately (no cache for debugging)
           aws s3 sync dist/ s3://${{ env.S3_BUCKET }}/dist/ \
             --exclude "*" \
             --include "*.map" \
             --cache-control "no-cache" \
             --delete
 
+          echo "::notice::Client assets uploaded to S3"
+
       # ============================================
-      # 6. INVALIDATE CACHES
+      # 6. INVALIDATE CACHES (ORDERED)
       # ============================================
       - name: Create CloudFront invalidation
+        id: cloudfront-invalidation
         run: |
+          echo "Creating CloudFront invalidation..."
+
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*" \
             --query 'Invalidation.Id' \
             --output text)
 
-          echo "CloudFront invalidation created: $INVALIDATION_ID"
+          if [ -z "$INVALIDATION_ID" ]; then
+            echo "::error::Failed to create CloudFront invalidation"
+            exit 1
+          fi
+
           echo "INVALIDATION_ID=$INVALIDATION_ID" >> $GITHUB_ENV
+          echo "::notice::CloudFront invalidation created: $INVALIDATION_ID"
 
       - name: Wait for CloudFront invalidation
         run: |
           echo "Waiting for CloudFront invalidation to complete..."
-          aws cloudfront wait invalidation-completed \
+
+          if ! aws cloudfront wait invalidation-completed \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --id ${{ env.INVALIDATION_ID }}
-          echo "✓ CloudFront invalidation completed"
+            --id ${{ env.INVALIDATION_ID }}; then
+            echo "::error::CloudFront invalidation failed or timed out"
+            exit 1
+          fi
+
+          echo "::notice::CloudFront invalidation completed"
 
       - name: Purge Cloudflare cache
+        if: ${{ secrets.CLOUDFLARE_TOKEN != '' && secrets.CLOUDFLARE_ZONE_ID != '' }}
         run: |
           echo "Purging Cloudflare cache..."
+
           RESPONSE=$(curl -s -X POST \
             "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_TOKEN }}" \
@@ -183,40 +237,51 @@ jobs:
 
           SUCCESS=$(echo "$RESPONSE" | jq -r '.success')
           if [ "$SUCCESS" = "true" ]; then
-            echo "✓ Cloudflare cache purged successfully"
+            echo "::notice::Cloudflare cache purged successfully"
           else
-            echo "✗ Cloudflare cache purge failed:"
+            echo "::warning::Cloudflare cache purge failed (continuing deployment)"
             echo "$RESPONSE" | jq '.'
-            exit 1
           fi
 
       # ============================================
       # 7. POST-DEPLOYMENT VERIFICATION
       # ============================================
-
       - name: Verify deployment
         run: |
-          echo "Deployment completed successfully!"
-          echo "Site URL: https://reacdd.it"
-          echo "CloudFront Distribution: ${{ env.CLOUDFRONT_DISTRIBUTION_ID }}"
-          echo "Stack: ${{ env.STACK_NAME }}"
-          echo "GitHub Run: ${{ github.run_id }}"
+          echo "Verifying deployment..."
 
-      # ============================================
-      # 8. DEPLOYMENT SUMMARY
-      # ============================================
+          # Wait a moment for caches to propagate
+          sleep 5
+
+          # Check CloudFront serves content
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ env.CLOUDFRONT_DOMAIN }}/")
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "::error::CloudFront health check failed (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+          echo "::notice::Deployment verified successfully"
+          echo "::notice::Site accessible at: ${{ vars.SITE_URL }}"
+
       - name: Post deployment summary
         if: always()
         run: |
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Site**: https://reacdd.it" >> $GITHUB_STEP_SUMMARY
-          echo "- **Stack**: ${{ env.STACK_NAME }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Region**: ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **CloudFront**: ${{ env.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Triggered by**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Site** | ${{ vars.SITE_URL }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **CloudFront** | https://${{ env.CLOUDFRONT_DOMAIN }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Stack** | ${{ env.STACK_NAME }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Region** | ${{ env.AWS_REGION }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered by** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Run ID** | ${{ github.run_id }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Cache Invalidation" >> $GITHUB_STEP_SUMMARY
-          echo "- CloudFront: ✓ Completed" >> $GITHUB_STEP_SUMMARY
-          echo "- Cloudflare: ✓ Purged" >> $GITHUB_STEP_SUMMARY
+          echo "- CloudFront: ${{ env.INVALIDATION_ID }}" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ secrets.CLOUDFLARE_TOKEN }}" ]; then
+            echo "- Cloudflare: ✓ Purged" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Cloudflare: Skipped (not configured)" >> $GITHUB_STEP_SUMMARY
+          fi
