@@ -12,11 +12,9 @@ permissions:
   contents: read    # Required for actions/checkout
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: ${{ vars.AWS_REGION }}
   NODE_VERSION: '22'
-  STACK_NAME: reacddit-prod
-  S3_BUCKET: reacddit-prod-reacdditapibucket-1wdgyc8cvk9ai
-  CLOUDFRONT_DISTRIBUTION_ID: ER1QO34K3531K
+  STACK_NAME: ${{ vars.STACK_NAME }}
 
 jobs:
   deploy:
@@ -94,6 +92,25 @@ jobs:
               AllowedOrigin=https://reacdd.it \
               ENVSsmParam=/reacddit/.env
 
+      - name: Get stack outputs
+        run: |
+          echo "Retrieving stack outputs..."
+          S3_BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`ReacdditAPIBucket`].OutputValue' \
+            --output text)
+
+          CLOUDFRONT_ID=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistribution`].OutputValue' \
+            --output text)
+
+          echo "S3_BUCKET=$S3_BUCKET" >> $GITHUB_ENV
+          echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_ID" >> $GITHUB_ENV
+
+          echo "✓ S3 Bucket: $S3_BUCKET"
+          echo "✓ CloudFront Distribution: $CLOUDFRONT_ID"
+
       # ============================================
       # 5. BUILD & DEPLOY CLIENT (REACT APP)
       # ============================================
@@ -119,7 +136,7 @@ jobs:
             --cache-control "max-age=60, must-revalidate" \
             --content-type "text/html"
 
-          # Upload hashed assets (JS, CSS) with long cache (1 year, immutable)
+          # Upload hashed assets (JS, CSS, build metadata) with long cache (1 year, immutable)
           aws s3 sync dist/ s3://${{ env.S3_BUCKET }}/dist/ \
             --exclude "index.html" \
             --exclude "*.map" \
@@ -136,7 +153,7 @@ jobs:
       # ============================================
       # 6. INVALIDATE CACHES
       # ============================================
-      - name: Invalidate CloudFront cache
+      - name: Create CloudFront invalidation
         run: |
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
@@ -147,15 +164,6 @@ jobs:
           echo "CloudFront invalidation created: $INVALIDATION_ID"
           echo "INVALIDATION_ID=$INVALIDATION_ID" >> $GITHUB_ENV
 
-      - name: Purge Cloudflare cache
-        uses: nathanvaughn/actions-cloudflare-purge@v3.1.0
-        with:
-          cf_zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          cf_auth: ${{ secrets.CLOUDFLARE_TOKEN }}
-
-      # ============================================
-      # 7. POST-DEPLOYMENT VERIFICATION
-      # ============================================
       - name: Wait for CloudFront invalidation
         run: |
           echo "Waiting for CloudFront invalidation to complete..."
@@ -163,6 +171,28 @@ jobs:
             --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
             --id ${{ env.INVALIDATION_ID }}
           echo "✓ CloudFront invalidation completed"
+
+      - name: Purge Cloudflare cache
+        run: |
+          echo "Purging Cloudflare cache..."
+          RESPONSE=$(curl -s -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}')
+
+          SUCCESS=$(echo "$RESPONSE" | jq -r '.success')
+          if [ "$SUCCESS" = "true" ]; then
+            echo "✓ Cloudflare cache purged successfully"
+          else
+            echo "✗ Cloudflare cache purge failed:"
+            echo "$RESPONSE" | jq '.'
+            exit 1
+          fi
+
+      # ============================================
+      # 7. POST-DEPLOYMENT VERIFICATION
+      # ============================================
 
       - name: Verify deployment
         run: |
