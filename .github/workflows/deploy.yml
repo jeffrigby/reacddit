@@ -108,6 +108,7 @@ jobs:
             --tags "Project=Reacddit Environment=Production ManagedBy=GitHubActions" \
             --parameter-overrides \
               DomainAlias=${{ vars.DOMAIN_ALIAS }} \
+              ACMCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
               AllowedOrigin=${{ vars.ALLOWED_ORIGIN }} \
               ENVSsmParam=${{ vars.API_ENV_SSM_PARAM }}
 

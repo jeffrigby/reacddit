@@ -7,6 +7,9 @@ Parameters:
   DomainAlias:
     Description: Custom domain alias for CloudFront (e.g., reacdd.it, staging.reacdd.it)
     Type: String
+  ACMCertificateArn:
+    Description: ACM Certificate ARN for the domain alias (must be in us-east-1)
+    Type: String
   AllowedOrigin:
     Description: CORS allowed origin (e.g., https://reacdd.it, https://staging.reacdd.it)
     Type: String
@@ -161,7 +164,9 @@ Resources:
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
             OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
         ViewerCertificate:
-          CloudFrontDefaultCertificate: true
+          AcmCertificateArn: !Ref ACMCertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
