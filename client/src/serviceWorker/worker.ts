@@ -25,12 +25,13 @@ clientsClaim();
 // Their URLs are injected into the manifest variable below.
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
-precacheAndRoute(self.__WB_MANIFEST);
+const manifest = self.__WB_MANIFEST;
+precacheAndRoute(manifest);
 
 // Set up App Shell-style routing using NavigationRoute
 // Only register in production when index.html is precached
 // In dev mode, skip this entirely - let browser handle navigation naturally
-if (self.__WB_MANIFEST.length > 0) {
+if (manifest.length > 0) {
   // Production mode: intercept all navigation except API routes and files
   const denylist = [/^\/_/, /^\/api/, /\.[^/]+$/];
 
