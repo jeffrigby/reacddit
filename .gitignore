@@ -56,3 +56,10 @@ stats.json
 /.claude/
 /.cursor/
 /.claude
+
+# AWS deployment artifacts (account-specific)
+trust-policy.json
+deployment-permissions-policy.json
+
+# Vite dev artifacts
+/client/dev-dist/
