@@ -4,11 +4,8 @@ Description: >
   This is a SAM template for the Reacddit Backend.
 
 Parameters:
-  Domain:
-    Description: Domain name for the API
-    Type: String
-  ACMCertificateArn:
-    Description: ACM Certificate ARN for the domain name
+  AllowedOrigin:
+    Description: CORS allowed origin (e.g., https://reacdd.it, https://staging.reacdd.it)
     Type: String
   ENVSsmParam:
     Description: SSM Parameter name for the .env file
@@ -38,7 +35,7 @@ Resources:
             - X-Api-Key
             - X-Amz-Security-Token
           AllowOrigins:
-            - !Sub https://${Domain}
+            - !Ref AllowedOrigin
       Policies:
         - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
@@ -127,8 +124,6 @@ Resources:
     Properties:
       DistributionConfig:
         Comment: CloudFront Distribution for ReacdditAPIBucket
-        Aliases:
-          - !Ref Domain
         HttpVersion: http2and3
         Origins:
           - DomainName: !GetAtt ReacdditAPIBucket.DomainName
@@ -161,9 +156,7 @@ Resources:
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
             OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
         ViewerCertificate:
-          MinimumProtocolVersion: TLSv1.2_2019
-          AcmCertificateArn: !Ref ACMCertificateArn
-          SslSupportMethod: sni-only
+          CloudFrontDefaultCertificate: true
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

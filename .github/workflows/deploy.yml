@@ -91,8 +91,7 @@ jobs:
             --resolve-s3 \
             --capabilities CAPABILITY_IAM \
             --parameter-overrides \
-              Domain=reacdd.it \
-              ACMCertificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
+              AllowedOrigin=https://reacdd.it \
               ENVSsmParam=/reacddit/.env
 
       # ============================================
