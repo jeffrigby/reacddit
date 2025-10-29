@@ -3,7 +3,7 @@ name: Deploy to AWS
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:  # Allow manual triggers
 
 # Prevent concurrent deployments
