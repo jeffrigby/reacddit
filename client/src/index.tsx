@@ -75,7 +75,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
 
   let wb: Workbox | null = null;
   if ('serviceWorker' in navigator && import.meta.env.MODE === 'production') {
-    wb = new Workbox('/service-worker.js');
+    wb = new Workbox('/worker.js');
     wb.register();
   }
 
