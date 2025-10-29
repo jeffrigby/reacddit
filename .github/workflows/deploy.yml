@@ -159,6 +159,21 @@ jobs:
           EOF
           echo "::notice::Environment file created"
 
+      - name: Fetch custom embeds from private repo
+        run: |
+          echo "Fetching custom embeds..."
+
+          # Clone private repo to temp directory (depth 1 for faster clone)
+          git clone --depth 1 https://x-access-token:${{ secrets.EMBEDS_REPO_TOKEN }}@github.com/jeffrigby/reacdditEmbeds.git /tmp/reacdditEmbeds
+
+          # Copy TypeScript embed files directly into domains_custom
+          cp /tmp/reacdditEmbeds/*.ts client/src/components/posts/embeds/domains_custom/
+
+          # Clean up
+          rm -rf /tmp/reacdditEmbeds
+
+          echo "::notice::Custom embeds copied successfully"
+
       - name: Build React app
         working-directory: ./client
         run: npm run build
