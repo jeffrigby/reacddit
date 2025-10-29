@@ -274,17 +274,54 @@ jobs:
           echo "Verifying deployment..."
 
           # Wait a moment for caches to propagate
-          sleep 5
+          sleep 10
 
-          # Check CloudFront serves content
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ env.CLOUDFRONT_DOMAIN }}/")
+          SITE_URL="${{ vars.SITE_URL }}"
+
+          # 1. Check CloudFront serves content
+          echo "Checking site accessibility..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL/")
           if [ "$HTTP_STATUS" != "200" ]; then
-            echo "::error::CloudFront health check failed (HTTP $HTTP_STATUS)"
+            echo "::error::Site health check failed (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+          echo "✓ Site is accessible"
+
+          # 2. Verify API can generate tokens
+          echo "Verifying API token generation..."
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL/api/bearer")
+          if [ "$API_STATUS" != "200" ]; then
+            echo "::error::API token generation failed (HTTP $API_STATUS)"
+            exit 1
+          fi
+          echo "✓ API token generation working"
+
+          # 3. Verify build.json has recent timestamp
+          echo "Verifying build timestamp..."
+          BUILD_JSON=$(curl -s "$SITE_URL/build.json")
+          BUILD_TIME=$(echo "$BUILD_JSON" | tr -d '"')
+
+          if [ -z "$BUILD_TIME" ]; then
+            echo "::error::build.json is empty or missing"
             exit 1
           fi
 
+          # Convert timestamps to epoch for comparison
+          BUILD_EPOCH=$(date -u -j -f "%Y-%m-%dT%H:%M:%S" "${BUILD_TIME%.*}" "+%s" 2>/dev/null || date -u -d "$BUILD_TIME" "+%s" 2>/dev/null)
+          CURRENT_EPOCH=$(date -u "+%s")
+          AGE_SECONDS=$((CURRENT_EPOCH - BUILD_EPOCH))
+
+          # Build should be less than 10 minutes old (600 seconds)
+          if [ $AGE_SECONDS -gt 600 ]; then
+            echo "::error::build.json timestamp is too old (${AGE_SECONDS}s ago)"
+            echo "Build time: $BUILD_TIME"
+            exit 1
+          fi
+
+          echo "✓ Build timestamp verified: $BUILD_TIME (${AGE_SECONDS}s ago)"
+
           echo "::notice::Deployment verified successfully"
-          echo "::notice::Site accessible at: ${{ vars.SITE_URL }}"
+          echo "::notice::Site accessible at: $SITE_URL"
 
       - name: Post deployment summary
         if: always()
