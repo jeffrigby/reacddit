@@ -55,7 +55,6 @@ stats.json
 /agentDocs/
 /.claude/
 /.cursor/
-/.claude
 
 # AWS deployment artifacts (account-specific)
 trust-policy.json
@@ -63,4 +62,3 @@ deployment-permissions-policy.json
 
 # Vite dev artifacts
 /client/dev-dist/
-/.claude/
