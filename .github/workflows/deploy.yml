@@ -273,32 +273,34 @@ jobs:
         run: |
           echo "Verifying deployment..."
 
-          # Wait a moment for caches to propagate
-          sleep 10
+          # Wait for CloudFront invalidation to propagate
+          sleep 15
 
           SITE_URL="${{ vars.SITE_URL }}"
+          CLOUDFRONT_URL="https://${{ env.CLOUDFRONT_DOMAIN }}"
+          USER_AGENT="Mozilla/5.0 (compatible; GitHubActions/1.0; +https://github.com/${{ github.repository }})"
 
-          # 1. Check CloudFront serves content
-          echo "Checking site accessibility..."
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL/")
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "::error::Site health check failed (HTTP $HTTP_STATUS)"
+          # 1. Check CloudFront direct (bypasses Cloudflare)
+          echo "Checking CloudFront distribution..."
+          CF_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -A "$USER_AGENT" "$CLOUDFRONT_URL/")
+          if [ "$CF_STATUS" != "200" ]; then
+            echo "::error::CloudFront health check failed (HTTP $CF_STATUS)"
             exit 1
           fi
-          echo "✓ Site is accessible"
+          echo "✓ CloudFront is serving content"
 
-          # 2. Verify API can generate tokens
+          # 2. Verify API can generate tokens (via CloudFront)
           echo "Verifying API token generation..."
-          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SITE_URL/api/bearer")
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -A "$USER_AGENT" "$CLOUDFRONT_URL/api/bearer")
           if [ "$API_STATUS" != "200" ]; then
             echo "::error::API token generation failed (HTTP $API_STATUS)"
             exit 1
           fi
           echo "✓ API token generation working"
 
-          # 3. Verify build.json has recent timestamp
+          # 3. Verify build.json has recent timestamp (via CloudFront)
           echo "Verifying build timestamp..."
-          BUILD_JSON=$(curl -s "$SITE_URL/build.json")
+          BUILD_JSON=$(curl -s -A "$USER_AGENT" "$CLOUDFRONT_URL/build.json")
           BUILD_TIME=$(echo "$BUILD_JSON" | tr -d '"')
 
           if [ -z "$BUILD_TIME" ]; then
@@ -306,8 +308,8 @@ jobs:
             exit 1
           fi
 
-          # Convert timestamps to epoch for comparison
-          BUILD_EPOCH=$(date -u -j -f "%Y-%m-%dT%H:%M:%S" "${BUILD_TIME%.*}" "+%s" 2>/dev/null || date -u -d "$BUILD_TIME" "+%s" 2>/dev/null)
+          # Convert timestamps to epoch for comparison (Linux date command)
+          BUILD_EPOCH=$(date -u -d "$BUILD_TIME" "+%s" 2>/dev/null)
           CURRENT_EPOCH=$(date -u "+%s")
           AGE_SECONDS=$((CURRENT_EPOCH - BUILD_EPOCH))
 
