@@ -4,7 +4,7 @@ import chalk from "chalk";
  * Application Configuration
  * All environment variables are validated and parsed here
  */
-export interface AppConfig {
+interface AppConfig {
   REDDIT_CLIENT_ID: string;
   REDDIT_CLIENT_SECRET: string;
   REDDIT_CALLBACK_URI: string;

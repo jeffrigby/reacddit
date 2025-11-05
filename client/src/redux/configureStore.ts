@@ -30,7 +30,7 @@ function makeStore(initialState?: Partial<RootState>) {
   });
 }
 
-export type AppStore = ReturnType<typeof makeStore>;
+type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore['getState']>;
 export type AppDispatch = AppStore['dispatch'];
 
@@ -44,5 +44,3 @@ export function initializeStore(preloadedState?: Partial<RootState>): AppStore {
   store = makeStore(preloadedState);
   return store;
 }
-
-export default makeStore;

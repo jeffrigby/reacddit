@@ -371,47 +371,6 @@ const listingsSlice = createSlice({
         MAX_HISTORY_TIME_SECONDS
       );
     },
-
-    postEntriesUpdated(
-      state,
-      action: PayloadAction<{
-        [locationID: string]: {
-          [postID: string]: Partial<LinkData>;
-        };
-      }>
-    ) {
-      const updates = action.payload;
-
-      Object.entries(updates).forEach(([locationID, posts]) => {
-        const location = state.listingsByLocation[locationID];
-        if (!location) {
-          return;
-        }
-
-        Object.entries(posts).forEach(([postID, postUpdates]) => {
-          const post = location.children[postID];
-          if (post) {
-            post.data = {
-              ...post.data,
-              ...postUpdates,
-            };
-          }
-        });
-      });
-    },
-
-    locationCleared(state, action: PayloadAction<string>) {
-      const locationKey = action.payload;
-      delete state.listingsByLocation[locationKey];
-      delete state.subredditsByLocation[locationKey];
-      delete state.uiStateByLocation[locationKey];
-    },
-
-    allListingsCleared(state) {
-      state.listingsByLocation = {};
-      state.subredditsByLocation = {};
-      state.uiStateByLocation = {};
-    },
   },
 
   extraReducers: (builder) => {
@@ -592,13 +551,7 @@ const listingsSlice = createSlice({
   },
 });
 
-export const {
-  filterChanged,
-  uiStateUpdated,
-  postEntriesUpdated,
-  locationCleared,
-  allListingsCleared,
-} = listingsSlice.actions;
+export const { filterChanged, uiStateUpdated } = listingsSlice.actions;
 
 const selectListingsByLocation = (state: RootState) =>
   state.listings?.listingsByLocation ?? {};

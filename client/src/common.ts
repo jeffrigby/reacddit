@@ -1,5 +1,3 @@
-import { produce } from 'immer';
-
 function getScrollContainer(): Element {
   const body = document.body;
   const html = document.documentElement;
@@ -28,14 +26,7 @@ interface MenusStorage {
   [menuID: string]: boolean;
 }
 
-interface PrunableObject {
-  [key: string]: {
-    saved: number;
-    [key: string]: unknown;
-  };
-}
-
-export function getAllMenus(): MenusStorage {
+function getAllMenus(): MenusStorage {
   const storedMenus = localStorage.getItem('menus');
   return storedMenus ? JSON.parse(storedMenus) : {};
 }
@@ -67,36 +58,6 @@ export function hotkeyStatus(): boolean {
   return !(
     nodeName === 'INPUT' && (activeElement as HTMLInputElement).type === 'text'
   );
-}
-
-export function pruneObject<T extends PrunableObject>(
-  obj: T,
-  maxKeys: number,
-  maxAge: number
-): T {
-  return produce(obj, (draft) => {
-    const now = Date.now();
-    const maxAgeMs = maxAge * 1000;
-
-    Object.keys(draft).forEach((key) => {
-      const { saved } = draft[key];
-      if (saved > 0) {
-        const elapsed = now - saved;
-        if (elapsed > maxAgeMs) {
-          delete draft[key];
-        }
-      }
-    });
-
-    const remainingKeys = Object.keys(draft);
-    const keysToDelete = remainingKeys.length - maxKeys;
-
-    if (keysToDelete > 0) {
-      remainingKeys.slice(0, keysToDelete).forEach((deleteKey) => {
-        delete draft[deleteKey];
-      });
-    }
-  });
 }
 
 interface RedditEntry {

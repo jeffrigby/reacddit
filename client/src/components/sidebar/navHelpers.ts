@@ -16,7 +16,7 @@ const NEW_THRESHOLD = SECONDS_IN_HOUR / 2; // 30 minutes
  * @param lastUpdated - Timestamp of last update in seconds
  * @returns Difference in seconds
  */
-export function lastUpdatedDiff(lastUpdated: number): number {
+function lastUpdatedDiff(lastUpdated: number): number {
   const now = Math.floor(Date.now() / 1000);
   return now - lastUpdated;
 }
@@ -61,7 +61,7 @@ export function getDiffClassName(
  * @param timeFilter - The time filter (t parameter)
  * @returns Query string with time filter if applicable, empty string otherwise
  */
-export function buildSortQueryString(
+function buildSortQueryString(
   sort: string | null | undefined,
   timeFilter: string | string[] | undefined
 ): string {
@@ -84,7 +84,7 @@ export function buildSortQueryString(
  * @param sort - The sort parameter to normalize
  * @returns Normalized sort string, or empty string if sort should be omitted
  */
-export function normalizeSortForUrl(sort: string | null | undefined): string {
+function normalizeSortForUrl(sort: string | null | undefined): string {
   if (!sort) {
     return '';
   }

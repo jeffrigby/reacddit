@@ -26,13 +26,9 @@ const historySlice = createSlice({
     historyPathAdded(state, action: PayloadAction<string>) {
       state.paths.push(action.payload);
     },
-
-    historyCleared(state) {
-      state.paths = [];
-    },
   },
 });
 
-export const { historyPathAdded, historyCleared } = historySlice.actions;
+export const { historyPathAdded } = historySlice.actions;
 
 export default historySlice.reducer;
