@@ -46,7 +46,7 @@ interface UseRenderedContentReturn {
 function useRenderedContent(
   data: LinkData | CommentData,
   kind: string,
-  expand: boolean
+  shouldLoad: boolean
 ): UseRenderedContentReturn {
   const [renderedContent, setRenderedContent] = useState<EmbedContent>(null);
   const isRendered = useRef(false);
@@ -80,12 +80,12 @@ function useRenderedContent(
 
       setRenderedContent(getContent);
     };
-    if (expand && !isRendered.current) {
+    if (shouldLoad && !isRendered.current) {
       getRenderedContent();
       isRendered.current = true;
     }
     return () => {};
-  }, [data, expand, kind]);
+  }, [data, shouldLoad, kind]);
 
   return { renderedContent };
 }
@@ -116,7 +116,6 @@ function Post({
   const params = useParams<{ listType?: string }>();
 
   const postRef = useRef<HTMLDivElement>(null);
-  const minHeightRef = useRef<number | undefined>(undefined);
 
   const siteSettings = useAppSelector((state) => state.siteSettings);
   const listingsStatus = useAppSelector((state) =>
@@ -138,8 +137,11 @@ function Post({
     useIntersectionObservers();
 
   // Stable callbacks for observer handlers
+  // Once content loads, keep it loaded (modern best practice for infinite scroll)
   const handleLoadIntersection = useCallback((isIntersecting: boolean) => {
-    setShouldLoad(isIntersecting);
+    if (isIntersecting) {
+      setShouldLoad(true);
+    }
   }, []);
 
   const handleVisibilityIntersection = useCallback(
@@ -164,33 +166,6 @@ function Post({
     }
     return observeForVisibility(postRef.current, handleVisibilityIntersection);
   }, [observeForVisibility, handleVisibilityIntersection]);
-
-  // Use ResizeObserver for more efficient height tracking
-  useEffect(() => {
-    if (!postRef.current || !shouldLoad) {
-      return;
-    }
-
-    const updateMinHeight = () => {
-      if (postRef.current) {
-        minHeightRef.current = postRef.current.getBoundingClientRect().height;
-      }
-    };
-
-    // Initial measurement
-    updateMinHeight();
-
-    // Modern ResizeObserver instead of window resize events
-    const resizeObserver = new ResizeObserver(() => {
-      updateMinHeight();
-    });
-
-    resizeObserver.observe(postRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [shouldLoad]);
 
   const initView = useCallback(() => {
     if (params.listType === 'comments') {
@@ -274,7 +249,7 @@ function Post({
     };
   }, [data.name, expand, lastExpanded, siteSettings.view]);
 
-  const { renderedContent } = useRenderedContent(data, kind, expand);
+  const { renderedContent } = useRenderedContent(data, kind, shouldLoad);
 
   const toggleViewAction = useCallback(() => {
     if (siteSettings.view === 'expanded') {
@@ -375,11 +350,6 @@ function Post({
     'comment-child': kind === 't1' && commentDepth != null && commentDepth > 0,
   });
 
-  const styles: React.CSSProperties = {};
-  if (!isLoaded && minHeightRef.current && expand) {
-    styles.minHeight = minHeightRef.current;
-  }
-
   const commentData = data as CommentData;
   const isReplies =
     kind === 't1' && commentData.replies != null && commentData.replies !== '';
@@ -414,7 +384,6 @@ function Post({
           id={data.name}
           key={data.name}
           ref={postRef}
-          style={styles}
         >
           <div className={`entry-interior entry-interior-${kind}`}>
             {visibilityToggle}

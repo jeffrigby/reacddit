@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import type { LinkData } from '@/types/redditApi';
 import { PostsContextData } from '@/contexts';
@@ -34,18 +34,24 @@ function IFrame({
     allow = 'fullscreen',
     sandbox = 'allow-scripts allow-same-origin',
     referrerPolicy = 'no-referrer-when-downgrade',
-    loading = 'lazy',
+    loading = 'eager',
     iframeStyle = {},
     onLoad = () => {},
   },
 }: IFrameProps) {
   const postContext = useContext(PostsContextData) as PostContextData;
   const { title } = postContext.post.data;
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   const style: CSSProperties = {};
   style.aspectRatio = `${width}/${height}`;
 
   const { isLoaded } = postContext;
+
+  const handleIframeLoad = useCallback(() => {
+    setIframeLoaded(true);
+    onLoad();
+  }, [onLoad]);
 
   return (
     <div className="media-cont black-bg">
@@ -54,7 +60,7 @@ function IFrame({
           <iframe
             allowFullScreen
             allow={allow}
-            className="loading-icon"
+            className={iframeLoaded ? '' : 'loading-icon'}
             loading={loading}
             referrerPolicy={referrerPolicy}
             sandbox={sandbox}
@@ -62,7 +68,7 @@ function IFrame({
             src={src}
             style={iframeStyle}
             title={title}
-            onLoad={onLoad}
+            onLoad={handleIframeLoad}
           />
         )}
       </div>
