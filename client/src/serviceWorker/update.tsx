@@ -5,6 +5,8 @@ function ServiceWorkerUpdate() {
   const workbox = useWorkbox();
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [laterButtonHover, setLaterButtonHover] = useState(false);
+  const [updateButtonHover, setUpdateButtonHover] = useState(false);
 
   useEffect(() => {
     if (!workbox) {
@@ -59,64 +61,180 @@ function ServiceWorkerUpdate() {
     return null;
   }
 
+  const handleBackdropClick = (
+    e: React.KeyboardEvent | React.MouseEvent
+  ): void => {
+    if ('key' in e && e.key !== 'Enter' && e.key !== ' ') {
+      return;
+    }
+    handleDismiss();
+  };
+
+  const handleDialogClick = (e: React.MouseEvent): void => {
+    e.stopPropagation();
+  };
+
+  const handleDialogKeyDown = (e: React.KeyboardEvent): void => {
+    if (e.key === 'Escape') {
+      handleDismiss();
+    }
+  };
+
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        backgroundColor: '#343a40',
-        color: 'white',
-        padding: '16px 24px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-        zIndex: 10000,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        maxWidth: '90vw',
-      }}
-    >
-      <div style={{ flex: 1 }}>
-        <strong>Update Available</strong>
-        <div style={{ fontSize: '14px', opacity: 0.9, marginTop: '4px' }}>
-          A new version of Reacddit is ready
+    <>
+      {/* Modal backdrop overlay */}
+      <div
+        role="button"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(4px)',
+          zIndex: 9999,
+          animation: 'fadeIn 0.2s ease-out',
+        }}
+        tabIndex={0}
+        onClick={handleBackdropClick}
+        onKeyDown={handleBackdropClick}
+      />
+
+      {/* Update dialog */}
+      <div
+        aria-describedby="update-dialog-description"
+        aria-labelledby="update-dialog-title"
+        role="dialog"
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: '#2d3748',
+          color: 'white',
+          padding: '32px',
+          borderRadius: '12px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          zIndex: 10000,
+          maxWidth: '90vw',
+          width: '420px',
+          animation: 'slideUp 0.3s ease-out',
+        }}
+        tabIndex={-1}
+        onClick={handleDialogClick}
+        onKeyDown={handleDialogKeyDown}
+      >
+        <div style={{ marginBottom: '24px' }}>
+          <h2
+            id="update-dialog-title"
+            style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              margin: '0 0 8px 0',
+              letterSpacing: '-0.5px',
+            }}
+          >
+            Update Available
+          </h2>
+          <p
+            id="update-dialog-description"
+            style={{
+              fontSize: '15px',
+              opacity: 0.85,
+              margin: 0,
+              lineHeight: '1.5',
+            }}
+          >
+            A new version of Reacddit is ready
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            disabled={isUpdating}
+            style={{
+              flex: 1,
+              padding: '12px 24px',
+              backgroundColor:
+                laterButtonHover && !isUpdating
+                  ? 'rgba(255,255,255,0.08)'
+                  : 'transparent',
+              color: 'white',
+              border: `2px solid ${
+                laterButtonHover && !isUpdating
+                  ? 'rgba(255,255,255,0.3)'
+                  : 'rgba(255,255,255,0.2)'
+              }`,
+              borderRadius: '8px',
+              cursor: isUpdating ? 'not-allowed' : 'pointer',
+              opacity: isUpdating ? 0.5 : 1,
+              fontSize: '15px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease',
+            }}
+            onClick={handleDismiss}
+            onMouseEnter={() => setLaterButtonHover(true)}
+            onMouseLeave={() => setLaterButtonHover(false)}
+          >
+            Later
+          </button>
+          <button
+            disabled={isUpdating}
+            style={{
+              flex: 1,
+              padding: '12px 24px',
+              backgroundColor:
+                updateButtonHover && !isUpdating ? '#3182ce' : '#4299e1',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: isUpdating ? 'not-allowed' : 'pointer',
+              opacity: isUpdating ? 0.7 : 1,
+              fontSize: '15px',
+              fontWeight: '600',
+              transition: 'all 0.2s ease',
+              boxShadow:
+                updateButtonHover && !isUpdating
+                  ? '0 6px 20px rgba(66, 153, 225, 0.5)'
+                  : '0 4px 14px rgba(66, 153, 225, 0.4)',
+              transform:
+                updateButtonHover && !isUpdating
+                  ? 'translateY(-1px)'
+                  : 'translateY(0)',
+            }}
+            onClick={handleUpdate}
+            onMouseEnter={() => setUpdateButtonHover(true)}
+            onMouseLeave={() => setUpdateButtonHover(false)}
+          >
+            {isUpdating ? 'Updating...' : 'Update Now'}
+          </button>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button
-          disabled={isUpdating}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: 'transparent',
-            color: 'white',
-            border: '1px solid rgba(255,255,255,0.3)',
-            borderRadius: '4px',
-            cursor: isUpdating ? 'not-allowed' : 'pointer',
-            opacity: isUpdating ? 0.5 : 1,
-          }}
-          onClick={handleDismiss}
-        >
-          Later
-        </button>
-        <button
-          disabled={isUpdating}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: isUpdating ? 'not-allowed' : 'pointer',
-            opacity: isUpdating ? 0.7 : 1,
-          }}
-          onClick={handleUpdate}
-        >
-          {isUpdating ? 'Updating...' : 'Update Now'}
-        </button>
-      </div>
-    </div>
+
+      {/* CSS animations */}
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -45%);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+          }
+        }
+      `}</style>
+    </>
   );
 }
 
