@@ -1,35 +1,50 @@
+import { useMemo } from 'react';
 import { useLocation } from 'react-router';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSyncAlt } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import {
-  fetchListingsNew,
   selectListingStatus,
+  refreshRequested,
 } from '@/redux/slices/listingsSlice';
 import { scrollToPosition } from '@/common';
 
 function Reload() {
-  const stream = useAppSelector((state) => state.siteSettings.stream);
-  const dispatch = useAppDispatch();
   const location = useLocation();
-  const listingsStatus = useAppSelector((state) =>
-    selectListingStatus(state, location.key)
+  const dispatch = useAppDispatch();
+  const stream = useAppSelector((state) => state.siteSettings.stream);
+  const locationKey = location.key || 'front';
+
+  // Read status from Redux (updated by Listings component)
+  const status = useAppSelector((state) =>
+    selectListingStatus(state, locationKey)
   );
 
-  const loading = listingsStatus !== 'loaded' && listingsStatus !== 'loadedAll';
+  // Determine if we're on a listings page and not loading
+  const isListingsPage = status !== 'unloaded';
+  const loading = useMemo(() => {
+    return (
+      status === 'loading' ||
+      status === 'loadingNext' ||
+      status === 'loadingNew' ||
+      status === 'loadingStream'
+    );
+  }, [status]);
+
   const variant = stream ? 'primary' : 'secondary';
 
   const refresh = async (): Promise<void> => {
     scrollToPosition(0, 0);
-    await dispatch(fetchListingsNew({ location }));
+    // Dispatch action to trigger refresh in Listings component
+    dispatch(refreshRequested({ locationKey }));
   };
 
   return (
     <div className="header-button">
       <Button
         aria-label="Load New Entries"
-        disabled={loading}
+        disabled={!isListingsPage || loading}
         size="sm"
         title="Load New Entries"
         variant={variant}

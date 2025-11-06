@@ -62,6 +62,7 @@ export interface ListingsSliceState {
   listingsByLocation: Record<string, LocationData>;
   subredditsByLocation: Record<string, CachedSubredditData>;
   uiStateByLocation: Record<string, CachedListingsState>;
+  refreshTrigger: Record<string, number>; // locationKey -> timestamp
 }
 function pruneLocationData<T extends { saved: number }>(
   data: Record<string, T>,
@@ -345,6 +346,7 @@ const initialState: ListingsSliceState = {
   listingsByLocation: {},
   subredditsByLocation: {},
   uiStateByLocation: {},
+  refreshTrigger: {},
 };
 
 const listingsSlice = createSlice({
@@ -370,6 +372,34 @@ const listingsSlice = createSlice({
         MAX_HISTORY_LOCATIONS,
         MAX_HISTORY_TIME_SECONDS
       );
+    },
+
+    // Update status from RTK Query for components outside ListingsContext
+    statusUpdated(
+      state,
+      action: PayloadAction<{ locationKey: string; status: ListingsStatus }>
+    ) {
+      const { locationKey, status } = action.payload;
+
+      if (!state.listingsByLocation[locationKey]) {
+        state.listingsByLocation[locationKey] = {
+          before: null,
+          after: null,
+          children: {},
+          saved: Date.now(),
+          fetchType: 'init',
+          status,
+        };
+      } else {
+        state.listingsByLocation[locationKey].status = status;
+      }
+    },
+
+    // Trigger refresh from outside ListingsContext (e.g., Reload button in header)
+    refreshRequested(state, action: PayloadAction<{ locationKey: string }>) {
+      const { locationKey } = action.payload;
+      // Set timestamp to trigger useEffect in Listings component
+      state.refreshTrigger[locationKey] = Date.now();
     },
   },
 
@@ -551,7 +581,8 @@ const listingsSlice = createSlice({
   },
 });
 
-export const { filterChanged, uiStateUpdated } = listingsSlice.actions;
+export const { filterChanged, uiStateUpdated, refreshRequested } =
+  listingsSlice.actions;
 
 const selectListingsByLocation = (state: RootState) =>
   state.listings?.listingsByLocation ?? {};
@@ -597,6 +628,9 @@ export const selectListingStatus = createSelector(
     return location?.status ?? ('unloaded' as ListingsStatus);
   }
 );
+
+export const selectRefreshTrigger = (state: RootState, locationKey: string) =>
+  state.listings?.refreshTrigger?.[locationKey] ?? 0;
 
 export const selectListingChildren = createSelector(
   [selectListingData],

@@ -7,7 +7,12 @@ export {
   type PostContextData,
 } from './PostContext';
 
-export { ListingsContextLastExpanded } from './ListingsContext';
+export {
+  ListingsContextLastExpanded,
+  ListingsContext,
+  useListingsContext,
+  type ListingsContextValue,
+} from './ListingsContext';
 
 export {
   IntersectionObserverProvider,

@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
-  fetchListingsInitial,
-  fetchListingsNew,
   filterChanged,
-  selectListingData,
-  selectListingStatus,
+  selectRefreshTrigger,
 } from '@/redux/slices/listingsSlice';
+import { useListingsQuery } from '@/hooks/useListingsQuery';
+import { useGetSubredditAboutQuery } from '@/redux/api';
+import { ListingsContext, ListingsContextLastExpanded } from '../../contexts';
 import ListingsLogic from './ListingsLogic';
 import { hotkeyStatus } from '../../common';
 import { scrollToPosition } from '../posts/PostsFunctions';
@@ -15,7 +15,6 @@ import ListingsHeader from './ListingsHeader';
 import PostsDebug from './PostsDebug';
 import '../../styles/listings.scss';
 import Posts from '../posts/postsContainer/Posts';
-import { ListingsContextLastExpanded } from '../../contexts';
 
 interface ListingsMatch {
   listType?: string;
@@ -37,26 +36,13 @@ function Listings({ match }: ListingsProps) {
   const dispatch = useAppDispatch();
   const [lastExpanded, setLastExpanded] = useState('');
 
-  const data = useAppSelector((state) =>
-    selectListingData(state, location.key)
-  );
-  const status = useAppSelector((state) =>
-    selectListingStatus(state, location.key)
-  );
   const settings = useAppSelector((state) => state.siteSettings);
 
   const { listType, sort, target, user, userType, multi, postName, comment } =
     match;
 
-  useEffect(() => {
-    if (data.originalPost) {
-      const origTitle = data.originalPost.data.title;
-      const origSub = data.originalPost.data.subreddit;
-      document.title = `${origTitle} : ${origSub}`;
-    }
-  }, [data.originalPost]);
-
-  useEffect(() => {
+  // Build filter from match params
+  const filters = useMemo(() => {
     let listingType = listType ?? 'r';
     if (listType === 'user') {
       listingType = 'u';
@@ -70,7 +56,7 @@ function Listings({ match }: ListingsProps) {
 
     const getSort = sort ?? (target ? 'hot' : 'best');
 
-    const newFilter = {
+    return {
       sort: getSort,
       target: target ?? 'mine',
       multi: multi === 'm' || false,
@@ -80,51 +66,63 @@ function Listings({ match }: ListingsProps) {
       postName: postName ?? '',
       comment: comment ?? '',
     };
+  }, [listType, sort, target, user, userType, multi, postName, comment]);
 
+  // Fetch listings with RTK Query
+  const { data, status, loadMore, loadNew, refetch, canLoadMore } =
+    useListingsQuery(filters, location);
+
+  // Fetch subreddit about data (parallel query)
+  const { data: subredditData } = useGetSubredditAboutQuery({
+    subreddit: target ?? '',
+    listType: filters.listType,
+    multi: filters.multi,
+  });
+
+  // Update document title for comments/duplicates view
+  useEffect(() => {
+    if (data?.originalPost) {
+      const origTitle = data.originalPost.data.title;
+      const origSub = data.originalPost.data.subreddit;
+      document.title = `${origTitle} : ${origSub}`;
+    }
+  }, [data?.originalPost]);
+
+  // Update filter and status in slice when match params or status change
+  useEffect(() => {
     scrollToPosition(0, 0);
-
-    dispatch(filterChanged(newFilter));
+    dispatch(filterChanged(filters));
     setLastExpanded('');
-    dispatch(
-      fetchListingsInitial({
-        filters: newFilter,
-        location,
-        siteSettings: { view: settings.view },
-      })
-    );
-  }, [
-    listType,
-    target,
-    sort,
-    user,
-    userType,
-    multi,
-    location,
-    dispatch,
-    postName,
-    comment,
-    settings.view,
-  ]);
+  }, [dispatch, filters]);
+
+  // Get location key for Redux updates
+  const locationKey = location.key || 'front';
+
+  // Update Redux with RTK Query status for components outside context (like Reload button)
+  useEffect(() => {
+    // Dispatch status update to Redux for backward compatibility
+    // This allows the Reload button in the header to read status from Redux
+    dispatch({
+      type: 'listings/statusUpdated',
+      payload: { locationKey, status },
+    });
+  }, [dispatch, locationKey, status]);
+
+  // Listen for refresh requests from Reload button (outside context)
+  const refreshTrigger = useAppSelector((state) =>
+    selectRefreshTrigger(state, locationKey)
+  );
+  const refreshTriggerRef = useRef(refreshTrigger);
 
   useEffect(() => {
-    const streamNewPosts = async () => {
-      if (window.scrollY > 10) {
-        return;
-      }
-      dispatch(fetchListingsNew({ location, stream: true }));
-    };
-
-    let streamNewPostsInterval: NodeJS.Timeout | undefined;
-    if (settings.stream) {
-      streamNewPostsInterval = setInterval(streamNewPosts, 5000);
+    // Only trigger if value actually changed (not initial render)
+    if (refreshTrigger !== refreshTriggerRef.current && refreshTrigger > 0) {
+      loadNew();
     }
-    return () => {
-      if (streamNewPostsInterval) {
-        clearInterval(streamNewPostsInterval);
-      }
-    };
-  }, [settings.stream, dispatch, location]);
+    refreshTriggerRef.current = refreshTrigger;
+  }, [refreshTrigger, loadNew]);
 
+  // Hotkeys for manual refresh and scroll
   const hotkeys = useCallback(
     (event: KeyboardEvent) => {
       if (hotkeyStatus() && (status === 'loaded' || status === 'loadedAll')) {
@@ -133,7 +131,7 @@ function Listings({ match }: ListingsProps) {
           switch (pressedKey) {
             case '.':
               scrollToPosition(0, 0);
-              dispatch(fetchListingsNew({ location }));
+              loadNew();
               break;
             case '/':
               scrollToPosition(0, document.body.scrollHeight);
@@ -146,7 +144,7 @@ function Listings({ match }: ListingsProps) {
         }
       }
     },
-    [status, location, dispatch]
+    [status, loadNew]
   );
 
   useEffect(() => {
@@ -156,21 +154,27 @@ function Listings({ match }: ListingsProps) {
     };
   }, [hotkeys]);
 
-  const locationKey = location.key || 'front';
-  const context = useMemo(
+  // Prepare context values
+  const lastExpandedContext = useMemo(
     () => [lastExpanded, setLastExpanded],
     [lastExpanded]
   );
+  const listingsContextValue = useMemo(
+    () => ({ data, loadMore, loadNew, refetch, status, canLoadMore }),
+    [data, loadMore, loadNew, refetch, status, canLoadMore]
+  );
 
   return (
-    <ListingsContextLastExpanded.Provider value={context}>
-      <div className="list-group" id="entries">
-        <ListingsHeader />
-        <Posts key={locationKey} />
-        <ListingsLogic saved={data.saved} />
-      </div>
-      <PostsDebug />
-    </ListingsContextLastExpanded.Provider>
+    <ListingsContext.Provider value={listingsContextValue}>
+      <ListingsContextLastExpanded.Provider value={lastExpandedContext}>
+        <div className="list-group" id="entries">
+          <ListingsHeader />
+          <Posts key={locationKey} />
+          <ListingsLogic saved={data?.saved ?? 0} />
+        </div>
+        <PostsDebug />
+      </ListingsContextLastExpanded.Provider>
+    </ListingsContext.Provider>
   );
 }
 

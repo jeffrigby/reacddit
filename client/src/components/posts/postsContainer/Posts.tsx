@@ -1,10 +1,10 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { useLocation } from 'react-router';
 import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
-import { selectPostsData } from '../../../redux/slices/listingsSlice';
 import { IntersectionObserverProvider } from '../../../contexts';
+import { useListingsContext } from '../../../contexts/ListingsContext';
 import { useAppSelector } from '../../../redux/hooks';
+import { selectFilter } from '../../../redux/slices/listingsSlice';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
@@ -17,14 +17,15 @@ interface ListingDataResponse {
 }
 
 function Posts(): ReactElement {
-  const location = useLocation();
+  // Get data from RTK Query via context
+  const { data } = useListingsContext();
 
-  // Use memoized combined selector to prevent unnecessary re-renders
-  const { listType, data } = useAppSelector((state) =>
-    selectPostsData(state, location.key)
-  ) as { listType: string; data: ListingDataResponse };
+  // Get listType from current filter
+  const filter = useAppSelector(selectFilter);
+  const listType = filter.listType;
 
-  const { children: entriesObject, originalPost } = data;
+  const entriesObject = data?.children;
+  const originalPost = data?.originalPost;
 
   // Memoize regex match and derived state (must be before early return)
   const hasParent = useMemo(
