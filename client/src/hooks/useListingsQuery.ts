@@ -1,14 +1,11 @@
 /**
- * Custom hook for managing listings queries with RTK Query
+ * Custom hook for listings queries with streaming and pagination
  *
- * This hook encapsulates the complexity of:
+ * Encapsulates:
  * - Location-based caching with React Router
  * - Streaming/polling when auto-refresh is enabled
  * - Pagination helpers (load more, load new)
  * - Scroll position checks for streaming
- *
- * Usage:
- * const { data, status, loadMore, loadNew, canLoadMore } = useListingsQuery(filters, location);
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -31,7 +28,7 @@ export interface UseListingsQueryResult {
   isError: boolean;
   /** Error object */
   error: ReturnType<typeof useGetListingsQuery>['error'];
-  /** Current status (for backwards compatibility) */
+  /** Current status */
   status:
     | 'unloaded'
     | 'loading'
@@ -50,12 +47,6 @@ export interface UseListingsQueryResult {
   refetch: () => void;
 }
 
-/**
- * Custom hook for listings queries with streaming support
- *
- * This hook manages pagination state and provides helpers for loading more/new posts.
- * It uses RTK Query's cache and merge functionality under the hood.
- */
 export function useListingsQuery(
   filters: ListingsFilter,
   location: Location,
@@ -111,7 +102,7 @@ export function useListingsQuery(
 
   const { data, isLoading, isFetching, isError, error, refetch } = result;
 
-  // Determine status for backwards compatibility
+  // Determine status based on query state
   const getStatus = useCallback((): UseListingsQueryResult['status'] => {
     if (isError) {
       return 'error';

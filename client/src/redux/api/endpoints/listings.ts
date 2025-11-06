@@ -1,7 +1,6 @@
 /**
  * RTK Query endpoints for Reddit listings (posts)
  *
- * This endpoint replaces the listingsSlice thunks (fetchListingsInitial, fetchListingsNext, fetchListingsNew).
  * Key features:
  * - Single endpoint with custom merge logic for all fetch types (initial, pagination, streaming)
  * - Automatic streaming via polling when enabled
@@ -11,12 +10,7 @@
 
 import queryString from 'query-string';
 import type { ListingsFilter } from '@/types/listings';
-import type {
-  Thing,
-  LinkData,
-  SubredditData,
-  Listing,
-} from '@/types/redditApi';
+import type { Thing, LinkData, SubredditData } from '@/types/redditApi';
 import {
   getListingSubreddit,
   getListingMulti,
@@ -139,23 +133,6 @@ async function getContent(
 }
 
 /**
- * Helper to fetch subreddit about data
- */
-async function getSubredditAbout(
-  filter: ListingsFilter
-): Promise<SubredditData | Record<string, never>> {
-  const { target, listType, multi } = filter;
-  const badTarget = !target || target.match(/mine|popular|friends/);
-
-  if ((listType !== 's' && listType !== 'r') || multi || badTarget) {
-    return {};
-  }
-
-  const about = await subredditAbout(target);
-  return about.data;
-}
-
-/**
  * Serialize filter for cache key
  * Only include properties that affect the content
  */
@@ -246,13 +223,9 @@ export const listingsApi = redditApi.injectEndpoints({
         }
       },
 
-      // Use filter + pagination for cache key to track different pagination states
-      // But treat before/after as part of same logical query for merging
+      // Cache by filter only (not pagination) to enable merge across requests
       serializeQueryArgs: ({ queryArgs }) => {
-        const { filters, pagination } = queryArgs;
-        // Only include filter in cache key, not pagination
-        // This allows merge to work across pagination requests
-        return serializeFilterKey(filters);
+        return serializeFilterKey(queryArgs.filters);
       },
 
       // Merge pagination results
@@ -295,13 +268,9 @@ export const listingsApi = redditApi.injectEndpoints({
           const childKeys = Object.keys(merged.children);
           if (childKeys.length > MAX_POSTS_IN_MEMORY) {
             const keysToKeep = childKeys.slice(0, MAX_POSTS_IN_MEMORY);
-            const truncatedChildren: Record<string, Thing<LinkData>> = {};
-
-            keysToKeep.forEach((key) => {
-              truncatedChildren[key] = merged.children[key];
-            });
-
-            merged.children = truncatedChildren;
+            merged.children = Object.fromEntries(
+              keysToKeep.map((key) => [key, merged.children[key]])
+            );
           }
 
           return merged;
@@ -327,13 +296,11 @@ export const listingsApi = redditApi.injectEndpoints({
         };
       },
 
-      // Force refetch when filter OR pagination changes
       forceRefetch: ({ currentArg, previousArg }) => {
         if (!previousArg) {
           return true;
         }
 
-        // Check if filter changed
         if (
           serializeFilterKey(currentArg.filters) !==
           serializeFilterKey(previousArg.filters)
@@ -341,28 +308,21 @@ export const listingsApi = redditApi.injectEndpoints({
           return true;
         }
 
-        // Check if pagination changed (after/before cursors)
         const currentPagination = currentArg.pagination;
         const previousPagination = previousArg.pagination;
 
-        if (currentPagination?.after !== previousPagination?.after) {
-          return true;
-        }
-
-        if (currentPagination?.before !== previousPagination?.before) {
-          return true;
-        }
-
-        return false;
+        return (
+          currentPagination?.after !== previousPagination?.after ||
+          currentPagination?.before !== previousPagination?.before
+        );
       },
 
-      providesTags: (result, error, arg) => [
+      providesTags: (_result, _error, arg) => [
         { type: 'Listings', id: 'LIST' },
         { type: 'Listings', id: serializeFilterKey(arg.filters) },
       ],
 
-      // Short cache - listings update frequently (especially /r/all, /r/popular)
-      keepUnusedDataFor: 60, // 1 minute
+      keepUnusedDataFor: 60,
     }),
 
     /**
@@ -388,18 +348,16 @@ export const listingsApi = redditApi.injectEndpoints({
         try {
           const about = await subredditAbout(subreddit);
           return { data: about.data };
-        } catch (error) {
-          // Return empty object on error (non-critical data)
+        } catch {
           return { data: {} };
         }
       },
 
-      providesTags: (result, error, arg) => [
+      providesTags: (_result, _error, arg) => [
         { type: 'Subreddits', id: arg.subreddit.toLowerCase() },
       ],
 
-      // Long cache - subreddit info rarely changes
-      keepUnusedDataFor: 3600 * 24, // 24 hours
+      keepUnusedDataFor: 3600 * 24,
     }),
   }),
 });

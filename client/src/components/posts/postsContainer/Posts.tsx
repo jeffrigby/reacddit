@@ -1,6 +1,5 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
 import { IntersectionObserverProvider } from '../../../contexts';
 import { useListingsContext } from '../../../contexts/ListingsContext';
 import { useAppSelector } from '../../../redux/hooks';
@@ -9,12 +8,6 @@ import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
 import PostsParent from './PostsParent';
-
-interface ListingDataResponse {
-  children?: Record<string, Thing<LinkData | CommentData>>;
-  originalPost?: Thing<LinkData | CommentData>;
-  [key: string]: unknown;
-}
 
 function Posts(): ReactElement {
   // Get data from RTK Query via context

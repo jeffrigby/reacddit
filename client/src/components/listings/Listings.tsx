@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   filterChanged,
   selectRefreshTrigger,
+  statusUpdated,
 } from '@/redux/slices/listingsSlice';
 import { useListingsQuery } from '@/hooks/useListingsQuery';
 import { useGetSubredditAboutQuery } from '@/redux/api';
@@ -35,8 +36,6 @@ function Listings({ match }: ListingsProps) {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const [lastExpanded, setLastExpanded] = useState('');
-
-  const settings = useAppSelector((state) => state.siteSettings);
 
   const { listType, sort, target, user, userType, multi, postName, comment } =
     match;
@@ -72,8 +71,8 @@ function Listings({ match }: ListingsProps) {
   const { data, status, loadMore, loadNew, refetch, canLoadMore } =
     useListingsQuery(filters, location);
 
-  // Fetch subreddit about data (parallel query)
-  const { data: subredditData } = useGetSubredditAboutQuery({
+  // Fetch subreddit about data (parallel query) - currently unused but may be needed for sidebar
+  useGetSubredditAboutQuery({
     subreddit: target ?? '',
     listType: filters.listType,
     multi: filters.multi,
@@ -95,27 +94,20 @@ function Listings({ match }: ListingsProps) {
     setLastExpanded('');
   }, [dispatch, filters]);
 
-  // Get location key for Redux updates
   const locationKey = location.key || 'front';
 
-  // Update Redux with RTK Query status for components outside context (like Reload button)
+  // Sync status to Redux for header components
   useEffect(() => {
-    // Dispatch status update to Redux for backward compatibility
-    // This allows the Reload button in the header to read status from Redux
-    dispatch({
-      type: 'listings/statusUpdated',
-      payload: { locationKey, status },
-    });
+    dispatch(statusUpdated({ locationKey, status }));
   }, [dispatch, locationKey, status]);
 
-  // Listen for refresh requests from Reload button (outside context)
+  // Listen for refresh requests from header
   const refreshTrigger = useAppSelector((state) =>
     selectRefreshTrigger(state, locationKey)
   );
   const refreshTriggerRef = useRef(refreshTrigger);
 
   useEffect(() => {
-    // Only trigger if value actually changed (not initial render)
     if (refreshTrigger !== refreshTriggerRef.current && refreshTrigger > 0) {
       loadNew();
     }

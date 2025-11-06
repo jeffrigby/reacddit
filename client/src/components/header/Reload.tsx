@@ -16,12 +16,10 @@ function Reload() {
   const stream = useAppSelector((state) => state.siteSettings.stream);
   const locationKey = location.key || 'front';
 
-  // Read status from Redux (updated by Listings component)
   const status = useAppSelector((state) =>
     selectListingStatus(state, locationKey)
   );
 
-  // Determine if we're on a listings page and not loading
   const isListingsPage = status !== 'unloaded';
   const loading = useMemo(() => {
     return (
@@ -36,7 +34,6 @@ function Reload() {
 
   const refresh = async (): Promise<void> => {
     scrollToPosition(0, 0);
-    // Dispatch action to trigger refresh in Listings component
     dispatch(refreshRequested({ locationKey }));
   };
 
