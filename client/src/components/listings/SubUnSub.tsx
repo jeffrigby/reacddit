@@ -4,10 +4,9 @@ import isEmpty from 'lodash/isEmpty';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useParams } from 'react-router';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { useAppSelector } from '@/redux/hooks';
 import { useSubscribeToSubredditMutation } from '@/redux/api';
 import { selectSubredditData } from '@/redux/slices/listingsSlice';
-import { fetchSubreddits } from '@/redux/slices/subredditsSlice';
 
 /**
  * SubscribeButton component to handle subscribing and unsubscribing from subreddits
@@ -15,15 +14,15 @@ import { fetchSubreddits } from '@/redux/slices/subredditsSlice';
  * @returns Rendered SubscribeButton component or null if conditions not met
  */
 function SubUnSub() {
-  const dispatch = useAppDispatch();
   const location = useLocation();
   const params = useParams();
 
   const about = useAppSelector((state) =>
     selectSubredditData(state, location.key)
   );
-  const redditBearer = useAppSelector((state) => state.redditBearer);
-  const { status: bearerStatus } = redditBearer;
+  const { status: bearerStatus } = useAppSelector(
+    (state) => state.redditBearer
+  );
 
   // Local state for optimistic UI updates
   const [optimisticSubscribed, setOptimisticSubscribed] = useState<
@@ -57,22 +56,13 @@ function SubUnSub() {
         type: 'sr', // Use 'sr' for fullname, not 'sr_name'
       }).unwrap();
 
-      // TODO: Remove this manual dispatch when subreddit query is migrated to RTK Query
-      // For now, subreddit list still uses old Redux slice, so we need to manually refetch
-      const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-      dispatch(fetchSubreddits({ reset: true, where }));
+      // Tag invalidation automatically refetches subreddit list - no manual dispatch needed!
     } catch (error) {
       console.error('Subscribe/unsubscribe failed:', error);
       // Revert optimistic update on error
       setOptimisticSubscribed(null);
     }
-  }, [
-    effectiveSubscribed,
-    about.name,
-    subscribeToSubreddit,
-    redditBearer.status,
-    dispatch,
-  ]);
+  }, [effectiveSubscribed, about.name, subscribeToSubreddit]);
 
   if (
     isEmpty(about) ||

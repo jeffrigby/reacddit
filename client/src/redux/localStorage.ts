@@ -13,7 +13,7 @@ export type PersistedState = Partial<
   Pick<
     RootState,
     | 'siteSettings'
-    | 'subreddits'
+    | 'subredditPolling'
     | 'redditMultiReddits'
     | 'redditMe'
     | 'history'
@@ -32,7 +32,8 @@ export function loadState(): PersistedState | undefined {
       return undefined;
     }
 
-    const persistedState = JSON.parse(serializedState) as PersistedState;
+    const rawState = JSON.parse(serializedState);
+    const persistedState = rawState as PersistedState;
     const cookieToken = cookies.get('token');
 
     // Check if we have a valid cookie token
@@ -45,16 +46,16 @@ export function loadState(): PersistedState | undefined {
       return {
         siteSettings: persistedState.siteSettings,
         history: persistedState.history,
-        // Don't restore subreddits, redditMultiReddits, or redditMe when not authenticated
+        // Don't restore subredditPolling, redditMultiReddits, or redditMe when not authenticated
       };
     }
 
     // Reset runtime flags that should never be persisted
     return {
       ...persistedState,
-      subreddits: persistedState.subreddits
+      subredditPolling: persistedState.subredditPolling
         ? {
-            ...persistedState.subreddits,
+            ...persistedState.subredditPolling,
             lastUpdatedRunning: false, // Reset polling lock
             lastUpdatedError: null, // Clear stale errors
           }

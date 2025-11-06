@@ -16,9 +16,11 @@ import './endpoints/multiReddits';
 import './endpoints/me';
 import './endpoints/votes';
 import './endpoints/subreddits';
+import './endpoints/subredditsQuery';
 
 // Re-export hooks from endpoints
 export * from './endpoints/multiReddits';
 export * from './endpoints/me';
 export * from './endpoints/votes';
 export * from './endpoints/subreddits';
+export * from './endpoints/subredditsQuery';

@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
 import { searchSubreddits } from '@/reddit/redditApiTs';
 import { useAppSelector } from '@/redux/hooks';
-import { selectSubredditIds } from '@/redux/slices/subredditsSlice';
+import { useGetSubredditsQuery, subredditSelectors } from '@/redux/api';
 import { buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
@@ -55,12 +55,22 @@ function useGetSubredditNames(filterText: string, showNSFW: boolean): string[] {
  */
 function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
-  const subreddits = useAppSelector(selectSubredditIds);
+  const redditBearer = useAppSelector((state) => state.redditBearer);
   const sort = useAppSelector((state) => state.listings.currentFilter.sort);
-  const auth = useAppSelector(
-    (state) => state.redditBearer.status === 'auth' || false
-  );
+  const auth = redditBearer.status === 'auth' || false;
   const location = useLocation();
+
+  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+
+  // Use RTK Query hook to get subreddit IDs
+  const { subredditIds } = useGetSubredditsQuery(
+    { where },
+    {
+      selectFromResult: ({ data }) => ({
+        subredditIds: data ? subredditSelectors.selectIds(data) : [],
+      }),
+    }
+  );
 
   const initShowSearchResuts = over18 ?? false;
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
@@ -71,7 +81,9 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   }
 
   // Filter out subscribed reddits
-  const lowerCaseSubreddits = subreddits.map((sub) => sub.toLowerCase());
+  const lowerCaseSubreddits = subredditIds.map((sub) =>
+    String(sub).toLowerCase()
+  );
   const filteredSubs = searchResults.filter(
     (value) => value && !lowerCaseSubreddits.includes(value.toLowerCase())
   );

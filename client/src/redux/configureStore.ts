@@ -2,10 +2,11 @@ import { configureStore } from '@reduxjs/toolkit';
 import listingsReducer from './slices/listingsSlice';
 import siteSettingsReducer from './slices/siteSettingsSlice';
 import historyReducer from './slices/historySlice';
-import subredditsReducer from './slices/subredditsSlice';
 import multiRedditsReducer from './slices/multiRedditsSlice';
 import bearerReducer from './slices/redditBearerSlice';
 import meReducer from './slices/redditMeSlice';
+import subredditFilterReducer from './slices/subredditFilterSlice';
+import subredditPollingReducer from './slices/subredditPollingSlice';
 import { redditApiReducer, redditApiMiddleware } from './api';
 
 /**
@@ -23,11 +24,12 @@ function makeStore(initialState?: Partial<RootState>) {
       listings: listingsReducer,
       siteSettings: siteSettingsReducer,
       history: historyReducer,
-      subreddits: subredditsReducer,
       redditMultiReddits: multiRedditsReducer,
       redditBearer: bearerReducer,
       redditMe: meReducer,
       redditApi: redditApiReducer,
+      subredditFilter: subredditFilterReducer,
+      subredditPolling: subredditPollingReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(redditApiMiddleware),

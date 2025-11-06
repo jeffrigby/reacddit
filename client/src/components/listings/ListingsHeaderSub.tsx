@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
-import { selectSubredditById } from '@/redux/slices/subredditsSlice';
+import { useGetSubredditsQuery, subredditSelectors } from '@/redux/api';
 import { selectSubredditData } from '@/redux/slices/listingsSlice';
 import SubUnSub from './SubUnSub';
 import MultiToggle from './MultiToggle';
@@ -14,13 +14,26 @@ function ListingsHeaderSub() {
     selectSubredditData(state, location.key)
   );
 
-  const filter = useAppSelector((state) => state.listings.currentFilter);
-  const cachedSub = useAppSelector((state) => {
-    const { target } = state.listings.currentFilter;
-    return target ? selectSubredditById(state, target.toLowerCase()) : null;
-  });
+  const redditBearer = useAppSelector((state) => state.redditBearer);
+  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
 
-  const { listType, target, multi, user } = filter;
+  const filter = useAppSelector((state) => state.listings.currentFilter);
+  const { target } = filter;
+
+  // Use RTK Query hook to get cached subreddit data
+  const { cachedSub } = useGetSubredditsQuery(
+    { where },
+    {
+      selectFromResult: ({ data }) => ({
+        cachedSub:
+          data && target
+            ? subredditSelectors.selectById(data, target.toLowerCase())
+            : null,
+      }),
+    }
+  );
+
+  const { listType, multi, user } = filter;
 
   let title: string | React.ReactNode = '';
   let subInfo: string | undefined;

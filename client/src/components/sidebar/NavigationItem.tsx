@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import type { SubredditData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
-import { selectLastUpdatedTracking } from '@/redux/slices/subredditsSlice';
+import { selectLastUpdatedTracking } from '@/redux/slices/subredditPollingSlice';
 import { getDiffClassName, buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
