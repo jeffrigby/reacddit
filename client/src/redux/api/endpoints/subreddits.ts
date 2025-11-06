@@ -59,9 +59,8 @@ export const subredditsApi = redditApi.injectEndpoints({
           },
         };
       },
-      // Invalidate subreddit lists after subscribe/unsubscribe
-      // This triggers automatic refetch of any active subreddit queries
-      invalidatesTags: ['Subreddits'],
+      // Invalidate LIST to trigger full refetch since subscription changes the list
+      invalidatesTags: [{ type: 'Subreddits', id: 'LIST' }],
     }),
 
     /**
@@ -85,8 +84,11 @@ export const subredditsApi = redditApi.injectEndpoints({
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       }),
-      // Invalidate subreddit lists after favorite/unfavorite
-      invalidatesTags: ['Subreddits'],
+      // Invalidate both the specific subreddit AND the LIST
+      invalidatesTags: (result, error, { srName }) => [
+        { type: 'Subreddits', id: srName.toLowerCase() },
+        { type: 'Subreddits', id: 'LIST' },
+      ],
     }),
   }),
 });

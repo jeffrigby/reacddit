@@ -1,17 +1,12 @@
 /**
  * RTK Query endpoints for Reddit User Account (Me)
  *
- * This file contains endpoints for:
- * - Fetching logged-in user account information
+ * Endpoints:
+ * - getMe: Fetch logged-in user account information
  *
- * Migration from redditMeSlice.ts:
- * - Replaces fetchMe async thunk
- * - Automatic caching with tag-based invalidation
- * - Simplified cache logic (RTK Query handles most complexity)
- *
- * Note: The original slice had complex caching based on bearer token matching.
- * RTK Query will re-fetch when the bearer changes because the component will unmount/remount
- * or we can manually invalidate the cache when auth status changes.
+ * Cache behavior:
+ * - 24-hour cache with automatic invalidation on auth changes
+ * - Cache buster parameter prevents browser caching issues
  */
 
 import type { AccountData } from '@/types/redditApi';
@@ -25,19 +20,7 @@ export const meApi = redditApi.injectEndpoints({
     /**
      * Get logged-in user's account information
      *
-     * Replaces: fetchMe async thunk from redditMeSlice
-     *
-     * Cache behavior:
-     * - Cached with 'Me' tag
-     * - Automatically refetched when invalidated
-     * - Cache buster parameter (cb) prevents Firefox caching
-     *
-     * Original cache logic:
-     * - Anonymous users: 24-hour cache
-     * - Authenticated users: cache valid while bearer matches
-     * RTK Query approach:
-     * - Use keepUnusedDataFor for cache duration
-     * - Invalidate cache when bearer changes (component-level logic)
+     * @returns AccountData for the currently authenticated user
      */
     getMe: builder.query<AccountData, void>({
       query: () => ({
@@ -45,8 +28,8 @@ export const meApi = redditApi.injectEndpoints({
         method: 'GET',
       }),
       providesTags: ['Me'],
-      // Keep data for 24 hours (matching original CACHE_EXPIRATION_ANON)
-      keepUnusedDataFor: 3600 * 24,
+      // Long cache - user profile rarely changes (overrides global 1-minute default)
+      keepUnusedDataFor: 3600 * 24, // 24 hours
     }),
   }),
 });

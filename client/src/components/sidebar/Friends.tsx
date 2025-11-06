@@ -60,7 +60,6 @@ function useFriends() {
           action: 'unsub',
           type: 'sr_name',
         }).unwrap();
-        // Tag invalidation will handle automatic refetch - no manual dispatch needed!
       } catch (error) {
         console.error(`Error unfollowing user ${name}:`, error);
       }

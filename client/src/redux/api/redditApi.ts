@@ -72,6 +72,16 @@ export const redditApi = createApi({
     'Post',
     'Comments',
   ],
+
+  // Global cache configuration
+  // Individual endpoints can override these settings
+  // NOTE: Listings/posts update frequently, so default is short
+  // Static data (me, subreddits, multis) override with longer keepUnusedDataFor
+  keepUnusedDataFor: 60, // 1 minute default for frequently-updating data (listings, posts)
+  refetchOnMountOrArgChange: 120, // Refetch if data is older than 2 minutes
+  refetchOnFocus: false, // Don't auto-refetch on window focus (handled by autorefresh feature)
+  refetchOnReconnect: true, // Do refetch on network reconnect
+
   endpoints: () => ({}), // Endpoints will be injected from separate files
 });
 

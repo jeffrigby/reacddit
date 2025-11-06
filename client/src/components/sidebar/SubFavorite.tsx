@@ -40,8 +40,6 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
           makeFavorite: newFavoriteState,
           srName,
         }).unwrap();
-
-        // Tag invalidation automatically refetches subreddit list - no manual dispatch needed!
       } catch (err) {
         const errorMessage =
           err instanceof Error

@@ -55,8 +55,6 @@ function SubUnSub() {
         action: newSubscribedState ? 'sub' : 'unsub',
         type: 'sr', // Use 'sr' for fullname, not 'sr_name'
       }).unwrap();
-
-      // Tag invalidation automatically refetches subreddit list - no manual dispatch needed!
     } catch (error) {
       console.error('Subscribe/unsubscribe failed:', error);
       // Revert optimistic update on error

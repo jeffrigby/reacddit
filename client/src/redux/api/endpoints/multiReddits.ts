@@ -1,15 +1,13 @@
 /**
  * RTK Query endpoints for Reddit MultiReddits (Custom Feeds)
  *
- * This file contains endpoints for:
- * - Fetching user's multireddits
- * - Adding/removing subreddits from multireddits
- * - Deleting multireddits
+ * Endpoints:
+ * - getMultiReddits: Fetch user's multireddits
+ * - addSubredditToMulti: Add subreddit to a multireddit
+ * - deleteMultiReddit: Delete a multireddit
  *
- * Migration from multiRedditsSlice.ts:
- * - Replaces fetchMultiReddits async thunk
- * - Automatic caching (replaces manual 24-hour cache)
- * - Tag-based invalidation (replaces manual refetch calls)
+ * Cache behavior:
+ * - 24-hour cache with tag-based invalidation on modifications
  */
 
 import type { Thing, LabeledMultiData } from '@/types/redditApi';
@@ -23,13 +21,8 @@ export const multiRedditsApi = redditApi.injectEndpoints({
     /**
      * Get user's multireddits (custom feeds)
      *
-     * Replaces: fetchMultiReddits async thunk from multiRedditsSlice
-     *
-     * Cache behavior:
-     * - Default caching with automatic invalidation via tags
-     * - Manual refetch via refetch() or invalidateTags(['MultiReddits'])
-     *
      * @param expandSubreddits - Include full subreddit details (default: true)
+     * @returns Array of multireddit data
      */
     getMultiReddits: builder.query<
       Thing<LabeledMultiData>[],
@@ -42,7 +35,19 @@ export const multiRedditsApi = redditApi.injectEndpoints({
           expand_srs: args?.expandSubreddits ?? true,
         },
       }),
-      providesTags: ['MultiReddits'],
+      // Use LIST pattern for granular cache invalidation
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map((multi) => ({
+                type: 'MultiReddits' as const,
+                id: multi.data.path,
+              })),
+              { type: 'MultiReddits', id: 'LIST' },
+            ]
+          : [{ type: 'MultiReddits', id: 'LIST' }],
+      // Long cache - multis rarely change (overrides global 1-minute default)
+      keepUnusedDataFor: 3600 * 24, // 24 hours
     }),
 
     /**
@@ -60,8 +65,11 @@ export const multiRedditsApi = redditApi.injectEndpoints({
         method: 'PUT',
         data: { model: JSON.stringify({ name: srName }) },
       }),
-      // Invalidate multireddits cache after adding subreddit
-      invalidatesTags: ['MultiReddits'],
+      // Invalidate specific multi and LIST
+      invalidatesTags: (result, error, { multiPath }) => [
+        { type: 'MultiReddits', id: multiPath },
+        { type: 'MultiReddits', id: 'LIST' },
+      ],
     }),
 
     /**
@@ -78,8 +86,11 @@ export const multiRedditsApi = redditApi.injectEndpoints({
         url: `${multiPath}/r/${srName}`,
         method: 'DELETE',
       }),
-      // Invalidate multireddits cache after removing subreddit
-      invalidatesTags: ['MultiReddits'],
+      // Invalidate specific multi and LIST
+      invalidatesTags: (result, error, { multiPath }) => [
+        { type: 'MultiReddits', id: multiPath },
+        { type: 'MultiReddits', id: 'LIST' },
+      ],
     }),
 
     /**
@@ -92,8 +103,8 @@ export const multiRedditsApi = redditApi.injectEndpoints({
         url: `${multiPath}`,
         method: 'DELETE',
       }),
-      // Invalidate multireddits cache after deletion
-      invalidatesTags: ['MultiReddits'],
+      // Delete removes from list, invalidate LIST only
+      invalidatesTags: [{ type: 'MultiReddits', id: 'LIST' }],
     }),
   }),
 });

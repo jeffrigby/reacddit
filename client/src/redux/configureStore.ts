@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
 import listingsReducer from './slices/listingsSlice';
 import siteSettingsReducer from './slices/siteSettingsSlice';
 import historyReducer from './slices/historySlice';
@@ -49,5 +50,11 @@ export let store: AppStore;
  */
 export function initializeStore(preloadedState?: Partial<RootState>): AppStore {
   store = makeStore(preloadedState);
+
+  // Enable automatic refetch behaviors:
+  // - refetchOnFocus: Refetch when window regains focus
+  // - refetchOnReconnect: Refetch when network reconnects
+  setupListeners(store.dispatch);
+
   return store;
 }

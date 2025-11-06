@@ -96,13 +96,10 @@ export const subredditsQueryApi = redditApi.injectEndpoints({
      *
      * Returns normalized EntityState for efficient lookups and sorted display.
      *
-     * This query automatically refetches when:
+     * Automatic refetch triggers:
      * - Subscribe/unsubscribe mutation completes
      * - Favorite/unfavorite mutation completes
      * - Follow/unfollow user completes
-     * - Window regains focus (after 24h cache expiration)
-     *
-     * No manual dispatch(fetchSubreddits()) needed!
      */
     getSubreddits: builder.query<
       EntityState<SubredditData, string>,
@@ -136,12 +133,21 @@ export const subredditsQueryApi = redditApi.injectEndpoints({
         }
       },
 
-      // Provide 'Subreddits' tag for cache invalidation
-      // Mutations (subscribe, favorite, follow) invalidate this tag
-      providesTags: ['Subreddits'],
+      // Use LIST pattern for granular cache invalidation
+      // Mutations invalidate 'LIST' to trigger full refetch
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.ids.map((id) => ({
+                type: 'Subreddits' as const,
+                id: id,
+              })),
+              { type: 'Subreddits', id: 'LIST' },
+            ]
+          : [{ type: 'Subreddits', id: 'LIST' }],
 
-      // Cache for 24 hours (matching original behavior)
-      keepUnusedDataFor: 3600 * 24,
+      // Long cache - subreddit list rarely changes (overrides global 1-minute default)
+      keepUnusedDataFor: 3600 * 24, // 24 hours
     }),
   }),
 });

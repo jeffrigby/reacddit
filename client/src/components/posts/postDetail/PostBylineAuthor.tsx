@@ -71,7 +71,6 @@ function PostBylineAuthor({
         action: 'unsub',
         type: 'sr_name',
       }).unwrap();
-      // Tag invalidation will handle automatic refetch - no manual dispatch needed!
     } catch (error) {
       console.error('Failed to unfollow user:', error);
       setIsFollowing(true); // Revert optimistic update
@@ -86,7 +85,6 @@ function PostBylineAuthor({
         action: 'sub',
         type: 'sr_name',
       }).unwrap();
-      // Tag invalidation will handle automatic refetch - no manual dispatch needed!
     } catch (error) {
       console.error('Failed to follow user:', error);
       setIsFollowing(false); // Revert optimistic update
