@@ -5,6 +5,7 @@ import {
   useState,
   useCallback,
   useOptimistic,
+  startTransition,
 } from 'react';
 import type { MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
@@ -13,9 +14,9 @@ import { faBookmark } from '@fortawesome/free-solid-svg-icons';
 import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
+import { useSavePostMutation, useUnsavePostMutation } from '@/redux/api';
 import { PostsContextActionable, PostsContextData } from '@/contexts';
 import { hotkeyStatus } from '@/common';
-import { save as saveAPI, unsave as unsaveAPI } from '@/reddit/redditApiTs';
 
 interface PostContextData {
   post: {
@@ -37,6 +38,10 @@ function PostSave() {
     (_, newSaved: boolean) => newSaved
   );
 
+  // RTK Query mutation hooks
+  const [savePost] = useSavePostMutation();
+  const [unsavePost] = useUnsavePostMutation();
+
   const { name } = data;
 
   const triggerSave = useCallback(async () => {
@@ -45,20 +50,32 @@ function PostSave() {
     }
 
     const newSavedState = !optimisticSaved;
-    setOptimisticSaved(newSavedState); // Instant UI update
+
+    // Wrap optimistic update in startTransition (React 19 requirement)
+    startTransition(() => {
+      setOptimisticSaved(newSavedState);
+    });
 
     try {
+      // Use RTK Query mutations instead of direct API calls
       if (newSavedState) {
-        await saveAPI(name);
+        await savePost({ id: name }).unwrap();
       } else {
-        await unsaveAPI(name);
+        await unsavePost({ id: name }).unwrap();
       }
 
       setSavedState(newSavedState);
     } catch (error) {
       console.error('Failed to save/unsave post:', error);
     }
-  }, [bearer.status, name, optimisticSaved, setOptimisticSaved]);
+  }, [
+    bearer.status,
+    name,
+    optimisticSaved,
+    setOptimisticSaved,
+    savePost,
+    unsavePost,
+  ]);
 
   useEffect(() => {
     const hotkeys = (event: KeyboardEvent) => {

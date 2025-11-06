@@ -10,12 +10,12 @@ import {
 import { useLocation, useParams } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
+import { useGetMeQuery } from '@/redux/api';
 import {
   selectListingData,
   selectUiState,
   selectListingStatus,
 } from '../../redux/slices/listingsSlice';
-import { selectMe, selectMeStatus } from '../../redux/slices/redditMeSlice';
 import {
   selectBearerStatus,
   selectIsAuth,
@@ -45,9 +45,15 @@ function PostsDebug() {
     selectListingStatus(state, location.key)
   );
 
-  // Auth state
-  const me = useAppSelector(selectMe);
-  const meStatus = useAppSelector(selectMeStatus);
+  // Auth state - RTK Query
+  const { data: me, isLoading, isError, isSuccess } = useGetMeQuery();
+  const meStatus = isLoading
+    ? 'loading'
+    : isError
+      ? 'failed'
+      : isSuccess
+        ? 'succeeded'
+        : 'idle';
   const bearerStatus = useAppSelector(selectBearerStatus);
   const isAuth = useAppSelector(selectIsAuth);
 

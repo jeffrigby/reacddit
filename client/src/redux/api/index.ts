@@ -1,0 +1,24 @@
+/**
+ * Redux API barrel file
+ *
+ * This file re-exports the base API and all endpoint hooks.
+ * Import from this file in components to avoid circular dependencies.
+ *
+ * IMPORTANT: Always import from this file, not from redditApi.ts directly,
+ * to ensure endpoints are injected before hooks are used.
+ */
+
+// Import base API (must be first)
+export { redditApi, redditApiReducer, redditApiMiddleware } from './redditApi';
+
+// Import endpoints to ensure they're injected
+import './endpoints/multiReddits';
+import './endpoints/me';
+import './endpoints/votes';
+import './endpoints/subreddits';
+
+// Re-export hooks from endpoints
+export * from './endpoints/multiReddits';
+export * from './endpoints/me';
+export * from './endpoints/votes';
+export * from './endpoints/subreddits';

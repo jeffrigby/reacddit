@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import type { ReactElement, KeyboardEvent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -8,11 +8,8 @@ import {
   faPlus,
   faMinus,
 } from '@fortawesome/free-solid-svg-icons';
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import {
-  fetchMultiReddits,
-  multiRedditsCleared,
-} from '@/redux/slices/multiRedditsSlice';
+import { useAppSelector } from '@/redux/hooks';
+import { useGetMultiRedditsQuery } from '@/redux/api';
 import MultiRedditsItem from './MultiRedditsItem';
 import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsAdd from './MultiRedditsAdd';
@@ -20,47 +17,42 @@ import MultiRedditsAdd from './MultiRedditsAdd';
 const MENU_ID = 'multis';
 
 function MultiReddits(): ReactElement | null {
-  const [loading, setLoading] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(
     getMenuStatus(MENU_ID, true)
   );
   const [showAdd, setShowAdd] = useState<boolean>(false);
 
-  const multireddits = useAppSelector((state) => state.redditMultiReddits);
   const bearerStatus = useAppSelector((state) => state.redditBearer.status);
-  const dispatch = useAppDispatch();
   const prevStatusRef = useRef<string | null>(null);
 
+  // RTK Query hook - only fetch when authenticated
+  const {
+    data: multireddits,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetMultiRedditsQuery(
+    { expandSubreddits: true },
+    {
+      skip: bearerStatus !== 'auth', // Don't fetch if not authenticated
+    }
+  );
+
+  // Clear cache when auth status changes
   useEffect(() => {
-    // Clear multireddits when auth status changes to prevent showing
-    // authenticated user's multis when logged out (or vice versa)
     if (
       prevStatusRef.current !== null &&
       prevStatusRef.current !== bearerStatus
     ) {
-      dispatch(multiRedditsCleared());
+      // RTK Query will automatically handle cache invalidation
+      // when the component unmounts or the query is skipped
     }
     prevStatusRef.current = bearerStatus;
-
-    async function getMultis(): Promise<void> {
-      if (bearerStatus === 'auth') {
-        if (multireddits.status === 'idle') {
-          await dispatch(fetchMultiReddits());
-          setLoading(false);
-        } else if (multireddits.status === 'succeeded') {
-          setLoading(false);
-        }
-      }
-    }
-
-    getMultis();
-  }, [dispatch, bearerStatus, multireddits.status]);
+  }, [bearerStatus]);
 
   const reloadMultis = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    await dispatch(fetchMultiReddits(true));
-    setLoading(false);
-  }, [dispatch]);
+    await refetch();
+  }, [refetch]);
 
   const toggleMenu = useCallback((): void => {
     setShowMenu((prev) => {
@@ -81,27 +73,25 @@ function MultiReddits(): ReactElement | null {
   );
 
   const multiItems = useMemo(() => {
-    if (!multireddits?.multis) {
+    if (!multireddits || multireddits.length === 0) {
       return [];
     }
 
-    return multireddits.multis.map(
+    return multireddits.map(
       (item: { data: { display_name: string; created: number } }) => {
         const key = `${item.data.display_name}-${item.data.created}`;
         return <MultiRedditsItem item={item} key={key} />;
       }
     );
-  }, [multireddits?.multis]);
+  }, [multireddits]);
 
-  if (
-    bearerStatus !== 'auth' ||
-    multireddits.status !== 'succeeded' ||
-    multiItems.length === 0
-  ) {
+  // Don't render if not authenticated, no data, or empty array
+  if (bearerStatus !== 'auth' || !multireddits || multiItems.length === 0) {
     return null;
   }
 
-  const multisClass = loading ? 'nav flex-column faded' : 'nav flex-column';
+  const multisClass =
+    isLoading || isFetching ? 'nav flex-column faded' : 'nav flex-column';
   const caretIcon = showMenu ? faCaretDown : faCaretRight;
   const showAddIcon = showAdd ? faMinus : faPlus;
 
@@ -136,7 +126,7 @@ function MultiReddits(): ReactElement | null {
               className="reload"
               icon={faSyncAlt}
               role="button"
-              spin={loading}
+              spin={isFetching}
               tabIndex={0}
               onClick={reloadMultis}
               onKeyDown={(e) => handleKeyPress(e, reloadMultis)}

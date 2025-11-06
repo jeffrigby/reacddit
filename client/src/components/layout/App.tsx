@@ -2,7 +2,7 @@ import { memo, StrictMode, useState, useEffect, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { store } from '@/redux/configureStore';
 import { fetchBearer } from '@/redux/slices/redditBearerSlice';
-import { fetchMe } from '@/redux/slices/redditMeSlice';
+import { useGetMeQuery } from '@/redux/api';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus, scrollToPosition } from '@/common';
 import { useModals } from '@/contexts/ModalContext';
@@ -21,8 +21,12 @@ function App() {
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const pinMenu = useAppSelector((state) => state.siteSettings.pinMenu);
   const subredditsFilter = useAppSelector((state) => state.subreddits.filter);
-  const redditMe = useAppSelector((state) => state.redditMe);
   const { setShowHotkeys } = useModals();
+
+  // RTK Query hook - fetch user profile after bearer token is ready
+  const { error: meError, isError: isMeError } = useGetMeQuery(undefined, {
+    skip: redditBearer.status === 'idle' || redditBearer.status === 'loading',
+  });
 
   const hotkeys = useCallback(
     (event: KeyboardEvent) => {
@@ -56,7 +60,7 @@ function App() {
     const bearerResult = await dispatch(fetchBearer());
     if (fetchBearer.fulfilled.match(bearerResult)) {
       setToken(bearerResult.payload.bearer);
-      await dispatch(fetchMe(true));
+      // RTK Query will automatically fetch user profile via useGetMeQuery hook
       setLoading(false);
     } else {
       setError(true);
@@ -89,7 +93,7 @@ function App() {
     };
   }, [dispatch, token]);
 
-  if (redditMe.status === 'failed') {
+  if (isMeError) {
     return (
       <div className="alert alert-danger m-2" role="alert">
         <p>
@@ -98,7 +102,7 @@ function App() {
           blocks this by default. Please check your browser content blocking
           settings and try again.
         </p>
-        <p>{redditMe.error}</p>
+        <p>{meError ? String(meError) : 'Unknown error'}</p>
       </div>
     );
   }

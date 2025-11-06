@@ -6,6 +6,7 @@ import subredditsReducer from './slices/subredditsSlice';
 import multiRedditsReducer from './slices/multiRedditsSlice';
 import bearerReducer from './slices/redditBearerSlice';
 import meReducer from './slices/redditMeSlice';
+import { redditApiReducer, redditApiMiddleware } from './api';
 
 /**
  * Configure the Redux store with all slice reducers
@@ -14,6 +15,7 @@ import meReducer from './slices/redditMeSlice';
  * - Automatic Redux DevTools integration
  * - Automatic redux-thunk middleware
  * - Development-mode checks for mutations and serializability
+ * - RTK Query middleware for caching and request management
  */
 function makeStore(initialState?: Partial<RootState>) {
   return configureStore({
@@ -25,7 +27,10 @@ function makeStore(initialState?: Partial<RootState>) {
       redditMultiReddits: multiRedditsReducer,
       redditBearer: bearerReducer,
       redditMe: meReducer,
+      redditApi: redditApiReducer,
     },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(redditApiMiddleware),
     preloadedState: initialState,
   });
 }
