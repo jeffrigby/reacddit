@@ -49,7 +49,17 @@ export function loadState(): PersistedState | undefined {
       };
     }
 
-    return persistedState;
+    // Reset runtime flags that should never be persisted
+    return {
+      ...persistedState,
+      subreddits: persistedState.subreddits
+        ? {
+            ...persistedState.subreddits,
+            lastUpdatedRunning: false, // Reset polling lock
+            lastUpdatedError: null, // Clear stale errors
+          }
+        : undefined,
+    };
   } catch (err) {
     console.error('Error loading state from localStorage:', err);
     return undefined;
