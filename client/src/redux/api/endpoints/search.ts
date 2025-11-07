@@ -8,8 +8,9 @@
  * - Short cache (60 seconds) for frequently-changing search results
  */
 
+import queryString from 'query-string';
 import type { SearchSubredditsResponse } from '@/types/redditApi';
-import { searchSubreddits } from '@/reddit/redditApiTs';
+import { setParams } from '@/reddit/redditApiTs';
 import { redditApi } from '../redditApi';
 
 interface SearchSubredditsArgs {
@@ -33,21 +34,24 @@ export const searchApi = redditApi.injectEndpoints({
       SearchSubredditsResponse,
       SearchSubredditsArgs
     >({
-      queryFn: async ({ query, includeOver18 = false }) => {
-        try {
-          // Calls legacy helper function from redditApiTs.ts
-          const results = await searchSubreddits(query, {
-            include_over_18: includeOver18,
-          });
-          return { data: results };
-        } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR',
-              data: error instanceof Error ? error.message : 'Search failed',
-            },
-          };
-        }
+      query: ({ query, includeOver18 = false }) => {
+        const params = setParams({
+          query,
+          exact: false,
+          include_over_18: includeOver18,
+          include_unadvertisable: true,
+          raw_json: 1,
+          api_type: 'json',
+        });
+
+        return {
+          url: '/api/search_subreddits',
+          method: 'POST',
+          data: queryString.stringify(params),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        };
       },
       keepUnusedDataFor: 60, // Short cache - search results change frequently
     }),

@@ -18,6 +18,7 @@ import {
 } from '@/redux/slices/subredditPollingSlice';
 import { getMenuStatus, hotkeyStatus, setMenuStatus } from '@/common';
 import NavigationItem from './NavigationItem';
+import SyncStatus from './SyncStatus';
 
 function NavigationSubReddits() {
   const [showMenu, setShowMenu] = useState(getMenuStatus('subreddits', true));
@@ -33,11 +34,12 @@ function NavigationSubReddits() {
     { where },
     {
       // Use selectFromResult to extract and filter data
-      selectFromResult: ({ data, isLoading, isError }) => ({
+      selectFromResult: ({ data, isLoading, isError, refetch }) => ({
         // Get all subreddits as array
         allSubreddits: data ? subredditSelectors.selectAll(data) : [],
         isLoading,
         isError,
+        refetch, // Must explicitly include refetch when using selectFromResult
       }),
       // Refetch when window regains focus (after cache expiration)
       refetchOnFocus: true,
@@ -77,14 +79,20 @@ function NavigationSubReddits() {
     };
   }, [dispatch, where]);
 
+  // Automatically refresh subreddit list every 15 minutes
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      refetch();
+    }, 900000); // 15 minutes
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [refetch]);
+
   const reloadSubreddits = useCallback(async () => {
-    // Clear the lastUpdated cache to force immediate re-check of all subreddits
-    dispatch(lastUpdatedCleared());
-    // Use refetch() instead of manual dispatch
+    // Refetch subreddits list without clearing lastUpdated cache
     await refetch();
-    // Trigger immediate fetch of lastUpdated timestamps
-    dispatch(fetchSubredditsLastUpdated());
-  }, [dispatch, refetch]);
+  }, [refetch]);
 
   useEffect(() => {
     const handleSubredditHotkey = (event: KeyboardEvent) => {
@@ -246,6 +254,7 @@ function NavigationSubReddits() {
         </span>
       </div>
       {(showMenu || filter.filterText) && content}
+      {(showMenu || filter.filterText) && <SyncStatus />}
     </div>
   );
 }

@@ -114,3 +114,49 @@ export function isNumeric(value: unknown): value is number | string {
   }
   return false;
 }
+
+/**
+ * Format a timestamp as relative time (e.g., "2m ago", "1h ago", "2d ago")
+ *
+ * @param timestamp - Unix timestamp in milliseconds
+ * @returns Human-readable relative time string
+ */
+export function formatRelativeTime(timestamp: number): string {
+  const now = Date.now();
+  const diffMs = now - timestamp;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  // Handle future timestamps (shouldn't happen, but be safe)
+  if (diffMs < 0) {
+    return 'just now';
+  }
+
+  // Less than 1 minute
+  if (diffSec < 60) {
+    return 'just now';
+  }
+
+  // Less than 1 hour
+  if (diffMin < 60) {
+    return `${diffMin}m ago`;
+  }
+
+  // Less than 24 hours
+  if (diffHour < 24) {
+    return `${diffHour}h ago`;
+  }
+
+  // Less than 7 days
+  if (diffDay < 7) {
+    return diffDay === 1 ? 'yesterday' : `${diffDay}d ago`;
+  }
+
+  // 7+ days - show date
+  const date = new Date(timestamp);
+  const month = date.toLocaleString('en-US', { month: 'short' });
+  const day = date.getDate();
+  return `${month} ${day}`;
+}

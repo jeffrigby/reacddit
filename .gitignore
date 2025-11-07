@@ -62,3 +62,4 @@ deployment-permissions-policy.json
 
 # Vite dev artifacts
 /client/dev-dist/
+/client/agentDocs

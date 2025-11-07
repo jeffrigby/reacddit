@@ -130,4 +130,13 @@ body.search-active {
       padding-left: 0.5rem;
     }
   }
+
+  body:not(.search-active) #search {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .search-icon-button {
+    margin-left: auto;
+  }
 }

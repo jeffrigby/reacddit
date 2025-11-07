@@ -13,13 +13,13 @@
  * - 24-hour cache with tag-based invalidation on modifications
  */
 
+import queryString from 'query-string';
 import type {
   Thing,
   LabeledMultiData,
   MultiInfoResponse,
   ApiResponse,
 } from '@/types/redditApi';
-import { multiAdd, multiInfo } from '@/reddit/redditApiTs';
 import { redditApi } from '../redditApi';
 
 /**
@@ -121,23 +121,10 @@ export const multiRedditsApi = redditApi.injectEndpoints({
      * @returns Multireddit information including metadata and subreddit list
      */
     getMultiRedditInfo: builder.query<MultiInfoResponse, string>({
-      queryFn: async (multiPath) => {
-        try {
-          // Calls legacy helper function from redditApiTs.ts
-          const result = await multiInfo(multiPath);
-          return { data: result };
-        } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR',
-              data:
-                error instanceof Error
-                  ? error.message
-                  : 'Failed to fetch multi info',
-            },
-          };
-        }
-      },
+      query: (multiPath) => ({
+        url: `/api/multi/${multiPath}`,
+        method: 'GET',
+      }),
       providesTags: (result, error, multiPath) => [
         { type: 'MultiReddits', id: multiPath },
       ],
@@ -156,23 +143,20 @@ export const multiRedditsApi = redditApi.injectEndpoints({
       ApiResponse,
       { name: string; description: string; visibility: 'private' | 'public' }
     >({
-      queryFn: async ({ name, description, visibility }) => {
-        try {
-          // Calls legacy helper function from redditApiTs.ts
-          const result = await multiAdd(name, description, visibility);
-          return { data: result };
-        } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR',
-              data:
-                error instanceof Error
-                  ? error.message
-                  : 'Failed to create multireddit',
-            },
-          };
-        }
-      },
+      query: ({ name, description, visibility }) => ({
+        url: '/api/multi',
+        method: 'POST',
+        data: queryString.stringify({
+          model: JSON.stringify({
+            description_md: description,
+            display_name: name,
+            visibility,
+          }),
+        }),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }),
       invalidatesTags: [{ type: 'MultiReddits', id: 'LIST' }],
     }),
   }),

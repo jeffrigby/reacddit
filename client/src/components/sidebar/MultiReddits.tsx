@@ -50,6 +50,21 @@ function MultiReddits(): ReactElement | null {
     prevStatusRef.current = bearerStatus;
   }, [bearerStatus]);
 
+  // Automatically refresh multireddits every 15 minutes
+  useEffect(() => {
+    if (bearerStatus !== 'auth') {
+      return;
+    } // Only poll when authenticated
+
+    const refreshInterval = setInterval(() => {
+      refetch();
+    }, 900000); // 15 minutes
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [refetch, bearerStatus]);
+
   const reloadMultis = useCallback(async (): Promise<void> => {
     await refetch();
   }, [refetch]);

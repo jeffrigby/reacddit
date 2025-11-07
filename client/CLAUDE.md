@@ -65,15 +65,18 @@ React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embe
 - **Query patterns:**
   - `builder.query<ReturnType, ArgsType>` for GET operations
   - `builder.mutation<ReturnType, ArgsType>` for POST/PUT/DELETE
-  - Use `queryFn` when calling legacy helper functions
+  - **Default: Use `query` option** with baseQuery for HTTP requests
+  - Use `queryFn` only for special cases (third-party SDKs, custom async logic)
   - Use `skip` option for conditional fetching: `{ skip: !someCondition }`
 - **Cache management:**
   - Default: 60 seconds (frequent updates)
   - Long-lived: 24 hours (multis, user profile, subreddit lists)
   - Tag-based invalidation for related data
   - LIST pattern: `{ type: 'Resource', id: 'LIST' }` for collections
-- **Helper functions:** Keep in `src/reddit/redditApiTs.ts` (infrastructure utilities)
-- **Authentication:** Token management stays in `redditApiTs.ts` (not RTK Query)
+- **Infrastructure vs Endpoints:**
+  - `src/reddit/redditApiTs.ts` contains ONLY infrastructure: axios instance, auth interceptors, token management, utilities (setParams)
+  - Endpoint files contain business logic: URL construction, parameter handling, HTTP methods
+  - Share utilities across endpoints (e.g., `setParams` for parameter cleaning)
 
 **File Organization:**
 - Feature-based structure (`src/components/[feature]/`)

@@ -7,7 +7,7 @@
  * CRITICAL RATE LIMITING:
  * - p-limit(5): Max 5 concurrent requests
  * - randomDelay(2-5s): 2-5 second random delays between requests
- * - Max 100 subreddits per batch
+ * - Smart caching: Only checks subreddits with expired cache
  *
  * These limits prevent Reddit API rate limiting issues.
  * DO NOT MODIFY without understanding rate limiting implications.
@@ -46,6 +46,11 @@ export interface SubredditPollingState {
   lastUpdatedRunning: boolean;
   /** Error message from polling, null if no error */
   lastUpdatedError: string | null;
+  /** Progress of current polling run, null if not running */
+  lastUpdatedProgress: {
+    total: number;
+    completed: number;
+  } | null;
 }
 
 const initialState: SubredditPollingState = {
@@ -53,6 +58,7 @@ const initialState: SubredditPollingState = {
   lastUpdatedTime: 0,
   lastUpdatedRunning: false,
   lastUpdatedError: null,
+  lastUpdatedProgress: null,
 };
 
 /**
@@ -79,6 +85,7 @@ const subredditPollingSlice = createSlice({
       state.lastUpdatedTracking = {};
       state.lastUpdatedTime = 0;
       state.lastUpdatedRunning = false;
+      state.lastUpdatedProgress = null;
     },
 
     /**
@@ -96,6 +103,17 @@ const subredditPollingSlice = createSlice({
     lastUpdatedErrorSet(state, action: PayloadAction<string | null>) {
       state.lastUpdatedError = action.payload;
     },
+
+    /**
+     * Set progress for fetchSubredditsLastUpdated
+     * Shows real-time progress of background polling
+     */
+    lastUpdatedProgressSet(
+      state,
+      action: PayloadAction<{ total: number; completed: number } | null>
+    ) {
+      state.lastUpdatedProgress = action.payload;
+    },
   },
 });
 
@@ -105,6 +123,7 @@ export const {
   lastUpdatedCleared,
   lastUpdatedRunningSet,
   lastUpdatedErrorSet,
+  lastUpdatedProgressSet,
 } = subredditPollingSlice.actions;
 
 // Export reducer
@@ -117,7 +136,7 @@ export default subredditPollingSlice.reducer;
  * CRITICAL: This thunk includes rate limiting protection:
  * - p-limit(5): Max 5 concurrent requests
  * - randomDelay(2, 5): 2-5 second delays between requests
- * - Max 100 subreddits per batch
+ * - Smart caching: Only checks subreddits with expired cache
  *
  * These limits prevent Reddit API rate limiting issues.
  * DO NOT REMOVE OR REDUCE THESE LIMITS.
@@ -196,6 +215,15 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
         }
       });
 
+      // Initialize progress tracking
+      let completedCount = 0;
+      dispatch(
+        lastUpdatedProgressSet({
+          total: lookups.length,
+          completed: 0,
+        })
+      );
+
       // Fetch with delay and rate limiting
       const fetchWithDelay = async (lookup: (typeof lookups)[0]) => {
         const { type, path, id } = lookup;
@@ -203,19 +231,25 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
         const toUpdate = await getLastUpdatedWithDelay(type, path, id, 2, 5);
         if (toUpdate !== null) {
           // PERFORMANCE NOTE: Dispatching individually (not batched)
-          // This creates one action per subreddit (up to 100 actions).
+          // This creates one action per subreddit.
           // Tradeoff: Progressive UI updates (good UX) vs batching (fewer re-renders).
           // Current approach chosen for better perceived performance.
           dispatch(lastUpdatedSet(toUpdate));
         }
+
+        // Update progress counter
+        completedCount += 1;
+        dispatch(
+          lastUpdatedProgressSet({
+            total: lookups.length,
+            completed: completedCount,
+          })
+        );
       };
 
       // CRITICAL: p-limit(5) for concurrency control
       const limit = pLimit(5);
-      // CRITICAL: Max 100 subreddits to prevent API overload
-      const max = 100;
-      const maxLookups = lookups.slice(0, max);
-      const fetchPromises = maxLookups.map((lookup) =>
+      const fetchPromises = lookups.map((lookup) =>
         limit(() => fetchWithDelay(lookup))
       );
 
@@ -226,8 +260,9 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
       console.error('Error fetching last updated', error);
       dispatch(lastUpdatedErrorSet(errorMessage));
     } finally {
-      // Clear running flag
+      // Clear running flag and reset progress
       dispatch(lastUpdatedRunningSet(false));
+      dispatch(lastUpdatedProgressSet(null));
     }
   },
   {
@@ -251,3 +286,6 @@ export const selectLastUpdatedRunning = (state: RootState) =>
 
 export const selectLastUpdatedError = (state: RootState) =>
   state.subredditPolling.lastUpdatedError;
+
+export const selectLastUpdatedProgress = (state: RootState) =>
+  state.subredditPolling.lastUpdatedProgress;

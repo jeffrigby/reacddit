@@ -5,12 +5,15 @@ import queryString from 'query-string';
 import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
 import { hotkeyStatus } from '@/common';
 
 function Search() {
   const [focused, setFocused] = useState(false);
   const [search, setSearch] = useState('');
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [expandedOnMobile, setExpandedOnMobile] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -66,12 +69,41 @@ function Search() {
     };
   }, [focused]);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767.98px)');
+    const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsSmallScreen(e.matches);
+      if (!e.matches) {
+        setExpandedOnMobile(false);
+      }
+    };
+
+    // Set initial value
+    handleMediaChange(mediaQuery);
+
+    // Listen for changes
+    mediaQuery.addEventListener('change', handleMediaChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleMediaChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    // When expanded on mobile, focus the input to trigger search-active state
+    if (expandedOnMobile && isSmallScreen && searchInput.current) {
+      searchInput.current.focus();
+    }
+  }, [expandedOnMobile, isSmallScreen]);
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
   const focusSearch = () => {
     setFocused(true);
+    if (isSmallScreen) {
+      setExpandedOnMobile(true);
+    }
     if (searchInput.current) {
       searchInput.current.select();
     }
@@ -81,6 +113,13 @@ function Search() {
   const blurSearch = () => {
     document.body.classList.remove('search-active');
     setFocused(false);
+    if (isSmallScreen) {
+      setExpandedOnMobile(false);
+    }
+  };
+
+  const handleSearchIconClick = () => {
+    setExpandedOnMobile(true);
   };
 
   const clearSearch = () => {
@@ -203,62 +242,78 @@ function Search() {
     : '';
 
   const searchClassName = focused ? 'search-focused m-0' : 'm-0';
+  const showFullSearch = !isSmallScreen || expandedOnMobile;
 
   return (
     <div className={searchClassName} id="search" ref={searchInputParent}>
-      <Form.Control
-        className="w-100 py-0"
-        id="search-reddit"
-        placeholder={placeholder}
-        ref={searchInput}
-        size="sm"
-        title={title}
-        type="text"
-        value={search}
-        onBlur={blurSearch}
-        onChange={handleChange}
-        onFocus={focusSearch}
-        onKeyUp={processSearch}
-      />
-      {(focused || search) && (
-        <FontAwesomeIcon
-          aria-hidden="true"
-          aria-label="Clear Search Box"
-          className="form-control-clear"
-          icon={faTimesCircle}
-          id="search-clear"
-          role="button"
-          onClick={clearSearch}
-        />
-      )}
-      {focused && !global && (
-        <div className="searchToolTip small p-1 mt-1">
-          {showTargetSearch && (
-            <Button
-              className="me-1"
-              disabled={!search}
-              size="sm"
-              variant="primary"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                searchTarget();
-              }}
-            >
-              Search in /r/{listingsFilter.target} {!isMobile && <>⏎</>}
-            </Button>
-          )}
+      {!showFullSearch ? (
+        <div className="header-button search-icon-button">
           <Button
-            disabled={!search}
+            aria-label="Open search"
             size="sm"
-            variant="primary"
-            onMouseDown={(e) => {
-              e.preventDefault();
-              searchEverywhere();
-            }}
+            variant="secondary"
+            onClick={handleSearchIconClick}
           >
-            Search Everywhere {!isMobile && <>⇧⏎</>}
+            <FontAwesomeIcon icon={faSearch} />
           </Button>
         </div>
+      ) : (
+        <>
+          <Form.Control
+            className="w-100 py-0"
+            id="search-reddit"
+            placeholder={placeholder}
+            ref={searchInput}
+            size="sm"
+            title={title}
+            type="text"
+            value={search}
+            onBlur={blurSearch}
+            onChange={handleChange}
+            onFocus={focusSearch}
+            onKeyUp={processSearch}
+          />
+          {(focused || search) && (
+            <FontAwesomeIcon
+              aria-hidden="true"
+              aria-label="Clear Search Box"
+              className="form-control-clear"
+              icon={faTimesCircle}
+              id="search-clear"
+              role="button"
+              onClick={clearSearch}
+            />
+          )}
+          {focused && !global && (
+            <div className="searchToolTip small p-1 mt-1">
+              {showTargetSearch && (
+                <Button
+                  className="me-1"
+                  disabled={!search}
+                  size="sm"
+                  variant="primary"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    searchTarget();
+                  }}
+                >
+                  Search in /r/{listingsFilter.target} {!isMobile && <>⏎</>}
+                </Button>
+              )}
+              <Button
+                disabled={!search}
+                size="sm"
+                variant="primary"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  searchEverywhere();
+                }}
+              >
+                Search Everywhere {!isMobile && <>⇧⏎</>}
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

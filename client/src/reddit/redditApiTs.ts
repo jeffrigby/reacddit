@@ -9,8 +9,6 @@ import {
   type TokenData,
   type TokenApiResponse,
   type TokenStorageResult,
-  type SearchSubredditsResponse,
-  type SearchSubredditsPostBody,
   type SubredditAboutResponse,
   type SubredditRulesResponse,
   type SubredditTrafficResponse,
@@ -25,18 +23,9 @@ import {
   type DuplicatesParams,
   type Listing,
   type CommentsResponse,
-  type ApiResponse,
-  type MultiInfoResponse,
   type SubredditsListingParams,
   type SubredditsListingResponse,
-  type MoreChildrenParams,
-  type MoreChildrenResponse,
 } from '@/types/redditApi';
-
-// Constants
-const FORM_URLENCODED_HEADERS = {
-  'Content-Type': 'application/x-www-form-urlencoded',
-} as const;
 
 // Utility function to clean null/empty values from params
 export function setParams(
@@ -180,40 +169,6 @@ redditAPI.interceptors.request.use(
 export async function me(): Promise<MeResponse> {
   // Cache buster is to prevent Firefox from caching this request
   const response = await redditAPI.get(`/api/v1/me?cb=${Date.now()}`);
-  return response.data;
-}
-
-/**
- * Search for subreddits by query.
- * @param query - The search query
- * @param options - Optional search parameters
- */
-export async function searchSubreddits(
-  query: string,
-  options: Partial<
-    Omit<SearchSubredditsPostBody, 'query' | 'api_type' | 'raw_json'>
-  > = {}
-): Promise<SearchSubredditsResponse> {
-  const defaults: SearchSubredditsPostBody = {
-    query,
-    exact: false,
-    include_over_18: false,
-    include_unadvertisable: true,
-    raw_json: 1,
-    api_type: 'json',
-  };
-
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options
-  );
-
-  const response = await redditAPI.post(
-    '/api/search_subreddits',
-    queryString.stringify(params),
-    { headers: FORM_URLENCODED_HEADERS }
-  );
-
   return response.data;
 }
 
@@ -533,76 +488,6 @@ export async function getComments(
   result.requestUrl = `${url}?${query}`;
 
   return result;
-}
-
-/**
- * Load more comments (expand "load more comments" links)
- * @param linkID - The post fullname (t3_xxx)
- * @param children - Array of comment IDs to load
- * @param options - Additional parameters
- * @returns Promise with more comments data
- */
-export async function getMoreComments(
-  linkID: string,
-  children: string[],
-  options: Partial<MoreChildrenParams> = {}
-): Promise<MoreChildrenResponse> {
-  const defaults: Partial<MoreChildrenParams> = {
-    link_id: linkID as `t3_${string}`,
-    children: children.join(','),
-    raw_json: 1,
-    api_type: 'json',
-    depth: undefined,
-    id: undefined,
-    limit_children: false,
-  };
-
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
-
-  const response = await redditAPI.get('api/morechildren', { params });
-  return response.data;
-}
-
-/**
- * Create a new multireddit (custom feed)
- * @param name - Multireddit name (max 50 characters)
- * @param description - Description in markdown format
- * @param visibility - Visibility setting (private, public, or hidden)
- * @returns Promise with API response
- */
-export async function multiAdd(
-  name: string,
-  description: string,
-  visibility: 'private' | 'public' | 'hidden'
-): Promise<ApiResponse> {
-  const url = '/api/multi';
-  const data = {
-    model: JSON.stringify({
-      description_md: description,
-      display_name: name,
-      visibility,
-    }),
-  };
-
-  const response = await redditAPI.post(url, queryString.stringify(data), {
-    headers: FORM_URLENCODED_HEADERS,
-  });
-
-  return response.data;
-}
-
-/**
- * Get information about a multireddit
- * @param multiPath - The multireddit path
- * @returns Promise with multireddit information
- */
-export async function multiInfo(multiPath: string): Promise<MultiInfoResponse> {
-  const url = `/api/multi/${multiPath}`;
-  const response = await redditAPI.get(url);
-  return response.data;
 }
 
 /**

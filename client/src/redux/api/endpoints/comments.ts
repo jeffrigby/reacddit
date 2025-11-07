@@ -9,7 +9,7 @@
  */
 
 import type { MoreChildrenResponse } from '@/types/redditApi';
-import { getMoreComments } from '@/reddit/redditApiTs';
+import { setParams } from '@/reddit/redditApiTs';
 import { redditApi } from '../redditApi';
 
 interface GetMoreChildrenArgs {
@@ -30,22 +30,22 @@ export const commentsApi = redditApi.injectEndpoints({
      * @returns More comments data with nested replies
      */
     getMoreChildren: builder.query<MoreChildrenResponse, GetMoreChildrenArgs>({
-      queryFn: async ({ linkId, children }) => {
-        try {
-          // Calls legacy helper function from redditApiTs.ts
-          const result = await getMoreComments(linkId, children);
-          return { data: result };
-        } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR',
-              data:
-                error instanceof Error
-                  ? error.message
-                  : 'Failed to load more comments',
-            },
-          };
-        }
+      query: ({ linkId, children }) => {
+        const params = setParams({
+          link_id: linkId,
+          children: children.join(','),
+          raw_json: 1,
+          api_type: 'json',
+          depth: undefined,
+          id: undefined,
+          limit_children: false,
+        });
+
+        return {
+          url: 'api/morechildren',
+          method: 'GET',
+          params,
+        };
       },
       keepUnusedDataFor: 60, // Short cache - comment trees can change frequently
     }),
