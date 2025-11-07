@@ -9,6 +9,7 @@ export interface PostContextData {
   isLoaded: boolean;
   actionable: boolean;
   idx: number;
+  fullyOffScreen: boolean;
 }
 
 export const PostsContextData = createContext<PostContextData | object>({});

@@ -109,6 +109,7 @@ function Post({
   const [hide, setHide] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
   const [onScreen, setOnScreen] = useState<boolean>(false);
+  const [fullyOffScreen, setFullyOffScreen] = useState<boolean>(false);
   const [showVisToggle, setShowVisToggle] = useState(false);
 
   const navigate = useNavigate();
@@ -133,7 +134,7 @@ function Post({
   ) as [string, (value: string) => void];
 
   // Get shared IntersectionObservers from context
-  const { observeForLoading, observeForVisibility } =
+  const { observeForLoading, observeForVisibility, observeForMediaControl } =
     useIntersectionObservers();
 
   // Stable callbacks for observer handlers
@@ -147,6 +148,13 @@ function Post({
   const handleVisibilityIntersection = useCallback(
     (isIntersecting: boolean) => {
       setOnScreen(isIntersecting);
+    },
+    []
+  );
+
+  const handleMediaControlIntersection = useCallback(
+    (isFullyOffScreen: boolean) => {
+      setFullyOffScreen(isFullyOffScreen);
     },
     []
   );
@@ -166,6 +174,17 @@ function Post({
     }
     return observeForVisibility(postRef.current, handleVisibilityIntersection);
   }, [observeForVisibility, handleVisibilityIntersection]);
+
+  // Register with shared media control observer
+  useEffect(() => {
+    if (!postRef.current) {
+      return;
+    }
+    return observeForMediaControl(
+      postRef.current,
+      handleMediaControlIntersection
+    );
+  }, [observeForMediaControl, handleMediaControlIntersection]);
 
   const initView = useCallback(() => {
     if (params.listType === 'comments') {
@@ -372,8 +391,8 @@ function Post({
   ) : null;
 
   const postContext = useMemo(
-    () => ({ post, isLoaded, actionable, idx }),
-    [actionable, isLoaded, post, idx]
+    () => ({ post, isLoaded, actionable, idx, fullyOffScreen }),
+    [actionable, isLoaded, post, idx, fullyOffScreen]
   );
 
   return (

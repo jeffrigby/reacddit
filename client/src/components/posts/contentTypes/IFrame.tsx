@@ -1,4 +1,4 @@
-import { useContext, useState, useCallback } from 'react';
+import { useContext, useState, useCallback, useRef, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import type { LinkData } from '@/types/redditApi';
 import { PostsContextData } from '@/contexts';
@@ -24,6 +24,7 @@ interface PostContextData {
     data: LinkData;
   };
   isLoaded: boolean;
+  fullyOffScreen: boolean;
 }
 
 function IFrame({
@@ -42,21 +43,34 @@ function IFrame({
   const postContext = useContext(PostsContextData) as PostContextData;
   const { title } = postContext.post.data;
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const hasBeenOnScreen = useRef(false);
 
   const style: CSSProperties = {};
   style.aspectRatio = `${width}/${height}`;
 
-  const { isLoaded } = postContext;
+  const { isLoaded, fullyOffScreen } = postContext;
+
+  // Track if iframe has ever been on-screen
+  useEffect(() => {
+    if (!fullyOffScreen && !hasBeenOnScreen.current) {
+      hasBeenOnScreen.current = true;
+    }
+  }, [fullyOffScreen]);
 
   const handleIframeLoad = useCallback(() => {
     setIframeLoaded(true);
     onLoad();
   }, [onLoad]);
 
+  // Only unmount iframe if it's been on-screen before
+  // This allows iframes to load initially (even if below viewport)
+  const shouldRenderIframe =
+    isLoaded && (!fullyOffScreen || !hasBeenOnScreen.current);
+
   return (
     <div className="media-cont black-bg">
       <div className="media-ratio" style={style}>
-        {isLoaded && (
+        {shouldRenderIframe && (
           <iframe
             allowFullScreen
             allow={allow}

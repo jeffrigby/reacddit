@@ -19,6 +19,10 @@ interface IntersectionObserverContextValue {
     element: Element,
     callback: ObserverCallback
   ) => () => void;
+  observeForMediaControl: (
+    element: Element,
+    callback: ObserverCallback
+  ) => () => void;
 }
 
 export const IntersectionObserverContext =
@@ -37,6 +41,9 @@ export function IntersectionObserverProvider({
 }: IntersectionObserverProviderProps) {
   const loadCallbacksRef = useRef<Map<Element, ObserverCallback>>(new Map());
   const visibilityCallbacksRef = useRef<Map<Element, ObserverCallback>>(
+    new Map()
+  );
+  const mediaControlCallbacksRef = useRef<Map<Element, ObserverCallback>>(
     new Map()
   );
 
@@ -73,10 +80,36 @@ export function IntersectionObserverProvider({
     )
   );
 
+  // Media control observer - checks if element is FULLY off-screen (both top and bottom edges)
+  const mediaControlObserverRef = useRef<IntersectionObserver>(
+    new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const callback = mediaControlCallbacksRef.current.get(entry.target);
+          if (callback) {
+            const rect = entry.boundingClientRect;
+            const viewportHeight = window.innerHeight;
+
+            // Element is fully off-screen if:
+            // - Bottom edge is above viewport (scrolled past)
+            // - Top edge is below viewport (not yet scrolled to)
+            const isFullyOffScreen =
+              rect.bottom < 0 || rect.top > viewportHeight;
+
+            // Callback receives true when FULLY off-screen, false when any part is visible
+            callback(isFullyOffScreen);
+          }
+        });
+      },
+      { threshold: 0 }
+    )
+  );
+
   // Clean up observers on unmount
   useEffect(() => {
     const loadObserver = loadObserverRef.current;
     const visibilityObserver = visibilityObserverRef.current;
+    const mediaControlObserver = mediaControlObserverRef.current;
 
     // Add scroll listener to manually check elements that should load
     let scrollTimeout: NodeJS.Timeout;
@@ -108,6 +141,7 @@ export function IntersectionObserverProvider({
     return () => {
       loadObserver.disconnect();
       visibilityObserver.disconnect();
+      mediaControlObserver.disconnect();
       document.body.removeEventListener('scroll', handleScroll);
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(scrollTimeout);
@@ -156,12 +190,35 @@ export function IntersectionObserverProvider({
     []
   );
 
+  const observeForMediaControl = useCallback(
+    (element: Element, callback: ObserverCallback): (() => void) => {
+      mediaControlCallbacksRef.current.set(element, callback);
+      mediaControlObserverRef.current.observe(element);
+
+      // Check initial state - if element is already fully off-screen, call callback immediately
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const isFullyOffScreen = rect.bottom < 0 || rect.top > viewportHeight;
+
+      if (isFullyOffScreen) {
+        callback(true);
+      }
+
+      return () => {
+        mediaControlCallbacksRef.current.delete(element);
+        mediaControlObserverRef.current.unobserve(element);
+      };
+    },
+    []
+  );
+
   const value = useMemo(
     () => ({
       observeForLoading,
       observeForVisibility,
+      observeForMediaControl,
     }),
-    [observeForLoading, observeForVisibility]
+    [observeForLoading, observeForVisibility, observeForMediaControl]
   );
 
   return (

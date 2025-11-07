@@ -101,12 +101,13 @@ function getBuffers(
  */
 function VideoComp({ link = '', content }: VideoCompProps) {
   const postContext = useContext(PostsContextData) as PostContextData;
-  const { isLoaded } = postContext;
+  const { isLoaded, fullyOffScreen } = postContext;
   const videoRef = useRef<HTMLVideoElement>(null);
   const isPlaying = useRef<boolean>(false);
   const isPlayingTimeout = useRef<NodeJS.Timeout | null>(null);
   const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
   const stalledTimeout = useRef<NodeJS.Timeout | null>(null);
+  const wasPlayingBeforeOffScreen = useRef<boolean>(false);
 
   const debug = useAppSelector((state) => state.siteSettings.debug);
   const autoplay = useAppSelector(
@@ -145,6 +146,27 @@ function VideoComp({ link = '', content }: VideoCompProps) {
       videoRef.current.pause();
     }
   }, [autoplay, autoplayState]);
+
+  // Pause video when fully off-screen, resume when back on-screen
+  useEffect(() => {
+    if (!videoRef.current) {
+      return;
+    }
+
+    if (fullyOffScreen) {
+      // Video is now fully off-screen - pause it
+      if (!videoRef.current.paused) {
+        wasPlayingBeforeOffScreen.current = true;
+        videoRef.current.pause();
+      }
+    } else {
+      // Video is back on-screen - resume if it was playing before
+      if (wasPlayingBeforeOffScreen.current && videoRef.current.paused) {
+        videoRef.current.play();
+        wasPlayingBeforeOffScreen.current = false;
+      }
+    }
+  }, [fullyOffScreen]);
 
   useEffect(() => {
     const canPlayTimeout = setTimeout(() => {
