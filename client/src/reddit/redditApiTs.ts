@@ -25,10 +25,7 @@ import {
   type DuplicatesParams,
   type Listing,
   type CommentsResponse,
-  type MultiMineParams,
   type ApiResponse,
-  type Thing,
-  type LabeledMultiData,
   type MultiInfoResponse,
   type SubredditsListingParams,
   type SubredditsListingResponse,
@@ -566,28 +563,6 @@ export async function getMoreComments(
   );
 
   const response = await redditAPI.get('api/morechildren', { params });
-  return response.data;
-}
-
-/**
- * Get the logged-in user's multireddits
- * @param options - Query parameters
- * @returns Promise with array of multireddits
- */
-export async function multiMine(
-  options: Partial<MultiMineParams> = {}
-): Promise<Thing<LabeledMultiData>[]> {
-  const defaults: MultiMineParams = {
-    expand_srs: false,
-  };
-
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
-
-  const url = '/api/multi/mine';
-  const response = await redditAPI.get(url, { params });
   return response.data;
 }
 

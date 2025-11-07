@@ -1,53 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import queryString from 'query-string';
-import { searchSubreddits } from '@/reddit/redditApiTs';
 import { useAppSelector } from '@/redux/hooks';
-import { useGetSubredditsQuery, subredditSelectors } from '@/redux/api';
+import {
+  useGetSubredditsQuery,
+  subredditSelectors,
+  useSearchSubredditsByNameQuery,
+} from '@/redux/api';
 import { buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 interface SearchRedditNamesProps {
   filterText?: string;
-}
-
-/**
- * Get a list of subreddit names that match the filter text
- */
-function useGetSubredditNames(filterText: string, showNSFW: boolean): string[] {
-  const [searchResults, setSearchResults] = useState<string[]>([]);
-
-  useEffect(() => {
-    let ignore = false;
-
-    const getResults = async () => {
-      if (!filterText) {
-        setSearchResults([]);
-        return;
-      }
-
-      const results = await searchSubreddits(filterText, {
-        include_over_18: showNSFW,
-      });
-
-      if (!ignore) {
-        const { subreddits } = results;
-        const names = subreddits.length
-          ? subreddits.map((value) => value.name)
-          : [];
-        setSearchResults(names);
-      }
-    };
-
-    getResults();
-
-    return () => {
-      ignore = true;
-    };
-  }, [filterText, showNSFW]);
-
-  return searchResults;
 }
 
 /**
@@ -74,7 +39,15 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
 
   const initShowSearchResuts = over18 ?? false;
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
-  const searchResults = useGetSubredditNames(filterText, showNSFW);
+
+  // Use RTK Query hook to search for subreddits
+  const { data: searchData } = useSearchSubredditsByNameQuery(
+    { query: filterText, includeOver18: showNSFW },
+    { skip: !filterText }
+  );
+
+  const searchResults =
+    searchData?.subreddits.map((subreddit) => subreddit.name) ?? [];
 
   if (!filterText || searchResults.length === 0) {
     return null;

@@ -53,16 +53,36 @@ React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embe
 
 **State Management:**
 - Redux Toolkit for global state (`src/redux/slices/`)
+- **RTK Query for data fetching** (`src/redux/api/endpoints/`)
 - React context for component-specific state
 - Immer for immutable updates (built into RTK)
-- Timestamp-based cache invalidation
+
+**RTK Query Patterns:**
+- All Reddit API data fetching uses RTK Query hooks
+- Base API: `src/redux/api/redditApi.ts` with custom axios baseQuery
+- Endpoints injected via `injectEndpoints()` pattern (code splitting)
+- Import from `@/redux/api` barrel file (not endpoint files directly)
+- **Query patterns:**
+  - `builder.query<ReturnType, ArgsType>` for GET operations
+  - `builder.mutation<ReturnType, ArgsType>` for POST/PUT/DELETE
+  - Use `queryFn` when calling legacy helper functions
+  - Use `skip` option for conditional fetching: `{ skip: !someCondition }`
+- **Cache management:**
+  - Default: 60 seconds (frequent updates)
+  - Long-lived: 24 hours (multis, user profile, subreddit lists)
+  - Tag-based invalidation for related data
+  - LIST pattern: `{ type: 'Resource', id: 'LIST' }` for collections
+- **Helper functions:** Keep in `src/reddit/redditApiTs.ts` (infrastructure utilities)
+- **Authentication:** Token management stays in `redditApiTs.ts` (not RTK Query)
 
 **File Organization:**
 - Feature-based structure (`src/components/[feature]/`)
 - Presentational/container separation
 - Keep related files together
+- Endpoint files organized by domain (`multiReddits`, `search`, `comments`, etc.)
 
 **Performance:**
 - `React.memo` for expensive renders
+- RTK Query automatic request deduplication
 - Debounce search inputs
 - Lazy-load routes/components where beneficial

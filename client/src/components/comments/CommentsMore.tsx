@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
 import { NavLink, useParams } from 'react-router-dom';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
-import { getMoreComments } from '@/reddit/redditApiTs';
+import { useGetMoreChildrenQuery } from '@/redux/api';
 import CommentsRender from './CommentsRender';
 
 type CommentOrMore = Thing<CommentData> | Thing<MoreChildrenData>;
 
+/**
+ * Converts an array of comments/more items into a keyed object for efficient lookup.
+ * Used to transform Reddit API responses into a format suitable for nested rendering.
+ */
 const arrayToObject = (
   arr: CommentOrMore[],
   keyField: string
@@ -35,34 +39,35 @@ interface CommentsMoreProps {
 
 function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
   const { count, children } = moreList.data;
+  const [shouldFetch, setShouldFetch] = useState(false);
   const [replies, setReplies] = useState<Record<string, CommentOrMore> | null>(
     null
   );
-  const [loading, setLoading] = useState(false);
   const { target, postName, postTitle } = useParams<{
     target: string;
     postName: string;
     postTitle: string;
   }>();
 
-  const loadMoreComments = async () => {
-    setLoading(true);
-    try {
-      const commentReplies = await getMoreComments(linkId, children);
+  // Fetch comments on-demand using skip pattern (manual trigger via shouldFetch state)
+  const { data: commentData, isLoading } = useGetMoreChildrenQuery(
+    { linkId, children },
+    { skip: !shouldFetch }
+  );
 
-      if (commentReplies.json.data?.things) {
-        const commentRepliesKeyed = arrayToObject(
-          commentReplies.json.data.things as CommentOrMore[],
-          'name'
-        );
-
-        setReplies(commentRepliesKeyed);
-      }
-    } catch (error) {
-      console.error('Failed to load more comments:', error);
-    } finally {
-      setLoading(false);
+  // Process fetched comment data into keyed object for rendering
+  useEffect(() => {
+    if (commentData?.json.data?.things && !replies) {
+      const commentRepliesKeyed = arrayToObject(
+        commentData.json.data.things as CommentOrMore[],
+        'name'
+      );
+      setReplies(commentRepliesKeyed);
     }
+  }, [commentData, replies]);
+
+  const loadMoreComments = () => {
+    setShouldFetch(true);
   };
 
   if (moreList.data.id === '_') {
@@ -91,12 +96,12 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
     <div className="comments-more ps-2 mt-2">
       <Button
         className="mb-2"
-        disabled={loading}
+        disabled={isLoading}
         size="sm"
         variant="outline-secondary"
         onClick={loadMoreComments}
       >
-        {loading ? (
+        {isLoading ? (
           <>Fetching more comments.</>
         ) : (
           <>{count.toLocaleString()} more replies.</>

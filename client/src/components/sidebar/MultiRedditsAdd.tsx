@@ -3,7 +3,7 @@ import type { ReactElement, ChangeEvent } from 'react';
 import { Form, Dropdown, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { multiAdd } from '@/reddit/redditApiTs';
+import { useAddMultiRedditMutation } from '@/redux/api';
 
 interface MultiRedditsAddProps {
   setShowAdd: (show: boolean) => void;
@@ -21,6 +21,9 @@ function MultiRedditsAdd({
   const [disabled, setDisabled] = useState<boolean>(true);
   const visibilityIcon = visibility ? faEye : faEyeSlash;
 
+  // RTK Query mutation hook - auto-invalidates MultiReddits cache on success
+  const [addMultiReddit] = useAddMultiRedditMutation();
+
   const checkInput = useCallback(
     (_event: ChangeEvent<HTMLInputElement>): void => {
       if (!nameInput.current) {
@@ -37,12 +40,21 @@ function MultiRedditsAdd({
       return;
     }
     const name = nameInput.current.value;
-    const desc = descriptionTextarea.current.value;
-    const visibleStatus = visibility ? 'private' : 'public';
-    await multiAdd(name, desc, visibleStatus);
-    setShowAdd(false);
-    reloadMultis();
-  }, [visibility, setShowAdd, reloadMultis]);
+    const description = descriptionTextarea.current.value;
+    const visibilityValue = visibility ? 'private' : 'public';
+
+    try {
+      await addMultiReddit({
+        name,
+        description,
+        visibility: visibilityValue,
+      }).unwrap();
+      setShowAdd(false);
+      reloadMultis();
+    } catch (error) {
+      console.error('Failed to add multireddit:', error);
+    }
+  }, [visibility, setShowAdd, reloadMultis, addMultiReddit]);
 
   return (
     <div className="multireddits-add my-2">

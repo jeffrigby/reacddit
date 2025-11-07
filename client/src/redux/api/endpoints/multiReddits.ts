@@ -3,14 +3,23 @@
  *
  * Endpoints:
  * - getMultiReddits: Fetch user's multireddits
+ * - getMultiRedditInfo: Get information about a specific multireddit
+ * - addMultiReddit: Create a new multireddit
  * - addSubredditToMulti: Add subreddit to a multireddit
+ * - removeSubredditFromMulti: Remove subreddit from a multireddit
  * - deleteMultiReddit: Delete a multireddit
  *
  * Cache behavior:
  * - 24-hour cache with tag-based invalidation on modifications
  */
 
-import type { Thing, LabeledMultiData } from '@/types/redditApi';
+import type {
+  Thing,
+  LabeledMultiData,
+  MultiInfoResponse,
+  ApiResponse,
+} from '@/types/redditApi';
+import { multiAdd, multiInfo } from '@/reddit/redditApiTs';
 import { redditApi } from '../redditApi';
 
 /**
@@ -35,7 +44,7 @@ export const multiRedditsApi = redditApi.injectEndpoints({
           expand_srs: args?.expandSubreddits ?? true,
         },
       }),
-      // Use LIST pattern for granular cache invalidation
+      // Tags each multi individually + LIST for granular invalidation
       providesTags: (result) =>
         result
           ? [
@@ -46,8 +55,7 @@ export const multiRedditsApi = redditApi.injectEndpoints({
               { type: 'MultiReddits', id: 'LIST' },
             ]
           : [{ type: 'MultiReddits', id: 'LIST' }],
-      // Long cache - multis rarely change (overrides global 1-minute default)
-      keepUnusedDataFor: 3600 * 24, // 24 hours
+      keepUnusedDataFor: 3600 * 24, // 24-hour cache - multis rarely change
     }),
 
     /**
@@ -65,7 +73,7 @@ export const multiRedditsApi = redditApi.injectEndpoints({
         method: 'PUT',
         data: `model=${encodeURIComponent(JSON.stringify({ name: srName }))}`,
       }),
-      // Invalidate specific multi and LIST
+      // Invalidate both the specific multi and the full LIST
       invalidatesTags: (result, error, { multiPath }) => [
         { type: 'MultiReddits', id: multiPath },
         { type: 'MultiReddits', id: 'LIST' },
@@ -86,7 +94,7 @@ export const multiRedditsApi = redditApi.injectEndpoints({
         url: `/api/multi/${multiPath.replace(/^\/+|\/+$/g, '')}/r/${srName}`,
         method: 'DELETE',
       }),
-      // Invalidate specific multi and LIST
+      // Invalidate both the specific multi and the full LIST
       invalidatesTags: (result, error, { multiPath }) => [
         { type: 'MultiReddits', id: multiPath },
         { type: 'MultiReddits', id: 'LIST' },
@@ -103,7 +111,68 @@ export const multiRedditsApi = redditApi.injectEndpoints({
         url: `/api/multi/${multiPath.replace(/^\/+|\/+$/g, '')}`,
         method: 'DELETE',
       }),
-      // Delete removes from list, invalidate LIST only
+      invalidatesTags: [{ type: 'MultiReddits', id: 'LIST' }],
+    }),
+
+    /**
+     * Get information about a specific multireddit
+     *
+     * @param multiPath - Path to the multireddit (e.g., user/username/m/multiname)
+     * @returns Multireddit information including metadata and subreddit list
+     */
+    getMultiRedditInfo: builder.query<MultiInfoResponse, string>({
+      queryFn: async (multiPath) => {
+        try {
+          // Calls legacy helper function from redditApiTs.ts
+          const result = await multiInfo(multiPath);
+          return { data: result };
+        } catch (error) {
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              data:
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to fetch multi info',
+            },
+          };
+        }
+      },
+      providesTags: (result, error, multiPath) => [
+        { type: 'MultiReddits', id: multiPath },
+      ],
+      keepUnusedDataFor: 3600 * 24,
+    }),
+
+    /**
+     * Create a new multireddit
+     *
+     * @param name - Display name for the multireddit (max 50 characters)
+     * @param description - Description in markdown format
+     * @param visibility - Visibility setting ('private' or 'public')
+     * @returns API response
+     */
+    addMultiReddit: builder.mutation<
+      ApiResponse,
+      { name: string; description: string; visibility: 'private' | 'public' }
+    >({
+      queryFn: async ({ name, description, visibility }) => {
+        try {
+          // Calls legacy helper function from redditApiTs.ts
+          const result = await multiAdd(name, description, visibility);
+          return { data: result };
+        } catch (error) {
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              data:
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to create multireddit',
+            },
+          };
+        }
+      },
       invalidatesTags: [{ type: 'MultiReddits', id: 'LIST' }],
     }),
   }),
@@ -112,6 +181,8 @@ export const multiRedditsApi = redditApi.injectEndpoints({
 // Export hooks for use in components
 export const {
   useGetMultiRedditsQuery,
+  useGetMultiRedditInfoQuery,
+  useAddMultiRedditMutation,
   useAddSubredditToMultiMutation,
   useRemoveSubredditFromMultiMutation,
   useDeleteMultiRedditMutation,

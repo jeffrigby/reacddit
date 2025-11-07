@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAppSelector } from '@/redux/hooks';
-import type { LabeledMultiData } from '@/types/redditApi';
-import { multiInfo } from '@/reddit/redditApiTs';
+import { useGetMultiRedditInfoQuery } from '@/redux/api';
 import MultiDelete from './MultiDelete';
 
 function ListingsHeaderMulti() {
-  const [currentMulti, setCurrentMulti] = useState<LabeledMultiData | null>(
-    null
-  );
   const filter = useAppSelector((state) => state.listings.currentFilter);
   const me = useAppSelector((state) => state.redditMe);
 
@@ -17,35 +13,16 @@ function ListingsHeaderMulti() {
   // Calculate the name based on whether it's 'me' or a specific user
   const name = user === 'me' ? meName : user;
 
-  useEffect(() => {
-    // If user is 'me' and we don't have the name yet (not loaded), wait
-    if (user === 'me' && !meName) {
-      return;
+  // Fetch multireddit info with RTK Query, skipping if name not yet available
+  // Skip prevents unnecessary API calls before user data is loaded
+  const { data: multiData } = useGetMultiRedditInfoQuery(
+    `user/${name}/m/${target}`,
+    {
+      skip: !name || (user === 'me' && !meName),
     }
+  );
 
-    // If we still don't have a name, wait
-    if (!name) {
-      return;
-    }
-
-    let isSubscribed = true;
-    const getCurrentMulti = async () => {
-      try {
-        const multiLookup = await multiInfo(`user/${name}/m/${target}`);
-        if (isSubscribed) {
-          setCurrentMulti(multiLookup.data);
-        }
-      } catch (error) {
-        console.error('Failed to load multi info:', error);
-        // Keep currentMulti as null to show loading placeholder
-      }
-    };
-
-    getCurrentMulti();
-    return () => {
-      isSubscribed = false;
-    };
-  }, [name, target, user, meName]);
+  const currentMulti = multiData?.data ?? null;
 
   const info = currentMulti ? (
     <>
@@ -59,7 +36,7 @@ function ListingsHeaderMulti() {
   // Set the title
   useEffect(() => {
     if (currentMulti) {
-      document.title = `${currentMulti.name} subreddites curated by /u/${currentMulti.owner}`;
+      document.title = `${currentMulti.name} subreddits curated by /u/${currentMulti.owner}`;
     }
   }, [currentMulti]);
 
