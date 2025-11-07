@@ -10,43 +10,63 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import type { SubredditData } from '@/types/redditApi';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { useGetSubredditsQuery, subredditSelectors } from '@/redux/api';
+import { selectSubredditFilter } from '@/redux/slices/subredditFilterSlice';
 import {
-  fetchSubreddits,
   fetchSubredditsLastUpdated,
   lastUpdatedCleared,
-  subredditsCleared,
-  selectSubredditsStatus,
-  selectSubredditsFilter,
-  selectFilteredSubreddits,
-} from '@/redux/slices/subredditsSlice';
+} from '@/redux/slices/subredditPollingSlice';
 import { getMenuStatus, hotkeyStatus, setMenuStatus } from '@/common';
 import NavigationItem from './NavigationItem';
 
 function NavigationSubReddits() {
   const [showMenu, setShowMenu] = useState(getMenuStatus('subreddits', true));
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const subredditsStatus = useAppSelector(selectSubredditsStatus);
-  const filter = useAppSelector(selectSubredditsFilter);
-  const filteredSubreddits = useAppSelector(selectFilteredSubreddits);
+  const filter = useAppSelector(selectSubredditFilter);
   const dispatch = useAppDispatch();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-  const prevStatusRef = useRef<string | null>(null);
+  const prevWhereRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    // Clear subreddits when auth status changes to prevent showing
-    // authenticated user's subreddits when logged out (or vice versa)
-    if (
-      prevStatusRef.current !== null &&
-      prevStatusRef.current !== redditBearer.status
-    ) {
-      dispatch(subredditsCleared());
+  // Use RTK Query hook - automatically fetches and caches
+  const { allSubreddits, isLoading, isError, refetch } = useGetSubredditsQuery(
+    { where },
+    {
+      // Use selectFromResult to extract and filter data
+      selectFromResult: ({ data, isLoading, isError }) => ({
+        // Get all subreddits as array
+        allSubreddits: data ? subredditSelectors.selectAll(data) : [],
+        isLoading,
+        isError,
+      }),
+      // Refetch when window regains focus (after cache expiration)
+      refetchOnFocus: true,
+      // Don't refetch on mount if we have cached data
+      refetchOnMountOrArgChange: false,
     }
-    prevStatusRef.current = redditBearer.status;
+  );
 
-    dispatch(fetchSubreddits({ reset: false, where }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- 'where' is derived from redditBearer.status
-  }, [redditBearer.status, dispatch]);
+  // Filter subreddits locally
+  const filteredSubreddits = useMemo(() => {
+    if (!filter.filterText) {
+      return allSubreddits;
+    }
+
+    const filterLower = filter.filterText.toLowerCase();
+    return allSubreddits.filter((sub: SubredditData) =>
+      sub.display_name.toLowerCase().includes(filterLower)
+    );
+  }, [allSubreddits, filter.filterText]);
+
+  // Clear polling state when auth status changes
+  useEffect(() => {
+    if (prevWhereRef.current !== null && prevWhereRef.current !== where) {
+      // RTK Query automatically handles separate caches for different 'where' values
+      // Just clear polling state
+      dispatch(lastUpdatedCleared());
+    }
+    prevWhereRef.current = where;
+  }, [where, dispatch]);
 
   useEffect(() => {
     const checkLastUpdated = setInterval(() => {
@@ -60,11 +80,11 @@ function NavigationSubReddits() {
   const reloadSubreddits = useCallback(async () => {
     // Clear the lastUpdated cache to force immediate re-check of all subreddits
     dispatch(lastUpdatedCleared());
-    // Wait for subreddits to load before fetching lastUpdated
-    await dispatch(fetchSubreddits({ reset: true, where }));
+    // Use refetch() instead of manual dispatch
+    await refetch();
     // Trigger immediate fetch of lastUpdated timestamps
     dispatch(fetchSubredditsLastUpdated());
-  }, [dispatch, where]);
+  }, [dispatch, refetch]);
 
   useEffect(() => {
     const handleSubredditHotkey = (event: KeyboardEvent) => {
@@ -160,9 +180,9 @@ function NavigationSubReddits() {
   const caretIcon = showMenu ? faCaretDown : faCaretRight;
 
   let content: React.ReactElement | undefined;
-  if (subredditsStatus === 'loading' || subredditsStatus === 'idle') {
+  if (isLoading) {
     // No loading UI
-  } else if (subredditsStatus === 'failed') {
+  } else if (isError) {
     content = (
       <div
         className="alert alert-danger small"
@@ -182,7 +202,7 @@ function NavigationSubReddits() {
         </button>
       </div>
     );
-  } else if (subredditsStatus === 'succeeded') {
+  } else {
     const noItems = isEmpty(navItems);
     if (noItems) {
       content = (
@@ -194,8 +214,6 @@ function NavigationSubReddits() {
       content = <ul className="nav flex-column">{navItems}</ul>;
     }
   }
-
-  const isReloading = subredditsStatus === 'loading';
 
   const handleReloadKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -220,7 +238,7 @@ function NavigationSubReddits() {
             className="reload"
             icon={faSyncAlt}
             role="button"
-            spin={isReloading}
+            spin={isLoading}
             tabIndex={-1}
             onClick={reloadSubredditsClick}
             onKeyDown={handleReloadKeyDown}

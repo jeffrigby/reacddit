@@ -65,7 +65,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
       const state = store.getState();
       saveState({
         siteSettings: state.siteSettings,
-        subreddits: state.subreddits,
+        subredditPolling: state.subredditPolling,
         redditMultiReddits: state.redditMultiReddits,
         redditMe: state.redditMe,
         history: state.history,

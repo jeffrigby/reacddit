@@ -1,16 +1,11 @@
 import type { ReactElement } from 'react';
 import { memo, useRef, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSpinner,
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
-import { useAppSelector, useAppDispatch } from '../../../redux/hooks';
-import {
-  fetchListingsNext,
-  selectListingStatus,
-} from '../../../redux/slices/listingsSlice';
+import { useListingsContext } from '../../../contexts/ListingsContext';
 import { useIntersectionObservers } from '../../../contexts';
 
 type FooterStatus = 'loadingNext' | 'loadedAll';
@@ -41,11 +36,7 @@ function renderFooterStatus(status: string): ReactElement | null {
 }
 
 function PostsFooter(): ReactElement {
-  const location = useLocation();
-  const dispatch = useAppDispatch();
-  const status = useAppSelector((state) =>
-    selectListingStatus(state, location.key)
-  );
+  const { status, loadMore } = useListingsContext();
   const footerRef = useRef<HTMLDivElement>(null);
   const { observeForLoading } = useIntersectionObservers();
 
@@ -53,10 +44,10 @@ function PostsFooter(): ReactElement {
   const handleIntersection = useCallback(
     (isIntersecting: boolean) => {
       if (isIntersecting && status === 'loaded') {
-        dispatch(fetchListingsNext({ location }));
+        loadMore();
       }
     },
-    [status, location, dispatch]
+    [status, loadMore]
   );
 
   // Register footer with IntersectionObserver

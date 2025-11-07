@@ -6,13 +6,13 @@ import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   filterUpdated,
-  selectSubredditsFilter,
-} from '@/redux/slices/subredditsSlice';
+  selectSubredditFilter,
+} from '@/redux/slices/subredditFilterSlice';
 import { hotkeyStatus } from '@/common';
 
 function FilterReddits() {
   const filterInput = useRef<HTMLInputElement>(null);
-  const filter = useAppSelector(selectSubredditsFilter);
+  const filter = useAppSelector(selectSubredditFilter);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 

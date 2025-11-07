@@ -3,23 +3,25 @@ import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router';
-import { useAppDispatch } from '@/redux/hooks';
 import type { LabeledMultiData } from '@/types/redditApi';
-import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
-import { multiDelete } from '@/reddit/redditApiTs';
+import { useDeleteMultiRedditMutation } from '@/redux/api';
 
 interface MultiDeleteProps {
   multi: LabeledMultiData;
 }
 
 function MultiDelete({ multi }: MultiDeleteProps) {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [deleteMultiReddit] = useDeleteMultiRedditMutation();
 
   const deleteMulti = async () => {
-    await multiDelete(multi.path);
-    dispatch(fetchMultiReddits(true));
-    navigate('/');
+    try {
+      await deleteMultiReddit(multi.path).unwrap();
+      // RTK Query will automatically refetch via tag invalidation
+      navigate('/');
+    } catch (error) {
+      console.error('Failed to delete multireddit:', error);
+    }
   };
 
   const removeMulti = () => {

@@ -1,0 +1,187 @@
+/**
+ * Custom hook for listings queries with streaming and pagination
+ *
+ * Encapsulates:
+ * - Location-based caching with React Router
+ * - Streaming/polling when auto-refresh is enabled
+ * - Pagination helpers (load more, load new)
+ * - Scroll position checks for streaming
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Location } from 'react-router';
+import { useGetListingsQuery } from '@/redux/api';
+import type { ListingsFilter } from '@/types/listings';
+import { useAppSelector } from '@/redux/hooks';
+
+export interface UseListingsQueryOptions {
+  /** Limit for initial load (default: 25, or 100 for condensed view) */
+  limit?: number;
+}
+
+export interface UseListingsQueryResult {
+  /** Listings data */
+  data: ReturnType<typeof useGetListingsQuery>['data'];
+  /** Is loading initial data */
+  isLoading: boolean;
+  /** Has error */
+  isError: boolean;
+  /** Error object */
+  error: ReturnType<typeof useGetListingsQuery>['error'];
+  /** Current status */
+  status:
+    | 'unloaded'
+    | 'loading'
+    | 'loaded'
+    | 'loadedAll'
+    | 'loadingNext'
+    | 'loadingNew'
+    | 'error';
+  /** Can load more posts (has after cursor) */
+  canLoadMore: boolean;
+  /** Load more posts (pagination) */
+  loadMore: () => void;
+  /** Load new posts (refresh/streaming) */
+  loadNew: () => void;
+  /** Refetch current query */
+  refetch: () => void;
+}
+
+export function useListingsQuery(
+  filters: ListingsFilter,
+  location: Location,
+  options: UseListingsQueryOptions = {}
+): UseListingsQueryResult {
+  const stream = useAppSelector((state) => state.siteSettings.stream);
+  const view = useAppSelector((state) => state.siteSettings.view);
+
+  // Determine limit based on view mode
+  const baseLimit = options.limit ?? (view === 'condensed' ? 100 : 25);
+
+  // Track pagination state in component
+  const [paginationState, setPaginationState] = useState<{
+    after?: string;
+    before?: string;
+    limit: number;
+    type: 'init' | 'next' | 'new';
+  }>({
+    limit: baseLimit,
+    type: 'init',
+  });
+
+  // Track when filters/location change to clear stale data
+  const prevFiltersRef = useRef<string>(JSON.stringify(filters));
+  const prevLocationKeyRef = useRef<string | undefined>(location.key);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    const filtersChanged = JSON.stringify(filters) !== prevFiltersRef.current;
+    const locationChanged = location.key !== prevLocationKeyRef.current;
+
+    if (filtersChanged || locationChanged) {
+      setIsTransitioning(true);
+      setPaginationState({
+        limit: baseLimit,
+        type: 'init',
+      });
+      prevFiltersRef.current = JSON.stringify(filters);
+      prevLocationKeyRef.current = location.key;
+    }
+  }, [filters, location.key, baseLimit]);
+
+  // Main query
+  const queryArgs = {
+    filters,
+    location,
+    pagination: paginationState,
+  };
+
+  const result = useGetListingsQuery(queryArgs, {
+    // Enable polling when streaming is active and at top of page
+    pollingInterval: stream && window.scrollY <= 10 ? 5000 : undefined,
+    skip: false,
+  });
+
+  const { data, isLoading, isFetching, isError, error, refetch } = result;
+
+  // Clear transitioning flag when new data arrives
+  useEffect(() => {
+    if (data && !isFetching && isTransitioning) {
+      setIsTransitioning(false);
+    }
+  }, [data, isFetching, isTransitioning]);
+
+  // Hide stale data during filter/location transitions
+  const displayData = isTransitioning ? undefined : data;
+
+  // Determine status based on query state
+  const getStatus = useCallback((): UseListingsQueryResult['status'] => {
+    if (isError) {
+      return 'error';
+    }
+    if (isTransitioning || (isLoading && !displayData)) {
+      return 'loading';
+    }
+    if (isFetching && paginationState.type === 'next') {
+      return 'loadingNext';
+    }
+    if (isFetching && paginationState.type === 'new') {
+      return 'loadingNew';
+    }
+    if (displayData) {
+      return displayData.after ? 'loaded' : 'loadedAll';
+    }
+    return 'unloaded';
+  }, [
+    isLoading,
+    isFetching,
+    isError,
+    displayData,
+    paginationState.type,
+    isTransitioning,
+  ]);
+
+  // Load more posts (pagination)
+  const loadMore = useCallback(() => {
+    if (!displayData?.after || isFetching) {
+      return;
+    }
+
+    setPaginationState({
+      after: displayData.after,
+      limit: 50,
+      type: 'next',
+    });
+  }, [displayData?.after, isFetching]);
+
+  // Load new posts (refresh)
+  const loadNew = useCallback(() => {
+    if (!displayData || isFetching) {
+      return;
+    }
+
+    const childKeys = Object.keys(displayData.children ?? {});
+    if (childKeys.length === 0) {
+      return;
+    }
+
+    const firstPostId = childKeys[0];
+    setPaginationState({
+      before: firstPostId,
+      limit: 100,
+      type: 'new',
+    });
+  }, [displayData, isFetching]);
+
+  return {
+    data: displayData,
+    isLoading,
+    isError,
+    error,
+    status: getStatus(),
+    canLoadMore: !!displayData?.after,
+    loadMore,
+    loadNew,
+    refetch,
+  };
+}

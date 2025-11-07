@@ -31,11 +31,6 @@ interface PostContextData {
   isLoaded: boolean;
 }
 
-interface Dimensions {
-  self?: number;
-  selfHTML?: number;
-}
-
 const cleanLinks = (html: string): string => {
   let rawhtml = html;
   rawhtml = rawhtml
@@ -71,115 +66,117 @@ const cleanLinks = (html: string): string => {
 
 function Self({ name, content }: SelfProps) {
   const postContext = useContext(PostsContextData) as PostContextData;
-
-  const [showAll, setShowAll] = useState(
-    content ? (content.expand ?? false) : false
-  );
-  const [specs, setSpecs] = useState<Dimensions | null>(null);
+  const { post } = postContext;
 
   const listType = useAppSelector(
     (state) => state.listings.currentFilter.listType
   );
   const debug = useAppSelector((state) => state.siteSettings.debugMode);
-  const selfRef = useRef<HTMLDivElement>(null);
-  const selfHTMLRef = useRef<HTMLDivElement>(null);
 
-  const { post } = postContext;
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isExpanded, setIsExpanded] = useState(content?.expand ?? false);
+  const [hasOverflow, setHasOverflow] = useState(false);
 
-  // Optimized height calculation to avoid forced reflows
-  // Using ResizeObserver instead of resize listener + throttle
-  const getHeights = useCallback(() => {
-    // Batch layout reads in requestAnimationFrame to avoid forced reflows
-    requestAnimationFrame(() => {
-      const dimensions: Dimensions = {};
-      if (selfRef.current) {
-        dimensions.self = selfRef.current.getBoundingClientRect().height;
-      }
-
-      if (selfHTMLRef.current) {
-        dimensions.selfHTML = selfHTMLRef.current.scrollHeight;
-      }
-      setSpecs(dimensions);
-    });
-  }, []);
-
-  useEffect(() => {
-    getHeights();
-
-    // Use ResizeObserver instead of window resize listener for better performance
-    const resizeObserver = new ResizeObserver(getHeights);
-    if (selfRef.current) {
-      resizeObserver.observe(selfRef.current);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [getHeights]);
-
-  const toggleShow = useCallback(() => {
-    if (content.expand) {
+  // Check if content overflows its max-height constraint
+  const checkOverflow = useCallback(() => {
+    if (!contentRef.current) {
       return;
     }
-    setShowAll((prevShowAll) => !prevShowAll);
+
+    const { scrollHeight, clientHeight } = contentRef.current;
+    // 10px threshold to avoid showing button for tiny overflows
+    if (scrollHeight > clientHeight + 10) {
+      setHasOverflow(true);
+    }
+  }, []);
+
+  // Check overflow after initial render and when content changes
+  useEffect(() => {
+    // Reset overflow state when content changes
+    setHasOverflow(false);
+    checkOverflow();
+  }, [checkOverflow, content.html]);
+
+  // Recheck if images load (images can change content height)
+  useEffect(() => {
+    if (!contentRef.current) {
+      return;
+    }
+
+    const images = contentRef.current.querySelectorAll('img');
+    if (images.length === 0) {
+      return;
+    }
+
+    const handleImageLoad = (): void => checkOverflow();
+
+    images.forEach((img) => {
+      if (!img.complete) {
+        img.addEventListener('load', handleImageLoad, { once: true });
+      }
+    });
+
+    return () => {
+      images.forEach((img) => {
+        img.removeEventListener('load', handleImageLoad);
+      });
+    };
+  }, [content.html, checkOverflow]);
+
+  const toggleExpansion = useCallback(() => {
+    if (content.expand) {
+      return;
+    } // Locked in expanded state
+    setIsExpanded((prev) => !prev);
   }, [content.expand]);
 
-  if (!content) {
+  if (!content?.html) {
     return null;
   }
 
-  const { html } = content;
-  if (!html) {
-    return null;
-  }
-  const rawhtml = cleanLinks(html);
+  const rawhtml = cleanLinks(content.html);
 
-  const renderedHTML = <div dangerouslySetInnerHTML={{ __html: rawhtml }} />;
-  const inlineRendered =
-    content.inline.length && content.inlineLinks ? (
-      <SelfInline
-        inline={content.inline}
-        inlineLinks={content.inlineLinks}
-        name={name}
-      />
-    ) : null;
-
-  const showMore =
-    specs?.selfHTML && specs.self && specs.selfHTML - specs.self > 10;
-  const selfHTMLClasses = classNames('self-html', {
-    'self-fade': showMore && !showAll,
-    'sf-html-show-all': showAll,
+  const contentClasses = classNames('self-html', {
+    'self-fade': hasOverflow && !isExpanded,
+    'sf-html-show-all': isExpanded,
   });
 
-  const buttonIcon = !showAll ? faAngleDoubleDown : faAngleDoubleUp;
-  const buttonText = !showAll ? 'Read More' : 'Collapse';
+  const buttonIcon = isExpanded ? faAngleDoubleUp : faAngleDoubleDown;
+  const buttonText = isExpanded ? 'Collapse' : 'Read More';
 
   return (
     <div className={`self self-${post.kind} self-${post.kind}-${listType}`}>
-      <div ref={selfRef}>
-        <div className={selfHTMLClasses} ref={selfHTMLRef}>
-          {renderedHTML}
-        </div>
-        {showMore && (
-          <div className="self-show-more">
-            <Button
-              className="shadow-none p-0"
-              size="sm"
-              title="Load More"
-              variant="link"
-              onClick={toggleShow}
-            >
-              <FontAwesomeIcon icon={buttonIcon} /> {buttonText}
-            </Button>
-          </div>
-        )}
+      <div className={contentClasses} ref={contentRef}>
+        <div dangerouslySetInnerHTML={{ __html: rawhtml }} />
       </div>
-      {inlineRendered}
-      {debug && specs && (
+
+      {hasOverflow && (
+        <div className="self-show-more">
+          <Button
+            className="shadow-none p-0"
+            size="sm"
+            title={buttonText}
+            variant="link"
+            onClick={toggleExpansion}
+          >
+            <FontAwesomeIcon icon={buttonIcon} /> {buttonText}
+          </Button>
+        </div>
+      )}
+
+      {content.inline?.length > 0 && content.inlineLinks && (
+        <SelfInline
+          inline={content.inline}
+          inlineLinks={content.inlineLinks}
+          name={name}
+        />
+      )}
+
+      {debug && (
         <code>
-          Self Height: {specs.self}px
+          Has Overflow: {String(hasOverflow)}
           <br />
-          selfHTML Height: {specs.selfHTML}px
+          Is Expanded: {String(isExpanded)}
         </code>
       )}
     </div>

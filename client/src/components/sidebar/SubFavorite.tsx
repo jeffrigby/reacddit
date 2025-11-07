@@ -4,9 +4,8 @@ import type { MouseEvent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { fetchSubreddits } from '@/redux/slices/subredditsSlice';
-import { favorite } from '@/reddit/redditApiTs';
+import { useAppSelector } from '@/redux/hooks';
+import { useFavoriteSubredditMutation } from '@/redux/api';
 
 interface SubFavoriteProps {
   isFavorite: boolean;
@@ -15,10 +14,10 @@ interface SubFavoriteProps {
 
 function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
   const me = useAppSelector((state) => state.redditMe?.me);
-  const redditBearer = useAppSelector((state) => state.redditBearer);
-  const dispatch = useAppDispatch();
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // RTK Query mutation hook - provides isLoading automatically
+  const [favoriteSubreddit, { isLoading }] = useFavoriteSubredditMutation();
 
   const favoriteIcon = isFavorite ? faHeart : farHeart;
 
@@ -35,13 +34,12 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
       const newFavoriteState = !isFavorite;
 
       try {
-        setIsLoading(true);
         setError(null);
 
-        await favorite(newFavoriteState, srName);
-
-        const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-        dispatch(fetchSubreddits({ reset: true, where }));
+        await favoriteSubreddit({
+          makeFavorite: newFavoriteState,
+          srName,
+        }).unwrap();
       } catch (err) {
         const errorMessage =
           err instanceof Error
@@ -50,12 +48,9 @@ function SubFavorite({ isFavorite, srName }: SubFavoriteProps) {
         // TODO: add this to banner error message
         setError(errorMessage);
         console.error('Favorite toggle error:', err);
-      } finally {
-        setIsLoading(false);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- isLoading checked at function start
-    [isFavorite, srName, redditBearer.status, dispatch]
+    [isFavorite, srName, favoriteSubreddit, isLoading]
   );
 
   if (!me?.name) {

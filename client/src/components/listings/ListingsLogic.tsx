@@ -3,12 +3,11 @@ import { useLocation } from 'react-router';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { uiStateUpdated, selectUiState } from '@/redux/slices/listingsSlice';
 import {
-  uiStateUpdated,
-  selectUiState,
-  selectListingStatus,
-} from '@/redux/slices/listingsSlice';
-import { ListingsContextLastExpanded } from '../../contexts';
+  ListingsContextLastExpanded,
+  useListingsContext,
+} from '../../contexts/ListingsContext';
 import {
   getCurrentListingState,
   unfocusIFrame,
@@ -34,10 +33,8 @@ interface ExtendedListingsState extends ListingsState {
 
 function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   const location = useLocation();
-  // Get Redux Props
-  const status = useAppSelector((state) =>
-    selectListingStatus(state, location.key)
-  );
+  // Get status from context (RTK Query)
+  const { status } = useListingsContext();
   const settings = useAppSelector((state) => state.siteSettings);
   const locationKey = location.key;
   const listingsCurrentState = useAppSelector((state) =>

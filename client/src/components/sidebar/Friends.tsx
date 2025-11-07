@@ -8,30 +8,42 @@ import {
   faCaretDown,
   faCaretLeft,
 } from '@fortawesome/free-solid-svg-icons';
-import { followUser } from '@/reddit/redditApiTs';
 import { setMenuStatus, getMenuStatus } from '@/common';
 import {
-  selectAllSubreddits,
-  selectSubredditsStatus,
-  selectLastUpdatedTracking,
-  fetchSubreddits,
-} from '@/redux/slices/subredditsSlice';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+  useGetSubredditsQuery,
+  subredditSelectors,
+  useSubscribeToSubredditMutation,
+} from '@/redux/api';
+import { selectLastUpdatedTracking } from '@/redux/slices/subredditPollingSlice';
+import { useAppSelector } from '@/redux/hooks';
 import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 
 // Constants
 const MENU_ID = 'friends';
-const INVALID_STATUSES = new Set(['loading', 'idle', 'failed']);
 
 // Custom hook for friends logic
 function useFriends() {
   const [showFriends, setShowFriends] = useState(getMenuStatus(MENU_ID));
   const lastUpdated = useAppSelector(selectLastUpdatedTracking);
-  const allSubreddits = useAppSelector(selectAllSubreddits);
-  const subredditsStatus = useAppSelector(selectSubredditsStatus);
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const dispatch = useAppDispatch();
+
+  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+
+  // Use RTK Query mutation for subscribing/unsubscribing
+  const [subscribeToSubreddit] = useSubscribeToSubredditMutation();
+
+  // Use RTK Query hook with selectFromResult to get all subreddits
+  const { allSubreddits, isLoading, isError } = useGetSubredditsQuery(
+    { where },
+    {
+      selectFromResult: ({ data, isLoading, isError }) => ({
+        allSubreddits: data ? subredditSelectors.selectAll(data) : [],
+        isLoading,
+        isError,
+      }),
+    }
+  );
 
   const toggleShowFriends = useCallback(() => {
     const newShowFriends = !showFriends;
@@ -43,14 +55,16 @@ function useFriends() {
     async (name: string) => {
       const nameLower = name.toLowerCase();
       try {
-        await followUser(nameLower, 'unsub');
-        const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-        dispatch(fetchSubreddits({ reset: true, where }));
+        await subscribeToSubreddit({
+          name: nameLower,
+          action: 'unsub',
+          type: 'sr_name',
+        }).unwrap();
       } catch (error) {
         console.error(`Error unfollowing user ${name}:`, error);
       }
     },
-    [redditBearer.status, dispatch]
+    [subscribeToSubreddit]
   );
 
   return {
@@ -58,7 +72,8 @@ function useFriends() {
     toggleShowFriends,
     lastUpdated,
     allSubreddits,
-    subredditsStatus,
+    isLoading,
+    isError,
     unfollowUser,
   };
 }
@@ -69,12 +84,13 @@ function Friends() {
     toggleShowFriends,
     lastUpdated,
     allSubreddits,
-    subredditsStatus,
+    isLoading,
+    isError,
     unfollowUser,
   } = useFriends();
 
   const friendItems = useMemo(() => {
-    if (INVALID_STATUSES.has(subredditsStatus)) {
+    if (isLoading || isError) {
       return null;
     }
 
@@ -126,7 +142,7 @@ function Friends() {
         </li>
       );
     });
-  }, [allSubreddits, subredditsStatus, lastUpdated, unfollowUser]);
+  }, [allSubreddits, isLoading, isError, lastUpdated, unfollowUser]);
 
   if (!friendItems || friendItems.length === 0) {
     return null;

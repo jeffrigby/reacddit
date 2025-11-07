@@ -5,6 +5,7 @@ import {
   useState,
   useCallback,
   useOptimistic,
+  startTransition,
 } from 'react';
 import type { MouseEvent } from 'react';
 import { Button } from 'react-bootstrap';
@@ -19,9 +20,9 @@ import {
 } from '@fortawesome/free-regular-svg-icons';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
+import { useVoteMutation } from '@/redux/api';
 import { PostsContextData, PostsContextActionable } from '@/contexts';
 import { hotkeyStatus } from '@/common';
-import { vote as voteAPI } from '@/reddit/redditApiTs';
 
 interface VoteState {
   ups: number;
@@ -116,6 +117,9 @@ function PostVote() {
     }
   );
 
+  // RTK Query mutation hook
+  const [voteOnPost] = useVoteMutation();
+
   const expired = Date.now() / 1000 - data.created_utc;
   const sixmonthSeconds = 182.5 * 86400;
   const disabled = bearer.status !== 'auth' || expired > sixmonthSeconds;
@@ -135,19 +139,24 @@ function PostVote() {
         return;
       }
 
-      setOptimisticVoteState(dir); // Instant UI update
+      const effectiveDir: VoteDirection =
+        voteState.likes === (dir === 1) ? 0 : dir;
+
+      // Wrap optimistic update in startTransition (React 19 requirement)
+      startTransition(() => {
+        setOptimisticVoteState(dir);
+      });
 
       try {
-        const effectiveDir: VoteDirection =
-          voteState.likes === (dir === 1) ? 0 : dir;
-        await voteAPI(data.name, effectiveDir);
+        // Use RTK Query mutation instead of direct API call
+        await voteOnPost({ id: data.name, dir: effectiveDir }).unwrap();
 
         setVoteState(getNewState(effectiveDir, voteState.ups, voteState.likes));
       } catch (error) {
         console.error('Vote failed:', error);
       }
     },
-    [bearer.status, data.name, voteState, setOptimisticVoteState]
+    [bearer.status, data.name, voteState, setOptimisticVoteState, voteOnPost]
   );
 
   useEffect(() => {

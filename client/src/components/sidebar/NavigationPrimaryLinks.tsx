@@ -13,6 +13,7 @@ import {
   faSignInAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
+import { useGetSubredditsQuery } from '@/redux/api';
 import { useModals } from '@/contexts/ModalContext';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import { hotkeyStatus } from '../../common';
@@ -22,9 +23,20 @@ function NavigationPrimaryLinks(): ReactElement {
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const sort = useAppSelector((state) => state.listings.currentFilter.sort);
   const query = useAppSelector((state) => state.listings.currentFilter.qs);
-  const subreddits = useAppSelector((state) => state.subreddits);
   const navigate = useNavigate();
   const { setShowHotkeys } = useModals();
+
+  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+
+  // Use RTK Query hook with selectFromResult to get entities
+  const { subredditEntities } = useGetSubredditsQuery(
+    { where },
+    {
+      selectFromResult: ({ data }) => ({
+        subredditEntities: data?.entities ?? {},
+      }),
+    }
+  );
 
   const lastKeyPressed = useRef<string>('');
 
@@ -40,15 +52,19 @@ function NavigationPrimaryLinks(): ReactElement {
       if (e) {
         e.preventDefault();
       }
-      if (isEmpty(subreddits.entities)) {
+      if (isEmpty(subredditEntities)) {
         return false;
       }
 
       const qs = queryString.parse(query);
 
-      const keys = Object.keys(subreddits.entities);
+      const keys = Object.keys(subredditEntities);
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
-      const randomSubreddit = subreddits.entities[randomKey];
+      const randomSubreddit = subredditEntities[randomKey];
+
+      if (!randomSubreddit) {
+        return false;
+      }
 
       const sortTopQS =
         (sort === 'top' || sort === 'controversial') && qs.t
@@ -60,7 +76,7 @@ function NavigationPrimaryLinks(): ReactElement {
       const url = randomSubreddit.url + newSort + sortTopQS;
       return navigate(url);
     },
-    [navigate, query, sort, subreddits.entities]
+    [navigate, query, sort, subredditEntities]
   );
 
   const getLoginUrl = useCallback((): string => {

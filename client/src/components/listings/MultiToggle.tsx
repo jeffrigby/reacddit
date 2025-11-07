@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react';
-import isEmpty from 'lodash/isEmpty';
-import { useLocation } from 'react-router';
+import { useParams } from 'react-router';
 import { Form, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { fetchMultiReddits } from '@/redux/slices/multiRedditsSlice';
-import { selectSubredditData } from '@/redux/slices/listingsSlice';
-import { multiAddSubreddit, multiRemoveSubreddit } from '@/reddit/redditApiTs';
+import { useAppSelector } from '@/redux/hooks';
+import {
+  useGetMultiRedditsQuery,
+  useAddSubredditToMultiMutation,
+  useRemoveSubredditFromMultiMutation,
+  useGetSubredditsQuery,
+  subredditSelectors,
+} from '@/redux/api';
 import type { Thing, LabeledMultiData } from '@/types/redditApi';
 
 interface MultiToggleProps {
@@ -16,14 +19,33 @@ interface MultiToggleProps {
 
 function MultiToggle({ srName }: MultiToggleProps) {
   const multiRef = useRef<HTMLDivElement>(null);
-  const location = useLocation();
+  const params = useParams();
 
-  const about = useAppSelector((state) =>
-    selectSubredditData(state, location.key)
-  );
-  const multis = useAppSelector((state) => state.redditMultiReddits);
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const dispatch = useAppDispatch();
+  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+
+  const { target } = params;
+
+  // Use RTK Query to get cached subreddit data
+  const { about } = useGetSubredditsQuery(
+    { where },
+    {
+      selectFromResult: ({ data }) => ({
+        about:
+          data && target
+            ? subredditSelectors.selectById(data, target.toLowerCase())
+            : null,
+      }),
+    }
+  );
+
+  // RTK Query hooks
+  const { data: multis } = useGetMultiRedditsQuery(
+    { expandSubreddits: true },
+    { skip: redditBearer.status !== 'auth' }
+  );
+  const [addSubreddit] = useAddSubredditToMultiMutation();
+  const [removeSubreddit] = useRemoveSubredditFromMultiMutation();
 
   useEffect(() => {
     const disableClose = (e: Event) => {
@@ -42,25 +64,28 @@ function MultiToggle({ srName }: MultiToggleProps) {
     }
   }, []);
 
-  if (
-    isEmpty(about) ||
-    redditBearer.status !== 'auth' ||
-    multis.status !== 'succeeded'
-  ) {
+  if (!about || redditBearer.status !== 'auth') {
     return null;
   }
 
-  if (!multis.multis || multis.multis.length === 0) {
+  if (!multis || multis.length === 0) {
     return null;
   }
 
   const addRemove = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      await (e.target.checked
-        ? multiAddSubreddit(e.target.value, srName)
-        : multiRemoveSubreddit(e.target.value, srName));
-
-      await dispatch(fetchMultiReddits(true));
+      if (e.target.checked) {
+        await addSubreddit({
+          multiPath: e.target.value,
+          srName,
+        }).unwrap();
+      } else {
+        await removeSubreddit({
+          multiPath: e.target.value,
+          srName,
+        }).unwrap();
+      }
+      // RTK Query will automatically refetch via tag invalidation
     } catch (error) {
       console.error('Failed to update multi subreddit:', error);
       // Note: Checkbox state will be corrected when multis refresh
@@ -70,7 +95,7 @@ function MultiToggle({ srName }: MultiToggleProps) {
   const getSubreddits = (subs: Array<{ name: string }>) =>
     subs.map((sub) => sub.name);
 
-  const menuItems = multis.multis.map((item: Thing<LabeledMultiData>) => {
+  const menuItems = multis.map((item: Thing<LabeledMultiData>) => {
     const key = `${item.data.display_name}-${item.data.created}-${srName}`;
     const subNames = getSubreddits(item.data.subreddits);
     const checked = subNames.includes(srName);

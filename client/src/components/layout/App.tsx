@@ -19,9 +19,9 @@ function App() {
   const [message, setMessage] = useState<string | null>(null);
   const dispatch = useAppDispatch();
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const pinMenu = useAppSelector((state) => state.siteSettings.pinMenu);
-  const subredditsFilter = useAppSelector((state) => state.subreddits.filter);
   const redditMe = useAppSelector((state) => state.redditMe);
+  const pinMenu = useAppSelector((state) => state.siteSettings.pinMenu);
+  const subredditsFilter = useAppSelector((state) => state.subredditFilter);
   const { setShowHotkeys } = useModals();
 
   const hotkeys = useCallback(
@@ -56,7 +56,8 @@ function App() {
     const bearerResult = await dispatch(fetchBearer());
     if (fetchBearer.fulfilled.match(bearerResult)) {
       setToken(bearerResult.payload.bearer);
-      await dispatch(fetchMe(true));
+      // Fetch user profile after bearer token is ready
+      await dispatch(fetchMe());
       setLoading(false);
     } else {
       setError(true);
@@ -98,7 +99,7 @@ function App() {
           blocks this by default. Please check your browser content blocking
           settings and try again.
         </p>
-        <p>{redditMe.error}</p>
+        <p>{redditMe.error ? String(redditMe.error) : 'Unknown error'}</p>
       </div>
     );
   }

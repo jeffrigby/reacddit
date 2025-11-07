@@ -1,13 +1,11 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { useLocation } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSpinner,
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
-import { useAppSelector } from '../../../redux/hooks';
-import { selectListingDataAndStatus } from '../../../redux/slices/listingsSlice';
+import { useListingsContext } from '../../../contexts/ListingsContext';
 
 type ListingStatus =
   | 'error'
@@ -70,15 +68,17 @@ function getStatusInfo(status: string, data: ListingData): StatusInfo | null {
 }
 
 function PostsLoadingStatus(): ReactElement | null {
-  const location = useLocation();
+  // Get data and status from RTK Query via context
+  const { data, status } = useListingsContext();
 
-  // Use memoized combined selector to prevent unnecessary re-renders
-  const { data, status } = useAppSelector((state) =>
-    selectListingDataAndStatus(state, location.key)
-  );
+  // Convert to compatible format for getStatusInfo
+  const listingData = useMemo(() => ({ children: data?.children }), [data]);
 
   // Memoize statusInfo to prevent recalculation on every render
-  const statusInfo = useMemo(() => getStatusInfo(status, data), [status, data]);
+  const statusInfo = useMemo(
+    () => getStatusInfo(status, listingData),
+    [status, listingData]
+  );
 
   if (!statusInfo) {
     return null;
