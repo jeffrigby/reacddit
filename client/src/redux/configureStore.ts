@@ -3,7 +3,6 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 import listingsReducer from './slices/listingsSlice';
 import siteSettingsReducer from './slices/siteSettingsSlice';
 import historyReducer from './slices/historySlice';
-import multiRedditsReducer from './slices/multiRedditsSlice';
 import bearerReducer from './slices/redditBearerSlice';
 import meReducer from './slices/redditMeSlice';
 import subredditFilterReducer from './slices/subredditFilterSlice';
@@ -25,7 +24,6 @@ function makeStore(initialState?: Partial<RootState>) {
       listings: listingsReducer,
       siteSettings: siteSettingsReducer,
       history: historyReducer,
-      redditMultiReddits: multiRedditsReducer,
       redditBearer: bearerReducer,
       redditMe: meReducer,
       redditApi: redditApiReducer,

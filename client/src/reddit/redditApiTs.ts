@@ -9,16 +9,8 @@ import {
   type TokenData,
   type TokenApiResponse,
   type TokenStorageResult,
-  type FavoriteResponse,
-  type FavoriteBodyParams,
   type SearchSubredditsResponse,
   type SearchSubredditsPostBody,
-  type VoteParams,
-  type VoteResponse,
-  type SaveParams,
-  type SaveResponse,
-  type UnsaveParams,
-  type UnsaveResponse,
   type SubredditAboutResponse,
   type SubredditRulesResponse,
   type SubredditTrafficResponse,
@@ -40,9 +32,6 @@ import {
   type MultiInfoResponse,
   type SubredditsListingParams,
   type SubredditsListingResponse,
-  type SubscribeParams,
-  type SubscribeResponse,
-  type FriendsList,
   type MoreChildrenParams,
   type MoreChildrenResponse,
 } from '@/types/redditApi';
@@ -198,36 +187,6 @@ export async function me(): Promise<MeResponse> {
 }
 
 /**
- * Add or remove a subreddit from favorites.
- * @param makeFavorite - true to favorite, false to unfavorite
- * @param srName - the subreddit name
- */
-export async function favorite(
-  makeFavorite: boolean,
-  srName: string
-): Promise<FavoriteResponse> {
-  const data: FavoriteBodyParams = {
-    make_favorite: makeFavorite.toString(),
-    sr_name: srName,
-  };
-
-  const response = await redditAPI.post(
-    '/api/favorite',
-    queryString.stringify(data),
-    { headers: FORM_URLENCODED_HEADERS }
-  );
-
-  // If the response is not 200, throw an error
-  if (response.status !== 200) {
-    throw new Error(
-      `Failed to ${makeFavorite ? 'favorite' : 'unfavorite'} subreddit: ${srName}`
-    );
-  }
-
-  return response.data;
-}
-
-/**
  * Search for subreddits by query.
  * @param query - The search query
  * @param options - Optional search parameters
@@ -255,70 +214,6 @@ export async function searchSubreddits(
   const response = await redditAPI.post(
     '/api/search_subreddits',
     queryString.stringify(params),
-    { headers: FORM_URLENCODED_HEADERS }
-  );
-
-  return response.data;
-}
-
-/**
- * Vote on content
- * @param id - The fullname of the content to vote on (e.g., t3_xxx for posts, t1_xxx for comments)
- * @param dir - Vote direction: 1 = upvote, -1 = downvote, 0 = remove vote
- * @returns Promise with the API response (typically an empty object on success)
- */
-export async function vote(
-  id: VoteParams['id'],
-  dir: VoteParams['dir']
-): Promise<VoteResponse> {
-  const params: VoteParams = {
-    id,
-    dir,
-    rank: 1,
-  };
-
-  const response = await redditAPI.post(
-    '/api/vote',
-    queryString.stringify(params),
-    { headers: FORM_URLENCODED_HEADERS }
-  );
-
-  return response.data;
-}
-
-/**
- * Save a post or comment
- * @param id - The fullname of the content to save (e.g., t3_xxx for posts, t1_xxx for comments)
- * @param category - Optional category to save the item in
- * @returns Promise with the API response (typically an empty object on success)
- */
-export async function save(
-  id: SaveParams['id'],
-  category?: SaveParams['category']
-): Promise<SaveResponse> {
-  const params: SaveParams = { id };
-  if (category) {
-    params.category = category;
-  }
-
-  const response = await redditAPI.post(
-    '/api/save',
-    queryString.stringify(params),
-    { headers: FORM_URLENCODED_HEADERS }
-  );
-
-  return response.data;
-}
-
-/**
- * Unsave a post or comment
- * @param id - The fullname of the content to unsave (e.g., t3_xxx for posts, t1_xxx for comments)
- * @returns Promise with the API response (typically an empty object on success)
- */
-export async function unsave(id: UnsaveParams['id']): Promise<UnsaveResponse> {
-  const response = await redditAPI.post(
-    '/api/unsave',
-    queryString.stringify({ id }),
     { headers: FORM_URLENCODED_HEADERS }
   );
 
@@ -725,18 +620,6 @@ export async function multiAdd(
 }
 
 /**
- * Delete a multireddit
- * @param multipath - The multireddit path (e.g., /user/username/m/multiname)
- * @returns Promise with API response
- */
-export async function multiDelete(multipath: string): Promise<ApiResponse> {
-  const path = multipath.replace(/^\/+/, '');
-  const url = `/api/multi/${path}`;
-  const response = await redditAPI.delete(url);
-  return response.data;
-}
-
-/**
  * Get information about a multireddit
  * @param multiPath - The multireddit path
  * @returns Promise with multireddit information
@@ -744,43 +627,6 @@ export async function multiDelete(multipath: string): Promise<ApiResponse> {
 export async function multiInfo(multiPath: string): Promise<MultiInfoResponse> {
   const url = `/api/multi/${multiPath}`;
   const response = await redditAPI.get(url);
-  return response.data;
-}
-
-/**
- * Add a subreddit to a multireddit
- * @param multiPath - The full path of the multireddit
- * @param srName - The subreddit name (without r/ prefix)
- * @returns Promise with API response
- */
-export async function multiAddSubreddit(
-  multiPath: string,
-  srName: string
-): Promise<ApiResponse> {
-  const cleanPath = multiPath.replace(/(^\/|\/$)/g, '');
-  const url = `/api/multi/${cleanPath}//r/${srName}`;
-  const data = { model: JSON.stringify({ name: srName }) };
-
-  const response = await redditAPI.put(url, queryString.stringify(data), {
-    headers: FORM_URLENCODED_HEADERS,
-  });
-
-  return response.data;
-}
-
-/**
- * Remove a subreddit from a multireddit
- * @param multiPath - The full path of the multireddit
- * @param srName - The subreddit name (without r/ prefix)
- * @returns Promise with API response
- */
-export async function multiRemoveSubreddit(
-  multiPath: string,
-  srName: string
-): Promise<ApiResponse> {
-  const cleanPath = multiPath.replace(/(^\/|\/$)/g, '');
-  const url = `/api/multi/${cleanPath}/r/${srName}`;
-  const response = await redditAPI.delete(url);
   return response.data;
 }
 
@@ -815,65 +661,4 @@ export async function subreddits(
 
   const response = await redditAPI.get(url, { params });
   return response.data;
-}
-
-/**
- * Subscribe or unsubscribe from a subreddit or user
- * @param name - The subreddit/user name or fullname
- * @param action - 'sub' to subscribe, 'unsub' to unsubscribe
- * @param type - 'sr' for fullname (t5_xxx), 'sr_name' for display name
- * @returns Promise with API response
- */
-export async function subscribe(
-  name: string,
-  action: 'sub' | 'unsub' = 'sub',
-  type: 'sr' | 'sr_name' = 'sr'
-): Promise<SubscribeResponse> {
-  const validActions: Array<'sub' | 'unsub'> = ['sub', 'unsub'];
-  const validTypes: Array<'sr' | 'sr_name'> = ['sr', 'sr_name'];
-
-  if (!validActions.includes(action)) {
-    throw new Error('Invalid action passed to subscribe');
-  }
-
-  if (!validTypes.includes(type)) {
-    throw new Error('Invalid type passed to subscribe');
-  }
-
-  const params: SubscribeParams = { action };
-  if (type === 'sr') {
-    params.sr = name as `t5_${string}`;
-  } else {
-    params.sr_name = name;
-  }
-
-  const response = await redditAPI.post(
-    '/api/subscribe',
-    queryString.stringify(params),
-    { headers: FORM_URLENCODED_HEADERS }
-  );
-
-  return response.data;
-}
-
-/**
- * Get the user's friend list (DEPRECATED by Reddit)
- * @returns Promise with friends list
- */
-export async function friends(): Promise<FriendsList> {
-  const response = await redditAPI.get('api/v1/me/friends');
-  return response.data;
-}
-
-/**
- * Follow or unfollow a user
- * @param name - The username to follow/unfollow
- * @param action - 'sub' to follow, 'unsub' to unfollow
- * @returns Promise with API response
- */
-export async function followUser(
-  name: string,
-  action: 'sub' | 'unsub' = 'sub'
-): Promise<SubscribeResponse> {
-  return subscribe(name, action, 'sr_name');
 }
