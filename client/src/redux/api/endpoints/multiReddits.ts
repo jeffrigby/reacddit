@@ -61,9 +61,9 @@ export const multiRedditsApi = redditApi.injectEndpoints({
       { multiPath: string; srName: string }
     >({
       query: ({ multiPath, srName }) => ({
-        url: `${multiPath}/r/${srName}`,
+        url: `/api/multi/${multiPath.replace(/^\/+|\/+$/g, '')}/r/${srName}`,
         method: 'PUT',
-        data: { model: JSON.stringify({ name: srName }) },
+        data: `model=${encodeURIComponent(JSON.stringify({ name: srName }))}`,
       }),
       // Invalidate specific multi and LIST
       invalidatesTags: (result, error, { multiPath }) => [
@@ -83,7 +83,7 @@ export const multiRedditsApi = redditApi.injectEndpoints({
       { multiPath: string; srName: string }
     >({
       query: ({ multiPath, srName }) => ({
-        url: `${multiPath}/r/${srName}`,
+        url: `/api/multi/${multiPath.replace(/^\/+|\/+$/g, '')}/r/${srName}`,
         method: 'DELETE',
       }),
       // Invalidate specific multi and LIST
@@ -100,7 +100,7 @@ export const multiRedditsApi = redditApi.injectEndpoints({
      */
     deleteMultiReddit: builder.mutation<void, string>({
       query: (multiPath) => ({
-        url: `${multiPath}`,
+        url: `/api/multi/${multiPath.replace(/^\/+|\/+$/g, '')}`,
         method: 'DELETE',
       }),
       // Delete removes from list, invalidate LIST only

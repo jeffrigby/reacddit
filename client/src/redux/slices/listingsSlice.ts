@@ -132,8 +132,12 @@ const listingsSlice = createSlice({
   },
 });
 
-export const { filterChanged, uiStateUpdated, statusUpdated, refreshRequested } =
-  listingsSlice.actions;
+export const {
+  filterChanged,
+  uiStateUpdated,
+  statusUpdated,
+  refreshRequested,
+} = listingsSlice.actions;
 
 const selectListingsByLocation = (state: RootState) =>
   state.listings?.listingsByLocation ?? {};

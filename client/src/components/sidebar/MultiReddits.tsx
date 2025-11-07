@@ -85,8 +85,8 @@ function MultiReddits(): ReactElement | null {
     );
   }, [multireddits]);
 
-  // Don't render if not authenticated, no data, or empty array
-  if (bearerStatus !== 'auth' || !multireddits || multiItems.length === 0) {
+  // Don't render if not authenticated or no data
+  if (bearerStatus !== 'auth' || !multireddits) {
     return null;
   }
 
@@ -137,7 +137,14 @@ function MultiReddits(): ReactElement | null {
       {showAdd && (
         <MultiRedditsAdd reloadMultis={reloadMultis} setShowAdd={setShowAdd} />
       )}
-      {showMenu && <ul className={multisClass}>{multiItems}</ul>}
+      {showMenu && multiItems.length === 0 && !showAdd && (
+        <div className="text-muted small ps-3 py-2">
+          No custom feeds yet. Click the + button above to create one.
+        </div>
+      )}
+      {showMenu && multiItems.length > 0 && (
+        <ul className={multisClass}>{multiItems}</ul>
+      )}
     </div>
   );
 }

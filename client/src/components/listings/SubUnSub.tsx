@@ -1,12 +1,14 @@
 import { useCallback, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import isEmpty from 'lodash/isEmpty';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
-import { useLocation, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { useAppSelector } from '@/redux/hooks';
-import { useSubscribeToSubredditMutation } from '@/redux/api';
-import { selectSubredditData } from '@/redux/slices/listingsSlice';
+import {
+  useSubscribeToSubredditMutation,
+  useGetSubredditsQuery,
+  subredditSelectors,
+} from '@/redux/api';
 
 /**
  * SubscribeButton component to handle subscribing and unsubscribing from subreddits
@@ -14,14 +16,24 @@ import { selectSubredditData } from '@/redux/slices/listingsSlice';
  * @returns Rendered SubscribeButton component or null if conditions not met
  */
 function SubUnSub() {
-  const location = useLocation();
   const params = useParams();
 
-  const about = useAppSelector((state) =>
-    selectSubredditData(state, location.key)
-  );
-  const { status: bearerStatus } = useAppSelector(
-    (state) => state.redditBearer
+  const redditBearer = useAppSelector((state) => state.redditBearer);
+  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+
+  const { target, listType } = params;
+
+  // Use RTK Query to get cached subreddit data
+  const { about } = useGetSubredditsQuery(
+    { where },
+    {
+      selectFromResult: ({ data }) => ({
+        about:
+          data && target
+            ? subredditSelectors.selectById(data, target.toLowerCase())
+            : null,
+      }),
+    }
   );
 
   // Local state for optimistic UI updates
@@ -33,17 +45,19 @@ function SubUnSub() {
   const [subscribeToSubreddit, { isLoading }] =
     useSubscribeToSubredditMutation();
 
-  const { target, listType } = params;
-
   const {
     user_is_subscriber: userIsSubscriber,
     display_name_prefixed: displayNamePrefixed,
-  } = about;
+  } = about ?? {};
 
   // Use optimistic state if set, otherwise use server state
   const effectiveSubscribed = optimisticSubscribed ?? userIsSubscriber;
 
   const buttonAction = useCallback(async () => {
+    if (!about) {
+      return;
+    }
+
     const newSubscribedState = !effectiveSubscribed;
 
     // Optimistically update UI immediately
@@ -60,11 +74,11 @@ function SubUnSub() {
       // Revert optimistic update on error
       setOptimisticSubscribed(null);
     }
-  }, [effectiveSubscribed, about.name, subscribeToSubreddit]);
+  }, [effectiveSubscribed, about, subscribeToSubreddit]);
 
   if (
-    isEmpty(about) ||
-    bearerStatus !== 'auth' ||
+    !about ||
+    redditBearer.status !== 'auth' ||
     (target === 'popular' && listType === 'r')
   ) {
     return null;

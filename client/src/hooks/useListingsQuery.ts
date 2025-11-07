@@ -69,15 +69,17 @@ export function useListingsQuery(
     type: 'init',
   });
 
-  // Reset pagination when filters or location change
+  // Track when filters/location change to clear stale data
   const prevFiltersRef = useRef<string>(JSON.stringify(filters));
   const prevLocationKeyRef = useRef<string | undefined>(location.key);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const filtersChanged = JSON.stringify(filters) !== prevFiltersRef.current;
     const locationChanged = location.key !== prevLocationKeyRef.current;
 
     if (filtersChanged || locationChanged) {
+      setIsTransitioning(true);
       setPaginationState({
         limit: baseLimit,
         type: 'init',
@@ -102,12 +104,22 @@ export function useListingsQuery(
 
   const { data, isLoading, isFetching, isError, error, refetch } = result;
 
+  // Clear transitioning flag when new data arrives
+  useEffect(() => {
+    if (data && !isFetching && isTransitioning) {
+      setIsTransitioning(false);
+    }
+  }, [data, isFetching, isTransitioning]);
+
+  // Hide stale data during filter/location transitions
+  const displayData = isTransitioning ? undefined : data;
+
   // Determine status based on query state
   const getStatus = useCallback((): UseListingsQueryResult['status'] => {
     if (isError) {
       return 'error';
     }
-    if (isLoading && !data) {
+    if (isTransitioning || (isLoading && !displayData)) {
       return 'loading';
     }
     if (isFetching && paginationState.type === 'next') {
@@ -116,32 +128,39 @@ export function useListingsQuery(
     if (isFetching && paginationState.type === 'new') {
       return 'loadingNew';
     }
-    if (data) {
-      return data.after ? 'loaded' : 'loadedAll';
+    if (displayData) {
+      return displayData.after ? 'loaded' : 'loadedAll';
     }
     return 'unloaded';
-  }, [isLoading, isFetching, isError, data, paginationState.type]);
+  }, [
+    isLoading,
+    isFetching,
+    isError,
+    displayData,
+    paginationState.type,
+    isTransitioning,
+  ]);
 
   // Load more posts (pagination)
   const loadMore = useCallback(() => {
-    if (!data?.after || isFetching) {
+    if (!displayData?.after || isFetching) {
       return;
     }
 
     setPaginationState({
-      after: data.after,
+      after: displayData.after,
       limit: 50,
       type: 'next',
     });
-  }, [data?.after, isFetching]);
+  }, [displayData?.after, isFetching]);
 
   // Load new posts (refresh)
   const loadNew = useCallback(() => {
-    if (!data || isFetching) {
+    if (!displayData || isFetching) {
       return;
     }
 
-    const childKeys = Object.keys(data.children ?? {});
+    const childKeys = Object.keys(displayData.children ?? {});
     if (childKeys.length === 0) {
       return;
     }
@@ -152,15 +171,15 @@ export function useListingsQuery(
       limit: 100,
       type: 'new',
     });
-  }, [data, isFetching]);
+  }, [displayData, isFetching]);
 
   return {
-    data,
+    data: displayData,
     isLoading,
     isError,
     error,
     status: getStatus(),
-    canLoadMore: !!data?.after,
+    canLoadMore: !!displayData?.after,
     loadMore,
     loadNew,
     refetch,
