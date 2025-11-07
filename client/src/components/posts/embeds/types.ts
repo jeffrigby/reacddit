@@ -80,7 +80,7 @@ export interface IFrameEmbedContent extends BaseEmbedContent {
   height?: number;
   title?: string;
   allow?: string;
-  referrerPolicy?: string;
+  referrerPolicy?: React.HTMLAttributeReferrerPolicy;
 }
 
 // Self/Comment text content

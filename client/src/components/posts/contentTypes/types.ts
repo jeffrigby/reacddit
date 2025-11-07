@@ -21,17 +21,15 @@ export interface RawHTMLContent {
  */
 export interface RedditGalleryMediaItem {
   preview: {
-    url: string;
-    width: number;
-    height: number;
+    u: string;
+    x: number;
+    y: number;
   };
   thumb: {
-    url: string;
-    width: number;
-    height: number;
+    u: string;
+    x: number;
+    y: number;
   };
-  // Legacy support for 'u' property
-  u?: string;
 }
 
 /**
