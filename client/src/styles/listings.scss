@@ -386,6 +386,16 @@ div#entries {
   .actions {
     font-size: 1rem;
   }
+
+  /**
+   * Prevent accidental clicks during scrolling on touch devices.
+   * Applied when .scrolling class is present on root container.
+   * Best practice for mobile UX and 60fps scrolling performance.
+   * @see https://ryanseddon.com/css/pointer-events-60fps/
+   */
+  .scrolling * {
+    pointer-events: none !important;
+  }
 }
 
 /** Specific settings for Desktop **/

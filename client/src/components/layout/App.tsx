@@ -6,6 +6,7 @@ import { fetchMe } from '@/redux/slices/redditMeSlice';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus, scrollToPosition } from '@/common';
 import { useModals } from '@/contexts/ModalContext';
+import { useScrollClickPrevention } from '@/hooks/useScrollClickPrevention';
 import Navigation from './Navigation';
 import Header from './Header';
 import Help from './Help';
@@ -23,6 +24,7 @@ function App() {
   const pinMenu = useAppSelector((state) => state.siteSettings.pinMenu);
   const subredditsFilter = useAppSelector((state) => state.subredditFilter);
   const { setShowHotkeys } = useModals();
+  const isScrolling = useScrollClickPrevention();
 
   const hotkeys = useCallback(
     (event: KeyboardEvent) => {
@@ -117,9 +119,13 @@ function App() {
   }
 
   const menuStatus = pinMenu ? '' : 'hide-menu';
+  const scrollingClass = isScrolling ? 'scrolling' : '';
+  const containerClasses = [menuStatus, scrollingClass]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div className={menuStatus}>
+    <div className={containerClasses}>
       <StrictMode>
         <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
           <Header />
