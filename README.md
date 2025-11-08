@@ -93,7 +93,8 @@ For detailed API configuration and environment variables, see [api/README.md](ap
 The project has undergone active modernization:
 1. **Completed**: Full TypeScript migration for both client and API
 2. **Completed**: Migrated from Webpack to Vite for improved build performance
-3. **Future**: Add content creation capabilities (posting, commenting)
+3. **Completed**: Migrated to RTK Query for efficient API data fetching and caching
+4. **Future**: Add content creation capabilities (posting, commenting)
 
 ## Inspiration
 
