@@ -52,6 +52,7 @@ const axiosBaseQuery =
  * - Automatic request deduplication
  * - Built-in caching with tag-based invalidation
  * - TypeScript types auto-generated from endpoint definitions
+ * - Selective persistence via extractRehydrationInfo
  *
  * Tag Types:
  * - MultiReddits: User's custom multireddit feeds
@@ -72,6 +73,19 @@ export const redditApi = createApi({
     'Post',
     'Comments',
   ],
+
+  // Enable rehydration from localStorage
+  // This allows persisted cache entries to be restored on app startup
+  extractRehydrationInfo(action, { reducerPath }) {
+    // Handle initial store creation and rehydration
+    if (action.type === '@@INIT') {
+      const payload = action.payload as Record<string, unknown> | undefined;
+
+      if (payload?.[reducerPath]) {
+        return payload[reducerPath];
+      }
+    }
+  },
 
   // Global cache configuration
   // Individual endpoints can override these settings
