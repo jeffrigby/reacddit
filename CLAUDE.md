@@ -47,8 +47,11 @@ npm run build             # SAM build for Lambda deployment
 
 ### State Management
 - Redux Toolkit with feature-based slices in `client/src/redux/slices/`
+- RTK Query for API data fetching and caching in `client/src/redux/api/`
+  - Tag-based cache invalidation
+  - Automatic request deduplication
+  - Endpoints: listings, comments, votes, subreddits, multireddits, user data, search
 - Local storage persistence for user preferences
-- Timestamp-based cache invalidation
 - Use typed selectors: `useSelector((state: RootState) => state.something)`
 
 ### Component Structure
@@ -121,6 +124,8 @@ The API requires Reddit OAuth2 setup:
 
 - `client/src/components/layout/App.tsx` - Main app component and routing
 - `client/src/redux/configureStore.ts` - Redux store configuration
+- `client/src/redux/api/redditApi.ts` - RTK Query API configuration with tag-based caching
+- `client/src/redux/api/endpoints/` - RTK Query endpoints for Reddit API operations
 - `client/src/components/posts/embeds/index.ts` - Embed system entry point
 - `api/src/app.ts` - Koa.js OAuth server (fully TypeScript)
 - `api/src/config.ts` - Centralized environment configuration with validation

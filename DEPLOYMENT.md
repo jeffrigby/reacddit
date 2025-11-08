@@ -13,13 +13,13 @@ This guide covers both local development setup with SSL and production deploymen
    - Proxy requests to the dev servers
    - Terminate SSL and apply your certificate
    - Serve the site over HTTPS
-   - Enable WebSocket support for Webpack HMR (Hot Module Replacement)
+   - Enable WebSocket support for Vite HMR (Hot Module Replacement)
 
 ### Proxy Configuration
 
 **API routes**: Proxy `/api` requests to the API server (port 3001)
 **Client routes**: Proxy all other requests to the client server (port 3000)
-**WebSocket support**: Configure WebSocket proxying for `/ws` and `/sockjs-node` endpoints (required for HMR during development)
+**WebSocket support**: Configure WebSocket proxying for Vite HMR (required for hot module replacement during development)
 **HTTP/2**: Enable HTTP/2 for better performance
 
 ### SSL Certificate Options
