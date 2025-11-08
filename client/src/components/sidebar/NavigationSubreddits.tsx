@@ -41,9 +41,7 @@ function NavigationSubReddits() {
         isError,
         refetch, // Must explicitly include refetch when using selectFromResult
       }),
-      // Refetch when window regains focus (after cache expiration)
-      refetchOnFocus: true,
-      // Don't refetch on mount if we have cached data
+      // Don't refetch on mount if we have cached data (1-hour cache)
       refetchOnMountOrArgChange: false,
     }
   );

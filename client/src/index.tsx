@@ -66,9 +66,9 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
       saveState({
         siteSettings: state.siteSettings,
         subredditPolling: state.subredditPolling,
-        redditMultiReddits: state.redditMultiReddits,
         redditMe: state.redditMe,
         history: state.history,
+        redditApi: state.redditApi,
       });
     }, 1000)
   );

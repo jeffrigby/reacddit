@@ -6,7 +6,7 @@
  * - Automatic pagination handling (Reddit's 100 subreddit limit)
  * - Normalized data with EntityAdapter
  * - Tag-based cache invalidation
- * - 24-hour cache retention
+ * - 1-hour cache retention
  *
  * The background polling for "last updated" timestamps remains
  * in subredditPollingSlice as a separate concern.
@@ -146,8 +146,8 @@ export const subredditsQueryApi = redditApi.injectEndpoints({
             ]
           : [{ type: 'Subreddits', id: 'LIST' }],
 
-      // Long cache - subreddit list rarely changes (overrides global 1-minute default)
-      keepUnusedDataFor: 3600 * 24, // 24 hours
+      // Cache for 1 hour (overrides global 1-minute default)
+      keepUnusedDataFor: 3600, // 1 hour
     }),
   }),
 });
