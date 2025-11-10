@@ -32,6 +32,16 @@ export interface BufferData {
   buffers: BufferRange[];
 }
 
+export interface VideoDiagnosticInfo {
+  readyState: string;
+  networkState: string;
+  error: string;
+  sources: string;
+  autoplay: boolean;
+  muted: boolean;
+  playsInline: boolean;
+}
+
 // Extend HTMLVideoElement to include vendor-prefixed fullscreen methods
 export interface ExtendedHTMLVideoElement extends HTMLVideoElement {
   requestFullScreen?: () => void;

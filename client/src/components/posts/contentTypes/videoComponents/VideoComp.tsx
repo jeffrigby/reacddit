@@ -20,9 +20,15 @@ import '../../../../styles/video.scss';
 import VideoDebug from './VideoDebug';
 import VideoAudioButton from './VideoAudioButton';
 import VideoControlBar from './VideoControlBar';
+import VideoLoadError from './VideoLoadError';
 import { PostsContextData } from '../../../../contexts';
 import { useAppSelector } from '../../../../redux/hooks';
-import type { VideoContent, BufferRange, BufferData } from './types';
+import type {
+  VideoContent,
+  BufferRange,
+  BufferData,
+  VideoDiagnosticInfo,
+} from './types';
 
 // Type definitions
 interface VideoCompProps {
@@ -202,7 +208,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     getSetBuffer();
   }, [getSetBuffer, playing, currentTime, duration, canPlay, canPlayThrough]);
 
-  const { width = 16, height = 9, sources } = content;
+  const { width = 16, height = 9, sources, thumb } = content;
 
   const contStyle = useMemo<React.CSSProperties>(
     () => ({
@@ -365,6 +371,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
         controls={controls}
         id={videoId}
         key={videoId}
+        poster={thumb ?? undefined}
         ref={videoRef}
         onCanPlay={eventCanPlay}
         onCanPlayThrough={eventCanPlayThrough}
@@ -408,20 +415,38 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     loadingError = 'Loading Video';
   }
 
-  const directLink = (
-    <a href={link} rel="noopener noreferrer" target="_blank">
-      Open in new tab.
-    </a>
-  );
+  const getDiagnosticInfo = (): VideoDiagnosticInfo | string => {
+    if (!videoRef.current) {
+      return 'Video element not initialized';
+    }
 
-  const loadError = showLoadError && !canPlay && (
-    <div className="slow-loading">
-      This is taking longer than it should. You can try to load the video
-      directly.
-      <br />
-      {directLink}
-    </div>
-  );
+    const video = videoRef.current;
+    const readyStateNames = [
+      'HAVE_NOTHING',
+      'HAVE_METADATA',
+      'HAVE_CURRENT_DATA',
+      'HAVE_FUTURE_DATA',
+      'HAVE_ENOUGH_DATA',
+    ];
+    const networkStateNames = [
+      'NETWORK_EMPTY',
+      'NETWORK_IDLE',
+      'NETWORK_LOADING',
+      'NETWORK_NO_SOURCE',
+    ];
+
+    return {
+      readyState: `${video.readyState} (${readyStateNames[video.readyState] ?? 'UNKNOWN'})`,
+      networkState: `${video.networkState} (${networkStateNames[video.networkState] ?? 'UNKNOWN'})`,
+      error: video.error
+        ? `${video.error.code}: ${video.error.message}`
+        : 'None',
+      sources: sources.map((s) => `${s.type}: ${s.src}`).join('; '),
+      autoplay: video.autoplay,
+      muted: video.muted,
+      playsInline: video.playsInline,
+    };
+  };
 
   const btnClasses = 'btn btn-link shadow-none m-0 py-0 px-1 btn-md video-ctr';
 
@@ -439,7 +464,12 @@ function VideoComp({ link = '', content }: VideoCompProps) {
         <div className="media-ratio" style={contStyle}>
           {video}
         </div>
-        {!canPlay && loadError}
+        <VideoLoadError
+          canPlay={canPlay}
+          link={link}
+          showLoadError={showLoadError}
+          videoRef={videoRef}
+        />
         {isLoaded && videoRef.current && canPlay && (
           <>
             <div className="video-control-bar-cont">
@@ -494,6 +524,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
           canPlay={canPlay}
           canPlayThrough={canPlayThrough}
           currentTime={currentTime}
+          diagnosticInfo={getDiagnosticInfo()}
           duration={duration}
           stalled={stalled}
           waiting={waiting}

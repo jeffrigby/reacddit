@@ -1,8 +1,39 @@
 import { detect } from 'detect-browser';
-import type { LinkData } from '../../../../types/redditApi';
+import type { LinkData, ImageDetails } from '../../../../types/redditApi';
 import type { VideoEmbedContent, VideoSource } from '../types';
 
 const browser = detect();
+
+/**
+ * Selects the optimal video resolution based on viewport width.
+ * Chooses the smallest resolution that is >= 100% of viewport width.
+ * This optimizes bandwidth while ensuring video quality matches or exceeds viewport size.
+ *
+ * @param source - The full resolution video source
+ * @param resolutions - Array of available lower resolution alternatives
+ * @returns The optimal resolution to use
+ */
+function selectOptimalResolution(
+  source: ImageDetails,
+  resolutions: ImageDetails[]
+): ImageDetails {
+  // Use viewport width at time of render (SSR safe)
+  const viewportWidth =
+    typeof window !== 'undefined' ? window.innerWidth : 1920;
+
+  // Sort resolutions by width (ascending: smallest to largest)
+  const sortedResolutions = [...resolutions].sort((a, b) => a.width - b.width);
+
+  // Find the smallest resolution that's >= viewport width
+  for (const res of sortedResolutions) {
+    if (res.width >= viewportWidth) {
+      return res;
+    }
+  }
+
+  // If no resolution is large enough, use full resolution
+  return source;
+}
 
 function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
   const rvp = entry.preview?.reddit_video_preview ?? null;
@@ -62,16 +93,21 @@ function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
   if (images) {
     const { mp4 } = images[0].variants;
     if (mp4) {
-      const { source } = mp4;
+      const { source, resolutions } = mp4;
 
-      const sources: VideoSource[] = [{ type: 'video/mp4', src: source.url }];
+      // Select optimal resolution based on viewport width
+      // Uses smallest resolution that's >= 100% of viewport to optimize bandwidth
+      const selectedSource =
+        resolutions && resolutions.length > 0
+          ? selectOptimalResolution(source, resolutions)
+          : source;
 
       return {
         width: source.width,
         height: source.height,
         id: entry.name,
         type: 'video',
-        sources,
+        sources: [{ type: 'video/mp4', src: selectedSource.url }],
         thumb: poster,
       };
     }
