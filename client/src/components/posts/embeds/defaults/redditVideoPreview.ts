@@ -70,7 +70,10 @@ function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
       audioWarning = false;
     }
     // sources.push({ type: 'application/dash+xml', src: media.dash_url }); // DASH doesn't work
-    sources.push({ type: 'video/mp4', src: media.fallback_url });
+    sources.push({
+      type: 'video/mp4',
+      src: media.fallback_url,
+    });
 
     return {
       width: media.width,
@@ -95,6 +98,22 @@ function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
     if (mp4) {
       const { source, resolutions } = mp4;
 
+      // iOS Safari workaround: Serve animated GIFs as <img> instead of <video>
+      // iOS Safari has issues loading MP4 videos, but animated GIFs work perfectly in img tags
+      // This matches Reddit's native iOS behavior
+      if (browser?.name === 'ios') {
+        // Use entry.url which points to the actual animated GIF on i.redd.it
+        // NOT images[0].source.url which is the preview thumbnail with format=png8
+        return {
+          width: source.width,
+          height: source.height,
+          id: entry.name,
+          type: 'image',
+          src: entry.url, // The actual animated GIF URL (e.g., https://i.redd.it/xyz.gif)
+          thumb: poster,
+        };
+      }
+
       // Select optimal resolution based on viewport width
       // Uses smallest resolution that's >= 100% of viewport to optimize bandwidth
       const selectedSource =
@@ -107,7 +126,12 @@ function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
         height: source.height,
         id: entry.name,
         type: 'video',
-        sources: [{ type: 'video/mp4', src: selectedSource.url }],
+        sources: [
+          {
+            type: 'video/mp4',
+            src: selectedSource.url,
+          },
+        ],
         thumb: poster,
       };
     }
