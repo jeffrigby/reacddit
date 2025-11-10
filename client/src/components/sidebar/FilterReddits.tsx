@@ -31,15 +31,19 @@ function FilterReddits() {
 
   /**
    * Helper to clear the filter textbox
+   * @param shouldBlur - Whether to blur the input after clearing (default: false)
    */
-  const clearSearch = useCallback(() => {
-    const filterText = '';
-    const activeIndex = 0;
-    dispatch(filterUpdated({ filterText, activeIndex }));
-    if (filterInput.current) {
-      filterInput.current.blur();
-    }
-  }, [dispatch]);
+  const clearSearch = useCallback(
+    (shouldBlur = false) => {
+      const filterText = '';
+      const activeIndex = 0;
+      dispatch(filterUpdated({ filterText, activeIndex }));
+      if (shouldBlur && filterInput.current) {
+        filterInput.current.blur();
+      }
+    },
+    [dispatch]
+  );
 
   /**
    * Disable the hotkeys when using the filter.
@@ -114,9 +118,8 @@ function FilterReddits() {
             break;
           }
           case 'Escape':
-            filterInput.current?.blur();
             document.body.classList.remove('show-menu');
-            clearSearch();
+            clearSearch(true); // Blur on Escape to exit filter mode
             break;
           default:
             break;
@@ -158,7 +161,17 @@ function FilterReddits() {
           className="form-control-clear filter-clear"
           icon={faTimesCircle}
           role="button"
-          onClick={clearSearch}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              clearSearch();
+            }
+          }}
+          onMouseDown={(e) => {
+            e.preventDefault(); // Prevent blur on mousedown
+            clearSearch();
+          }}
         />
       )}
     </div>

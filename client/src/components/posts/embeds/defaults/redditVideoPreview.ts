@@ -1,6 +1,10 @@
 import { detect } from 'detect-browser';
 import type { LinkData, ImageDetails } from '../../../../types/redditApi';
-import type { VideoEmbedContent, VideoSource } from '../types';
+import type {
+  VideoEmbedContent,
+  ImageEmbedContent,
+  VideoSource,
+} from '../types';
 
 const browser = detect();
 
@@ -35,7 +39,9 @@ function selectOptimalResolution(
   return source;
 }
 
-function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
+function redditVideoPreview(
+  entry: LinkData
+): VideoEmbedContent | ImageEmbedContent | null {
   const rvp = entry.preview?.reddit_video_preview ?? null;
   const mrv = entry.secure_media?.reddit_video ?? null;
 
@@ -107,10 +113,8 @@ function redditVideoPreview(entry: LinkData): VideoEmbedContent | null {
         return {
           width: source.width,
           height: source.height,
-          id: entry.name,
           type: 'image',
           src: entry.url, // The actual animated GIF URL (e.g., https://i.redd.it/xyz.gif)
-          thumb: poster,
         };
       }
 

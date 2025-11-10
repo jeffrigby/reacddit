@@ -38,6 +38,7 @@ interface VideoCompProps {
 
 interface PostContextData {
   isLoaded: boolean;
+  fullyOffScreen: boolean;
   post?: {
     kind: string;
   };
@@ -110,9 +111,9 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const { isLoaded, fullyOffScreen } = postContext;
   const videoRef = useRef<HTMLVideoElement>(null);
   const isPlaying = useRef<boolean>(false);
-  const isPlayingTimeout = useRef<NodeJS.Timeout | null>(null);
-  const waitingTimeout = useRef<NodeJS.Timeout | null>(null);
-  const stalledTimeout = useRef<NodeJS.Timeout | null>(null);
+  const isPlayingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const waitingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stalledTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasPlayingBeforeOffScreen = useRef<boolean>(false);
 
   const debug = useAppSelector((state) => state.siteSettings.debug);
@@ -172,7 +173,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
         wasPlayingBeforeOffScreen.current = false;
       }
     }
-  }, [fullyOffScreen]);
+  }, [fullyOffScreen, isLoaded]);
 
   useEffect(() => {
     const canPlayTimeout = setTimeout(() => {
