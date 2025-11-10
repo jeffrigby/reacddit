@@ -225,7 +225,7 @@ export async function getListingSearch(
     include_facets: false,
     limit: 25,
     q: '',
-    restrict_sr: true,
+    restrict_sr: target ? true : undefined, // Only set when searching within a subreddit
     show: 'all',
     sr_detail: false,
     t: undefined,
