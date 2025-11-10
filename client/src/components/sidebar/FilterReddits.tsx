@@ -36,6 +36,9 @@ function FilterReddits() {
     const filterText = '';
     const activeIndex = 0;
     dispatch(filterUpdated({ filterText, activeIndex }));
+    if (filterInput.current) {
+      filterInput.current.blur();
+    }
   }, [dispatch]);
 
   /**
@@ -155,10 +158,7 @@ function FilterReddits() {
           className="form-control-clear filter-clear"
           icon={faTimesCircle}
           role="button"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            clearSearch();
-          }}
+          onClick={clearSearch}
         />
       )}
     </div>
