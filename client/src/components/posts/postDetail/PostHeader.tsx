@@ -86,13 +86,13 @@ function PostHeader({
   ) : null;
 
   const pinned = data.pinned ? (
-    <div className="badge text-dark me-1" title="Pinned Post">
+    <div className="badge me-1" title="Pinned Post">
       <FontAwesomeIcon icon={faThumbtack} />
     </div>
   ) : null;
 
   const sticky = data.stickied ? (
-    <div className="badge text-dark me-1" title="Sticky Post">
+    <div className="badge me-1" title="Sticky Post">
       <FontAwesomeIcon icon={faStickyNote} />
     </div>
   ) : null;
