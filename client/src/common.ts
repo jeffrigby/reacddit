@@ -116,6 +116,28 @@ export function isNumeric(value: unknown): value is number | string {
 }
 
 /**
+ * Check if a value is empty (null, undefined, empty string, empty array, or empty object)
+ *
+ * @param value - Value to check
+ * @returns true if empty, false otherwise
+ */
+export function isEmpty(value: unknown): boolean {
+  if (value == null) {
+    return true;
+  }
+
+  if (typeof value === 'string' || Array.isArray(value)) {
+    return value.length === 0;
+  }
+
+  if (typeof value === 'object') {
+    return Object.keys(value).length === 0;
+  }
+
+  return false;
+}
+
+/**
  * Format a timestamp as relative time (e.g., "2m ago", "1h ago", "2d ago")
  *
  * @param timestamp - Unix timestamp in milliseconds

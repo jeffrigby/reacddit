@@ -1,6 +1,5 @@
 import type { ReactElement, MouseEvent } from 'react';
 import { NavLink } from 'react-router-dom';
-import _trimEnd from 'lodash/trimEnd';
 import parse from 'url-parse';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
@@ -57,7 +56,7 @@ function NavigationGenericNavItem({
     <span className="badge bg-primary rounded-pill">{badge}</span>
   ) : null;
 
-  const trimmedTo = _trimEnd(to, '/');
+  const trimmedTo = to.replace(/\/$/, '');
   const url = parse(trimmedTo);
 
   let navItem: ReactElement;

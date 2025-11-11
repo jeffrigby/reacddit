@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
-import isEmpty from 'lodash/isEmpty';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCaretDown,
@@ -16,7 +15,7 @@ import {
   fetchSubredditsLastUpdated,
   lastUpdatedCleared,
 } from '@/redux/slices/subredditPollingSlice';
-import { getMenuStatus, hotkeyStatus, setMenuStatus } from '@/common';
+import { getMenuStatus, hotkeyStatus, setMenuStatus, isEmpty } from '@/common';
 import NavigationItem from './NavigationItem';
 import SyncStatus from './SyncStatus';
 

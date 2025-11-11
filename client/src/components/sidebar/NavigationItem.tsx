@@ -1,6 +1,4 @@
 import queryString from 'query-string';
-import _trim from 'lodash/trim';
-import _trimEnd from 'lodash/trimEnd';
 import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import type { SubredditData } from '@/types/redditApi';
@@ -35,8 +33,8 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
 
   const href =
     item.subreddit_type === 'user'
-      ? `/${_trim(item.url, '/')}/posts/${_trim(sortPath, '/')}`
-      : `/${_trim(item.url, '/')}/${_trim(sortPath, '/')}`;
+      ? `/${item.url.trim().replace(/^\/|\/$/g, '')}/posts/${sortPath.trim().replace(/^\/|\/$/g, '')}`
+      : `/${item.url.trim().replace(/^\/|\/$/g, '')}/${sortPath.trim().replace(/^\/|\/$/g, '')}`;
   const classNameStr = getDiffClassName(lastUpdated, trigger);
   const subLabel = classNameStr.includes('sub-new') ? 'New' : undefined;
 
@@ -66,7 +64,7 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
           id={item.id}
           text={item.display_name}
           title={title}
-          to={_trimEnd(href, '/')}
+          to={href.replace(/\/$/, '')}
         />
       </div>
     </li>

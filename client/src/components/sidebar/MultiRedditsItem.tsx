@@ -3,7 +3,6 @@ import type { ReactElement } from 'react';
 import { Button } from 'react-bootstrap';
 import { useLocation } from 'react-router';
 import queryString from 'query-string';
-import _trimEnd from 'lodash/trimEnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import type { LabeledMultiData, Thing } from '@/types/redditApi';
@@ -49,7 +48,7 @@ function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
             noLi
             text={item.data.name}
             title={item.data.description_md ?? undefined}
-            to={_trimEnd(navTo, '/')}
+            to={navTo.replace(/\/$/, '')}
           />
         </span>
         <span>
