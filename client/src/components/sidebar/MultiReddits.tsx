@@ -10,8 +10,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetMultiRedditsQuery } from '@/redux/api';
+import { setMenuStatus, getMenuStatus } from '@/common';
 import MultiRedditsItem from './MultiRedditsItem';
-import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsAdd from './MultiRedditsAdd';
 
 const MENU_ID = 'multis';

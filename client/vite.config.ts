@@ -69,6 +69,7 @@ export default defineConfig(({ mode }) => {
       '@/types': path.resolve(__dirname, './src/types'),
       '@/redux': path.resolve(__dirname, './src/redux'),
       '@/components': path.resolve(__dirname, './src/components'),
+      '@/styles': path.resolve(__dirname, './src/styles'),
       '@/common': path.resolve(__dirname, './src/common.js'),
       '@/test': path.resolve(__dirname, './src/test'),
     },

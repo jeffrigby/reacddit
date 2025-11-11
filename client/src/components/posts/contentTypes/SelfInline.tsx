@@ -4,8 +4,8 @@ import {
   faChevronLeft,
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
-import Content from '../Content';
-import type { EmbedContent } from '../embeds/types';
+import Content from '@/components/posts/Content';
+import type { EmbedContent } from '@/components/posts/embeds/types';
 
 interface ResolvedContent {
   content: EmbedContent;

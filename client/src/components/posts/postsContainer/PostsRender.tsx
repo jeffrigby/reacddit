@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
-import Post from '../postDetail/Post';
+import type { Thing, LinkData, CommentData } from '@/types/redditApi';
+import Post from '@/components/posts/postDetail/Post';
 
 interface PostsRenderProps {
   posts: Record<string, Thing<LinkData | CommentData>>;

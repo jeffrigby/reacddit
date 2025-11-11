@@ -1,5 +1,8 @@
-import type { LinkData } from '../../../../types/redditApi';
-import type { RedditGalleryContent, GalleryMediaItem } from '../types';
+import type { LinkData } from '@/types/redditApi';
+import type {
+  RedditGalleryContent,
+  GalleryMediaItem,
+} from '@/components/posts/embeds/types';
 
 interface MediaMetadataItem {
   id: string;

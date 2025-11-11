@@ -14,8 +14,8 @@ import {
 import { useAppSelector } from '@/redux/hooks';
 import { useGetSubredditsQuery } from '@/redux/api';
 import { useModals } from '@/contexts/ModalContext';
+import { hotkeyStatus, isEmpty } from '@/common';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import { hotkeyStatus, isEmpty } from '../../common';
 
 function NavigationPrimaryLinks(): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);

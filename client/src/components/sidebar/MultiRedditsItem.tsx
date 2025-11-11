@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import type { LabeledMultiData, Thing } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
-import { setMenuStatus, getMenuStatus } from '../../common';
+import { setMenuStatus, getMenuStatus } from '@/common';
 import { buildSortPath } from './navHelpers';
 import MultiRedditsSubs from './MultiRedditsSubs';
 import NavigationGenericNavItem from './NavigationGenericNavItem';

@@ -1,10 +1,10 @@
 import { isIOS, isSafari } from '@/common';
-import type { LinkData, ImageDetails } from '../../../../types/redditApi';
+import type { LinkData, ImageDetails } from '@/types/redditApi';
 import type {
   VideoEmbedContent,
   ImageEmbedContent,
   VideoSource,
-} from '../types';
+} from '@/components/posts/embeds/types';
 
 /**
  * Selects the optimal video resolution based on viewport width.

@@ -32,7 +32,7 @@ import {
   getLastUpdatedWithDelay,
   shouldUpdate,
   type LastUpdatedTracking,
-} from '../actions/helpers/lastFetched';
+} from '@/redux/actions/helpers/lastFetched';
 
 /**
  * Polling state

@@ -5,11 +5,11 @@ import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import copy from 'copy-to-clipboard';
-import { PostsContextData } from '../../../contexts';
+import { PostsContextData } from '@/contexts';
+import type { LinkData, CommentData } from '@/types/redditApi';
+import type { EmbedContent } from '@/components/posts/embeds/types';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
-import type { LinkData, CommentData } from '../../../types/redditApi';
-import type { EmbedContent } from '../embeds/types';
 
 interface PostFooterProps {
   debug: boolean;

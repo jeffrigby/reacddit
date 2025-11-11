@@ -1,9 +1,9 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo } from 'react';
-import PostExpandContract from '../postActions/PostExpandContract';
+import PostExpandContract from '@/components/posts/postActions/PostExpandContract';
+import PostVote from '@/components/posts/postActions/PostVote';
+import PostSave from '@/components/posts/postActions/PostSave';
 import PostMeta from './PostMeta';
-import PostVote from '../postActions/PostVote';
-import PostSave from '../postActions/PostSave';
 
 interface PostHeaderCommentProps {
   expand: boolean;

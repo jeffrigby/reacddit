@@ -16,13 +16,13 @@ import {
   faToggleOn,
   faToggleOff,
 } from '@fortawesome/free-solid-svg-icons';
-import '../../../../styles/video.scss';
+import '@/styles/video.scss';
+import { PostsContextData } from '@/contexts';
+import { useAppSelector } from '@/redux/hooks';
 import VideoDebug from './VideoDebug';
 import VideoAudioButton from './VideoAudioButton';
 import VideoControlBar from './VideoControlBar';
 import VideoLoadError from './VideoLoadError';
-import { PostsContextData } from '../../../../contexts';
-import { useAppSelector } from '../../../../redux/hooks';
 import type {
   VideoContent,
   BufferRange,

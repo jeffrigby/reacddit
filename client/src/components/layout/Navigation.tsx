@@ -2,12 +2,12 @@ import { useEffect, useCallback } from 'react';
 import type { SubredditFilterState } from '@/types/redux';
 import type { BearerState } from '@/redux/slices/redditBearerSlice';
 import { isEmpty } from '@/common';
-import MultiReddits from '../sidebar/MultiReddits';
-import NavigationPrimaryLinks from '../sidebar/NavigationPrimaryLinks';
-import NavigationSubReddits from '../sidebar/NavigationSubreddits';
-import SearchRedditNames from '../sidebar/SearchRedditNames';
-import NavigationAccount from '../sidebar/NavigationAccount';
-import '../../styles/sidebar.scss';
+import MultiReddits from '@/components/sidebar/MultiReddits';
+import NavigationPrimaryLinks from '@/components/sidebar/NavigationPrimaryLinks';
+import NavigationSubReddits from '@/components/sidebar/NavigationSubreddits';
+import SearchRedditNames from '@/components/sidebar/SearchRedditNames';
+import NavigationAccount from '@/components/sidebar/NavigationAccount';
+import '@/styles/sidebar.scss';
 
 interface NavigationProps {
   redditBearer: BearerState;

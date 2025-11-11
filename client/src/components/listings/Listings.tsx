@@ -8,14 +8,14 @@ import {
 } from '@/redux/slices/listingsSlice';
 import { useListingsQuery } from '@/hooks/useListingsQuery';
 import { useGetSubredditAboutQuery } from '@/redux/api';
-import { ListingsContext, ListingsContextLastExpanded } from '../../contexts';
+import { ListingsContext, ListingsContextLastExpanded } from '@/contexts';
+import { hotkeyStatus } from '@/common';
+import { scrollToPosition } from '@/components/posts/PostsFunctions';
+import Posts from '@/components/posts/postsContainer/Posts';
 import ListingsLogic from './ListingsLogic';
-import { hotkeyStatus } from '../../common';
-import { scrollToPosition } from '../posts/PostsFunctions';
 import ListingsHeader from './ListingsHeader';
 import PostsDebug from './PostsDebug';
-import '../../styles/listings.scss';
-import Posts from '../posts/postsContainer/Posts';
+import '@/styles/listings.scss';
 
 interface ListingsMatch {
   listType?: string;

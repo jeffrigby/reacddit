@@ -22,7 +22,7 @@ import {
   subredditAbout,
 } from '@/reddit/redditApiTs';
 import { keyEntryChildren } from '@/common';
-import { redditApi } from '../redditApi';
+import { redditApi } from '@/redux/api/redditApi';
 
 const MAX_POSTS_IN_MEMORY = 500;
 

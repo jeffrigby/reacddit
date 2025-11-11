@@ -2,9 +2,9 @@ import { Suspense, useContext } from 'react';
 import JsonView from 'react18-json-view';
 import 'react18-json-view/src/style.css';
 import 'react18-json-view/src/dark.css';
-import { PostsContextData } from '../../../contexts';
-import type { LinkData, CommentData } from '../../../types/redditApi';
-import type { EmbedContent } from '../embeds/types';
+import { PostsContextData } from '@/contexts';
+import type { LinkData, CommentData } from '@/types/redditApi';
+import type { EmbedContent } from '@/components/posts/embeds/types';
 
 interface PostDebugProps {
   renderedContent?: EmbedContent;

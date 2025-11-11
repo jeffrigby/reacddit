@@ -16,11 +16,11 @@ import {
   selectListingData,
   selectUiState,
   selectListingStatus,
-} from '../../redux/slices/listingsSlice';
+} from '@/redux/slices/listingsSlice';
 import {
   selectBearerStatus,
   selectIsAuth,
-} from '../../redux/slices/redditBearerSlice';
+} from '@/redux/slices/redditBearerSlice';
 
 interface CopiedState {
   [key: string]: boolean;
