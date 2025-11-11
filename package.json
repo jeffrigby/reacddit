@@ -2,8 +2,10 @@
   "name": "reacddit",
   "version": "1.0.0",
   "description": "A Reddit client built in reactjs.",
+  "type": "module",
   "scripts": {
-    "start": "concurrently \"npm run start-client\"  \"npm run start-api\"",
+    "start": "node scripts/start-dev.js",
+    "start-proxy": "cd proxy && npm start",
     "start-client": "cd client && npm start",
     "build-client": "cd client && npm run build",
     "start-api": "cd api && npm start",

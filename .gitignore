@@ -63,3 +63,8 @@ deployment-permissions-policy.json
 # Vite dev artifacts
 /client/dev-dist/
 /client/agentDocs
+
+# Proxy self-signed SSL certificates
+/proxy/.ssl/
+/proxy/dist/
+/proxy/node_modules/
