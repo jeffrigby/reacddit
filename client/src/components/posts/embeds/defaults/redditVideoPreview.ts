@@ -1,12 +1,10 @@
-import { detect } from 'detect-browser';
+import { isIOS, isSafari } from '@/common';
 import type { LinkData, ImageDetails } from '../../../../types/redditApi';
 import type {
   VideoEmbedContent,
   ImageEmbedContent,
   VideoSource,
 } from '../types';
-
-const browser = detect();
 
 /**
  * Selects the optimal video resolution based on viewport width.
@@ -66,9 +64,9 @@ function redditVideoPreview(
     const sources: VideoSource[] = [];
     let audioWarning = true;
 
-    // Safari doesn't care about the CORS violation and can play sound via HLS.
-    // Firefox and Chrome don't work even with hls.js & dash.js embeds.
-    if (browser?.name === 'safari' || browser?.name === 'ios') {
+    // Safari (including all iOS browsers which use WebKit) supports HLS and doesn't have
+    // CORS issues with audio playback. Firefox and Chrome don't work with hls.js/dash.js.
+    if (isSafari() || isIOS()) {
       sources.push({
         type: 'application/vnd.apple.mpegURL',
         src: media.hls_url,
@@ -104,10 +102,10 @@ function redditVideoPreview(
     if (mp4) {
       const { source, resolutions } = mp4;
 
-      // iOS Safari workaround: Serve animated GIFs as <img> instead of <video>
-      // iOS Safari has issues loading MP4 videos, but animated GIFs work perfectly in img tags
+      // iOS workaround: Serve animated GIFs as <img> instead of <video>
+      // iOS has issues loading MP4 videos of animated GIFs, but the GIFs work perfectly in img tags
       // This matches Reddit's native iOS behavior
-      if (browser?.name === 'ios') {
+      if (isIOS()) {
         // Use entry.url which points to the actual animated GIF on i.redd.it
         // NOT images[0].source.url which is the preview thumbnail with format=png8
         return {

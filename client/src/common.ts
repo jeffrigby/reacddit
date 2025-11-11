@@ -138,6 +138,41 @@ export function isEmpty(value: unknown): boolean {
 }
 
 /**
+ * Detect if the current browser is Safari (excluding Chrome on iOS/Android)
+ * @returns true if Safari browser
+ */
+export function isSafari(): boolean {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+}
+
+/**
+ * Detect if the current device is iOS (iPhone, iPad, iPod)
+ * Note: All browsers on iOS use WebKit, so they all behave like Safari
+ * Modern iPadOS (13+) reports as macOS in user agent, so we also check for touch support
+ * @returns true if iOS device
+ */
+export function isIOS(): boolean {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+
+  // Check for traditional iOS user agents (iPhone, iPod, older iPads)
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    return true;
+  }
+
+  // Modern iPadOS 13+ reports as "Macintosh" with touch support
+  // Check for macOS user agent with touch capability (indicates iPad)
+  const isMacWithTouch =
+    navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+
+  return isMacWithTouch;
+}
+
+/**
  * Format a timestamp as relative time (e.g., "2m ago", "1h ago", "2d ago")
  *
  * @param timestamp - Unix timestamp in milliseconds

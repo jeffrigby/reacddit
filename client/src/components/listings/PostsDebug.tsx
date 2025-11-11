@@ -9,6 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useParams } from 'react-router';
 import queryString from 'query-string';
+import copy from 'copy-to-clipboard';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetMeQuery } from '@/redux/api';
 import {
@@ -69,15 +70,16 @@ function PostsDebug() {
 
   const qs = queryString.parse(location.search);
 
-  const handleCopy = async (key: string, text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
+  const handleCopy = (key: string, text: string) => {
+    const success = copy(text);
+
+    if (success) {
       setCopied({ ...copied, [key]: true });
       setTimeout(() => {
         setCopied((prev) => ({ ...prev, [key]: false }));
       }, 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } else {
+      console.error('Failed to copy:', text);
     }
   };
 
