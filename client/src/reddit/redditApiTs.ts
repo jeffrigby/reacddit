@@ -141,6 +141,7 @@ export const redditAPI: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
   },
+  timeout: 30000, // 30 second timeout to prevent hanging requests
 });
 
 // Add request interceptor for authentication
