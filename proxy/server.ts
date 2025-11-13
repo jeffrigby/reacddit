@@ -1,6 +1,8 @@
 import https from 'https';
 import http from 'http';
+import http2 from 'http2';
 import net from 'net';
+import zlib from 'zlib';
 import { execSync } from 'child_process';
 import { config as loadEnv } from 'dotenv';
 import { join, dirname } from 'path';
@@ -9,6 +11,16 @@ import { getCertificates } from './certs.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// HTTP connection pooling agent for upstream requests
+// Reuses TCP connections to reduce handshake overhead
+const httpAgent = new http.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000, // Keep idle connections alive for 30s
+  maxSockets: 50, // Max 50 concurrent connections per host
+  maxFreeSockets: 10, // Keep 10 idle connections ready
+  timeout: 60000, // Socket timeout (60s)
+});
 
 // Load environment variables from root .env
 // Try multiple paths to handle different execution contexts (sudo, npm scripts, etc.)
@@ -160,6 +172,35 @@ function redactSensitiveParams(url: string): string {
 }
 
 /**
+ * Determine if a response should be compressed and which algorithm to use
+ * Only compresses API responses with text/JSON content types over 1KB
+ */
+function shouldCompressResponse(
+  url: string,
+  headers: http.IncomingHttpHeaders,
+  isApi: boolean
+): 'br' | 'gzip' | null {
+  // Only compress API responses
+  if (!isApi) return null;
+
+  // Check content type (only compress text/json)
+  const contentType = headers['content-type'] || '';
+  const compressible =
+    contentType.includes('json') ||
+    contentType.includes('text') ||
+    contentType.includes('javascript');
+
+  if (!compressible) return null;
+
+  // Check content length (don't compress small responses < 1KB)
+  const contentLength = parseInt(headers['content-length'] || '0', 10);
+  if (contentLength > 0 && contentLength < 1024) return null;
+
+  // Prefer brotli for better compression
+  return 'br';
+}
+
+/**
  * Proxy an HTTP request to the specified target
  */
 function proxyRequest(
@@ -172,17 +213,27 @@ function proxyRequest(
   const requestUrl = req.url || '/';
   const requestMethod = req.method || 'GET';
 
+  // Filter out HTTP/2 pseudo-headers (they start with ':')
+  // These can't be forwarded to HTTP/1.1 upstream servers
+  const filteredHeaders: http.OutgoingHttpHeaders = {};
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (!key.startsWith(':')) {
+      filteredHeaders[key] = value;
+    }
+  }
+
   const options: http.RequestOptions = {
     hostname: 'localhost',
     port: targetPort,
     path: requestUrl,
     method: requestMethod,
     headers: {
-      ...req.headers,
+      ...filteredHeaders,
       'x-forwarded-proto': 'https',
       'x-forwarded-for': req.socket.remoteAddress || '',
       'x-real-ip': req.socket.remoteAddress || '',
     },
+    agent: httpAgent, // Use connection pooling
   };
 
   const proxy = http.request(options, (proxyRes) => {
@@ -200,6 +251,19 @@ function proxyRequest(
 
     // Add security headers to response
     const headers: http.OutgoingHttpHeaders = { ...proxyRes.headers };
+
+    // Remove HTTP/1.1-specific headers that are forbidden in HTTP/2
+    // These are connection-specific and incompatible with HTTP/2
+    const forbiddenHeaders = [
+      'connection',
+      'keep-alive',
+      'proxy-connection',
+      'transfer-encoding',
+      'upgrade',
+    ];
+    forbiddenHeaders.forEach((header) => {
+      delete headers[header];
+    });
 
     // Add security headers (but not for API responses with their own headers)
     if (!isApi) {
@@ -230,8 +294,31 @@ function proxyRequest(
       });
     }
 
-    res.writeHead(statusCode, headers);
-    proxyRes.pipe(res);
+    // Check if compression should be applied
+    const compressionType = shouldCompressResponse(
+      requestUrl,
+      proxyRes.headers,
+      isApi
+    );
+
+    if (compressionType) {
+      // Add content-encoding header
+      headers['content-encoding'] = compressionType;
+      delete headers['content-length']; // Length will change after compression
+
+      res.writeHead(statusCode, headers);
+
+      // Compress and pipe
+      if (compressionType === 'br') {
+        proxyRes.pipe(zlib.createBrotliCompress()).pipe(res);
+      } else {
+        proxyRes.pipe(zlib.createGzip()).pipe(res);
+      }
+    } else {
+      // No compression, direct pipe (existing behavior)
+      res.writeHead(statusCode, headers);
+      proxyRes.pipe(res);
+    }
   });
 
   proxy.on('error', (err) => {
@@ -346,8 +433,24 @@ function startServer(): void {
     domain: proxyConfig.domain,
   });
 
-  // Create HTTPS server
-  const server = https.createServer({ cert, key }, handleRequest);
+  // Create HTTP/2 server with HTTP/1.1 fallback
+  // HTTP/2 provides better performance for parallel requests (Vite HMR)
+  // allowHTTP1 enables fallback for WebSocket upgrades and older clients
+  const server = http2.createSecureServer(
+    {
+      cert,
+      key,
+      allowHTTP1: true, // Required for WebSocket upgrades
+    },
+    (req, res) => {
+      // Type assertion needed because http2 streams are compatible with http messages
+      // when allowHTTP1 is true
+      handleRequest(
+        req as unknown as http.IncomingMessage,
+        res as unknown as http.ServerResponse
+      );
+    }
+  );
 
   // Handle WebSocket upgrade
   server.on('upgrade', (req, socket, head) => {
@@ -419,6 +522,7 @@ function startServer(): void {
     console.log(`   Domain:     ${proxyConfig.domain}`);
     console.log(`   Bind Host:  ${proxyConfig.host}`);
     console.log(`   HTTPS Port: ${proxyConfig.port}`);
+    console.log(`   Protocol:   HTTP/2 (with HTTP/1.1 fallback)`);
     console.log(`   Client:     localhost:${proxyConfig.clientPort}`);
     console.log(`   API:        localhost:${proxyConfig.apiPort}`);
     console.log(
@@ -493,6 +597,9 @@ function startServer(): void {
     isShuttingDown = true;
     shutdownStartTime = now;
     console.log('\n\n🛑 Shutting down proxy server...');
+
+    // Destroy agent connections
+    httpAgent.destroy();
 
     // Try graceful shutdown first
     server.close(() => {
