@@ -1,6 +1,6 @@
 import parse from 'url-parse';
-import type { LinkData } from '../../../../types/redditApi';
-import type { IFrameEmbedContent } from '../types';
+import type { LinkData } from '@/types/redditApi';
+import type { IFrameEmbedContent } from '@/components/posts/embeds/types';
 
 function render(entry: LinkData): IFrameEmbedContent | null {
   const parsedUrl = parse(entry.url, true);

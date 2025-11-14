@@ -9,19 +9,23 @@ Reacddit is a Reddit client built with React that provides enhanced media viewin
 **Monorepo Structure:**
 - **`client/`**: React 19 + Redux Toolkit + TypeScript - primary development area
 - **`api/`**: Koa.js OAuth2 server (TypeScript) - handles Reddit authentication only
+- **`proxy/`**: HTTPS reverse proxy (Node.js/TypeScript) - development SSL termination
 - **Deployment**: AWS Lambda via SAM/CloudFormation
 
 **Tech Stack:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 6, Koa.js
 
 ## Development Commands
 
-**Root level** (run both client and API):
+**Root level** (run proxy, client, and API):
 ```bash
-npm start                 # Start both client and API concurrently
-npm run start-client      # Client development server only
-npm run start-api         # API server only  
+npm start                 # Start proxy + client + API concurrently
+npm run start-proxy       # HTTPS reverse proxy only (port 5173)
+npm run start-client      # Client development server only (port 3000)
+npm run start-api         # API server only (port 3001)
 npm run build-client      # Production build
 ```
+
+**Access:** https://localhost:5173 (or https://dev.reacdd.it:5173 with custom domain)
 
 **Client** (`cd client/`):
 ```bash
@@ -77,6 +81,41 @@ npm run build             # SAM build for Lambda deployment
 - Supports Reddit URL patterns: `/r/subreddit`, `/u/user`, `/m/multi`
 - Route validation system
 
+### HTTPS Reverse Proxy
+**Location:** `/proxy/`
+
+**Why it exists:** HTTPS is required for embedded content (iframes, third-party embeds). The proxy provides SSL termination for local development without requiring nginx installation.
+
+**Architecture:**
+- Node.js HTTPS server using built-in `https` module
+- Auto-generates self-signed certificates for localhost on first run
+- Supports custom domains with Let's Encrypt certs (via .env configuration)
+- Routes `/api/*` → Koa API (port 3001)
+- Routes everything else → Vite dev server (port 3000)
+- WebSocket upgrade support for HMR (`/ws`, `/sockjs-node`, `/@vite/`)
+- Security headers matching nginx config (HSTS, CSP, X-Frame-Options, etc.)
+
+**Key files:**
+- `proxy/server.ts` - Main HTTPS server and routing logic
+- `proxy/certs.ts` - Certificate management (generation and loading)
+- `.env` - Configuration (domain, ports, cert paths)
+
+**Configuration:**
+- `PROXY_DOMAIN` - Domain to serve (localhost or custom domain)
+- `PROXY_PORT` - HTTPS port (default: 5173)
+- `PROXY_CERT_PATH` / `PROXY_KEY_PATH` - Optional custom cert paths
+- `CLIENT_PORT` - Vite dev server port (default: 3000)
+- `API_PORT` - Koa API port (default: 3001)
+
+**Self-signed certificates:**
+- Stored in `proxy/.ssl/` (gitignored)
+- Generated with OpenSSL on first run
+- Include SAN (Subject Alternative Name) for localhost, 127.0.0.1, ::1
+- Valid for 365 days
+- Browser will show security warning (expected for self-signed certs)
+
+**Production:** CloudFront handles SSL termination, proxy not used.
+
 ## TypeScript Standards
 
 **Strict Configuration:**
@@ -129,7 +168,10 @@ The API requires Reddit OAuth2 setup:
 - `client/src/components/posts/embeds/index.ts` - Embed system entry point
 - `api/src/app.ts` - Koa.js OAuth server (fully TypeScript)
 - `api/src/config.ts` - Centralized environment configuration with validation
+- `proxy/server.ts` - HTTPS reverse proxy server
+- `proxy/certs.ts` - SSL certificate management
 - `client/vite.config.ts` - Vite build configuration
+- `.env` - Development environment configuration (domain, ports, certs)
 
 ## Features Not Yet Implemented
 

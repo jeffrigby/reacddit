@@ -1,7 +1,7 @@
 import { memo, type RefObject } from 'react';
 
 interface VideoLoadErrorProps {
-  videoRef: RefObject<HTMLVideoElement>;
+  videoRef: RefObject<HTMLVideoElement | null>;
   link?: string;
   showLoadError: boolean;
   canPlay: boolean;

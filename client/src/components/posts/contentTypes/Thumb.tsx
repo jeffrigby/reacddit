@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { PostsContextData } from '@/contexts';
-import type { ThumbEmbedContent } from '../embeds/types';
+import type { ThumbEmbedContent } from '@/components/posts/embeds/types';
 
 interface ThumbProps {
   content: ThumbEmbedContent;

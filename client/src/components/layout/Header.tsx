@@ -6,16 +6,16 @@ import {
   faTimes,
   faChevronLeft,
 } from '@fortawesome/free-solid-svg-icons';
-import Search from '../header/Search';
-import Sort from '../header/Sort';
-import Reload from '../header/Reload';
-import FilterReddits from '../sidebar/FilterReddits';
-import ViewMode from '../header/ViewMode';
-import Logo from '../../images/reacddit-menu.png';
-import Settings from '../header/settings/Settings';
-import '../../styles/header.scss';
-import PinMenu from '../header/settings/PinMenu';
-import ToggleTheme from '../header/ToggleTheme';
+import Search from '@/components/header/Search';
+import Sort from '@/components/header/Sort';
+import Reload from '@/components/header/Reload';
+import FilterReddits from '@/components/sidebar/FilterReddits';
+import ViewMode from '@/components/header/ViewMode';
+import Logo from '@/images/reacddit-menu.png';
+import Settings from '@/components/header/settings/Settings';
+import '@/styles/header.scss';
+import PinMenu from '@/components/header/settings/PinMenu';
+import ToggleTheme from '@/components/header/ToggleTheme';
 
 function Header() {
   const navigate = useNavigate();

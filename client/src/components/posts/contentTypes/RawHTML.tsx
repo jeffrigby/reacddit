@@ -1,4 +1,4 @@
-import type { RawHTMLEmbedContent } from '../embeds/types';
+import type { RawHTMLEmbedContent } from '@/components/posts/embeds/types';
 
 interface RawHTMLProps {
   content: RawHTMLEmbedContent;

@@ -7,7 +7,7 @@ import { uiStateUpdated, selectUiState } from '@/redux/slices/listingsSlice';
 import {
   ListingsContextLastExpanded,
   useListingsContext,
-} from '../../contexts/ListingsContext';
+} from '@/contexts/ListingsContext';
 import {
   getCurrentListingState,
   unfocusIFrame,
@@ -16,9 +16,9 @@ import {
   nextEntryCollapsed,
   prevEntry,
   prevEntryCollapsed,
-} from '../posts/PostsFunctions';
-import { hotkeyStatus } from '../../common';
-import type { ListingsState } from '../../types/listings';
+} from '@/components/posts/PostsFunctions';
+import { hotkeyStatus } from '@/common';
+import type { ListingsState } from '@/types/listings';
 
 interface ListingsLogicProps {
   saved?: number;

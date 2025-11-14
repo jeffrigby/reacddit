@@ -1,5 +1,3 @@
-import isNil from 'lodash/isNil';
-
 /**
  * Check if an element is a top-level entry (not a nested comment).
  * On comments pages, this filters out threaded replies with the comment-child class.
@@ -65,12 +63,12 @@ export function scrollByAmount(x: number, y: number): void {
  * Optimized to avoid forced reflows by batching layout reads.
  */
 export function nextEntry(focused: string | null): void {
-  if (isNil(focused)) {
+  if (focused == null) {
     return;
   }
 
   const current = document.getElementById(focused);
-  if (isNil(current)) {
+  if (current == null) {
     return;
   }
 
@@ -102,7 +100,7 @@ export function nextEntryCollapsed(
   if (!lastExpanded) {
     const entries = Array.from(document.getElementsByClassName('entry'));
     const first = entries.find((entry) => isTopLevelEntry(entry));
-    if (isNil(first)) {
+    if (first == null) {
       return null;
     }
     setLastExpanded(first.id);
@@ -110,7 +108,7 @@ export function nextEntryCollapsed(
   }
 
   const current = document.getElementById(lastExpanded);
-  if (isNil(current)) {
+  if (current == null) {
     return null;
   }
 
@@ -134,12 +132,12 @@ export function nextEntryCollapsed(
  * Optimized to avoid forced reflows by batching layout reads.
  */
 export function prevEntry(focused: string | null): void {
-  if (isNil(focused)) {
+  if (focused == null) {
     return;
   }
 
   const current = document.getElementById(focused);
-  if (isNil(current)) {
+  if (current == null) {
     return;
   }
 
@@ -172,7 +170,7 @@ export function prevEntryCollapsed(
   }
 
   const current = document.getElementById(lastExpanded);
-  if (isNil(current)) {
+  if (current == null) {
     return null;
   }
 

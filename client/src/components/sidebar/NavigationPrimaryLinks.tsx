@@ -2,7 +2,6 @@ import { useEffect, useRef, useCallback } from 'react';
 import type { ReactElement, MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
 import queryString from 'query-string';
-import isEmpty from 'lodash/isEmpty';
 import { isMobile } from 'react-device-detect';
 import {
   faHome,
@@ -15,8 +14,8 @@ import {
 import { useAppSelector } from '@/redux/hooks';
 import { useGetSubredditsQuery } from '@/redux/api';
 import { useModals } from '@/contexts/ModalContext';
+import { hotkeyStatus, isEmpty } from '@/common';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import { hotkeyStatus } from '../../common';
 
 function NavigationPrimaryLinks(): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);

@@ -1,5 +1,5 @@
 import { Component, lazy, Suspense, type ReactNode } from 'react';
-import Placeholder from '../Placeholder';
+import Placeholder from '@/components/posts/Placeholder';
 import type { SocialNetwork } from './types';
 
 // Lazy-load social media embeds to reduce initial bundle size

@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router';
 import { useAppSelector } from '@/redux/hooks';
-import { selectListingStatus } from '../../redux/slices/listingsSlice';
+import { selectListingStatus } from '@/redux/slices/listingsSlice';
 import ListingsHeaderSub from './ListingsHeaderSub';
 import ListingsHeaderMulti from './ListingsHeaderMulti';
 import ListingsHeaderError from './ListingsHeaderError';

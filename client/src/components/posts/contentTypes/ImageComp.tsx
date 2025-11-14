@@ -6,7 +6,7 @@ import {
   useMemo,
   type CSSProperties,
 } from 'react';
-import { PostsContextData, type PostContextData } from '../../../contexts';
+import { PostsContextData, type PostContextData } from '@/contexts';
 import type { ImageContent } from './types';
 
 interface ImageMetadata {

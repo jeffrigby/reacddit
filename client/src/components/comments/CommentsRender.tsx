@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
-import Post from '../posts/postDetail/Post';
+import Post from '@/components/posts/postDetail/Post';
 import CommentsMore from './CommentsMore';
 
 type CommentOrMore = Thing<CommentData> | Thing<MoreChildrenData>;

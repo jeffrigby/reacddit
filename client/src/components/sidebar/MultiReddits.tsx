@@ -10,8 +10,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetMultiRedditsQuery } from '@/redux/api';
+import { setMenuStatus, getMenuStatus } from '@/common';
 import MultiRedditsItem from './MultiRedditsItem';
-import { setMenuStatus, getMenuStatus } from '../../common';
 import MultiRedditsAdd from './MultiRedditsAdd';
 
 const MENU_ID = 'multis';
@@ -30,11 +30,14 @@ function MultiReddits(): ReactElement | null {
     data: multireddits,
     isLoading,
     isFetching,
+    isError,
+    error,
     refetch,
   } = useGetMultiRedditsQuery(
     { expandSubreddits: true },
     {
       skip: bearerStatus !== 'auth', // Don't fetch if not authenticated
+      pollingInterval: bearerStatus === 'auth' ? 900000 : undefined, // Auto-refresh every 15 minutes when authenticated
     }
   );
 
@@ -49,21 +52,6 @@ function MultiReddits(): ReactElement | null {
     }
     prevStatusRef.current = bearerStatus;
   }, [bearerStatus]);
-
-  // Automatically refresh multireddits every 15 minutes
-  useEffect(() => {
-    if (bearerStatus !== 'auth') {
-      return;
-    } // Only poll when authenticated
-
-    const refreshInterval = setInterval(() => {
-      refetch();
-    }, 900000); // 15 minutes
-
-    return () => {
-      clearInterval(refreshInterval);
-    };
-  }, [refetch, bearerStatus]);
 
   const reloadMultis = useCallback(async (): Promise<void> => {
     await refetch();
@@ -100,13 +88,29 @@ function MultiReddits(): ReactElement | null {
     );
   }, [multireddits]);
 
-  // Don't render if not authenticated or no data
-  if (bearerStatus !== 'auth' || !multireddits) {
+  // Don't render if not authenticated
+  if (bearerStatus !== 'auth') {
     return null;
   }
 
-  const multisClass =
-    isLoading || isFetching ? 'nav flex-column faded' : 'nav flex-column';
+  // Handle error state - clear stuck loading state by showing error
+  if (isError) {
+    console.error('Failed to load custom feeds:', error);
+    // Don't render - allows component to reset on next auth state change
+    return null;
+  }
+
+  // Don't render if no data and not loading (skip condition active)
+  if (!multireddits && !isLoading && !isFetching) {
+    return null;
+  }
+
+  // Only show loading state when fetching initial data (no cached data)
+  // If refetching with cached data, show normal state for better UX
+  const showLoadingState = (isLoading || isFetching) && !multireddits;
+  const multisClass = showLoadingState
+    ? 'nav flex-column faded'
+    : 'nav flex-column';
   const caretIcon = showMenu ? faCaretDown : faCaretRight;
   const showAddIcon = showAdd ? faMinus : faPlus;
 

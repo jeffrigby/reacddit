@@ -1,9 +1,9 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { IntersectionObserverProvider } from '../../../contexts';
-import { useListingsContext } from '../../../contexts/ListingsContext';
-import { useAppSelector } from '../../../redux/hooks';
-import { selectFilter } from '../../../redux/slices/listingsSlice';
+import { IntersectionObserverProvider } from '@/contexts';
+import { useListingsContext } from '@/contexts/ListingsContext';
+import { useAppSelector } from '@/redux/hooks';
+import { selectFilter } from '@/redux/slices/listingsSlice';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';

@@ -11,7 +11,7 @@
 import queryString from 'query-string';
 import type { SearchSubredditsResponse } from '@/types/redditApi';
 import { setParams } from '@/reddit/redditApiTs';
-import { redditApi } from '../redditApi';
+import { redditApi } from '@/redux/api/redditApi';
 
 interface SearchSubredditsArgs {
   query: string;

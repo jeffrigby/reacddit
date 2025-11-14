@@ -1,4 +1,11 @@
 import { useContext } from 'react';
+import {
+  PostsContextData,
+  PostsContextContent,
+  type PostContextData,
+} from '@/contexts';
+import type { LinkData } from '@/types/redditApi';
+import type { EmbedContent } from '@/components/posts/embeds/types';
 import ImageComp from './contentTypes/ImageComp';
 import VideoComp from './contentTypes/videoComponents/VideoComp';
 import IFrame from './contentTypes/IFrame';
@@ -7,16 +14,9 @@ import Self from './contentTypes/Self';
 import ImgurAlbum from './contentTypes/ImgurAlbum';
 import RawHTML from './contentTypes/RawHTML';
 import Placeholder from './Placeholder';
-import {
-  PostsContextData,
-  PostsContextContent,
-  type PostContextData,
-} from '../../contexts';
 import HTTPSError from './contentTypes/HTTPSError';
 import RedditGallery from './contentTypes/RedditGallery';
 import Social from './contentTypes/Social';
-import type { LinkData } from '../../types/redditApi';
-import type { EmbedContent } from './embeds/types';
 
 interface ContentProps {
   content?: EmbedContent | null;

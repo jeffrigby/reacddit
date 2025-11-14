@@ -10,7 +10,7 @@
 
 import type { MoreChildrenResponse } from '@/types/redditApi';
 import { setParams } from '@/reddit/redditApiTs';
-import { redditApi } from '../redditApi';
+import { redditApi } from '@/redux/api/redditApi';
 
 interface GetMoreChildrenArgs {
   linkId: string;

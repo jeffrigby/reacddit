@@ -10,7 +10,7 @@
  */
 
 import queryString from 'query-string';
-import { redditApi } from '../redditApi';
+import { redditApi } from '@/redux/api/redditApi';
 
 type VoteDirection = -1 | 0 | 1;
 

@@ -1,4 +1,4 @@
-import type { LinkData } from '../../../../types/redditApi';
+import type { LinkData } from '@/types/redditApi';
 
 function render(entry: LinkData): null {
   const { url } = entry;

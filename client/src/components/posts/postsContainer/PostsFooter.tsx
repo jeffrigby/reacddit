@@ -5,8 +5,8 @@ import {
   faSpinner,
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
-import { useListingsContext } from '../../../contexts/ListingsContext';
-import { useIntersectionObservers } from '../../../contexts';
+import { useListingsContext } from '@/contexts/ListingsContext';
+import { useIntersectionObservers } from '@/contexts';
 
 type FooterStatus = 'loadingNext' | 'loadedAll';
 

@@ -1,8 +1,8 @@
+import type { LinkData, CommentData } from '@/types/redditApi';
 import PostBylineAuthor from './PostBylineAuthor';
 import PostTimeAgo from './PostTimeAgo';
 import PostSubLink from './PostSubLink';
 import PostCommentLink from './PostCommentLink';
-import type { LinkData, CommentData } from '../../../types/redditApi';
 
 interface PostBylineProps {
   data: LinkData | CommentData;

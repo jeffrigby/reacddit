@@ -28,8 +28,17 @@ interface ApiState {
 }
 
 /**
+ * Query entry structure from RTK Query
+ */
+interface QueryEntry {
+  status?: 'pending' | 'fulfilled' | 'rejected' | 'uninitialized';
+  [key: string]: unknown;
+}
+
+/**
  * Filter RTK Query cache to only persist specific endpoints
  * Excludes volatile data (listings, search, comments) that should be fresh on reload
+ * Also excludes queries in pending/loading state to prevent stuck queries on rehydration
  */
 function filterApiCache(apiState: ApiState): ApiState {
   if (!apiState?.queries) {
@@ -44,7 +53,12 @@ function filterApiCache(apiState: ApiState): ApiState {
     const endpointName = cacheKey.split('(')[0];
 
     if (PERSISTABLE_ENDPOINTS.includes(endpointName)) {
-      filteredQueries[cacheKey] = cacheEntry;
+      // Only persist queries that have completed successfully
+      // Skip pending/uninitialized queries to prevent stuck loading states
+      const entry = cacheEntry as QueryEntry;
+      if (entry.status === 'fulfilled') {
+        filteredQueries[cacheKey] = cacheEntry;
+      }
     }
   }
 

@@ -1,6 +1,6 @@
 import parse from 'url-parse';
-import type { LinkData, ImageDetails } from '../../../../types/redditApi';
-import type { ImageEmbedContent } from '../types';
+import type { LinkData, ImageDetails } from '@/types/redditApi';
+import type { ImageEmbedContent } from '@/components/posts/embeds/types';
 
 const IMAGE_HEIGHT_THRESHOLD = 748;
 const IMAGE_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|avif|svg|bmp|ico)$/i;

@@ -16,7 +16,7 @@ import { createEntityAdapter } from '@reduxjs/toolkit';
 import type { EntityState } from '@reduxjs/toolkit';
 import { subreddits as subredditsAPI } from '@/reddit/redditApiTs';
 import type { SubredditData, Thing } from '@/types/redditApi';
-import { redditApi } from '../redditApi';
+import { redditApi } from '@/redux/api/redditApi';
 
 /**
  * EntityAdapter for normalized subreddit data

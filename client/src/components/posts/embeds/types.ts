@@ -1,7 +1,7 @@
 /**
  * Type definitions for the embeds system
  */
-import type { LinkData, CommentData } from '../../../types/redditApi';
+import type { LinkData, CommentData } from '@/types/redditApi';
 
 // Video source types
 export interface VideoSource {
