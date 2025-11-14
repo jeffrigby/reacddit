@@ -20,6 +20,9 @@
   ],
   "author": "Jeff Rigby",
   "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  },
   "devDependencies": {
     "concurrently": "^9.0.1"
   }

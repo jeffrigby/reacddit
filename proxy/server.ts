@@ -174,17 +174,29 @@ function redactSensitiveParams(url: string): string {
 /**
  * Determine if a response should be compressed and which algorithm to use
  * Only compresses API responses with text/JSON content types over 1KB
+ * Respects client's Accept-Encoding and skips if already compressed
  */
 function shouldCompressResponse(
-  url: string,
-  headers: http.IncomingHttpHeaders,
+  requestHeaders: http.IncomingHttpHeaders,
+  responseHeaders: http.IncomingHttpHeaders,
   isApi: boolean
 ): 'br' | 'gzip' | null {
   // Only compress API responses
   if (!isApi) return null;
 
+  // Skip if upstream already compressed the response
+  if (responseHeaders['content-encoding']) {
+    return null;
+  }
+
+  // Check client's Accept-Encoding header for supported encodings
+  const acceptEncoding = (requestHeaders['accept-encoding'] || '').toLowerCase();
+
+  // Client must accept compression
+  if (!acceptEncoding) return null;
+
   // Check content type (only compress text/json)
-  const contentType = headers['content-type'] || '';
+  const contentType = responseHeaders['content-type'] || '';
   const compressible =
     contentType.includes('json') ||
     contentType.includes('text') ||
@@ -193,11 +205,21 @@ function shouldCompressResponse(
   if (!compressible) return null;
 
   // Check content length (don't compress small responses < 1KB)
-  const contentLength = parseInt(headers['content-length'] || '0', 10);
+  const contentLength = parseInt(responseHeaders['content-length'] || '0', 10);
   if (contentLength > 0 && contentLength < 1024) return null;
 
-  // Prefer brotli for better compression
-  return 'br';
+  // Prefer brotli if client supports it (better compression ratio)
+  if (acceptEncoding.includes('br')) {
+    return 'br';
+  }
+
+  // Fall back to gzip if client supports it
+  if (acceptEncoding.includes('gzip')) {
+    return 'gzip';
+  }
+
+  // Client doesn't support any compression we can provide
+  return null;
 }
 
 /**
@@ -296,7 +318,7 @@ function proxyRequest(
 
     // Check if compression should be applied
     const compressionType = shouldCompressResponse(
-      requestUrl,
+      req.headers,
       proxyRes.headers,
       isApi
     );
@@ -305,6 +327,22 @@ function proxyRequest(
       // Add content-encoding header
       headers['content-encoding'] = compressionType;
       delete headers['content-length']; // Length will change after compression
+
+      // Add Vary header to indicate response varies based on Accept-Encoding
+      // This is required for proper HTTP caching behavior
+      const existingVary = headers['vary'];
+      if (existingVary) {
+        // Append to existing Vary header if it doesn't already include Accept-Encoding
+        const varyValues = existingVary
+          .toString()
+          .split(',')
+          .map((v) => v.trim().toLowerCase());
+        if (!varyValues.includes('accept-encoding')) {
+          headers['vary'] = `${existingVary}, Accept-Encoding`;
+        }
+      } else {
+        headers['vary'] = 'Accept-Encoding';
+      }
 
       res.writeHead(statusCode, headers);
 

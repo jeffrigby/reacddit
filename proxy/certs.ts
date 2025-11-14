@@ -121,6 +121,36 @@ IP.2 = ::1
     // Certificate can be world-readable (it's public)
     chmodSync(generatedCertPath, 0o644);
 
+    // If running as root (via sudo), chown files back to the original user
+    // This prevents EACCES errors on subsequent non-sudo runs
+    if (process.getuid && process.getuid() === 0) {
+      const sudoUid = process.env.SUDO_UID;
+      const sudoGid = process.env.SUDO_GID;
+
+      if (sudoUid && sudoGid) {
+        console.log(
+          `🔐 Changing ownership of .ssl directory to original user (${sudoUid}:${sudoGid})...`
+        );
+
+        try {
+          // Recursively chown the entire .ssl directory and its contents
+          execSync(`chown -R ${sudoUid}:${sudoGid} "${sslDir}"`, {
+            stdio: 'pipe',
+          });
+        } catch (chownError) {
+          console.warn(
+            `⚠️  Warning: Failed to change ownership of .ssl directory.`
+          );
+          console.warn(
+            `   You may need to run \`sudo chown -R $USER ${sslDir}\` manually.`
+          );
+          console.warn(
+            `   Error: ${chownError instanceof Error ? chownError.message : String(chownError)}`
+          );
+        }
+      }
+    }
+
     console.log(`✅ Self-signed certificates generated successfully`);
     console.log(`   Certificate: ${generatedCertPath}`);
     console.log(`   Private key: ${generatedKeyPath}`);

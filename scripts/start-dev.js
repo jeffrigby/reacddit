@@ -11,42 +11,37 @@
  */
 
 import { spawn } from 'child_process';
-import { readFileSync, existsSync } from 'fs';
+import { existsSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { config as loadEnv } from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Load .env file from repository root
+const envPath = join(__dirname, '..', '.env');
+if (existsSync(envPath)) {
+  loadEnv({ path: envPath });
+}
+
 /**
- * Read .env file to detect PROXY_PORT
+ * Get PROXY_PORT from environment (supports runtime overrides like PROXY_PORT=5173 npm start)
  */
 function getProxyPort() {
-  try {
-    const envPath = join(__dirname, '..', '.env');
-    if (!existsSync(envPath)) {
-      console.warn('⚠️  Warning: .env file not found.');
-      console.warn('   Using default port 5173 (unprivileged).\n');
-      console.warn('   To use port 443, create .env from .env.dist\n');
-      return 5173; // Default unprivileged port
-    }
+  // Read from process.env first (allows overrides), fallback to default
+  const port = parseInt(process.env.PROXY_PORT || '5173', 10);
 
-    const envContent = readFileSync(envPath, 'utf-8');
-    const match = envContent.match(/PROXY_PORT\s*=\s*(\d+)/);
-
-    if (!match) {
-      console.warn('⚠️  Warning: PROXY_PORT not found in .env.');
-      console.warn('   Using default port 5173 (unprivileged).\n');
-      return 5173;
-    }
-
-    return parseInt(match[1], 10);
-  } catch (err) {
-    console.error(`❌ Error reading .env file: ${err.message}`);
-    console.error('   Using default port 5173 (unprivileged).\n');
+  if (isNaN(port) || port < 1 || port > 65535) {
+    console.warn(
+      `⚠️  Warning: Invalid PROXY_PORT="${process.env.PROXY_PORT}"`
+    );
+    console.warn('   Using default port 5173 (unprivileged).\n');
     return 5173;
   }
+
+  return port;
 }
 
 /**
@@ -96,10 +91,23 @@ function main() {
   console.log(`   Running as: ${runningAsRoot ? 'root' : 'user'}`);
 
   if (needsRoot && runningAsRoot) {
-    console.log(`   🔐 All services start as root. Proxy drops privileges; client/API remain elevated.\n`);
+    console.log(`   🔐 Proxy runs as root, drops to ${process.env.SUDO_USER}. Client/API run as ${process.env.SUDO_USER}.\n`);
   } else {
     console.log('');
   }
+
+  // Build commands for services
+  // When running as root (privileged port), run client/API as original user to avoid permission issues
+  const sudoUser = process.env.SUDO_USER;
+  const dropPrivileges = needsRoot && runningAsRoot && sudoUser;
+
+  const proxyCmd = 'npm run start-proxy';
+  const clientCmd = dropPrivileges
+    ? `sudo -u ${sudoUser} npm run start-client`
+    : 'npm run start-client';
+  const apiCmd = dropPrivileges
+    ? `sudo -u ${sudoUser} npm run start-api`
+    : 'npm run start-api';
 
   // Start all services using concurrently
   const command = [
@@ -109,9 +117,9 @@ function main() {
     '--prefix "[{name}]"',
     '--kill-others',
     '--kill-others-on-fail',
-    '"npm run start-proxy"',
-    '"npm run start-client"',
-    '"npm run start-api"'
+    `"${proxyCmd}"`,
+    `"${clientCmd}"`,
+    `"${apiCmd}"`
   ].join(' ');
 
   const child = spawn(command, {
