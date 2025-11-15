@@ -160,7 +160,9 @@ redditAPI.interceptors.request.use(
 
     return newConfig;
   },
-  (error: unknown) => Promise.reject(error)
+  (error: unknown) => {
+    return Promise.reject(error);
+  }
 );
 
 /**

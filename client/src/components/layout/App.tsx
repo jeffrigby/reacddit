@@ -93,15 +93,107 @@ function App() {
   }, [dispatch, token]);
 
   if (redditMe.status === 'failed') {
+    const errorString = redditMe.error ? String(redditMe.error) : '';
+    const isNetworkError = errorString.includes('Network Error');
+    const isFirefox = navigator.userAgent.includes('Firefox');
+
     return (
       <div className="alert alert-danger m-2" role="alert">
-        <p>
-          Can&apos;t connect to the reddit API. This is possibly related to your
-          browser blocking connections to &apos;oauth.reddit.com&apos;. Firefox
-          blocks this by default. Please check your browser content blocking
-          settings and try again.
-        </p>
-        <p>{redditMe.error ? String(redditMe.error) : 'Unknown error'}</p>
+        <h5 className="alert-heading">Can&apos;t Connect to Reddit API</h5>
+
+        {isNetworkError ? (
+          <>
+            <p>
+              <strong>Network connection blocked.</strong>
+            </p>
+            <p>
+              Your browser is blocking connections to{' '}
+              <code>oauth.reddit.com</code>.
+            </p>
+            {isFirefox ? (
+              <>
+                <p className="mb-2">
+                  <strong>Firefox Users:</strong>
+                </p>
+                <ol className="mb-3">
+                  <li>
+                    Click the shield icon{' '}
+                    <span
+                      aria-label="shield"
+                      role="img"
+                      style={{ fontSize: '1.2em' }}
+                    >
+                      🛡️
+                    </span>{' '}
+                    in the address bar
+                  </li>
+                  <li>
+                    Toggle &quot;Enhanced Tracking Protection&quot; to OFF for
+                    this site
+                  </li>
+                  <li>Click the Retry button below or refresh the page</li>
+                </ol>
+              </>
+            ) : (
+              <>
+                <p className="mb-2">
+                  <strong>Common causes:</strong>
+                </p>
+                <ul className="mb-3">
+                  <li>Content blocking or privacy extensions</li>
+                  <li>Browser privacy/tracking protection settings</li>
+                  <li>Network firewall or proxy blocking the domain</li>
+                </ul>
+                <p>
+                  Try disabling content blockers for this site or check your
+                  browser&apos;s privacy settings.
+                </p>
+              </>
+            )}
+            <button
+              className="btn btn-primary btn-sm mb-2"
+              type="button"
+              onClick={() => dispatch(fetchMe(true))}
+            >
+              Retry Connection
+            </button>
+          </>
+        ) : (
+          <>
+            <p>
+              Unable to connect to the Reddit API. This may be due to browser
+              content blocking settings or network issues.
+            </p>
+            <p>
+              <strong>Error:</strong> {errorString || 'Unknown error'}
+            </p>
+            <button
+              className="btn btn-primary btn-sm mb-2"
+              type="button"
+              onClick={() => dispatch(fetchMe(true))}
+            >
+              Retry Connection
+            </button>
+          </>
+        )}
+
+        <details>
+          <summary>Debug Info (check console for more details)</summary>
+          <pre style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>
+            {JSON.stringify(
+              {
+                redditMeStatus: redditMe.status,
+                redditBearerStatus: redditBearer.status,
+                error: redditMe.error,
+                lastUpdated: Number.isFinite(redditMe.lastUpdated)
+                  ? new Date(redditMe.lastUpdated).toISOString()
+                  : 'N/A',
+              },
+              null,
+              2
+            )}
+          </pre>
+        </details>
       </div>
     );
   }
