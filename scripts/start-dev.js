@@ -6,6 +6,7 @@
  * Handles intelligent privilege management for running the development environment:
  * - Detects if proxy port requires root (< 1024)
  * - Validates that privileges match requirements
+ * - Offers to relaunch with sudo if privileged port is requested
  * - Provides clear error messages
  * - Starts all services (proxy, client, API) with concurrently
  */
@@ -16,6 +17,7 @@ import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { config as loadEnv } from 'dotenv';
+import { confirm } from '@inquirer/prompts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -61,9 +63,69 @@ function requiresRoot(port) {
 }
 
 /**
+ * Escape a string for safe use in shell commands
+ * Wraps the string in single quotes and escapes any single quotes within
+ * This prevents command injection while supporting all valid usernames
+ */
+function shellEscape(str) {
+  if (!str || typeof str !== 'string') {
+    return "''";
+  }
+  // Replace each single quote with '\'' (end quote, escaped quote, start quote)
+  return "'" + str.replace(/'/g, "'\\''") + "'";
+}
+
+/**
+ * Prompt user for yes/no confirmation using @inquirer/prompts
+ */
+async function promptRelaunch() {
+  return await confirm({
+    message: 'Would you like to relaunch with sudo?',
+    default: true
+  });
+}
+
+/**
+ * Relaunch the script with sudo, preserving environment overrides
+ */
+function relaunchWithSudo() {
+  console.log('\n🔐 Relaunching with sudo...\n');
+
+  // Build env vars to preserve (runtime overrides like PROXY_PORT=443 npm start)
+  const envVars = [];
+  const varsToPreserve = ['PROXY_PORT', 'PROXY_DOMAIN', 'PROXY_HOST', 'CLIENT_PORT', 'API_PORT'];
+
+  for (const varName of varsToPreserve) {
+    if (process.env[varName]) {
+      envVars.push(`${varName}=${process.env[varName]}`);
+    }
+  }
+
+  // Build sudo command: sudo env VAR1=val1 VAR2=val2 npm start
+  const args = envVars.length > 0
+    ? ['env', ...envVars, 'npm', 'start']
+    : ['npm', 'start'];
+
+  // Spawn sudo with preserved environment
+  const child = spawn('sudo', args, {
+    stdio: 'inherit',
+    cwd: join(__dirname, '..')
+  });
+
+  child.on('error', (err) => {
+    console.error(`\n❌ Failed to relaunch with sudo: ${err.message}`);
+    process.exit(1);
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+
+/**
  * Main startup logic
  */
-function main() {
+async function main() {
   const port = getProxyPort();
   const needsRoot = requiresRoot(port);
   const runningAsRoot = isRoot();
@@ -72,12 +134,29 @@ function main() {
 
   // Validation: Port < 1024 requires root
   if (needsRoot && !runningAsRoot) {
-    console.error(`❌ Error: Port ${port} requires root privileges.\n`);
-    console.error(`   Solution: Run with sudo:`);
-    console.error(`   $ sudo npm start\n`);
-    console.error(`   Alternative: Use unprivileged port (edit .env):`);
-    console.error(`   PROXY_PORT=5173\n`);
-    process.exit(1);
+    console.log(`❌ Port ${port} requires root privileges.\n`);
+    console.log(`   Options:`);
+    console.log(`   • Run with sudo: sudo npm start`);
+    console.log(`   • Use unprivileged port: Edit .env and set PROXY_PORT=5173\n`);
+
+    // Check if running in interactive terminal (TTY)
+    // Non-interactive environments (CI, devcontainers, stdin redirected) can't use prompts
+    if (process.stdin.isTTY) {
+      // Prompt user to relaunch with sudo
+      const shouldRelaunch = await promptRelaunch();
+
+      if (shouldRelaunch) {
+        relaunchWithSudo();
+        return; // relaunchWithSudo will handle the exit
+      } else {
+        console.log('\n👋 Exiting...\n');
+        process.exit(1);
+      }
+    } else {
+      // Non-interactive: exit immediately with clear instructions
+      console.log(`   Non-interactive terminal detected. Exiting.\n`);
+      process.exit(1);
+    }
   }
 
   // Warning: Running as root unnecessarily
@@ -103,10 +182,10 @@ function main() {
 
   const proxyCmd = 'npm run start-proxy';
   const clientCmd = dropPrivileges
-    ? `sudo -u ${sudoUser} npm run start-client`
+    ? `sudo -u ${shellEscape(sudoUser)} npm run start-client`
     : 'npm run start-client';
   const apiCmd = dropPrivileges
-    ? `sudo -u ${sudoUser} npm run start-api`
+    ? `sudo -u ${shellEscape(sudoUser)} npm run start-api`
     : 'npm run start-api';
 
   // Start all services using concurrently
@@ -153,4 +232,7 @@ function main() {
 }
 
 // Run the startup script
-main();
+main().catch((err) => {
+  console.error(`\n❌ Unexpected error: ${err.message}`);
+  process.exit(1);
+});

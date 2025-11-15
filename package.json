@@ -24,6 +24,7 @@
     "dotenv": "^16.4.7"
   },
   "devDependencies": {
+    "@inquirer/prompts": "^7.10.1",
     "concurrently": "^9.0.1"
   }
 }
