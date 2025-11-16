@@ -12,8 +12,8 @@ HTTPS is required for reacddit to properly load embedded content (iframes, third
 - **Custom domain support** with your own SSL certificates (e.g., Let's Encrypt)
 - **WebSocket support** for Vite HMR
 - **Security headers** (HSTS, CSP, X-Frame-Options, etc.)
-- **Production-grade routing** matching nginx configuration
-- **Zero configuration** - just run `npm start`
+- **Production-grade routing** for API and client requests
+- Automatic configuration on first run
 
 ## How It Works
 
@@ -63,12 +63,12 @@ On first run, the proxy automatically generates self-signed certificates for loc
 
 ### Custom Certificates
 
-For custom domains (like `dev.reacdd.it`), set the cert paths in `.env`:
+For custom domains (like `dev.yourdomain.com`), set the cert paths in `.env`:
 
 ```bash
-PROXY_DOMAIN=dev.reacdd.it
-PROXY_CERT_PATH=/usr/local/etc/letsencrypt/config/live/dev.reacdd.it/fullchain.pem
-PROXY_KEY_PATH=/usr/local/etc/letsencrypt/config/live/dev.reacdd.it/privkey.pem
+PROXY_DOMAIN=dev.yourdomain.com
+PROXY_CERT_PATH=/usr/local/etc/letsencrypt/config/live/dev.yourdomain.com/fullchain.pem
+PROXY_KEY_PATH=/usr/local/etc/letsencrypt/config/live/dev.yourdomain.com/privkey.pem
 ```
 
 ## Usage
@@ -78,12 +78,12 @@ PROXY_KEY_PATH=/usr/local/etc/letsencrypt/config/live/dev.reacdd.it/privkey.pem
 npm start              # Starts proxy + client + API
 
 # Or run proxy separately
-npm run start-proxy    # Just the proxy
+npm run start-proxy    # Proxy only
 ```
 
 ## Security Headers
 
-The proxy adds the following security headers (matching the nginx configuration):
+The proxy adds the following production-grade security headers:
 
 - **HSTS** (HTTP Strict Transport Security)
 - **CSP** (Content Security Policy) - permissive for embeds
@@ -142,9 +142,19 @@ proxy/
 ❌ Permission denied to bind to port 443!
 ```
 
-**Solution:** Port 443 requires root privileges. Either:
-- Use port 5173 instead (default)
-- Run with sudo: `sudo npm start` (not recommended)
+**Why this happens:**
+
+Ports below 1024 are called "privileged ports" and require root access on Unix-like systems (macOS, Linux). This is a security feature to prevent regular users from running services that could impersonate critical system services like HTTPS (443) or HTTP (80).
+
+**Solution:** Either:
+- **Recommended:** Use port 5173 instead (default unprivileged port)
+  - No sudo required
+  - More secure for development
+  - Edit `.env`: `PROXY_PORT=5173`
+- **Alternative:** Run with sudo if you need port 443
+  - `sudo npm start`
+  - Only necessary for testing with external devices or specific OAuth callbacks
+  - The proxy drops to your user account after binding; client and API always run as your user (never as root)
 
 ### Certificate generation failed
 

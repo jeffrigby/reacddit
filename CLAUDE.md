@@ -25,7 +25,7 @@ npm run start-api         # API server only (port 3001)
 npm run build-client      # Production build
 ```
 
-**Access:** https://localhost:5173 (or https://dev.reacdd.it:5173 with custom domain)
+**Access:** https://localhost:5173 (or custom domain like https://dev.yourdomain.com:5173)
 
 **Client** (`cd client/`):
 ```bash
@@ -93,7 +93,7 @@ npm run build             # SAM build for Lambda deployment
 - Routes `/api/*` → Koa API (port 3001)
 - Routes everything else → Vite dev server (port 3000)
 - WebSocket upgrade support for HMR (`/ws`, `/sockjs-node`, `/@vite/`)
-- Security headers matching nginx config (HSTS, CSP, X-Frame-Options, etc.)
+- Production-grade security headers (HSTS, CSP, X-Frame-Options, etc.)
 
 **Key files:**
 - `proxy/server.ts` - Main HTTPS server and routing logic
@@ -136,10 +136,13 @@ npm run build             # SAM build for Lambda deployment
 
 ## OAuth Setup (API)
 
-The API requires Reddit OAuth2 setup:
-1. Create Reddit app at https://www.reddit.com/prefs/apps
-2. Copy `api/.env.dist` to `api/.env`
-3. Configure CLIENT_PATH, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_CALLBACK_URI
+The API requires Reddit OAuth2 credentials:
+1. **Create Reddit app** at https://www.reddit.com/prefs/apps
+   - Choose "web app" type
+   - Set redirect URI to `https://localhost:5173/api/callback`
+   - Note the client ID and client secret
+2. Copy `api/.env.example` to `api/.env`
+3. Configure: `CLIENT_PATH`, `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_CALLBACK_URI`
 4. Test at `http://localhost:3001/api/bearer`
 
 ## Build System

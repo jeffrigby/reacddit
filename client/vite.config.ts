@@ -91,14 +91,14 @@ export default defineConfig(({ mode }) => {
   server: {
     port: env.PORT ? Number(env.PORT) : 3000,
     host: '0.0.0.0', // Allow external connections
-    allowedHosts: env.HOST ? [env.HOST] : [], // Custom domain from .env (e.g., dev.reacdd.it)
+    allowedHosts: env.HOST ? [env.HOST] : [], // Custom domain from .env (e.g., dev.yourdomain.com)
 
     // HMR configuration for reverse proxy
     // When behind HTTPS proxy, HMR client needs to connect via the proxy
     // instead of directly to Vite dev server
     hmr: env.HOST ? {
       protocol: 'wss', // Use secure WebSocket when behind HTTPS proxy
-      host: env.HOST, // Connect to proxy domain (e.g., dev.reacdd.it)
+      host: env.HOST, // Connect to proxy domain (e.g., dev.yourdomain.com)
       // Default to 5173 (standard proxy port) or read from WSPORT/PROXY_PORT
       clientPort: env.WSPORT ? Number(env.WSPORT) : (env.PROXY_PORT ? Number(env.PROXY_PORT) : 5173),
     } : true, // Use default HMR settings for localhost
