@@ -23,7 +23,7 @@ interface ListingsMatch {
   target?: string;
   user?: string;
   userType?: string;
-  multi?: string;
+  multi?: string | boolean;
   postName?: string;
   comment?: string;
 }
@@ -58,7 +58,7 @@ function Listings({ match }: ListingsProps) {
     return {
       sort: getSort,
       target: target ?? 'mine',
-      multi: multi === 'm' || false,
+      multi: multi === true || multi === 'm',
       userType: userType ?? '',
       user: user ?? '',
       listType: listingType,

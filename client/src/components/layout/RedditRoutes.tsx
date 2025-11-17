@@ -53,7 +53,7 @@ const routes: RouteConfig[] = [
     paths: ['/user/:target/m/:userType/search', '/:user/m/:target/search'],
     overrides: {
       multi: true,
-      listType: 'r',
+      listType: 's',
     },
     validations: {
       user: 'me',

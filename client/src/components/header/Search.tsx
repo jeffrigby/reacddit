@@ -162,7 +162,7 @@ function Search() {
     }
 
     if ((listType === 'm' || (listType === 's' && multi)) && user !== 'me') {
-      return `/user/${target}/m/${target}`;
+      return `/user/${user}/m/${target}`;
     }
     if ((listType === 'm' || (listType === 's' && multi)) && user === 'me') {
       return `/me/m/${target}`;
