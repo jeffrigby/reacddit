@@ -13,28 +13,20 @@ function isTopLevelEntry(element: Element): boolean {
 /**
  * Get the actual scrolling element
  * After Bootstrap 5 migration, body element has the scroll, not window
- * Cached to avoid repeated DOM checks and potential forced reflows
+ * Note: Cannot use document.scrollingElement - Bootstrap 5 confuses it
  */
-let cachedScrollContainer: Element | null = null;
-
 function getScrollContainer(): Element {
-  // Return cached value if available
-  if (cachedScrollContainer) {
-    return cachedScrollContainer;
-  }
-
-  // Modern Bootstrap sets overflow on body, making it the scroll container
+  // Check which element is actually scrollable
+  // Bootstrap 5 sets overflow on body, making it the scroll container
   const body = document.body;
   const html = document.documentElement;
 
-  // Check if body is scrollable
+  // Return whichever element has scrollable content
   if (body.scrollHeight > body.clientHeight) {
-    cachedScrollContainer = body;
+    return body;
   } else {
-    cachedScrollContainer = html;
+    return html;
   }
-
-  return cachedScrollContainer;
 }
 
 /**

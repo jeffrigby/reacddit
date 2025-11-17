@@ -51,7 +51,7 @@ export function hotkeyStatus(): boolean {
 
   const { nodeName } = activeElement;
 
-  if (nodeName === 'TEXTAREA') {
+  if (nodeName === 'TEXTAREA' || nodeName === 'IFRAME') {
     return false;
   }
 

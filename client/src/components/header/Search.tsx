@@ -275,13 +275,22 @@ function Search() {
           />
           {(focused || search) && (
             <FontAwesomeIcon
-              aria-hidden="true"
               aria-label="Clear Search Box"
               className="form-control-clear"
               icon={faTimesCircle}
               id="search-clear"
               role="button"
+              tabIndex={0}
               onClick={clearSearch}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  clearSearch();
+                }
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault(); // Prevent blur on mousedown so tooltip stays open until click completes
+              }}
             />
           )}
           {focused && !global && (
