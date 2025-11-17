@@ -7,6 +7,8 @@ import { execSync } from 'child_process';
 import { config as loadEnv } from 'dotenv';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import boxen from 'boxen';
+import chalk from 'chalk';
 import { getCertificates } from './certs.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -534,12 +536,18 @@ function startServer(): void {
 
           // IMPORTANT: Must call setgid() before setuid()
           // Once UID is changed, we lose permission to change GID
-          process.setgid(gid);
-          process.setuid(uid);
+          if (process.setgid && process.setuid) {
+            process.setgid(gid);
+            process.setuid(uid);
 
-          console.log(
-            `✅ Now running as user ${originalUser} (UID: ${process.getuid()})\n`
-          );
+            console.log(
+              `✅ Now running as user ${originalUser} (UID: ${process.getuid?.() || 'unknown'})\n`
+            );
+          } else {
+            console.error('❌ setuid/setgid not available on this platform');
+            console.error('   Refusing to continue as root for security reasons.\n');
+            process.exit(1);
+          }
         } catch (err) {
           console.error(
             `❌ Failed to drop privileges: ${err instanceof Error ? err.message : String(err)}`
@@ -584,6 +592,29 @@ function startServer(): void {
         `   Click "Advanced" → "Proceed to ${proxyConfig.domain}" to continue.\n`
       );
     }
+
+    // Delay final message to ensure it prints AFTER Vite startup
+    // Vite takes a moment to start and prints its URLs
+    setTimeout(() => {
+      const visitUrl = `https://${proxyConfig.domain}:${proxyConfig.port}`;
+
+      const message = [
+        chalk.bold.green('Reacddit is ready!'),
+        '',
+        chalk.bold.cyan(`Visit: ${visitUrl}`),
+        '',
+        chalk.bold.yellow('DO NOT use the Vite URLs shown above - they won\'t work!'),
+        chalk.gray('(Embeds require HTTPS and the proxy routes API requests)'),
+      ].join('\n');
+
+      console.log('\n' + boxen(message, {
+        padding: 1,
+        margin: 1,
+        borderStyle: 'round',
+        borderColor: 'cyan',
+        textAlignment: 'center',
+      }));
+    }, 2000); // 2 second delay to ensure Vite has printed its messages
   });
 
   server.on('error', (err: NodeJS.ErrnoException) => {

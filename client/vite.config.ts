@@ -87,6 +87,10 @@ export default defineConfig(({ mode }) => {
     },
   },
 
+  // Preserve terminal output (don't clear screen)
+  // This ensures the proxy's startup message remains visible
+  clearScreen: false,
+
   // Dev server configuration
   server: {
     port: env.PORT ? Number(env.PORT) : 3000,
