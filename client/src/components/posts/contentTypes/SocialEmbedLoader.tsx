@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
-import {
-  XEmbed,
-  InstagramEmbed,
-  FacebookEmbed,
-} from 'react-social-media-embed';
+import TwitterEmbed from '../embeds/TwitterEmbed';
+import InstagramEmbed from '../embeds/InstagramEmbed';
+import FacebookEmbed from '../embeds/FacebookEmbed';
 import type { SocialNetwork } from './types';
 
 interface SocialEmbedLoaderProps {
@@ -15,7 +13,7 @@ function SocialEmbedLoader({ url, network }: SocialEmbedLoaderProps) {
   const embedContent = useMemo(() => {
     switch (network) {
       case 'x':
-        return <XEmbed url={url} />;
+        return <TwitterEmbed url={url} />;
       case 'instagram':
         return <InstagramEmbed url={url} />;
       case 'facebook':
