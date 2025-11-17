@@ -18,7 +18,7 @@ Reacddit is a Reddit client built with React that provides enhanced media viewin
 
 **First-time setup wizard** (recommended):
 ```bash
-npm install              # Install root dependencies
+npm install              # Install root + all subdirectory dependencies (automatic)
 npm run setup            # Interactive setup wizard
 ```
 
@@ -28,6 +28,7 @@ The setup wizard (`scripts/setup-wizard.ts`) guides you through:
 3. **Reddit OAuth setup** (guides through creating Reddit app with correct redirect URI)
 4. **Certificate configuration** (auto-generate self-signed or provide custom certs)
 5. **Environment file generation** (creates .env, api/.env, client/.env atomically)
+6. **Dependency installation** (checks and installs client/API/proxy packages if needed)
 
 **Auto-run on first start:**
 - If `.env` is missing, `npm start` automatically offers to run the wizard
@@ -39,6 +40,7 @@ The setup wizard (`scripts/setup-wizard.ts`) guides you through:
 - Atomic file writes with timestamped backups
 - Non-blocking DNS verification for custom domains
 - Secure SALT generation (128-bit entropy for AES-256-CBC)
+- Automatic dependency installation (via postinstall hook and wizard check)
 
 ## Development Commands
 

@@ -464,3 +464,25 @@ export function validatePortsUnique(
 
   return { valid: true };
 }
+
+/**
+ * Check if dependencies are installed in subdirectories
+ */
+export function checkDependenciesInstalled(
+  rootPath: string
+): { allInstalled: boolean; missing: string[] } {
+  const subdirs = ['client', 'api', 'proxy'];
+  const missing: string[] = [];
+
+  for (const subdir of subdirs) {
+    const nodeModulesPath = `${rootPath}/${subdir}/node_modules`;
+    if (!existsSync(nodeModulesPath)) {
+      missing.push(subdir);
+    }
+  }
+
+  return {
+    allInstalled: missing.length === 0,
+    missing,
+  };
+}

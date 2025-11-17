@@ -50,27 +50,27 @@ reacddit is a monorepo containing an OAuth2 API (for Reddit authentication) and 
 
 **Option 1: Interactive Setup Wizard (Recommended)**
 ```bash
-# 1. Install dependencies
-npm install              # Root (also installs client, API, proxy dependencies)
+# 1. Install dependencies (automatically installs all subdirectories)
+npm install
 
 # 2. Run the setup wizard
-npm run setup            # Interactive wizard guides you through configuration
+npm run setup            # Interactive wizard handles everything
 
-# 3. Start everything (proxy + client + API)
+# 3. Start the dev server
 npm start
 
-# Access the app at the URL shown (e.g., https://localhost:5173)
-# Your browser will warn about self-signed certificates - this is expected
-# Click "Advanced" → "Proceed to localhost" to continue
+# Access at the URL shown (e.g., https://localhost:5173)
+# Accept self-signed certificate warning (normal for local dev)
 ```
 
-The setup wizard will guide you through:
+The setup wizard **automatically handles**:
 - Domain and port configuration (localhost or custom domain)
-- Reddit OAuth app creation (opens browser with step-by-step instructions)
-- SSL certificate setup (auto-generates self-signed certs for local development)
-- Environment file generation (creates .env, api/.env, client/.env)
+- Reddit OAuth app creation (opens browser with instructions)
+- SSL certificate setup (auto-generates self-signed certs)
+- Environment file generation (.env, api/.env, client/.env)
+- **Dependency installation** (installs client, API, proxy packages)
 
-**Auto-run:** If you skip the wizard and run `npm start` without configuration, it will automatically prompt you to run the setup wizard.
+**Even easier:** Just run `npm start` - if `.env` is missing, it will automatically offer to run the wizard!
 
 **Option 2: Manual Setup**
 ```bash

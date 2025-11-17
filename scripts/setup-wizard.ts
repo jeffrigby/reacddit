@@ -40,6 +40,7 @@ import {
   buildRedirectUri,
   buildClientPath,
   validatePortsUnique,
+  checkDependenciesInstalled,
 } from './wizard-utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -98,7 +99,8 @@ async function welcome(): Promise<void> {
   console.log('  1. Domain and port configuration');
   console.log('  2. Reddit OAuth app setup');
   console.log('  3. SSL certificate configuration');
-  console.log('  4. Environment file generation\n');
+  console.log('  4. Environment file generation');
+  console.log('  5. Dependency installation (client, API, proxy)\n');
 
   // Check for non-interactive environment
   if (isNonInteractive()) {
@@ -412,16 +414,25 @@ async function configureRedditOAuth(
     // Guide through Reddit app creation
     console.log('\n📱 Creating a Reddit OAuth Application\n');
 
-    console.log(
-      'Opening https://www.reddit.com/prefs/apps in your browser...\n'
-    );
+    // Ask before opening browser
+    const shouldOpenBrowser = await confirm({
+      message: 'Open https://www.reddit.com/prefs/apps in your browser?',
+      default: true,
+    });
 
-    try {
-      await open('https://www.reddit.com/prefs/apps');
-    } catch {
-      console.log(
-        '⚠️  Could not open browser automatically. Please visit manually:'
-      );
+    if (shouldOpenBrowser) {
+      console.log('\n🌐 Opening browser...\n');
+
+      try {
+        await open('https://www.reddit.com/prefs/apps');
+      } catch {
+        console.log(
+          '⚠️  Could not open browser automatically. Please visit manually:'
+        );
+        console.log('   https://www.reddit.com/prefs/apps\n');
+      }
+    } else {
+      console.log('\nPlease visit this URL in your browser:');
       console.log('   https://www.reddit.com/prefs/apps\n');
     }
 
@@ -700,6 +711,62 @@ async function generateConfigFiles(config: WizardConfig): Promise<void> {
 }
 
 /**
+ * Check and install dependencies if needed
+ */
+async function ensureDependencies(): Promise<void> {
+  console.log('📦 Checking dependencies...\n');
+
+  const depCheck = checkDependenciesInstalled(rootDir);
+
+  if (depCheck.allInstalled) {
+    console.log('✅ All dependencies are already installed\n');
+    return;
+  }
+
+  console.log(
+    `⚠️  Missing dependencies in: ${depCheck.missing.join(', ')}\n`
+  );
+
+  const shouldInstall = await confirm({
+    message: 'Install missing dependencies now? (Recommended)',
+    default: true,
+  });
+
+  if (!shouldInstall) {
+    console.log(
+      '\n⚠️  Skipping dependency installation. You must run "npm install" manually.\n'
+    );
+    return;
+  }
+
+  console.log('\n📥 Installing dependencies...\n');
+  console.log('   This may take a few minutes...\n');
+
+  return new Promise<void>((resolve, reject) => {
+    const child = spawn('npm', ['run', 'install-all'], {
+      stdio: 'inherit',
+      cwd: rootDir,
+      shell: true,
+    });
+
+    child.on('error', (err) => {
+      reject(new Error(`Failed to install dependencies: ${err.message}`));
+    });
+
+    child.on('exit', (code) => {
+      if (code !== 0) {
+        reject(
+          new Error(`Dependency installation failed with exit code ${code}`)
+        );
+      } else {
+        console.log('\n✅ All dependencies installed successfully!\n');
+        resolve();
+      }
+    });
+  });
+}
+
+/**
  * Display post-setup summary
  */
 function displaySummary(config: Partial<WizardConfig>): void {
@@ -774,10 +841,13 @@ async function main(): Promise<void> {
       skipOAuth,
     });
 
-    // 7. Display summary
+    // 7. Ensure dependencies are installed
+    await ensureDependencies();
+
+    // 8. Display summary
     displaySummary({ domain, proxyPort, apiPort, skipOAuth });
 
-    // 8. Offer to start dev server (unless wizard was invoked from start-dev.ts)
+    // 9. Offer to start dev server (unless wizard was invoked from start-dev.ts)
     const invokedFromStart = process.env['WIZARD_INVOKED_FROM_START'] === 'true';
 
     if (invokedFromStart) {

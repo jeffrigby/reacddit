@@ -4,6 +4,8 @@
   "description": "A Reddit client built in reactjs.",
   "type": "module",
   "scripts": {
+    "postinstall": "npm run install-all",
+    "install-all": "cd client && npm install && cd ../api && npm install && cd ../proxy && npm install",
     "setup": "tsx scripts/setup-wizard.ts",
     "start": "tsx scripts/start-dev.ts",
     "start-proxy": "cd proxy && npm start",
