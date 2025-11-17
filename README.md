@@ -47,29 +47,48 @@ reacddit is a monorepo containing an OAuth2 API (for Reddit authentication) and 
 ## Development
 
 ### Quick Start
+
+**Option 1: Interactive Setup Wizard (Recommended)**
 ```bash
-# 1. Install dependencies for each package
-npm install              # Root (installs concurrently)
-cd client && npm install # Client dependencies
-cd ../api && npm install # API dependencies
-cd ../proxy && npm install # Proxy dependencies
+# 1. Install dependencies
+npm install              # Root (also installs client, API, proxy dependencies)
+
+# 2. Run the setup wizard
+npm run setup            # Interactive wizard guides you through configuration
+
+# 3. Start everything (proxy + client + API)
+npm start
+
+# Access the app at the URL shown (e.g., https://localhost:5173)
+# Your browser will warn about self-signed certificates - this is expected
+# Click "Advanced" → "Proceed to localhost" to continue
+```
+
+The setup wizard will guide you through:
+- Domain and port configuration (localhost or custom domain)
+- Reddit OAuth app creation (opens browser with step-by-step instructions)
+- SSL certificate setup (auto-generates self-signed certs for local development)
+- Environment file generation (creates .env, api/.env, client/.env)
+
+**Auto-run:** If you skip the wizard and run `npm start` without configuration, it will automatically prompt you to run the setup wizard.
+
+**Option 2: Manual Setup**
+```bash
+# 1. Install dependencies
+npm install              # Root
+cd client && npm install # Client
+cd ../api && npm install # API
+cd ../proxy && npm install # Proxy
 cd ..
 
-# 2. Configure environment
+# 2. Configure environment manually
 cp .env.dist .env        # Copy template and adjust if needed
 # See API Setup section below for Reddit OAuth configuration
 
-# 3. Start everything (proxy + client + API)
+# 3. Start everything
 npm start              # For default port 5173 (unprivileged)
 # OR
 sudo npm start         # For port 443 (requires root on macOS/Linux)
-
-# Access the app at:
-# - https://localhost:5173 (default unprivileged port)
-# - https://localhost or custom domain (if using port 443)
-
-# Note: Your browser will warn about self-signed certificates on first visit
-# Click "Advanced" → "Proceed to localhost" to continue
 ```
 
 The proxy automatically generates self-signed SSL certificates for local development. For custom domains or production certificates, see the [Deployment Guide](DEPLOYMENT.md).
@@ -129,13 +148,21 @@ npm run lint           # Prettier formatting + ESLint (always run after changes!
 
 ### API Setup
 
+**Recommended:** Use the setup wizard (`npm run setup`) which handles Reddit OAuth configuration automatically, including:
+- Guides you through creating a Reddit app with the correct settings
+- Shows you the exact redirect URI to use (based on your chosen domain/port)
+- Auto-generates secure encryption keys
+- Creates all configuration files with proper interdependencies
+
+**Manual API Setup** (if not using wizard):
+
 The API requires Reddit OAuth2 credentials to authenticate with Reddit:
 
 1. **Create a Reddit app** at https://www.reddit.com/prefs/apps
    - Click "create app" or "create another app"
-   - Choose "web app" as the app type
-   - Set the redirect URI to `https://localhost:5173/api/callback` (or your custom domain)
-   - Note the **client ID** (under the app name) and **client secret**
+   - Choose **"web app"** as the app type (IMPORTANT: not "installed app")
+   - Set the redirect URI to `https://localhost:5173/api/callback` (or your custom domain/port)
+   - Note the **client ID** (under the app name) and **client secret** (click "edit" to reveal)
 
 2. Copy `api/.env.example` to `api/.env`
 
@@ -143,6 +170,7 @@ The API requires Reddit OAuth2 credentials to authenticate with Reddit:
    - `REDDIT_CLIENT_ID` - The client ID from step 1
    - `REDDIT_CLIENT_SECRET` - The client secret from step 1
    - `REDDIT_CALLBACK_URI` - Must match the redirect URI from step 1
+   - `SALT` - Generate with: `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"`
    - `CLIENT_PATH` - Your frontend URL (e.g., `https://localhost:5173`)
 
 4. Test at `http://localhost:3001/api/bearer` to verify configuration

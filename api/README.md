@@ -1,6 +1,8 @@
 The API server is a simple OAuth2 client served with koa2. This is used only to retrieve or refresh the OAuth token from reddit. You can run this server with node or PM2 and it can run on a separate port from the front end. For local development, the included HTTPS reverse proxy (in `/proxy`) automatically routes requests between the client and API. For production, use CloudFront (via AWS SAM template) or an external reverse proxy like nginx.
 
-Steps to get this running:
+**Quick Setup:** From the project root, run `npm run setup` for an interactive wizard that handles all configuration automatically.
+
+**Manual Setup:** Follow these steps:
 
 1. **Create a Reddit app** at https://www.reddit.com/prefs/apps
    - Click "create app" or "create another app"
@@ -48,7 +50,8 @@ REDDIT_CLIENT_SECRET=your_client_secret_here
 REDDIT_CALLBACK_URI=http://localhost:3001/api/callback
 
 # A 32-character salt for encryption (MUST BE EXACTLY 32 CHARS)
-# Generate a random string for this
+# The setup wizard auto-generates this, or generate manually:
+# node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
 SALT=GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM
 ```
 

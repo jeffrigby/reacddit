@@ -273,8 +273,8 @@ async function getContent(
   keys: DomainKeys,
   entry: LinkData | CommentData
 ): Promise<EmbedContent> {
-  // is this a gallery?
-  if (isLinkData(entry) && entry.is_gallery) {
+  // is this a gallery or has media_metadata?
+  if (isLinkData(entry) && entry.media_metadata) {
     try {
       const gallery = redditGallery(entry);
       if (gallery) {

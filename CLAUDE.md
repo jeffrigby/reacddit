@@ -14,11 +14,38 @@ Reacddit is a Reddit client built with React that provides enhanced media viewin
 
 **Tech Stack:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 6, Koa.js
 
+## Initial Setup
+
+**First-time setup wizard** (recommended):
+```bash
+npm install              # Install root dependencies
+npm run setup            # Interactive setup wizard
+```
+
+The setup wizard (`scripts/setup-wizard.ts`) guides you through:
+1. **Domain configuration** (localhost or custom domain with /etc/hosts instructions)
+2. **Port configuration** (proxy, client, API with sudo warnings for ports < 1024)
+3. **Reddit OAuth setup** (guides through creating Reddit app with correct redirect URI)
+4. **Certificate configuration** (auto-generate self-signed or provide custom certs)
+5. **Environment file generation** (creates .env, api/.env, client/.env atomically)
+
+**Auto-run on first start:**
+- If `.env` is missing, `npm start` automatically offers to run the wizard
+- Set `SKIP_WIZARD=true` to bypass auto-run (for CI/automation)
+
+**Key features:**
+- Domain/port configured BEFORE Reddit OAuth (shows correct redirect URI)
+- Cross-platform support (macOS, Linux, Windows)
+- Atomic file writes with timestamped backups
+- Non-blocking DNS verification for custom domains
+- Secure SALT generation (128-bit entropy for AES-256-CBC)
+
 ## Development Commands
 
 **Root level** (run proxy, client, and API):
 ```bash
 npm start                 # Start proxy + client + API concurrently
+npm run setup             # Re-run setup wizard to reconfigure
 npm run start-proxy       # HTTPS reverse proxy only (port 5173)
 npm run start-client      # Client development server only (port 3000)
 npm run start-api         # API server only (port 3001)
@@ -133,17 +160,40 @@ npm run build             # SAM build for Lambda deployment
 **Shared Types:**
 - `client/src/types/` - Client types (Reddit API, app state, etc.)
 - `api/src/types/` - API types (Reddit OAuth, sessions, config)
+- `scripts/` - Development scripts (TypeScript with strict mode)
+
+**Scripts Directory (`/scripts/`):**
+All scripts are TypeScript (`.ts`) using `tsx` for execution, following the same strict standards as the rest of the codebase:
+
+- `setup-wizard.ts` - Interactive setup wizard for first-time configuration
+- `start-dev.ts` - Development server launcher with privilege management
+- `wizard-utils.ts` - Utility functions for validation, file operations, DNS checks
+
+**TypeScript configuration:**
+- Root `tsconfig.json` - Same strict settings as API/client
+- Zero `any` types policy applies to scripts
+- All functions have explicit parameter and return types
+- Process env access uses bracket notation for strict mode: `process.env['KEY']`
 
 ## OAuth Setup (API)
 
-The API requires Reddit OAuth2 credentials:
+**Recommended:** Use the setup wizard (`npm run setup`) which handles this automatically.
+
+**Manual setup** (if not using wizard):
 1. **Create Reddit app** at https://www.reddit.com/prefs/apps
-   - Choose "web app" type
-   - Set redirect URI to `https://localhost:5173/api/callback`
-   - Note the client ID and client secret
+   - Choose "web app" type (IMPORTANT: not "installed app")
+   - Set redirect URI to match your domain/port (e.g., `https://localhost:5173/api/callback`)
+   - Note the client ID (under app name) and client secret (click "edit" to reveal)
 2. Copy `api/.env.example` to `api/.env`
 3. Configure: `CLIENT_PATH`, `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_CALLBACK_URI`
-4. Test at `http://localhost:3001/api/bearer`
+4. Generate a 32-character SALT: `node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"`
+5. Test at `http://localhost:3001/api/bearer`
+
+**Why the wizard is better:**
+- Asks for domain/port FIRST, then shows you the correct redirect URI to use
+- Auto-generates secure SALT (128-bit entropy)
+- Creates all three .env files atomically with proper interdependencies
+- Validates Reddit credentials format before accepting
 
 ## Build System
 
@@ -164,17 +214,32 @@ The API requires Reddit OAuth2 credentials:
 
 ## Key Files to Understand
 
+**Client:**
 - `client/src/components/layout/App.tsx` - Main app component and routing
 - `client/src/redux/configureStore.ts` - Redux store configuration
 - `client/src/redux/api/redditApi.ts` - RTK Query API configuration with tag-based caching
 - `client/src/redux/api/endpoints/` - RTK Query endpoints for Reddit API operations
 - `client/src/components/posts/embeds/index.ts` - Embed system entry point
+- `client/vite.config.ts` - Vite build configuration
+
+**API:**
 - `api/src/app.ts` - Koa.js OAuth server (fully TypeScript)
 - `api/src/config.ts` - Centralized environment configuration with validation
+
+**Proxy:**
 - `proxy/server.ts` - HTTPS reverse proxy server
 - `proxy/certs.ts` - SSL certificate management
-- `client/vite.config.ts` - Vite build configuration
-- `.env` - Development environment configuration (domain, ports, certs)
+
+**Scripts (TypeScript):**
+- `scripts/setup-wizard.ts` - Interactive setup wizard
+- `scripts/start-dev.ts` - Dev server launcher with privilege management
+- `scripts/wizard-utils.ts` - Validation, file ops, DNS checks
+
+**Configuration:**
+- `.env` - Proxy configuration (domain, ports, certs)
+- `api/.env` - Reddit OAuth credentials and encryption
+- `client/.env` - Vite build configuration
+- `tsconfig.json` - Root TypeScript configuration for scripts
 
 ## Features Not Yet Implemented
 

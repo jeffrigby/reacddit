@@ -30,7 +30,9 @@ HTTPS Proxy Server
 
 ## Configuration
 
-Configure via `.env` in the repository root:
+**Quick Setup:** From the project root, run `npm run setup` for an interactive wizard that handles proxy configuration automatically (domain, ports, SSL certificates).
+
+**Manual Configuration:** Create `.env` in the repository root:
 
 ```bash
 # Domain to serve on

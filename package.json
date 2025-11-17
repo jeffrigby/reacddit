@@ -4,7 +4,8 @@
   "description": "A Reddit client built in reactjs.",
   "type": "module",
   "scripts": {
-    "start": "node scripts/start-dev.js",
+    "setup": "tsx scripts/setup-wizard.ts",
+    "start": "tsx scripts/start-dev.ts",
     "start-proxy": "cd proxy && npm start",
     "start-client": "cd client && npm start",
     "build-client": "cd client && npm run build",
@@ -25,6 +26,10 @@
   },
   "devDependencies": {
     "@inquirer/prompts": "^7.10.1",
-    "concurrently": "^9.0.1"
+    "@types/node": "^22.10.5",
+    "concurrently": "^9.0.1",
+    "open": "^10.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
   }
 }
