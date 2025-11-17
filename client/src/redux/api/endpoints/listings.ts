@@ -225,7 +225,9 @@ export const listingsApi = redditApi.injectEndpoints({
 
       // Cache by filter only (not pagination) to enable merge across requests
       serializeQueryArgs: ({ queryArgs }) => {
-        return serializeFilterKey(queryArgs.filters);
+        const filterKey = serializeFilterKey(queryArgs.filters);
+        const searchKey = queryArgs.location.search || '';
+        return `${filterKey}:${searchKey}`;
       },
 
       // Merge pagination results
