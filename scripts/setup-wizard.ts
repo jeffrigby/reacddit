@@ -743,7 +743,7 @@ async function ensureDependencies(): Promise<void> {
   console.log('   This may take a few minutes...\n');
 
   return new Promise<void>((resolve, reject) => {
-    const child = spawn('npm', ['run', 'install-all'], {
+    const child = spawn('npm', ['install'], {
       stdio: 'inherit',
       cwd: rootDir,
       shell: true,

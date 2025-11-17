@@ -6,7 +6,7 @@ A Reddit client built with React that supports enhanced media viewing and additi
 
 Live demo: https://reacdd.it/
 
-reacddit is a monorepo containing an OAuth2 API (for Reddit authentication) and a React browser client. Both need to be running for local development.
+reacddit is a monorepo (npm workspaces) containing an OAuth2 API (for Reddit authentication) and a React browser client. Both need to be running for local development.
 
 ## Tech Stack
 
@@ -50,7 +50,7 @@ reacddit is a monorepo containing an OAuth2 API (for Reddit authentication) and 
 
 **Option 1: Interactive Setup Wizard (Recommended)**
 ```bash
-# 1. Install dependencies (automatically installs all subdirectories)
+# 1. Install dependencies (npm workspaces - single command installs all)
 npm install
 
 # 2. Run the setup wizard
@@ -68,18 +68,14 @@ The setup wizard **automatically handles**:
 - Reddit OAuth app creation (opens browser with instructions)
 - SSL certificate setup (auto-generates self-signed certs)
 - Environment file generation (.env, api/.env, client/.env)
-- **Dependency installation** (installs client, API, proxy packages)
+- **Dependency installation** (workspace-aware, installs all packages)
 
 **Even easier:** Just run `npm start` - if `.env` is missing, it will automatically offer to run the wizard!
 
 **Option 2: Manual Setup**
 ```bash
-# 1. Install dependencies
-npm install              # Root
-cd client && npm install # Client
-cd ../api && npm install # API
-cd ../proxy && npm install # Proxy
-cd ..
+# 1. Install dependencies (workspaces install all packages)
+npm install
 
 # 2. Configure environment manually
 cp .env.dist .env        # Copy template and adjust if needed

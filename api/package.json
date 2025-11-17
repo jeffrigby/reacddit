@@ -12,12 +12,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "prettier --write 'src/**/*.{ts,js,mjs}' && eslint --fix 'src/**/*.{ts,js,mjs}'",
-    "type-check": "tsc --noEmit",
-    "pm2-start": "pm2 start index.ts --name reacddit_api --interpreter tsx",
-    "pm2-stop": "pm2 stop reacddit_api",
-    "pm2-log": "pm2 log reacddit_api",
-    "pm2-delete": "pm2 delete reacddit_api",
-    "pm2-restart": "pm2 restart 'reacddit_api'"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.0.2",
@@ -32,7 +27,6 @@
     "koa": "^3.0.0",
     "koa-logger": "^4.0.0",
     "koa-session": "^7.0.2",
-    "pm2": "^6.0.5",
     "qs": "^6.11.1",
     "serverless-http": "^4.0.0"
   },
@@ -47,12 +41,8 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^8.20.0",
     "@typescript-eslint/parser": "^8.20.0",
-    "eslint": "^9.10.0",
     "globals": "^16.0.0",
-    "prettier": "^3.3.3",
     "supertest": "^7.0.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3",
     "vitest": "^4.0.7"
   }
 }

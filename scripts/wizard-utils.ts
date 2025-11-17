@@ -471,14 +471,12 @@ export function validatePortsUnique(
 export function checkDependenciesInstalled(
   rootPath: string
 ): { allInstalled: boolean; missing: string[] } {
-  const subdirs = ['client', 'api', 'proxy'];
+  // With workspaces, dependencies are hoisted to root node_modules
+  const nodeModulesPath = `${rootPath}/node_modules`;
   const missing: string[] = [];
 
-  for (const subdir of subdirs) {
-    const nodeModulesPath = `${rootPath}/${subdir}/node_modules`;
-    if (!existsSync(nodeModulesPath)) {
-      missing.push(subdir);
-    }
+  if (!existsSync(nodeModulesPath)) {
+    missing.push('root');
   }
 
   return {

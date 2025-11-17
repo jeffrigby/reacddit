@@ -1,4 +1,3 @@
-import https from 'https';
 import http from 'http';
 import http2 from 'http2';
 import net from 'net';
@@ -192,7 +191,9 @@ function shouldCompressResponse(
   }
 
   // Check client's Accept-Encoding header for supported encodings
-  const acceptEncoding = (requestHeaders['accept-encoding'] || '').toLowerCase();
+  const acceptEncoding = (
+    requestHeaders['accept-encoding'] || ''
+  ).toLowerCase();
 
   // Client must accept compression
   if (!acceptEncoding) return null;
@@ -545,7 +546,9 @@ function startServer(): void {
             );
           } else {
             console.error('❌ setuid/setgid not available on this platform');
-            console.error('   Refusing to continue as root for security reasons.\n');
+            console.error(
+              '   Refusing to continue as root for security reasons.\n'
+            );
             process.exit(1);
           }
         } catch (err) {
@@ -596,24 +599,29 @@ function startServer(): void {
     // Delay final message to ensure it prints AFTER Vite startup
     // Vite takes a moment to start and prints its URLs
     setTimeout(() => {
-      const visitUrl = `https://${proxyConfig.domain}:${proxyConfig.port}`;
+      const visitUrl = `https://${proxyConfig.domain}${proxyConfig.port === 443 ? '' : `:${proxyConfig.port}`}`;
 
       const message = [
         chalk.bold.green('Reacddit is ready!'),
         '',
         chalk.bold.cyan(`Visit: ${visitUrl}`),
         '',
-        chalk.bold.yellow('DO NOT use the Vite URLs shown above - they won\'t work!'),
+        chalk.bold.yellow(
+          "DO NOT use the Vite URLs shown above - they won't work!"
+        ),
         chalk.gray('(Embeds require HTTPS and the proxy routes API requests)'),
       ].join('\n');
 
-      console.log('\n' + boxen(message, {
-        padding: 1,
-        margin: 1,
-        borderStyle: 'round',
-        borderColor: 'cyan',
-        textAlignment: 'center',
-      }));
+      console.log(
+        '\n' +
+          boxen(message, {
+            padding: 1,
+            margin: 1,
+            borderStyle: 'round',
+            borderColor: 'cyan',
+            textAlignment: 'center',
+          })
+      );
     }, 2000); // 2 second delay to ensure Vite has printed its messages
   });
 
