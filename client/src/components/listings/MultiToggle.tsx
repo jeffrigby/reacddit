@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useParams } from 'react-router';
 import { Form, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
@@ -8,36 +7,18 @@ import {
   useGetMultiRedditsQuery,
   useAddSubredditToMultiMutation,
   useRemoveSubredditFromMultiMutation,
-  useGetSubredditsQuery,
-  subredditSelectors,
 } from '@/redux/api';
-import type { Thing, LabeledMultiData } from '@/types/redditApi';
+import type { Thing, LabeledMultiData, SubredditData } from '@/types/redditApi';
 
 interface MultiToggleProps {
   srName: string;
+  about: SubredditData | Record<string, never> | null;
 }
 
-function MultiToggle({ srName }: MultiToggleProps) {
+function MultiToggle({ srName, about }: MultiToggleProps) {
   const multiRef = useRef<HTMLDivElement>(null);
-  const params = useParams();
 
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-
-  const { target } = params;
-
-  // Use RTK Query to get cached subreddit data
-  const { about } = useGetSubredditsQuery(
-    { where },
-    {
-      selectFromResult: ({ data }) => ({
-        about:
-          data && target
-            ? subredditSelectors.selectById(data, target.toLowerCase())
-            : null,
-      }),
-    }
-  );
 
   // RTK Query hooks
   const { data: multis } = useGetMultiRedditsQuery(
@@ -64,7 +45,10 @@ function MultiToggle({ srName }: MultiToggleProps) {
     }
   }, []);
 
-  if (!about || redditBearer.status !== 'auth') {
+  // Check if about is valid (not null, not empty object)
+  const hasAboutData = about && 'name' in about;
+
+  if (!hasAboutData || redditBearer.status !== 'auth') {
     return null;
   }
 
