@@ -1,0 +1,7 @@
+name: "Reacddit CodeQL Config"
+
+# Exclude dev-only infrastructure from security scanning
+paths-ignore:
+  - proxy/**
+  - reddit-api-tester/**
+  - scripts/**
