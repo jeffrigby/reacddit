@@ -42,7 +42,7 @@ async function runTests(options: any) {
     try {
       // Check if we have username/password for user authentication
       if (process.env.REDDIT_USERNAME && process.env.REDDIT_PASSWORD) {
-        console.log(`Authenticating as user: ${process.env.REDDIT_USERNAME}`);
+        console.log('Authenticating as Reddit user...');
         await tokenManager.getRedditUserToken(
           process.env.REDDIT_USERNAME,
           process.env.REDDIT_PASSWORD

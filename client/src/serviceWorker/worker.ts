@@ -45,13 +45,34 @@ if (manifest.length > 0) {
 // Runtime caching for Reddit media and API responses
 // These strategies are optimized for Reddit's content-heavy nature
 
+// Trusted Reddit origins for caching (strict matching to prevent domain spoofing)
+const REDDIT_MEDIA_ORIGINS = new Set([
+  'https://i.redd.it',
+  'https://v.redd.it',
+  'https://preview.redd.it',
+  'https://external-preview.redd.it',
+  'https://a.thumbs.redditmedia.com',
+  'https://b.thumbs.redditmedia.com',
+]);
+
+const REDDIT_STATIC_ORIGINS = new Set([
+  'https://www.redditstatic.com',
+  'https://redditstatic.com',
+]);
+
+const REDDIT_API_ORIGINS = new Set([
+  'https://www.reddit.com',
+  'https://oauth.reddit.com',
+  'https://old.reddit.com',
+]);
+
 // Cache Reddit images with StaleWhileRevalidate
 // Shows cached version immediately while fetching fresh copy in background
 registerRoute(
   ({ url }): boolean =>
-    (url.origin.includes('redd.it') ||
-      url.origin.includes('reddit.com') ||
-      url.origin.includes('redditstatic.com')) &&
+    (REDDIT_MEDIA_ORIGINS.has(url.origin) ||
+      REDDIT_API_ORIGINS.has(url.origin) ||
+      REDDIT_STATIC_ORIGINS.has(url.origin)) &&
     (url.pathname.endsWith('.png') ||
       url.pathname.endsWith('.jpg') ||
       url.pathname.endsWith('.jpeg') ||
@@ -73,7 +94,7 @@ registerRoute(
 // Tries network first, falls back to cache if offline/slow
 registerRoute(
   ({ url }): boolean =>
-    url.origin.includes('reddit.com') &&
+    REDDIT_API_ORIGINS.has(url.origin) &&
     (url.pathname.includes('/api/') || url.pathname.endsWith('.json')),
   new NetworkFirst({
     cacheName: 'reddit-api',
@@ -92,7 +113,8 @@ registerRoute(
 // Only fetch from network if not in cache (bandwidth savings)
 registerRoute(
   ({ url }): boolean =>
-    (url.origin.includes('redd.it') || url.origin.includes('reddit.com')) &&
+    (REDDIT_MEDIA_ORIGINS.has(url.origin) ||
+      REDDIT_API_ORIGINS.has(url.origin)) &&
     (url.pathname.endsWith('.mp4') ||
       url.pathname.endsWith('.webm') ||
       url.pathname.includes('/DASH_')),

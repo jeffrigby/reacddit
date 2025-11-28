@@ -156,7 +156,7 @@ export class TokenManager {
     }
 
     try {
-      console.log(`Fetching user token for ${username}...`);
+      console.log('Fetching user token...');
       const tokenResponse = await this.redditOAuth.getScriptAppToken(username, password);
       
       const token: TokenInfo = {
