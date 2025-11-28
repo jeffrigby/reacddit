@@ -10,16 +10,16 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { faCopy } from '@fortawesome/free-regular-svg-icons';
 import { faReddit } from '@fortawesome/free-brands-svg-icons';
-import PostVote from '../postActions/PostVote';
-import PostSave from '../postActions/PostSave';
-import { PostsContextData } from '../../../contexts';
-import PostExpandContract from '../postActions/PostExpandContract';
+import PostVote from '@/components/posts/postActions/PostVote';
+import PostSave from '@/components/posts/postActions/PostSave';
+import { PostsContextData } from '@/contexts';
+import PostExpandContract from '@/components/posts/postActions/PostExpandContract';
+import { useAppSelector } from '@/redux/hooks';
+import type { LinkData } from '@/types/redditApi';
 import PostHeaderComment from './PostHeaderComment';
 import PostTimeAgo from './PostTimeAgo';
 import PostCommentLink from './PostCommentLink';
 import PostSubLink from './PostSubLink';
-import { useAppSelector } from '../../../redux/hooks';
-import type { LinkData } from '../../../types/redditApi';
 
 interface PostHeaderProps {
   toggleView: (event: MouseEvent | KeyboardEvent) => void;
@@ -86,13 +86,13 @@ function PostHeader({
   ) : null;
 
   const pinned = data.pinned ? (
-    <div className="badge text-dark me-1" title="Pinned Post">
+    <div className="badge me-1" title="Pinned Post">
       <FontAwesomeIcon icon={faThumbtack} />
     </div>
   ) : null;
 
   const sticky = data.stickied ? (
-    <div className="badge text-dark me-1" title="Sticky Post">
+    <div className="badge me-1" title="Sticky Post">
       <FontAwesomeIcon icon={faStickyNote} />
     </div>
   ) : null;

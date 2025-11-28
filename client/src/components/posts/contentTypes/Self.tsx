@@ -8,8 +8,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { PostsContextData } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
+import type { EmbedContent } from '@/components/posts/embeds/types';
 import SelfInline from './SelfInline';
-import type { EmbedContent } from '../embeds/types';
 import '../../../styles/self.scss';
 
 interface SelfContent {

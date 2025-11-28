@@ -12,7 +12,7 @@
  */
 
 import queryString from 'query-string';
-import { redditApi } from '../redditApi';
+import { redditApi } from '@/redux/api/redditApi';
 
 interface SubscribeParams {
   name: string; // Subreddit name (e.g., "pics") or fullname (e.g., "t5_2qh0u")

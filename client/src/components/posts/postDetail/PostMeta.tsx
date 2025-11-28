@@ -1,9 +1,9 @@
 import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRandom, faStickyNote } from '@fortawesome/free-solid-svg-icons';
+import { PostsContextData } from '@/contexts';
+import type { LinkData } from '@/types/redditApi';
 import PostByline from './PostByline';
-import { PostsContextData } from '../../../contexts';
-import type { LinkData } from '../../../types/redditApi';
 
 function PostMeta(): React.JSX.Element {
   const postContext = useContext(PostsContextData) as {

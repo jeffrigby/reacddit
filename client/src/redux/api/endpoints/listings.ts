@@ -22,7 +22,7 @@ import {
   subredditAbout,
 } from '@/reddit/redditApiTs';
 import { keyEntryChildren } from '@/common';
-import { redditApi } from '../redditApi';
+import { redditApi } from '@/redux/api/redditApi';
 
 const MAX_POSTS_IN_MEMORY = 500;
 
@@ -225,7 +225,9 @@ export const listingsApi = redditApi.injectEndpoints({
 
       // Cache by filter only (not pagination) to enable merge across requests
       serializeQueryArgs: ({ queryArgs }) => {
-        return serializeFilterKey(queryArgs.filters);
+        const filterKey = serializeFilterKey(queryArgs.filters);
+        const searchKey = queryArgs.location.search || '';
+        return `${filterKey}:${searchKey}`;
       },
 
       // Merge pagination results

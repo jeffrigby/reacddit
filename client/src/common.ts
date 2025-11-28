@@ -51,7 +51,7 @@ export function hotkeyStatus(): boolean {
 
   const { nodeName } = activeElement;
 
-  if (nodeName === 'TEXTAREA') {
+  if (nodeName === 'TEXTAREA' || nodeName === 'IFRAME') {
     return false;
   }
 
@@ -113,6 +113,63 @@ export function isNumeric(value: unknown): value is number | string {
     return !Number.isNaN(num);
   }
   return false;
+}
+
+/**
+ * Check if a value is empty (null, undefined, empty string, empty array, or empty object)
+ *
+ * @param value - Value to check
+ * @returns true if empty, false otherwise
+ */
+export function isEmpty(value: unknown): boolean {
+  if (value == null) {
+    return true;
+  }
+
+  if (typeof value === 'string' || Array.isArray(value)) {
+    return value.length === 0;
+  }
+
+  if (typeof value === 'object') {
+    return Object.keys(value).length === 0;
+  }
+
+  return false;
+}
+
+/**
+ * Detect if the current browser is Safari (excluding Chrome on iOS/Android)
+ * @returns true if Safari browser
+ */
+export function isSafari(): boolean {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+}
+
+/**
+ * Detect if the current device is iOS (iPhone, iPad, iPod)
+ * Note: All browsers on iOS use WebKit, so they all behave like Safari
+ * Modern iPadOS (13+) reports as macOS in user agent, so we also check for touch support
+ * @returns true if iOS device
+ */
+export function isIOS(): boolean {
+  if (typeof navigator === 'undefined') {
+    return false;
+  }
+
+  // Check for traditional iOS user agents (iPhone, iPod, older iPads)
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    return true;
+  }
+
+  // Modern iPadOS 13+ reports as "Macintosh" with touch support
+  // Check for macOS user agent with touch capability (indicates iPad)
+  const isMacWithTouch =
+    navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+
+  return isMacWithTouch;
 }
 
 /**

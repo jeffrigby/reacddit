@@ -37,9 +37,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: |
-            api/package-lock.json
-            client/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@c71dd89d980e49367c70391e8ada4353f52f2800  # v2
@@ -49,8 +47,7 @@ jobs:
       # ============================================
       # 2. PRE-DEPLOYMENT VALIDATION
       # ============================================
-      - name: Install API dependencies
-        working-directory: ./api
+      - name: Install dependencies (all workspaces)
         run: npm ci
 
       - name: Validate SAM template
@@ -60,10 +57,6 @@ jobs:
       - name: Type-check API
         working-directory: ./api
         run: npm run type-check
-
-      - name: Install client dependencies
-        working-directory: ./client
-        run: npm ci
 
       - name: Lint client
         working-directory: ./client

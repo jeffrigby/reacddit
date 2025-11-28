@@ -42,7 +42,7 @@ async function runTests(options: any) {
     try {
       // Check if we have username/password for user authentication
       if (process.env.REDDIT_USERNAME && process.env.REDDIT_PASSWORD) {
-        console.log(`Authenticating as user: ${process.env.REDDIT_USERNAME}`);
+        console.log('Authenticating as Reddit user...');
         await tokenManager.getRedditUserToken(
           process.env.REDDIT_USERNAME,
           process.env.REDDIT_PASSWORD
@@ -192,8 +192,8 @@ program
 program
   .command('auth-test')
   .description('Test Reddit authentication with username/password')
-  .requiredOption('-u, --username <username>', 'Reddit username')
-  .requiredOption('-p, --password <password>', 'Reddit password')
+  .option('-u, --username <username>', 'Reddit username')
+  .option('-p, --password <password>', 'Reddit password')
   .action(async (options) => {
     const tokenManager = new TokenManager();
     try {
@@ -214,4 +214,4 @@ if (process.argv.length === 2) {
   process.argv.push('test');
 }
 
-program.parse();
+program.parse(process.argv);

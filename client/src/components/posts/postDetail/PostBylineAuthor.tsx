@@ -13,7 +13,7 @@ import {
   subredditSelectors,
   useSubscribeToSubredditMutation,
 } from '@/redux/api';
-import { useAppSelector } from '../../../redux/hooks';
+import { useAppSelector } from '@/redux/hooks';
 
 interface PostBylineAuthorProps {
   author: string;

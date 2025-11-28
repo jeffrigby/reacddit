@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import queryString from 'query-string';
-import _isEmpty from 'lodash/isEmpty';
 import type { To } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 import { useNavigate, useLocation } from 'react-router';
@@ -21,7 +20,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useAppSelector } from '@/redux/hooks';
-import { hotkeyStatus } from '@/common';
+import { hotkeyStatus, isEmpty } from '@/common';
 
 interface SortCategories {
   [key: string]: string;
@@ -148,7 +147,7 @@ function Sort() {
         break;
     }
 
-    if (!_isEmpty(qs)) {
+    if (!isEmpty(qs)) {
       if (!sort.match(/^(top|controversial|relevance)$/)) {
         delete qs.t;
       }
@@ -302,7 +301,7 @@ function Sort() {
         const sortName = links2render[key];
         const subLinks = renderTimeSubLinks(sortName);
 
-        const subLinksRendered = !_isEmpty(subLinks) ? (
+        const subLinksRendered = !isEmpty(subLinks) ? (
           <div className="subsortlinks">{subLinks}</div>
         ) : null;
 

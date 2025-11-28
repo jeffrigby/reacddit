@@ -18,7 +18,8 @@ function RedditGallery({ content }: RedditGalleryProps) {
   const images = useMemo<GalleryImage[]>(
     () =>
       media.map((val) => ({
-        original: val.preview.u,
+        // For AnimatedImage types, use source (the GIF/MP4) instead of preview (static PNG)
+        original: val.type === 'AnimatedImage' ? val.source.u : val.preview.u,
         thumbnail: val.thumb.u,
       })),
     [media]

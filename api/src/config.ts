@@ -125,20 +125,29 @@ function loadConfig(): AppConfig {
   } = process.env;
 
   // In test mode, provide safe defaults if env vars are missing
-  const isTestMode = process.env["VITEST"] === "true" || process.env["NODE_ENV"] === "test";
+  const isTestMode =
+    process.env["VITEST"] === "true" || process.env["NODE_ENV"] === "test";
 
   return {
     REDDIT_CLIENT_ID: REDDIT_CLIENT_ID || (isTestMode ? "test-client-id" : ""),
-    REDDIT_CLIENT_SECRET: REDDIT_CLIENT_SECRET || (isTestMode ? "test-secret" : ""),
-    REDDIT_CALLBACK_URI: REDDIT_CALLBACK_URI || (isTestMode ? "http://localhost:3001/api/callback" : ""),
+    REDDIT_CLIENT_SECRET:
+      REDDIT_CLIENT_SECRET || (isTestMode ? "test-secret" : ""),
+    REDDIT_CALLBACK_URI:
+      REDDIT_CALLBACK_URI ||
+      (isTestMode ? "http://localhost:3001/api/callback" : ""),
     REDDIT_SCOPE:
       REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save",
     CLIENT_PATH: CLIENT_PATH || (isTestMode ? "http://localhost:3000" : ""),
     SALT: SALT || (isTestMode ? "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM" : ""),
-    SESSION_LENGTH_SECS: parseInt(SESSION_LENGTH_SECS || (isTestMode ? "604800" : "0")),
-    TOKEN_EXPIRY_PADDING_SECS: parseInt(TOKEN_EXPIRY_PADDING_SECS || (isTestMode ? "300" : "0")),
+    SESSION_LENGTH_SECS: parseInt(
+      SESSION_LENGTH_SECS || (isTestMode ? "604800" : "0"),
+    ),
+    TOKEN_EXPIRY_PADDING_SECS: parseInt(
+      TOKEN_EXPIRY_PADDING_SECS || (isTestMode ? "300" : "0"),
+    ),
     PORT: parseInt(PORT || "3001"),
-    ENCRYPTION_ALGORITHM: ENCRYPTION_ALGORITHM || (isTestMode ? "aes-256-cbc" : ""),
+    ENCRYPTION_ALGORITHM:
+      ENCRYPTION_ALGORITHM || (isTestMode ? "aes-256-cbc" : ""),
     IV_LENGTH: parseInt(IV_LENGTH || (isTestMode ? "16" : "0")),
   };
 }

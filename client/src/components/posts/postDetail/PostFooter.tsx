@@ -1,15 +1,15 @@
 import type { MouseEvent } from 'react';
 import { memo, useContext, useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import copy from 'copy-to-clipboard';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { PostsContextData } from '../../../contexts';
+import copy from 'copy-to-clipboard';
+import { PostsContextData } from '@/contexts';
+import type { LinkData, CommentData } from '@/types/redditApi';
+import type { EmbedContent } from '@/components/posts/embeds/types';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
-import type { LinkData, CommentData } from '../../../types/redditApi';
-import type { EmbedContent } from '../embeds/types';
 
 interface PostFooterProps {
   debug: boolean;
@@ -44,14 +44,19 @@ function PostFooter({
 
   const copyID = (comp: MouseEvent<HTMLButtonElement>): void => {
     const id = comp.currentTarget.textContent || '';
-    copy(id);
-    setCopied(true);
-    if (copyTimeoutRef.current) {
-      clearTimeout(copyTimeoutRef.current);
+    const success = copy(id);
+
+    if (success) {
+      setCopied(true);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopied(false);
+      }, 500);
+    } else {
+      console.error('Failed to copy to clipboard');
     }
-    copyTimeoutRef.current = setTimeout(() => {
-      setCopied(false);
-    }, 500);
   };
 
   const debugLinks = (

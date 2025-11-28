@@ -180,6 +180,11 @@ div#entries {
       .image-gallery-image {
         max-height: 600px;
       }
+      // Fix for iOS scrolling issue in react-image-gallery v1.4.0
+      // See: https://github.com/xiaolin/react-image-gallery/issues/816
+      .image-gallery-slides {
+        touch-action: auto !important;
+      }
     }
   }
 }

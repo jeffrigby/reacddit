@@ -10,7 +10,7 @@
  */
 
 import type { AccountData } from '@/types/redditApi';
-import { redditApi } from '../redditApi';
+import { redditApi } from '@/redux/api/redditApi';
 
 /**
  * Extended Reddit API with user account endpoints

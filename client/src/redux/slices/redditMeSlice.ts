@@ -62,9 +62,9 @@ export const fetchMe = createAsyncThunk<
         id: currentBearer.bearer,
       };
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : 'Failed to fetch user account'
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to fetch user account';
+      return rejectWithValue(errorMessage);
     }
   },
   {
@@ -79,9 +79,16 @@ export const fetchMe = createAsyncThunk<
       const currentBearer = state.redditBearer;
       const isAuth = currentBearer.status === 'auth';
 
-      // Don't run if already loading or failed
-      if (currentMe.status === 'loading' || currentMe.status === 'failed') {
+      // Don't run if already loading
+      if (currentMe.status === 'loading') {
         return false;
+      }
+
+      // Retry failed fetches after 30 seconds
+      if (currentMe.status === 'failed') {
+        const RETRY_AFTER_MS = 30000; // 30 seconds
+        const shouldRetry = Date.now() > currentMe.lastUpdated + RETRY_AFTER_MS;
+        return shouldRetry;
       }
 
       // Check cache validity
@@ -144,6 +151,7 @@ const meSlice = createSlice({
           (action.payload as string) ??
           action.error.message ??
           'Failed to fetch user account';
+        state.lastUpdated = Date.now(); // Record failure timestamp for retry throttling
       });
   },
 });

@@ -2,9 +2,9 @@ import { useState, useMemo, type MouseEvent } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBackward, faForward } from '@fortawesome/free-solid-svg-icons';
+import type { ImgurAlbumEmbedContent } from '@/components/posts/embeds/types';
 import VideoComp from './videoComponents/VideoComp';
 import Image from './ImageComp';
-import type { ImgurAlbumEmbedContent } from '../embeds/types';
 import type { VideoContent } from './videoComponents/types';
 import type { ImageContent } from './types';
 

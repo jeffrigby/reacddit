@@ -1,9 +1,9 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppSelector } from '../../../redux/hooks';
-import type { Thing, LinkData, CommentData } from '../../../types/redditApi';
-import Post from '../postDetail/Post';
+import { useAppSelector } from '@/redux/hooks';
+import type { Thing, LinkData, CommentData } from '@/types/redditApi';
+import Post from '@/components/posts/postDetail/Post';
 
 interface PostsParentProps {
   post: Thing<LinkData | CommentData>;

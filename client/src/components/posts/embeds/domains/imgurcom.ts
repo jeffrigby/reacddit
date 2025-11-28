@@ -1,9 +1,12 @@
 import parse from 'url-parse';
 import axios from 'axios';
-import type { LinkData } from '../../../../types/redditApi';
-import type { VideoEmbedContent, ImageEmbedContent } from '../types';
-import redditImagePreview from '../defaults/redditImagePreview';
-import redditVideoPreview from '../defaults/redditVideoPreview';
+import type { LinkData } from '@/types/redditApi';
+import type {
+  VideoEmbedContent,
+  ImageEmbedContent,
+} from '@/components/posts/embeds/types';
+import redditImagePreview from '@/components/posts/embeds/defaults/redditImagePreview';
+import redditVideoPreview from '@/components/posts/embeds/defaults/redditVideoPreview';
 
 async function getMP4(
   id: string,

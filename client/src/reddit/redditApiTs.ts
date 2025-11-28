@@ -141,6 +141,7 @@ export const redditAPI: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded',
   },
+  timeout: 30000, // 30 second timeout to prevent hanging requests
 });
 
 // Add request interceptor for authentication
@@ -159,7 +160,9 @@ redditAPI.interceptors.request.use(
 
     return newConfig;
   },
-  (error: unknown) => Promise.reject(error)
+  (error: unknown) => {
+    return Promise.reject(error);
+  }
 );
 
 /**
@@ -225,7 +228,7 @@ export async function getListingSearch(
     include_facets: false,
     limit: 25,
     q: '',
-    restrict_sr: true,
+    restrict_sr: target ? true : undefined, // Only set when searching within a subreddit
     show: 'all',
     sr_detail: false,
     t: undefined,

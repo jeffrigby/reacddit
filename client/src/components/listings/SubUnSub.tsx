@@ -4,37 +4,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { useParams } from 'react-router';
 import { useAppSelector } from '@/redux/hooks';
-import {
-  useSubscribeToSubredditMutation,
-  useGetSubredditsQuery,
-  subredditSelectors,
-} from '@/redux/api';
+import { useSubscribeToSubredditMutation } from '@/redux/api';
+import type { SubredditData } from '@/types/redditApi';
+
+interface SubUnSubProps {
+  about: SubredditData | Record<string, never> | null;
+}
 
 /**
  * SubscribeButton component to handle subscribing and unsubscribing from subreddits
  * Uses RTK Query mutation with automatic cache invalidation and optimistic UI updates
+ * @param about - Subreddit about data passed from parent
  * @returns Rendered SubscribeButton component or null if conditions not met
  */
-function SubUnSub() {
+function SubUnSub({ about }: SubUnSubProps) {
   const params = useParams();
 
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
 
   const { target, listType } = params;
-
-  // Use RTK Query to get cached subreddit data
-  const { about } = useGetSubredditsQuery(
-    { where },
-    {
-      selectFromResult: ({ data }) => ({
-        about:
-          data && target
-            ? subredditSelectors.selectById(data, target.toLowerCase())
-            : null,
-      }),
-    }
-  );
 
   // Local state for optimistic UI updates
   const [optimisticSubscribed, setOptimisticSubscribed] = useState<
@@ -54,7 +42,7 @@ function SubUnSub() {
   const effectiveSubscribed = optimisticSubscribed ?? userIsSubscriber;
 
   const buttonAction = useCallback(async () => {
-    if (!about) {
+    if (!about || !('name' in about)) {
       return;
     }
 
@@ -76,8 +64,12 @@ function SubUnSub() {
     }
   }, [effectiveSubscribed, about, subscribeToSubreddit]);
 
+  // Check if about is valid (not null, not empty object)
+  const hasAboutData =
+    about && 'name' in about && 'display_name_prefixed' in about;
+
   if (
-    !about ||
+    !hasAboutData ||
     redditBearer.status !== 'auth' ||
     (target === 'popular' && listType === 'r')
   ) {

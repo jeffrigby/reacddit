@@ -17,7 +17,7 @@ beforeAll(() => {
   vi.stubEnv("REDDIT_CALLBACK_URI", "http://localhost:3001/api/callback");
   vi.stubEnv(
     "REDDIT_SCOPE",
-    "identity,mysubreddits,vote,subscribe,read,history,save"
+    "identity,mysubreddits,vote,subscribe,read,history,save",
   );
   vi.stubEnv("CLIENT_PATH", "http://localhost:3000");
   vi.stubEnv("SALT", "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM");
@@ -55,14 +55,22 @@ vi.mock("../util.js", () => {
 
 let sessionStore: Record<string, { state: string | null; token: unknown }> = {};
 vi.mock("koa-session", () => ({
-  default: () => (ctx: { headers: Record<string, string>; session: { state: string | null; token: unknown } }, next: () => Promise<void>) => {
-    const sessionId = ctx.headers["x-session-id"] || "test-session";
-    if (!sessionStore[sessionId]) {
-      sessionStore[sessionId] = { state: null, token: null };
-    }
-    ctx.session = sessionStore[sessionId]!;
-    return next();
-  },
+  default:
+    () =>
+    (
+      ctx: {
+        headers: Record<string, string>;
+        session: { state: string | null; token: unknown };
+      },
+      next: () => Promise<void>,
+    ) => {
+      const sessionId = ctx.headers["x-session-id"] || "test-session";
+      if (!sessionStore[sessionId]) {
+        sessionStore[sessionId] = { state: null, token: null };
+      }
+      ctx.session = sessionStore[sessionId]!;
+      return next();
+    },
 }));
 
 import app from "../app.js";
@@ -107,13 +115,23 @@ describe("API Endpoints", () => {
 
     it("should handle Reddit API errors gracefully", async () => {
       const mockAxiosError = new Error("Reddit API error");
-      (mockAxiosError as Error & { response?: { status: number; statusText: string; data: { error: string } } }).response = {
+      (
+        mockAxiosError as Error & {
+          response?: {
+            status: number;
+            statusText: string;
+            data: { error: string };
+          };
+        }
+      ).response = {
         status: 401,
         statusText: "Unauthorized",
         data: { error: "invalid_client" },
       };
 
-      (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(mockAxiosError);
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        mockAxiosError,
+      );
 
       const response = await request(app.callback())
         .get("/api/bearer")
@@ -152,7 +170,7 @@ describe("API Endpoints", () => {
         .expect(302);
 
       expect(response.headers["location"]).toContain(
-        "reddit.com/api/v1/authorize"
+        "reddit.com/api/v1/authorize",
       );
       // The client_id will be undefined due to env var issues, but the URL structure is correct
       expect(response.headers["location"]).toContain("client_id=");
@@ -198,7 +216,7 @@ describe("API Endpoints", () => {
       expect(response.body).toHaveProperty("status", "error");
       // When only error is provided without code/state, it triggers the missing params error
       expect(response.body.message).toContain(
-        "Code and/or state query strings missing"
+        "Code and/or state query strings missing",
       );
     });
 
@@ -209,7 +227,7 @@ describe("API Endpoints", () => {
 
       expect(response.body).toHaveProperty("status", "error");
       expect(response.body.message).toContain(
-        "Code and/or state query strings missing"
+        "Code and/or state query strings missing",
       );
     });
   });
@@ -232,7 +250,9 @@ describe("API Endpoints", () => {
         },
       };
 
-      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({ data: {} });
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        data: {},
+      });
 
       const response = await request(app.callback())
         .get("/api/logout")
@@ -255,7 +275,9 @@ describe("API Endpoints", () => {
         },
       };
 
-      (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("Revocation failed"));
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error("Revocation failed"),
+      );
 
       const response = await request(app.callback())
         .get("/api/logout")
@@ -293,7 +315,7 @@ describe("API Endpoints", () => {
       const state = stateMatch ? stateMatch[1] : "test-state";
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error("Token exchange failed")
+        new Error("Token exchange failed"),
       );
 
       const response = await request(app.callback())
@@ -307,7 +329,7 @@ describe("API Endpoints", () => {
     it("should handle callback with Reddit error parameter", async () => {
       const response = await request(app.callback())
         .get(
-          "/api/callback?error=access_denied&error_description=User%20denied%20access"
+          "/api/callback?error=access_denied&error_description=User%20denied%20access",
         )
         .expect(500);
 
@@ -378,7 +400,7 @@ describe("API Endpoints", () => {
 
       expect(response.body).toHaveProperty("status", "error");
       expect(response.body.message).toContain(
-        "Code and/or state query strings missing"
+        "Code and/or state query strings missing",
       );
     });
 

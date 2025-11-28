@@ -1,12 +1,19 @@
-The API server is a simple OAuth2 client served with koa2. This is used only to retrieve or refresh the OAuth token from reddit. You can run this server with node or PM2 and it can run a separate port than the front end, though in production I would run both behind a proxy such as nginx.
+The API server is a simple OAuth2 client served with koa2. This is used only to retrieve or refresh the OAuth token from reddit. You can run this server with node or PM2 and it can run on a separate port from the front end. For local development, the included HTTPS reverse proxy (in `/proxy`) automatically routes requests between the client and API. For production, use CloudFront (via AWS SAM template) or an external reverse proxy like nginx.
 
-Steps to get this running:
+**Quick Setup:** From the project root, run `npm run setup` for an interactive wizard that handles all configuration automatically.
 
-1. Go to https://www.reddit.com/prefs/apps and create a `web` app. The most important field is callback. Set this to the full URL of the callback page. This API serves this at `/api/callback` so you would set it to `https://yourdomain.com/api/callback` This setting:
-	* Does NOT need to be publicly accessible (http://localhost:3001 will work)
-	* HTTP or HTTPS
-	* Any port
-2. Save and make note of the client, secret, and callback. You must enter these identically in .env
+**Manual Setup:** Follow these steps:
+
+1. **Create a Reddit app** at https://www.reddit.com/prefs/apps
+   - Click "create app" or "create another app"
+   - Choose **"web app"** as the app type
+   - Set the **redirect URI** to the full callback URL: `https://localhost:5173/api/callback` (or your custom domain)
+     - For local development: `https://localhost:5173/api/callback`
+     - For production: `https://yourdomain.com/api/callback`
+     - This can be HTTP or HTTPS, any port
+     - Does NOT need to be publicly accessible
+   - After creating, note the **client ID** (displayed under the app name) and **client secret** (click to reveal)
+2. Save the client ID, secret, and callback URI - you must enter these identically in `.env`
 3. Copy .env.example to .env
 4. You can leave the defaults except:
 	* CLIENT_PATH: This is where your front end lives (optional, defaults set in .env.defaults)
@@ -43,7 +50,8 @@ REDDIT_CLIENT_SECRET=your_client_secret_here
 REDDIT_CALLBACK_URI=http://localhost:3001/api/callback
 
 # A 32-character salt for encryption (MUST BE EXACTLY 32 CHARS)
-# Generate a random string for this
+# The setup wizard auto-generates this, or generate manually:
+# node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
 SALT=GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM
 ```
 

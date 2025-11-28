@@ -17,9 +17,9 @@ import {
   faBookmark,
 } from '@fortawesome/free-regular-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
+import { setMenuStatus, getMenuStatus, hotkeyStatus } from '@/common';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import { setMenuStatus, getMenuStatus, hotkeyStatus } from '../../common';
 import 'react-tooltip/dist/react-tooltip.css';
 
 const menuID = 'navAccount';

@@ -6,29 +6,44 @@ This guide covers both local development setup with SSL and production deploymen
 
 **SSL is required to run reacddit.** Since the app loads HTTPS iframes and embedded content, the main site must also be served over HTTPS to avoid mixed content blocking.
 
-### Recommended Setup
+### Built-in HTTPS Proxy (Recommended)
+
+reacddit includes a self-contained Node.js HTTPS reverse proxy that requires no external dependencies:
+
+```bash
+npm start  # Starts proxy + client + API
+# Access at https://localhost:5173
+```
+
+The proxy automatically:
+- Generates self-signed SSL certificates for localhost on first run
+- Routes `/api/*` to the API server (port 3001)
+- Routes all other requests to the Vite dev server (port 3000)
+- Supports WebSocket for hot module replacement
+- Adds production-grade security headers (HSTS, CSP, etc.)
+
+For custom domains with Let's Encrypt certificates, configure `.env`:
+```bash
+PROXY_DOMAIN=dev.yourdomain.com
+PROXY_CERT_PATH=/path/to/fullchain.pem
+PROXY_KEY_PATH=/path/to/privkey.pem
+```
+
+See [proxy/README.md](proxy/README.md) for detailed configuration options.
+
+### Alternative: External Reverse Proxy
+
+If you prefer using nginx, Apache, Caddy, or another reverse proxy:
 
 1. Run the dev servers (client on port 3000, API on port 3001)
-2. Use a reverse proxy (nginx, Apache, Caddy, etc.) to:
-   - Proxy requests to the dev servers
-   - Terminate SSL and apply your certificate
-   - Serve the site over HTTPS
-   - Enable WebSocket support for Vite HMR (Hot Module Replacement)
+2. Configure your reverse proxy to:
+   - Proxy `/api` requests to the API server (port 3001)
+   - Proxy all other requests to the client server (port 3000)
+   - Enable WebSocket proxying for Vite HMR
+   - Terminate SSL with your certificate
+   - Enable HTTP/2 for better performance
 
-### Proxy Configuration
-
-**API routes**: Proxy `/api` requests to the API server (port 3001)
-**Client routes**: Proxy all other requests to the client server (port 3000)
-**WebSocket support**: Configure WebSocket proxying for Vite HMR (required for hot module replacement during development)
-**HTTP/2**: Enable HTTP/2 for better performance
-
-### SSL Certificate Options
-
-- [Let's Encrypt](https://letsencrypt.org/) (recommended and free)
-- Any valid SSL certificate from a certificate authority
-- Self-signed certificate for local development (will show browser warnings)
-
-See `nginx.conf.example` in the repo for a complete nginx configuration example.
+See `nginx.conf.example` in the repository root for a reference nginx configuration.
 
 ---
 
@@ -101,9 +116,12 @@ ENCRYPTION_ALGORITHM=aes-256-cbc
 
 **Reddit OAuth Setup:**
 
-1. Create a Reddit app at https://www.reddit.com/prefs/apps
-2. Set the redirect URI to `https://yourdomain.com/api/callback`
-3. Store the client ID and secret in SSM Parameter Store
+1. **Create a Reddit app** at https://www.reddit.com/prefs/apps
+   - Click "create app" or "create another app"
+   - Choose "web app" as the app type
+   - Set the redirect URI to `https://yourdomain.com/api/callback`
+   - Note the **client ID** (under the app name) and **client secret**
+2. Store the client ID and secret in SSM Parameter Store (at the path specified in `ENVSsmParam`)
 
 For detailed API configuration and all available environment variables, see [api/README.md](api/README.md).
 

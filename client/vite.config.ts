@@ -69,6 +69,7 @@ export default defineConfig(({ mode }) => {
       '@/types': path.resolve(__dirname, './src/types'),
       '@/redux': path.resolve(__dirname, './src/redux'),
       '@/components': path.resolve(__dirname, './src/components'),
+      '@/styles': path.resolve(__dirname, './src/styles'),
       '@/common': path.resolve(__dirname, './src/common.js'),
       '@/test': path.resolve(__dirname, './src/test'),
     },
@@ -86,11 +87,25 @@ export default defineConfig(({ mode }) => {
     },
   },
 
+  // Preserve terminal output (don't clear screen)
+  // This ensures the proxy's startup message remains visible
+  clearScreen: false,
+
   // Dev server configuration
   server: {
     port: env.PORT ? Number(env.PORT) : 3000,
     host: '0.0.0.0', // Allow external connections
-    allowedHosts: env.HOST ? [env.HOST] : [], // Custom domain from .env (e.g., dev.reacdd.it)
+    allowedHosts: env.HOST ? [env.HOST] : [], // Custom domain from .env (e.g., dev.yourdomain.com)
+
+    // HMR configuration for reverse proxy
+    // When behind HTTPS proxy, HMR client needs to connect via the proxy
+    // instead of directly to Vite dev server
+    hmr: env.HOST ? {
+      protocol: 'wss', // Use secure WebSocket when behind HTTPS proxy
+      host: env.HOST, // Connect to proxy domain (e.g., dev.yourdomain.com)
+      // Default to 5173 (standard proxy port) or read from WSPORT/PROXY_PORT
+      clientPort: env.WSPORT ? Number(env.WSPORT) : (env.PROXY_PORT ? Number(env.PROXY_PORT) : 5173),
+    } : true, // Use default HMR settings for localhost
   },
 
   // Build configuration

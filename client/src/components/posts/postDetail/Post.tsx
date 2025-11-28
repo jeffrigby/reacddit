@@ -13,31 +13,31 @@ import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import Content from '../Content';
-import renderContent from '../embeds';
-import PostFooter from './PostFooter';
-import PostHeader from './PostHeader';
+import Content from '@/components/posts/Content';
+import renderContent from '@/components/posts/embeds';
 import {
   PostsContextData,
   PostsContextActionable,
   ListingsContextLastExpanded,
   useIntersectionObservers,
-} from '../../../contexts';
-import { hotkeyStatus, scrollByAmount } from '../../../common';
+} from '@/contexts';
+import { hotkeyStatus, scrollByAmount } from '@/common';
 import {
   selectListingStatus,
   selectPostFocused,
   selectPostActionable,
-} from '../../../redux/slices/listingsSlice';
-import CommentReplyList from '../../comments/CommentReplyList';
-import { useAppSelector } from '../../../redux/hooks';
+} from '@/redux/slices/listingsSlice';
+import CommentReplyList from '@/components/comments/CommentReplyList';
+import { useAppSelector } from '@/redux/hooks';
 import type {
   LinkData,
   CommentData,
   Listing,
   MoreChildrenData,
-} from '../../../types/redditApi';
-import type { EmbedContent } from '../embeds/types';
+} from '@/types/redditApi';
+import type { EmbedContent } from '@/components/posts/embeds/types';
+import PostHeader from './PostHeader';
+import PostFooter from './PostFooter';
 
 interface UseRenderedContentReturn {
   renderedContent: EmbedContent;

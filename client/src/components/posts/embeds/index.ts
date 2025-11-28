@@ -2,18 +2,18 @@ import { getPublicSuffix, getDomain } from 'tldts';
 import parse from 'url-parse';
 import { LRUCache } from 'lru-cache';
 import urlRegex from 'url-regex-safe';
-import type { LinkData, CommentData } from '../../../types/redditApi';
+import type { LinkData, CommentData } from '@/types/redditApi';
 import type {
   EmbedContent,
   DomainKeys,
   InlineLinksResult,
   HttpsErrorContent,
-} from './types';
-import Embeds from './embeds';
-import redditVideoPreview from './defaults/redditVideoPreview';
-import redditImagePreview from './defaults/redditImagePreview';
-import redditMediaEmbed from './defaults/redditMediaEmbed';
-import redditGallery from './defaults/redditGallery';
+} from '@/components/posts/embeds/types';
+import Embeds from '@/components/posts/embeds/embeds';
+import redditVideoPreview from '@/components/posts/embeds/defaults/redditVideoPreview';
+import redditImagePreview from '@/components/posts/embeds/defaults/redditImagePreview';
+import redditMediaEmbed from '@/components/posts/embeds/defaults/redditMediaEmbed';
+import redditGallery from '@/components/posts/embeds/defaults/redditGallery';
 
 // Compile URL regex once for performance
 const URL_REGEX = urlRegex();
@@ -273,8 +273,8 @@ async function getContent(
   keys: DomainKeys,
   entry: LinkData | CommentData
 ): Promise<EmbedContent> {
-  // is this a gallery?
-  if (isLinkData(entry) && entry.is_gallery) {
+  // is this a gallery or has media_metadata?
+  if (isLinkData(entry) && entry.media_metadata) {
     try {
       const gallery = redditGallery(entry);
       if (gallery) {

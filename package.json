@@ -2,13 +2,23 @@
   "name": "reacddit",
   "version": "1.0.0",
   "description": "A Reddit client built in reactjs.",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "client",
+    "api",
+    "proxy"
+  ],
   "scripts": {
-    "start": "concurrently \"npm run start-client\"  \"npm run start-api\"",
-    "start-client": "cd client && npm start",
-    "build-client": "cd client && npm run build",
-    "start-api": "cd api && npm start",
-    "outdated-all": "find . -maxdepth 2 -name package.json -execdir npm outdated \\;",
-    "update-all": "find . -maxdepth 2 -name package.json -execdir npm update \\;"
+    "setup": "tsx scripts/setup-wizard.ts",
+    "start": "tsx scripts/start-dev.ts",
+    "start-proxy": "npm run start -w proxy",
+    "start-client": "npm run start -w client",
+    "build-client": "npm run build -w client",
+    "start-api": "npm run start -w api",
+    "lint-all": "npm run lint --workspaces --if-present",
+    "outdated-all": "npm outdated --workspaces",
+    "update-all": "npm update --workspaces"
   },
   "keywords": [
     "es6",
@@ -18,7 +28,21 @@
   ],
   "author": "Jeff Rigby",
   "license": "MIT",
+  "overrides": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  },
   "devDependencies": {
-    "concurrently": "^9.0.1"
+    "@inquirer/prompts": "^8.0.1",
+    "@types/node": "^24.10.1",
+    "concurrently": "^9.0.1",
+    "eslint": "^9.22.0",
+    "open": "^11.0.0",
+    "prettier": "^3.3.3",
+    "tsx": "^4.19.2",
+    "typescript": "^5.8.3"
   }
 }

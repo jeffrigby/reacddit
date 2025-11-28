@@ -1,12 +1,23 @@
 import { useEffect } from 'react';
 import { useParams, useLocation } from 'react-router';
 import { useAppDispatch } from '@/redux/hooks';
-import { historyPathAdded } from '../../redux/slices/historySlice';
+import { historyPathAdded } from '@/redux/slices/historySlice';
+import NotFound404 from '@/NotFound404';
 import Listings from './Listings';
-import NotFound404 from '../../NotFound404';
+
+interface RouteOverrides {
+  listType?: string;
+  sort?: string;
+  target?: string;
+  user?: string;
+  userType?: string;
+  multi?: string | boolean;
+  postName?: string;
+  comment?: string;
+}
 
 interface ListingsRouteProps {
-  overrides?: Record<string, string | boolean | undefined>;
+  overrides?: RouteOverrides;
   validations?: Record<string, string[] | string | undefined>;
 }
 

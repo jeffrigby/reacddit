@@ -23,7 +23,9 @@ export const axiosInstance = axios.create({
  * @param token - The token object
  * @returns Returns true if the token is expired, false otherwise
  */
-export function isTokenExpired(token: ExtendedToken | null | undefined): boolean {
+export function isTokenExpired(
+  token: ExtendedToken | null | undefined,
+): boolean {
   if (!token || !token.expires) {
     return true;
   }
@@ -39,7 +41,7 @@ export function isTokenExpired(token: ExtendedToken | null | undefined): boolean
  */
 export function addExtraInfoToToken(
   token: RedditAccessTokenResponse,
-  auth = false
+  auth = false,
 ): ExtendedToken {
   const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
   const expires = now + token.expires_in - 120;
@@ -63,7 +65,7 @@ export function encryptToken(token: unknown): EncryptedToken {
   const cipher = createCipheriv(
     config.ENCRYPTION_ALGORITHM,
     Buffer.from(config.SALT),
-    iv
+    iv,
   );
   let encrypted = cipher.update(tokenString);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
@@ -91,7 +93,7 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
     const decipher = createDecipheriv(
       config.ENCRYPTION_ALGORITHM,
       Buffer.from(config.SALT),
-      iv
+      iv,
     );
     let decrypted = decipher.update(encryptedText);
     decrypted = Buffer.concat([decrypted, decipher.final()]);

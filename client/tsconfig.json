@@ -22,6 +22,7 @@
       "@/types/*": ["types/*"],
       "@/redux/*": ["redux/*"],
       "@/components/*": ["components/*"],
+      "@/styles/*": ["styles/*"],
       "@/common": ["common.js"],
       "@/test/*": ["test/*"]
     }

@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
-import NotFound404 from '../../NotFound404';
-import ListingsRoute from '../listings/ListingsRoute';
+import NotFound404 from '@/NotFound404';
+import ListingsRoute from '@/components/listings/ListingsRoute';
 
 const redditSorts = ['hot', 'new', 'top', 'controversial', 'rising', 'best'];
 const userSorts = ['hot', 'new', 'top', 'controversial'];
@@ -53,7 +53,7 @@ const routes: RouteConfig[] = [
     paths: ['/user/:target/m/:userType/search', '/:user/m/:target/search'],
     overrides: {
       multi: true,
-      listType: 'r',
+      listType: 's',
     },
     validations: {
       user: 'me',
