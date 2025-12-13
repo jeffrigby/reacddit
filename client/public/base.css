@@ -15,7 +15,7 @@ body {
 }
 
 .landing-icon {
-  background-image: url('/reacddit-loading.svg');
+  background-image: url('/pwa/icon-512.png');
   background-size: 128px 128px;
   background-repeat: no-repeat;
   width: 128px;
