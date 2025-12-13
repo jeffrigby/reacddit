@@ -33,7 +33,7 @@ function IFrame({
     width = 16,
     height = 9,
     allow = 'fullscreen',
-    sandbox = 'allow-scripts allow-same-origin',
+    sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox',
     referrerPolicy = 'no-referrer-when-downgrade',
     loading = 'eager',
     iframeStyle = {},
