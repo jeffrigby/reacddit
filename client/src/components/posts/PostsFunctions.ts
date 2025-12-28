@@ -40,16 +40,6 @@ export function scrollToPosition(x: number, y: number): void {
 }
 
 /**
- * Scroll by a relative amount
- * Use this instead of window.scrollBy() after Bootstrap 5 migration
- */
-export function scrollByAmount(x: number, y: number): void {
-  const scrollContainer = getScrollContainer();
-  scrollContainer.scrollLeft += x;
-  scrollContainer.scrollTop += y;
-}
-
-/**
  * Navigate to the next top-level entry (skips nested comments).
  * This ensures j/k only navigate between top-level items, not threaded replies.
  * Optimized to avoid forced reflows by batching layout reads.
