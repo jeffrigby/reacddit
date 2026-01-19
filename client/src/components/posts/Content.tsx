@@ -38,50 +38,49 @@ function Content({ content = null }: ContentProps) {
     return <Placeholder />;
   }
 
-  let contentRendered: React.JSX.Element | null = null;
-  if (content.type) {
-    switch (content.type) {
-      case 'image':
-        contentRendered = <ImageComp content={content} />;
-        break;
-      case 'video':
-        contentRendered = <VideoComp content={content} link={url} />;
-        break;
-      case 'iframe':
-        contentRendered = <IFrame content={content} />;
-        break;
-      case 'imgur_album':
-        contentRendered = <ImgurAlbum content={content} />;
-        break;
-      case 'thumb':
-        contentRendered = <Thumb content={content} />;
-        break;
-      case 'self':
-        contentRendered = <Self content={content} name={name} />;
-        break;
-      case 'raw_html':
-        contentRendered = <RawHTML content={content} />;
-        break;
-      case 'social':
-        contentRendered = (
-          <Social
-            network={content.network as 'x' | 'instagram' | 'facebook'}
-            url={content.url}
-          />
-        );
-        break;
-      case 'httpserror':
-        contentRendered = <HTTPSError content={content} />;
-        break;
-      case 'redditGallery':
-        contentRendered = <RedditGallery content={content} />;
-        break;
-      default:
-        break;
-    }
-  } else {
-    // couldn't load an embed
+  if (!content.type) {
     return null;
+  }
+
+  let contentRendered: React.JSX.Element | null = null;
+  switch (content.type) {
+    case 'image':
+      contentRendered = <ImageComp content={content} />;
+      break;
+    case 'video':
+      contentRendered = <VideoComp content={content} link={url} />;
+      break;
+    case 'iframe':
+      contentRendered = <IFrame content={content} />;
+      break;
+    case 'imgur_album':
+      contentRendered = <ImgurAlbum content={content} />;
+      break;
+    case 'thumb':
+      contentRendered = <Thumb content={content} />;
+      break;
+    case 'self':
+      contentRendered = <Self content={content} name={name} />;
+      break;
+    case 'raw_html':
+      contentRendered = <RawHTML content={content} />;
+      break;
+    case 'social':
+      contentRendered = (
+        <Social
+          network={content.network as 'x' | 'instagram' | 'facebook'}
+          url={content.url}
+        />
+      );
+      break;
+    case 'httpserror':
+      contentRendered = <HTTPSError content={content} />;
+      break;
+    case 'redditGallery':
+      contentRendered = <RedditGallery content={content} />;
+      break;
+    default:
+      break;
   }
   return (
     <PostsContextContent.Provider value={postContext}>

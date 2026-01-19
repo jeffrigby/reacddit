@@ -37,11 +37,7 @@ function Posts(): ReactElement {
       <>
         {hasParent && originalPost && <PostsParent post={originalPost} />}
         <PostsLoadingStatus />
-        <PostsRender
-          idxOffset={idxOffset}
-          listType={listType}
-          posts={entriesObject}
-        />
+        <PostsRender idxOffset={idxOffset} posts={entriesObject} />
         <PostsFooter />
       </>
     </IntersectionObserverProvider>

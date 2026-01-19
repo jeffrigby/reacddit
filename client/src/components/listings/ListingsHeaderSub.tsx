@@ -143,11 +143,16 @@ function ListingsHeaderSub() {
   }, [pageTitle]);
 
   // Only show loading placeholder if we're expecting subscriber data
-  const renderedSubInfo = subInfo ? (
-    <span>{subInfo}</span>
-  ) : showSubInfo ? (
-    <span className="loading-placeholder">Loading Members</span>
-  ) : null;
+  const getRenderedSubInfo = (): React.ReactNode => {
+    if (subInfo) {
+      return <span>{subInfo}</span>;
+    }
+    if (showSubInfo) {
+      return <span className="loading-placeholder">Loading Members</span>;
+    }
+    return null;
+  };
+  const renderedSubInfo = getRenderedSubInfo();
 
   const description =
     cachedSub?.public_description ?? about?.public_description;

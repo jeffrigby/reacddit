@@ -89,7 +89,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
   }
 
   if (replies) {
-    return <CommentsRender linkId={linkId} listType="reply" posts={replies} />;
+    return <CommentsRender linkId={linkId} posts={replies} />;
   }
 
   return (

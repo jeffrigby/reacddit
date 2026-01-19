@@ -42,15 +42,19 @@ function Listings({ match }: ListingsProps) {
 
   // Build filter from match params
   const filters = useMemo(() => {
-    let listingType = listType ?? 'r';
-    if (listType === 'user') {
-      listingType = 'u';
-    }
-    if (listType === 'multi') {
-      listingType = 'm';
-    }
-    if (listType === 'search') {
-      listingType = 's';
+    let listingType: string;
+    switch (listType) {
+      case 'user':
+        listingType = 'u';
+        break;
+      case 'multi':
+        listingType = 'm';
+        break;
+      case 'search':
+        listingType = 's';
+        break;
+      default:
+        listingType = listType ?? 'r';
     }
 
     const getSort = sort ?? (target ? 'hot' : 'best');

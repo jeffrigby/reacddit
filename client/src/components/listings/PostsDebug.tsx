@@ -48,13 +48,19 @@ function PostsDebug() {
 
   // Auth state - RTK Query
   const { data: me, isLoading, isError, isSuccess } = useGetMeQuery();
-  const meStatus = isLoading
-    ? 'loading'
-    : isError
-      ? 'failed'
-      : isSuccess
-        ? 'succeeded'
-        : 'idle';
+  const getMeStatus = (): string => {
+    if (isLoading) {
+      return 'loading';
+    }
+    if (isError) {
+      return 'failed';
+    }
+    if (isSuccess) {
+      return 'succeeded';
+    }
+    return 'idle';
+  };
+  const meStatus = getMeStatus();
   const bearerStatus = useAppSelector(selectBearerStatus);
   const isAuth = useAppSelector(selectIsAuth);
 
