@@ -8,14 +8,14 @@ interface MediaMetadataItem {
   id: string;
   status: string;
   e: string;
-  s: {
+  s?: {
     u?: string;
     gif?: string;
     mp4?: string;
     x: number;
     y: number;
   };
-  p: Array<{
+  p?: Array<{
     u: string;
     x: number;
     y: number;
@@ -30,7 +30,7 @@ function redditGallery(entry: LinkData): RedditGalleryContent | null {
   const media: GalleryMediaItem[] = [];
 
   Object.values(entry.media_metadata).forEach((value: MediaMetadataItem) => {
-    if (value.status === 'valid') {
+    if (value.status === 'valid' && value.s && value.p) {
       // For AnimatedImage types, use gif or mp4 if u is not available
       const sourceUrl = value.s.u ?? value.s.gif ?? value.s.mp4 ?? '';
 

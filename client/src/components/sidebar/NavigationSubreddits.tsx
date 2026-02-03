@@ -29,20 +29,18 @@ function NavigationSubReddits() {
   const prevWhereRef = useRef<string | null>(null);
 
   // Use RTK Query hook - automatically fetches and caches
-  const { allSubreddits, isLoading, isError, refetch } = useGetSubredditsQuery(
+  const { data, isLoading, isError, refetch } = useGetSubredditsQuery(
     { where },
     {
-      // Use selectFromResult to extract and filter data
-      selectFromResult: ({ data, isLoading, isError, refetch }) => ({
-        // Get all subreddits as array
-        allSubreddits: data ? subredditSelectors.selectAll(data) : [],
-        isLoading,
-        isError,
-        refetch, // Must explicitly include refetch when using selectFromResult
-      }),
       // Don't refetch on mount if we have cached data (1-hour cache)
       refetchOnMountOrArgChange: false,
     }
+  );
+
+  // Get all subreddits as array from the entity state
+  const allSubreddits = useMemo(
+    () => (data ? subredditSelectors.selectAll(data) : []),
+    [data]
   );
 
   // Filter subreddits locally

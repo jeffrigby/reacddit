@@ -32,7 +32,7 @@ function getMeta(url: string): Promise<ImageMetadata> {
 
 function ImageComp({ content }: ImageCompProps) {
   const postContext = usePostContext();
-  const { isLoaded, idx } = postContext!;
+  const { isLoaded, idx } = postContext;
   const { title, width, height, src } = content;
 
   const [aspectRatio, setAspectRatio] = useState<number | null>(

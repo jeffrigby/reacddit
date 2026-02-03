@@ -59,12 +59,12 @@ const cleanLinks = (html: string): string => {
 
 function Self({ name, content }: SelfProps) {
   const postContext = usePostContext();
-  const { post } = postContext!;
+  const { post } = postContext;
 
   const listType = useAppSelector(
     (state) => state.listings.currentFilter.listType
   );
-  const debug = useAppSelector((state) => state.siteSettings.debugMode);
+  const debug = useAppSelector((state) => state.siteSettings.debug);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(content?.expand ?? false);

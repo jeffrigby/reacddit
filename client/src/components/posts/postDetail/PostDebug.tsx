@@ -14,7 +14,7 @@ function PostDebug({
   renderedContent = null,
 }: PostDebugProps): React.JSX.Element {
   const postContext = usePostContext();
-  const { post } = postContext!;
+  const { post } = postContext;
   const { data } = post;
 
   // Type guard to check if data is LinkData

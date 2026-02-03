@@ -19,6 +19,12 @@ export const PostsContextActionable: Context<boolean | null> = createContext<
   boolean | null
 >(null);
 
-export function usePostContext(): PostContextData | null {
-  return useContext(PostsContextData);
+export function usePostContext(): PostContextData {
+  const context = useContext(PostsContextData);
+  if (!context) {
+    throw new Error(
+      'usePostContext must be used within a PostsContextData.Provider'
+    );
+  }
+  return context;
 }

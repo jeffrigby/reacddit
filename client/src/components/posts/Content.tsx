@@ -19,7 +19,7 @@ interface ContentProps {
 
 function Content({ content = null }: ContentProps) {
   const postContext = usePostContext();
-  const { post } = postContext!;
+  const { post } = postContext;
   const { data } = post;
   const linkData = data as LinkData;
 

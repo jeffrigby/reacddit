@@ -1,6 +1,8 @@
 // Reacddit Service Worker with Workbox
 // Optimized for Reddit's media-heavy content
 
+/// <reference lib="webworker" />
+
 import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
@@ -11,10 +13,10 @@ import {
   CacheFirst,
 } from 'workbox-strategies';
 
-// Extend the ServiceWorkerGlobalScope to include __WB_MANIFEST
-declare const self: ServiceWorkerGlobalScope & {
-  __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
-};
+// Cast self to ServiceWorkerGlobalScope for proper typing
+// The webworker lib provides the base types, and workbox-precaching extends
+// ServiceWorkerGlobalScope to include __WB_MANIFEST
+const sw = self as unknown as ServiceWorkerGlobalScope;
 
 function hasExtension(pathname: string, extensions: string[]): boolean {
   return extensions.some((ext) => pathname.endsWith(ext));
@@ -29,7 +31,7 @@ clientsClaim();
 // Their URLs are injected into the manifest variable below.
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
-const manifest = self.__WB_MANIFEST;
+const manifest = sw.__WB_MANIFEST;
 precacheAndRoute(manifest);
 
 // Set up App Shell-style routing using NavigationRoute
@@ -137,7 +139,7 @@ registerRoute(
 // Cache local static assets with StaleWhileRevalidate
 registerRoute(
   ({ url }): boolean =>
-    url.origin === self.location.origin &&
+    url.origin === sw.location.origin &&
     hasExtension(url.pathname, LOCAL_IMAGE_EXTENSIONS),
   new StaleWhileRevalidate({
     cacheName: 'local-images',
@@ -152,8 +154,8 @@ registerRoute(
 
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
-self.addEventListener('message', (event: ExtendableMessageEvent) => {
+sw.addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+    sw.skipWaiting();
   }
 });

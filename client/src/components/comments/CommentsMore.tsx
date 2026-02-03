@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
-import { NavLink, useParams } from 'react-router-dom';
+import { NavLink, useParams } from 'react-router';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
 import { useGetMoreChildrenQuery } from '@/redux/api';
 import CommentsRender from './CommentsRender';
@@ -75,15 +75,12 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
 
     return (
       <div className="comments-more">
-        <Button
-          as={NavLink}
-          className="mb-2"
-          size="sm"
+        <NavLink
+          className="btn btn-outline-secondary btn-sm mb-2"
           to={`/r/${target}/comments/${postName}/${postTitle}/${parentID}`}
-          variant="outline-secondary"
         >
           Continue This Thread
-        </Button>
+        </NavLink>
       </div>
     );
   }

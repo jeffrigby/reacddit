@@ -39,7 +39,7 @@ function PostHeader({
     (state) => state.listings.currentFilter.listType
   );
   const params = useParams<{ listType?: string; target?: string }>();
-  const { post, isLoaded } = postContext!;
+  const { post, isLoaded } = postContext;
   const { data, kind } = post;
 
   // Is this a comment?

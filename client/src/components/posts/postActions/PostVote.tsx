@@ -61,7 +61,7 @@ function PostVote() {
   const bearer = useAppSelector((state) => state.redditBearer);
 
   const postContext = usePostContext();
-  const { post } = postContext!;
+  const { post } = postContext;
   const data = post.data as LinkData;
   const actionable = useContext(PostsContextActionable) as boolean;
 

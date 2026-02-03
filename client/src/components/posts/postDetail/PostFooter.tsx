@@ -27,7 +27,7 @@ function PostFooter({
   const postContext = usePostContext();
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { post, isLoaded } = postContext!;
+  const { post, isLoaded } = postContext;
   const { data, kind } = post;
   const copyTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 

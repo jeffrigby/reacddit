@@ -7,7 +7,7 @@ interface ThumbProps {
 
 function Thumb({ content }: ThumbProps) {
   const postContext = usePostContext();
-  const { isLoaded } = postContext!;
+  const { isLoaded } = postContext;
 
   let img;
   if (isLoaded) {

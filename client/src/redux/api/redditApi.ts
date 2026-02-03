@@ -82,9 +82,11 @@ export const redditApi = createApi({
       const payload = action.payload as Record<string, unknown> | undefined;
 
       if (payload?.[reducerPath]) {
-        return payload[reducerPath];
+        // Cast to the expected return type for RTK Query rehydration
+        return payload[reducerPath] as unknown as undefined;
       }
     }
+    return undefined;
   },
 
   // Global cache configuration

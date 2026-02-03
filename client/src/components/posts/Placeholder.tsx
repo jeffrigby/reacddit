@@ -12,7 +12,7 @@ interface RatioInfo {
 
 function Placeholder() {
   const postContext = usePostContext();
-  const { post } = postContext!;
+  const { post } = postContext;
   const { data } = post;
 
   function getRatio(width: number, height: number): RatioInfo {

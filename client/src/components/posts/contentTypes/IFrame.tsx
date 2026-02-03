@@ -33,14 +33,14 @@ function IFrame({
   },
 }: IFrameProps) {
   const postContext = usePostContext();
-  const { title } = postContext!.post.data as LinkData;
+  const { title } = postContext.post.data as LinkData;
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const hasBeenOnScreen = useRef(false);
 
   const style: CSSProperties = {};
   style.aspectRatio = `${width}/${height}`;
 
-  const { isLoaded, fullyOffScreen } = postContext!;
+  const { isLoaded, fullyOffScreen } = postContext;
 
   // Track if iframe has ever been on-screen
   useEffect(() => {

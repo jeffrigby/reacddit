@@ -24,7 +24,9 @@ function SettingsCheckbox({
   onChange,
 }: SettingsCheckboxProps): React.JSX.Element {
   const checked = useAppSelector(
-    (state) => state.siteSettings[settingKey] ?? false
+    (state) =>
+      (state.siteSettings[settingKey as keyof SiteSettingsState] as boolean) ??
+      false
   );
   const dispatch = useAppDispatch();
 

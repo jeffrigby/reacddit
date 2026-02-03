@@ -251,7 +251,7 @@ async function render(entry: LinkData | CommentData): Promise<EmbedContent> {
     ...entry,
     url: linkedUrl,
     [REDDIT_EMBED_MARKER]: true,
-  } as LinkData | CommentData;
+  } as unknown as LinkData | CommentData;
 
   return tryDomainHandler(domainKey, syntheticEntry);
 }

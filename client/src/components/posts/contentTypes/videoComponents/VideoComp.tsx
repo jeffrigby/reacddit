@@ -99,7 +99,7 @@ function getBuffers(
  */
 function VideoComp({ link = '', content }: VideoCompProps) {
   const postContext = usePostContext();
-  const { isLoaded, fullyOffScreen } = postContext!;
+  const { isLoaded, fullyOffScreen } = postContext;
   const videoRef = useRef<HTMLVideoElement>(null);
   const isPlaying = useRef<boolean>(false);
   const isPlayingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -108,9 +108,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const wasPlayingBeforeOffScreen = useRef<boolean>(false);
 
   const debug = useAppSelector((state) => state.siteSettings.debug);
-  const autoplay = useAppSelector(
-    (state) => state.siteSettings.autoplay as boolean
-  );
+  const autoplay = useAppSelector((state) => state.siteSettings.autoplay);
 
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(autoplay);
