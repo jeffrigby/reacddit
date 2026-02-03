@@ -21,6 +21,24 @@ interface AppConfig {
 const red = chalk.red;
 
 /**
+ * Check if a string represents a valid positive integer
+ */
+function isPositiveInt(value: string | undefined): boolean {
+  if (!value) return false;
+  const num = Number(value);
+  return Number.isInteger(num) && num > 0;
+}
+
+/**
+ * Check if a string represents a valid non-negative integer
+ */
+function isNonNegativeInt(value: string | undefined): boolean {
+  if (!value) return false;
+  const num = Number(value);
+  return Number.isInteger(num) && num >= 0;
+}
+
+/**
  * Validates environment variables and exits with error messages if any are invalid
  * @throws Calls process.exit(1) if validation fails (except in test mode)
  */
@@ -55,22 +73,15 @@ function validateEnv(): void {
         "You must enter the REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_CALLBACK_URI from https://www.reddit.com/prefs/apps",
     },
     {
-      condition:
-        PORT && (!Number.isInteger(Number(PORT)) || !(parseInt(PORT) > 0)),
+      condition: PORT && !isPositiveInt(PORT),
       message: "PORT must be a valid positive integer.",
     },
     {
-      condition:
-        !SESSION_LENGTH_SECS ||
-        !Number.isInteger(Number(SESSION_LENGTH_SECS)) ||
-        !(parseInt(SESSION_LENGTH_SECS) > 0),
+      condition: !isPositiveInt(SESSION_LENGTH_SECS),
       message: "SESSION_LENGTH_SECS must be a valid positive integer.",
     },
     {
-      condition:
-        !TOKEN_EXPIRY_PADDING_SECS ||
-        !Number.isInteger(Number(TOKEN_EXPIRY_PADDING_SECS)) ||
-        !(parseInt(TOKEN_EXPIRY_PADDING_SECS) >= 0),
+      condition: !isNonNegativeInt(TOKEN_EXPIRY_PADDING_SECS),
       message:
         "TOKEN_EXPIRY_PADDING_SECS must be a valid non-negative integer.",
     },
@@ -84,10 +95,7 @@ function validateEnv(): void {
       message: "ENCRYPTION_ALGORITHM must be set (default: aes-256-cbc).",
     },
     {
-      condition:
-        !IV_LENGTH ||
-        !Number.isInteger(Number(IV_LENGTH)) ||
-        !(parseInt(IV_LENGTH) > 0),
+      condition: !isPositiveInt(IV_LENGTH),
       message: "IV_LENGTH must be a valid positive integer (default: 16).",
     },
   ];
@@ -102,6 +110,31 @@ function validateEnv(): void {
   }
 }
 
+/** Check if running in test mode */
+function isTestMode(): boolean {
+  return process.env["VITEST"] === "true" || process.env["NODE_ENV"] === "test";
+}
+
+/** Test mode defaults for environment variables */
+const TEST_DEFAULTS = {
+  REDDIT_CLIENT_ID: "test-client-id",
+  REDDIT_CLIENT_SECRET: "test-secret",
+  REDDIT_CALLBACK_URI: "http://localhost:3001/api/callback",
+  CLIENT_PATH: "http://localhost:3000",
+  SALT: "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM",
+  SESSION_LENGTH_SECS: "604800",
+  TOKEN_EXPIRY_PADDING_SECS: "300",
+  ENCRYPTION_ALGORITHM: "aes-256-cbc",
+  IV_LENGTH: "16",
+} as const;
+
+/**
+ * Get environment variable with optional test mode fallback
+ */
+function getEnvVar(key: keyof typeof TEST_DEFAULTS, fallback = ""): string {
+  return process.env[key] || (isTestMode() ? TEST_DEFAULTS[key] : fallback);
+}
+
 /**
  * Loads and validates configuration from environment variables
  * @returns Validated and typed configuration object
@@ -110,45 +143,22 @@ function validateEnv(): void {
 function loadConfig(): AppConfig {
   validateEnv();
 
-  const {
-    REDDIT_CLIENT_ID,
-    REDDIT_CLIENT_SECRET,
-    REDDIT_CALLBACK_URI,
-    REDDIT_SCOPE,
-    CLIENT_PATH,
-    SALT,
-    SESSION_LENGTH_SECS,
-    TOKEN_EXPIRY_PADDING_SECS,
-    PORT,
-    ENCRYPTION_ALGORITHM,
-    IV_LENGTH,
-  } = process.env;
-
-  // In test mode, provide safe defaults if env vars are missing
-  const isTestMode =
-    process.env["VITEST"] === "true" || process.env["NODE_ENV"] === "test";
-
   return {
-    REDDIT_CLIENT_ID: REDDIT_CLIENT_ID || (isTestMode ? "test-client-id" : ""),
-    REDDIT_CLIENT_SECRET:
-      REDDIT_CLIENT_SECRET || (isTestMode ? "test-secret" : ""),
-    REDDIT_CALLBACK_URI:
-      REDDIT_CALLBACK_URI ||
-      (isTestMode ? "http://localhost:3001/api/callback" : ""),
+    REDDIT_CLIENT_ID: getEnvVar("REDDIT_CLIENT_ID"),
+    REDDIT_CLIENT_SECRET: getEnvVar("REDDIT_CLIENT_SECRET"),
+    REDDIT_CALLBACK_URI: getEnvVar("REDDIT_CALLBACK_URI"),
     REDDIT_SCOPE:
-      REDDIT_SCOPE || "identity,mysubreddits,vote,subscribe,read,history,save",
-    CLIENT_PATH: CLIENT_PATH || (isTestMode ? "http://localhost:3000" : ""),
-    SALT: SALT || (isTestMode ? "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM" : ""),
-    SESSION_LENGTH_SECS: parseInt(
-      SESSION_LENGTH_SECS || (isTestMode ? "604800" : "0"),
-    ),
+      process.env["REDDIT_SCOPE"] ||
+      "identity,mysubreddits,vote,subscribe,read,history,save",
+    CLIENT_PATH: getEnvVar("CLIENT_PATH"),
+    SALT: getEnvVar("SALT"),
+    SESSION_LENGTH_SECS: parseInt(getEnvVar("SESSION_LENGTH_SECS", "0")),
     TOKEN_EXPIRY_PADDING_SECS: parseInt(
-      TOKEN_EXPIRY_PADDING_SECS || (isTestMode ? "300" : "0"),
+      getEnvVar("TOKEN_EXPIRY_PADDING_SECS", "0"),
     ),
-    PORT: parseInt(PORT || "3001"),
-    ENCRYPTION_ALGORITHM:
-      ENCRYPTION_ALGORITHM || (isTestMode ? "aes-256-cbc" : ""),
-    IV_LENGTH: parseInt(IV_LENGTH || (isTestMode ? "16" : "0")),
+    PORT: parseInt(process.env["PORT"] || "3001"),
+    ENCRYPTION_ALGORITHM: getEnvVar("ENCRYPTION_ALGORITHM"),
+    IV_LENGTH: parseInt(getEnvVar("IV_LENGTH", "0")),
   };
 }
 
