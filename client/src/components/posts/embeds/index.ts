@@ -1,5 +1,6 @@
 import { getPublicSuffix, getDomain } from 'tldts';
 import parse from 'url-parse';
+import pLimit from 'p-limit';
 import { LRUCache } from 'lru-cache';
 import urlRegex from 'url-regex-safe';
 import type { LinkData, CommentData } from '@/types/redditApi';
@@ -34,6 +35,11 @@ const embedCache = new LRUCache<string, NonNullable<EmbedContent>>({
   updateAgeOnGet: true, // Refresh TTL when accessing cached items
   updateAgeOnHas: false, // Don't refresh TTL on has() checks
 });
+
+// Concurrency limiter for inline link processing
+// Limits concurrent fetch requests to avoid overwhelming the browser
+// and prevent rate limiting from external APIs (Reddit, etc.)
+const inlineLinkLimit = pLimit(5);
 
 /**
  * Type guard to check if entry is LinkData
@@ -174,41 +180,45 @@ async function inlineLinks(
 
   const dupes: string[] = [];
 
-  // Process all links in parallel for better performance
-  const linkPromises = links.map(async (url: string) => {
-    const cleanUrl = url.replace(/^\(|\)$/g, '');
+  // Process links with concurrency control (max 5 concurrent requests)
+  // This prevents overwhelming the browser and avoids rate limiting
+  // from external APIs when posts contain many links
+  const linkPromises = links.map((url: string) =>
+    inlineLinkLimit(async () => {
+      const cleanUrl = url.replace(/^\(|\)$/g, '');
 
-    // If a match doesn't start with http skip it.
-    if (!cleanUrl.match(/^http/)) {
+      // If a match doesn't start with http skip it.
+      if (!cleanUrl.match(/^http/)) {
+        return null;
+      }
+
+      const keys = getKeys(cleanUrl);
+      if (!keys) {
+        return null;
+      }
+
+      if (dupes.includes(url)) {
+        return null;
+      }
+      dupes.push(url);
+
+      // Create entry with clean URL, excluding preview to avoid conflicts
+      const fakeEntry = isLinkData(entry)
+        ? (() => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { preview, ...entryWithoutPreview } = entry;
+            return { ...entryWithoutPreview, url: cleanUrl };
+          })()
+        : { ...entry, url: cleanUrl };
+
+      const embedContent = await tryDomainHandlers(keys, fakeEntry);
+      if (embedContent) {
+        return { url, content: embedContent };
+      }
+
       return null;
-    }
-
-    const keys = getKeys(cleanUrl);
-    if (!keys) {
-      return null;
-    }
-
-    if (dupes.includes(url)) {
-      return null;
-    }
-    dupes.push(url);
-
-    // Create entry with clean URL, excluding preview to avoid conflicts
-    const fakeEntry = isLinkData(entry)
-      ? (() => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { preview, ...entryWithoutPreview } = entry;
-          return { ...entryWithoutPreview, url: cleanUrl };
-        })()
-      : { ...entry, url: cleanUrl };
-
-    const embedContent = await tryDomainHandlers(keys, fakeEntry);
-    if (embedContent) {
-      return { url, content: embedContent };
-    }
-
-    return null;
-  });
+    })
+  );
 
   const results = await Promise.all(linkPromises);
 

@@ -2,6 +2,7 @@ import Koa from "koa";
 import Router from "@koa/router";
 import session from "koa-session";
 import logger from "koa-logger";
+import bodyParser from "koa-bodyparser";
 import { randomUUID } from "crypto";
 import qs from "qs";
 import { config } from "./config.js";
@@ -19,7 +20,7 @@ import type {
   CookieStorage,
 } from "./types/reddit.js";
 import type { SessionData } from "./types/session.js";
-import { AxiosError, type AxiosResponse } from "axios";
+import axios, { AxiosError, type AxiosResponse } from "axios";
 
 function getSessionConfig() {
   return {
@@ -239,9 +240,15 @@ app.keys = [config.SALT];
 app.use(session(getSessionConfig(), app));
 app.use(async (ctx, next) => {
   ctx.set("Access-Control-Allow-Origin", config.CLIENT_PATH);
-  ctx.set("Access-Control-Allow-Methods", "GET");
+  ctx.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  ctx.set("Access-Control-Allow-Headers", "Content-Type");
+  if (ctx.method === "OPTIONS") {
+    ctx.status = 204;
+    return;
+  }
   await next();
 });
+app.use(bodyParser());
 app.use(logger());
 
 const router = new Router();
@@ -432,6 +439,90 @@ router.get("/api/bearer", async (ctx) => {
   // Case 3: Token expired or forced refresh.
   // If it's an auth user, refresh the token. If not, get a new anon token.
   await refreshOrGetAnonTokenAndSetSession(ctx, token, forceRefresh);
+});
+
+// Regex for validating Reddit share links
+const SHARE_LINK_REGEX =
+  /^https?:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
+
+// Max URLs per batch request
+const MAX_BATCH_SIZE = 20;
+
+type ShareResolveResult = { postId: string } | { error: string };
+
+/**
+ * Resolve a single share link to a post ID by following redirects
+ */
+async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
+  if (!SHARE_LINK_REGEX.test(url)) {
+    return { error: "Invalid Reddit share link format" };
+  }
+
+  try {
+    const response = await axios.head(url, {
+      maxRedirects: 0,
+      validateStatus: (status) => status === 301 || status === 302,
+      timeout: 5000,
+    });
+
+    const location = response.headers["location"];
+    if (typeof location !== "string") {
+      return { error: "Share link did not redirect" };
+    }
+
+    const postId = location.match(/\/comments\/([a-z0-9]+)/i)?.[1];
+    if (!postId) {
+      return { error: "Could not extract post ID from redirect" };
+    }
+
+    return { postId };
+  } catch {
+    return { error: "Failed to resolve share link" };
+  }
+}
+
+/**
+ * POST /api/resolve-share
+ * Resolves one or more Reddit share links to post IDs by following redirects
+ * @route POST /api/resolve-share
+ * @body { urls: string[] }
+ * @returns { results: { [url: string]: { postId: string } | { error: string } } }
+ */
+router.post("/api/resolve-share", async (ctx) => {
+  const body = ctx.request.body as { urls?: unknown };
+
+  // Validate body has urls array
+  if (!body || !Array.isArray(body.urls)) {
+    ctx.status = 400;
+    ctx.body = { error: "Missing urls array in request body" };
+    return;
+  }
+
+  const urls = body.urls as unknown[];
+
+  // Validate all items are strings
+  if (!urls.every((u): u is string => typeof u === "string")) {
+    ctx.status = 400;
+    ctx.body = { error: "All URLs must be strings" };
+    return;
+  }
+
+  // Limit batch size
+  if (urls.length > MAX_BATCH_SIZE) {
+    ctx.status = 400;
+    ctx.body = { error: `Maximum ${MAX_BATCH_SIZE} URLs per request` };
+    return;
+  }
+
+  // Resolve all URLs in parallel
+  const entries = await Promise.all(
+    urls.map(async (url) => {
+      const result = await resolveShareUrl(url);
+      return [url, result] as const;
+    }),
+  );
+
+  ctx.body = { results: Object.fromEntries(entries) };
 });
 
 /**
