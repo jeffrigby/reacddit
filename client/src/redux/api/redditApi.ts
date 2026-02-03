@@ -99,10 +99,6 @@ export const redditApi = createApi({
   endpoints: () => ({}), // Endpoints will be injected from separate files
 });
 
-// Export hooks for usage in functional components
-// Note: Endpoint-specific hooks are exported from their respective endpoint files
-export const {} = redditApi;
-
 // Export the reducer and middleware for store configuration
 export const { reducer: redditApiReducer, middleware: redditApiMiddleware } =
   redditApi;

@@ -1,9 +1,4 @@
-import { useContext } from 'react';
-import {
-  PostsContextData,
-  PostsContextContent,
-  type PostContextData,
-} from '@/contexts';
+import { usePostContext } from '@/contexts';
 import type { LinkData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import ImageComp from './contentTypes/ImageComp';
@@ -23,8 +18,8 @@ interface ContentProps {
 }
 
 function Content({ content = null }: ContentProps) {
-  const postContext = useContext(PostsContextData) as PostContextData;
-  const { post } = postContext;
+  const postContext = usePostContext();
+  const { post } = postContext!;
   const { data } = post;
   const linkData = data as LinkData;
 
@@ -66,12 +61,7 @@ function Content({ content = null }: ContentProps) {
       contentRendered = <RawHTML content={content} />;
       break;
     case 'social':
-      contentRendered = (
-        <Social
-          network={content.network as 'x' | 'instagram' | 'facebook'}
-          url={content.url}
-        />
-      );
+      contentRendered = <Social network={content.network} url={content.url} />;
       break;
     case 'httpserror':
       contentRendered = <HTTPSError content={content} />;
@@ -82,11 +72,7 @@ function Content({ content = null }: ContentProps) {
     default:
       break;
   }
-  return (
-    <PostsContextContent.Provider value={postContext}>
-      <div className="content">{contentRendered}</div>
-    </PostsContextContent.Provider>
-  );
+  return <div className="content">{contentRendered}</div>;
 }
 
 export default Content;

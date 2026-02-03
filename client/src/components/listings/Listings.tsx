@@ -152,7 +152,7 @@ function Listings({ match }: ListingsProps) {
 
   // Prepare context values
   const lastExpandedContext = useMemo(
-    () => [lastExpanded, setLastExpanded],
+    () => [lastExpanded, setLastExpanded] as [string, (value: string) => void],
     [lastExpanded]
   );
   const listingsContextValue = useMemo(

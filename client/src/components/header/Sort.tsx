@@ -38,29 +38,17 @@ const catsSearch: SortCategories = {
   C: 'comments',
 };
 
+const catsBase: SortCategories = {
+  H: 'hot',
+  T: 'top',
+  N: 'new',
+  C: 'controversial',
+  R: 'rising',
+};
+
 const catsFront: SortCategories = {
   B: 'best',
-  H: 'hot',
-  T: 'top',
-  N: 'new',
-  C: 'controversial',
-  R: 'rising',
-};
-
-const catsReddits: SortCategories = {
-  H: 'hot',
-  T: 'top',
-  N: 'new',
-  C: 'controversial',
-  R: 'rising',
-};
-
-const catsMultis: SortCategories = {
-  H: 'hot',
-  T: 'top',
-  N: 'new',
-  C: 'controversial',
-  R: 'rising',
+  ...catsBase,
 };
 
 const catsUsers: SortCategories = {
@@ -283,11 +271,11 @@ function Sort() {
     if (listType === 'r' && target === 'mine') {
       links2render = { ...catsFront };
     } else if (listType === 'r') {
-      links2render = { ...catsReddits };
+      links2render = { ...catsBase };
     } else if (listType === 's') {
       links2render = { ...catsSearch };
     } else if (listType === 'm') {
-      links2render = { ...catsMultis };
+      links2render = { ...catsBase };
     } else if (listType === 'comments') {
       links2render = { ...catsComments };
     } else if (listType === 'u') {

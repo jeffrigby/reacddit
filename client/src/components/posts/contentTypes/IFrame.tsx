@@ -1,7 +1,7 @@
-import { useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import type { LinkData } from '@/types/redditApi';
-import { PostsContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 
 interface IFrameContent {
   src: string;
@@ -19,14 +19,6 @@ interface IFrameProps {
   content: IFrameContent;
 }
 
-interface PostContextData {
-  post: {
-    data: LinkData;
-  };
-  isLoaded: boolean;
-  fullyOffScreen: boolean;
-}
-
 function IFrame({
   content: {
     src,
@@ -40,15 +32,15 @@ function IFrame({
     onLoad = () => {},
   },
 }: IFrameProps) {
-  const postContext = useContext(PostsContextData) as PostContextData;
-  const { title } = postContext.post.data;
+  const postContext = usePostContext();
+  const { title } = postContext!.post.data as LinkData;
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const hasBeenOnScreen = useRef(false);
 
   const style: CSSProperties = {};
   style.aspectRatio = `${width}/${height}`;
 
-  const { isLoaded, fullyOffScreen } = postContext;
+  const { isLoaded, fullyOffScreen } = postContext!;
 
   // Track if iframe has ever been on-screen
   useEffect(() => {

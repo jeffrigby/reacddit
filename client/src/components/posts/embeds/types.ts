@@ -103,10 +103,13 @@ export interface HttpsErrorContent extends BaseEmbedContent {
   src?: string;
 }
 
+// Supported social media networks
+export type SocialNetwork = 'x' | 'instagram' | 'facebook';
+
 // Social media embed content
 export interface SocialEmbedContent extends BaseEmbedContent {
   type: 'social';
-  network: string;
+  network: SocialNetwork;
   url: string;
 }
 

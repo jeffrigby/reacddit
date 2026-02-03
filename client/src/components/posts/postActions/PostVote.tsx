@@ -21,7 +21,7 @@ import {
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useVoteMutation } from '@/redux/api';
-import { PostsContextData, PostsContextActionable } from '@/contexts';
+import { usePostContext, PostsContextActionable } from '@/contexts';
 import { hotkeyStatus } from '@/common';
 
 interface VoteState {
@@ -29,78 +29,40 @@ interface VoteState {
   likes: boolean | null;
 }
 
-interface PostContextData {
-  post: {
-    kind: string;
-    data: LinkData;
-  };
-}
-
 type VoteDirection = -1 | 0 | 1;
+
+const voteDeltas: Record<string, Record<string, number>> = {
+  '1': { true: 0, false: 2, null: 1 },
+  '-1': { true: -2, false: 0, null: -1 },
+  '0': { true: -1, false: 1, null: 0 },
+};
+
+const newLikesState: Record<string, boolean | null> = {
+  '1': true,
+  '-1': false,
+  '0': null,
+};
 
 function getNewState(
   dir: VoteDirection,
   ups: number,
   likes: boolean | null
 ): VoteState {
-  const newState: VoteState = {
-    ups,
-    likes,
+  const likesKey = String(likes);
+  const delta = voteDeltas[String(dir)]?.[likesKey] ?? 0;
+
+  return {
+    ups: ups + delta,
+    likes: newLikesState[String(dir)] ?? null,
   };
-
-  switch (dir) {
-    case 1:
-      switch (likes) {
-        case true:
-          break;
-        case false:
-          newState.ups += 2;
-          break;
-        default:
-          newState.ups += 1;
-          break;
-      }
-      newState.likes = true;
-      break;
-    case -1:
-      switch (likes) {
-        case true:
-          newState.ups -= 2;
-          break;
-        case false:
-          break;
-        default:
-          newState.ups -= 1;
-          break;
-      }
-      newState.likes = false;
-      break;
-    case 0:
-      switch (likes) {
-        case true:
-          newState.ups -= 1;
-          break;
-        case false:
-          newState.ups += 1;
-          break;
-        default:
-          break;
-      }
-      newState.likes = null;
-      break;
-    default:
-      break;
-  }
-
-  return newState;
 }
 
 function PostVote() {
   const bearer = useAppSelector((state) => state.redditBearer);
 
-  const postContext = useContext(PostsContextData) as PostContextData;
-  const { post } = postContext;
-  const { data } = post;
+  const postContext = usePostContext();
+  const { post } = postContext!;
+  const data = post.data as LinkData;
   const actionable = useContext(PostsContextActionable) as boolean;
 
   const [voteState, setVoteState] = useState<VoteState>({

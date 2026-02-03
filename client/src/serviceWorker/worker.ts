@@ -16,6 +16,10 @@ declare const self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
 };
 
+function hasExtension(pathname: string, extensions: string[]): boolean {
+  return extensions.some((ext) => pathname.endsWith(ext));
+}
+
 // Claim clients when service worker activates
 // Note: We don't call skipWaiting() here - we wait for user confirmation
 // via the update notification before activating the new service worker
@@ -66,6 +70,11 @@ const REDDIT_API_ORIGINS = new Set([
   'https://old.reddit.com',
 ]);
 
+// Image and video file extensions for caching
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+const VIDEO_EXTENSIONS = ['.mp4', '.webm'];
+const LOCAL_IMAGE_EXTENSIONS = ['.png', '.jpg', '.svg', '.ico'];
+
 // Cache Reddit images with StaleWhileRevalidate
 // Shows cached version immediately while fetching fresh copy in background
 registerRoute(
@@ -73,11 +82,7 @@ registerRoute(
     (REDDIT_MEDIA_ORIGINS.has(url.origin) ||
       REDDIT_API_ORIGINS.has(url.origin) ||
       REDDIT_STATIC_ORIGINS.has(url.origin)) &&
-    (url.pathname.endsWith('.png') ||
-      url.pathname.endsWith('.jpg') ||
-      url.pathname.endsWith('.jpeg') ||
-      url.pathname.endsWith('.gif') ||
-      url.pathname.endsWith('.webp')),
+    hasExtension(url.pathname, IMAGE_EXTENSIONS),
   new StaleWhileRevalidate({
     cacheName: 'reddit-images',
     plugins: [
@@ -115,8 +120,7 @@ registerRoute(
   ({ url }): boolean =>
     (REDDIT_MEDIA_ORIGINS.has(url.origin) ||
       REDDIT_API_ORIGINS.has(url.origin)) &&
-    (url.pathname.endsWith('.mp4') ||
-      url.pathname.endsWith('.webm') ||
+    (hasExtension(url.pathname, VIDEO_EXTENSIONS) ||
       url.pathname.includes('/DASH_')),
   new CacheFirst({
     cacheName: 'reddit-videos',
@@ -134,10 +138,7 @@ registerRoute(
 registerRoute(
   ({ url }): boolean =>
     url.origin === self.location.origin &&
-    (url.pathname.endsWith('.png') ||
-      url.pathname.endsWith('.jpg') ||
-      url.pathname.endsWith('.svg') ||
-      url.pathname.endsWith('.ico')),
+    hasExtension(url.pathname, LOCAL_IMAGE_EXTENSIONS),
   new StaleWhileRevalidate({
     cacheName: 'local-images',
     plugins: [

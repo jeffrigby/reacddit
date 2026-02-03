@@ -1,8 +1,8 @@
-import { Suspense, useContext } from 'react';
+import { Suspense } from 'react';
 import JsonView from 'react18-json-view';
 import 'react18-json-view/src/style.css';
 import 'react18-json-view/src/dark.css';
-import { PostsContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 import type { LinkData, CommentData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 
@@ -13,10 +13,8 @@ interface PostDebugProps {
 function PostDebug({
   renderedContent = null,
 }: PostDebugProps): React.JSX.Element {
-  const postContext = useContext(PostsContextData) as {
-    post: { data: LinkData | CommentData };
-  };
-  const { post } = postContext;
+  const postContext = usePostContext();
+  const { post } = postContext!;
   const { data } = post;
 
   // Type guard to check if data is LinkData

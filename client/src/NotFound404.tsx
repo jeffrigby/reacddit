@@ -1,4 +1,4 @@
-function NotFound404() {
+function NotFound404(): React.JSX.Element {
   return (
     <div className="m-2 d-flex">
       <div className="mt-2 alert alert-warning w-100" role="alert">

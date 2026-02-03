@@ -1,28 +1,13 @@
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
+import SettingsCheckbox from './SettingsCheckbox';
 
-function AutoPlay() {
-  const autoplay = useAppSelector((state) => state.siteSettings.autoplay);
-  const dispatch = useAppDispatch();
-
-  const autoPlayToggle = () => {
-    dispatch(siteSettingsChanged({ autoplay: !autoplay }));
-  };
-
+function AutoPlay(): React.JSX.Element {
   return (
     <div className="auto-play">
-      <div className="form-check">
-        <label className="form-check-label" htmlFor="autoPlayCheck">
-          <input
-            checked={Boolean(autoplay)}
-            className="form-check-input"
-            id="autoPlayCheck"
-            type="checkbox"
-            onChange={autoPlayToggle}
-          />
-          Auto Play Videos
-        </label>
-      </div>
+      <SettingsCheckbox
+        id="autoPlayCheck"
+        label="Auto Play Videos"
+        settingKey="autoplay"
+      />
     </div>
   );
 }

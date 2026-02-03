@@ -2,6 +2,7 @@ import queryString from 'query-string';
 import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import type { SubredditData } from '@/types/redditApi';
+import { trimSlashes } from '@/common';
 import { useAppSelector } from '@/redux/hooks';
 import { selectLastUpdatedTracking } from '@/redux/slices/subredditPollingSlice';
 import { getDiffClassName, buildSortPath } from './navHelpers';
@@ -33,8 +34,8 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
 
   const href =
     item.subreddit_type === 'user'
-      ? `/${item.url.trim().replace(/^\/|\/$/g, '')}/posts/${sortPath.trim().replace(/^\/|\/$/g, '')}`
-      : `/${item.url.trim().replace(/^\/|\/$/g, '')}/${sortPath.trim().replace(/^\/|\/$/g, '')}`;
+      ? `/${trimSlashes(item.url.trim())}/posts/${trimSlashes(sortPath.trim())}`
+      : `/${trimSlashes(item.url.trim())}/${trimSlashes(sortPath.trim())}`;
   const classNameStr = getDiffClassName(lastUpdated, trigger);
   const subLabel = classNameStr.includes('sub-new') ? 'New' : undefined;
 

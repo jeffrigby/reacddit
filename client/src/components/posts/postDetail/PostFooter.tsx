@@ -1,12 +1,12 @@
 import type { MouseEvent } from 'react';
-import { memo, useContext, useState, useRef, useEffect } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import copy from 'copy-to-clipboard';
-import { PostsContextData } from '@/contexts';
-import type { LinkData, CommentData } from '@/types/redditApi';
+import { usePostContext } from '@/contexts';
+import type { LinkData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import PostMeta from './PostMeta';
 import PostDebug from './PostDebug';
@@ -24,13 +24,10 @@ function PostFooter({
   setShowVisToggle,
   showVisToggle,
 }: PostFooterProps): React.JSX.Element | null {
-  const postContext = useContext(PostsContextData) as {
-    post: { data: LinkData | CommentData; kind: string };
-    isLoaded: boolean;
-  };
+  const postContext = usePostContext();
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { post, isLoaded } = postContext;
+  const { post, isLoaded } = postContext!;
   const { data, kind } = post;
   const copyTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
+import type { SocialNetwork } from '@/components/posts/embeds/types';
 import TwitterEmbed from '../embeds/TwitterEmbed';
 import InstagramEmbed from '../embeds/InstagramEmbed';
 import FacebookEmbed from '../embeds/FacebookEmbed';
-import type { SocialNetwork } from './types';
 
 interface SocialEmbedLoaderProps {
   url: string;

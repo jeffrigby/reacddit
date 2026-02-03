@@ -3,7 +3,7 @@ export { ModalProvider, useModals } from './ModalContext';
 export {
   PostsContextData,
   PostsContextActionable,
-  PostsContextContent,
+  usePostContext,
   type PostContextData,
 } from './PostContext';
 

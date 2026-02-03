@@ -1,15 +1,11 @@
-import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRandom, faStickyNote } from '@fortawesome/free-solid-svg-icons';
-import { PostsContextData } from '@/contexts';
-import type { LinkData } from '@/types/redditApi';
+import { usePostContext } from '@/contexts';
 import PostByline from './PostByline';
 
 function PostMeta(): React.JSX.Element {
-  const postContext = useContext(PostsContextData) as {
-    post: { data: LinkData; kind: string };
-  };
-  const { post } = postContext;
+  const postContext = usePostContext();
+  const { post } = postContext!;
   const { data, kind } = post;
   const sticky = data.stickied ?? false;
 

@@ -1,4 +1,5 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
+import type { Context } from 'react';
 import type { LinkData, CommentData } from '@/types/redditApi';
 
 export interface PostContextData {
@@ -12,8 +13,12 @@ export interface PostContextData {
   fullyOffScreen: boolean;
 }
 
-export const PostsContextData = createContext<PostContextData | object>({});
-export const PostsContextActionable = createContext<boolean | object>({});
-export const PostsContextVisible = createContext<boolean | object>({});
-export const PostsContextStatus = createContext<string | object>({});
-export const PostsContextContent = createContext<PostContextData | object>({});
+export const PostsContextData: Context<PostContextData | null> =
+  createContext<PostContextData | null>(null);
+export const PostsContextActionable: Context<boolean | null> = createContext<
+  boolean | null
+>(null);
+
+export function usePostContext(): PostContextData | null {
+  return useContext(PostsContextData);
+}

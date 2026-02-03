@@ -1,5 +1,4 @@
-import { useContext } from 'react';
-import { PostsContextData, type PostContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 import renderSelf from '@/components/posts/embeds/domains/self';
 import type { LinkData } from '@/types/redditApi';
 import Self from './contentTypes/Self';
@@ -12,8 +11,8 @@ interface RatioInfo {
 }
 
 function Placeholder() {
-  const postContext = useContext(PostsContextData) as PostContextData;
-  const { post } = postContext;
+  const postContext = usePostContext();
+  const { post } = postContext!;
   const { data } = post;
 
   function getRatio(width: number, height: number): RatioInfo {

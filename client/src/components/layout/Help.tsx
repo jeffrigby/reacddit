@@ -1,7 +1,118 @@
 import { Modal } from 'react-bootstrap';
 import { useModals } from '@/contexts/ModalContext';
 
-function Help() {
+interface Hotkey {
+  keys: string[];
+  description: string;
+  separator?: 'then' | 'plus';
+}
+
+interface HotkeySection {
+  title: string;
+  hotkeys: Hotkey[];
+}
+
+interface HotkeyItemProps {
+  hotkey: Hotkey;
+}
+
+function HotkeyItem({ hotkey }: HotkeyItemProps): React.ReactElement {
+  const separator = hotkey.separator === 'then' ? ' then ' : ' + ';
+
+  return (
+    <div className="d-flex mb-1">
+      <div className="col-md-6 text-end pe-2">
+        {hotkey.keys.map((key, index) => (
+          <span key={key}>
+            <kbd>{key}</kbd>
+            {index < hotkey.keys.length - 1 && separator}
+          </span>
+        ))}
+      </div>
+      <div className="col-md-6">{hotkey.description}</div>
+    </div>
+  );
+}
+
+function HotkeySectionGroup({
+  section,
+}: {
+  section: HotkeySection;
+}): React.ReactElement {
+  return (
+    <>
+      <h5 className="mt-3 border-bottom text-center">{section.title}</h5>
+      {section.hotkeys.map((hotkey) => (
+        <HotkeyItem hotkey={hotkey} key={hotkey.description} />
+      ))}
+    </>
+  );
+}
+
+const leftColumnSections: HotkeySection[] = [
+  {
+    title: 'Navigation',
+    hotkeys: [
+      { keys: ['g', 'h'], description: 'Home', separator: 'then' },
+      { keys: ['g', 'p'], description: 'Popular', separator: 'then' },
+      { keys: ['g', 'r'], description: 'Random', separator: 'then' },
+      { keys: ['g', 'f'], description: 'Friends', separator: 'then' },
+      { keys: ['g', 'b'], description: 'Posts', separator: 'then' },
+      { keys: ['g', 'u'], description: 'Upvoted', separator: 'then' },
+      { keys: ['g', 'd'], description: 'Downvoted', separator: 'then' },
+      { keys: ['g', 's'], description: 'Saved', separator: 'then' },
+    ],
+  },
+  {
+    title: 'Filter Subreddits',
+    hotkeys: [
+      { keys: ['shift', 'f'], description: 'Open Filter' },
+      { keys: ['down'], description: 'Next Subreddit' },
+      { keys: ['up'], description: 'Prev Subreddit' },
+      { keys: ['enter'], description: 'Load Subreddit' },
+    ],
+  },
+  {
+    title: 'Misc',
+    hotkeys: [
+      { keys: ['shift', 'l'], description: 'Login/Logout' },
+      { keys: ['shift', 's'], description: 'Search' },
+      { keys: ['shift', '.'], description: 'Toggle Auto Refresh' },
+      { keys: ['opt', 'shift', 'd'], description: 'Toggle Debug Mode' },
+      { keys: ['shift', '?'], description: 'This menu' },
+    ],
+  },
+];
+
+const rightColumnSections: HotkeySection[] = [
+  {
+    title: 'Posts',
+    hotkeys: [
+      { keys: ['j'], description: 'Next' },
+      { keys: ['k'], description: 'Previous' },
+      { keys: ['x'], description: 'Expand/Condense Post' },
+      { keys: ['l'], description: 'Open Link' },
+      { keys: ['o'], description: 'Open Post on Reddit' },
+      { keys: ['a'], description: 'Upvote' },
+      { keys: ['z'], description: 'Downvote' },
+      { keys: ['s'], description: 'Save' },
+      { keys: ['.'], description: 'Load New Entries' },
+      { keys: ['/'], description: 'Load Next Entries' },
+    ],
+  },
+  {
+    title: 'Sort',
+    hotkeys: [
+      { keys: ['shift', 'c'], description: 'Controversial' },
+      { keys: ['shift', 'h'], description: 'Hot' },
+      { keys: ['shift', 'n'], description: 'New' },
+      { keys: ['shift', 'r'], description: 'Rising' },
+      { keys: ['shift', 't'], description: 'Top' },
+    ],
+  },
+];
+
+function Help(): React.ReactElement {
   const {
     showHotkeys,
     setShowHotkeys,
@@ -53,207 +164,14 @@ function Help() {
         <Modal.Body>
           <div className="row">
             <div className="col-md-6">
-              <h5 className="mt-3 border-bottom text-center">Navigation</h5>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>g</kbd> then <kbd>h</kbd>
-                </div>
-                <div className="col-md-6">Home</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>g</kbd> then <kbd>p</kbd>
-                </div>
-                <div className="col-md-6">Popular</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>g</kbd> then <kbd>r</kbd>
-                </div>
-                <div className="col-md-6">Random</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>g</kbd> then <kbd>f</kbd>
-                </div>
-                <div className="col-md-6">Friends</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>g</kbd> then <kbd>b</kbd>
-                </div>
-                <div className="col-md-6">Posts</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>g</kbd> then <kbd>u</kbd>
-                </div>
-                <div className="col-md-6">Upvoted</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>g</kbd> then <kbd>d</kbd>
-                </div>
-                <div className="col-md-6">Downvoted</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>g</kbd> then <kbd>s</kbd>
-                </div>
-                <div className="col-md-6">Saved</div>
-              </div>
-              <h5 className="mt-3 border-bottom text-center">
-                Filter Subreddits
-              </h5>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>f</kbd>
-                </div>
-                <div className="col-md-6">Open Filter</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>down</kbd>
-                </div>
-                <div className="col-md-6">Next Subreddit</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>up</kbd>
-                </div>
-                <div className="col-md-6">Prev Subreddit</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>enter</kbd>
-                </div>
-                <div className="col-md-6">Load Subreddit</div>
-              </div>
-              <h5 className="mt-3 border-bottom text-center">Misc</h5>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>l</kbd>
-                </div>
-                <div className="col-md-6">Login/Logout</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>s</kbd>
-                </div>
-                <div className="col-md-6">Search</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>.</kbd>
-                </div>
-                <div className="col-md-6">Toggle Auto Refresh</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>opt</kbd> + <kbd>shift</kbd> + <kbd>d</kbd>
-                </div>
-                <div className="col-md-6">Toggle Debug Mode</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>?</kbd>
-                </div>
-                <div className="col-md-6">This menu</div>
-              </div>
+              {leftColumnSections.map((section) => (
+                <HotkeySectionGroup key={section.title} section={section} />
+              ))}
             </div>
             <div className="col-md-6">
-              <h5 className="mt-3 border-bottom text-center">Posts</h5>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>j</kbd>
-                </div>
-                <div className="col-md-6">Next</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>k</kbd>
-                </div>
-                <div className="col-md-6">Previous</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>x</kbd>
-                </div>
-                <div className="col-md-6">Expand/Condense Post</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>l</kbd>
-                </div>
-                <div className="col-md-6">Open Link</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>o</kbd>
-                </div>
-                <div className="col-md-6">Open Post on Reddit</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>a</kbd>
-                </div>
-                <div className="col-md-6">Upvote</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>z</kbd>
-                </div>
-                <div className="col-md-6">Downvote</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>s</kbd>
-                </div>
-                <div className="col-md-6">Save</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>.</kbd>
-                </div>
-                <div className="col-md-6">Load New Entries</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>/</kbd>
-                </div>
-                <div className="col-md-6">Load Next Entries</div>
-              </div>
-              <h5 className="mt-3 border-bottom text-center">Sort</h5>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>c</kbd>
-                </div>
-                <div className="col-md-6">Controversial</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>h</kbd>
-                </div>
-                <div className="col-md-6">Hot</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>n</kbd>
-                </div>
-                <div className="col-md-6">New</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>r</kbd>
-                </div>
-                <div className="col-md-6">Rising</div>
-              </div>
-              <div className="d-flex mb-1">
-                <div className="col-md-6 text-end pe-2">
-                  <kbd>shift</kbd> + <kbd>t</kbd>
-                </div>
-                <div className="col-md-6">Top</div>
-              </div>
+              {rightColumnSections.map((section) => (
+                <HotkeySectionGroup key={section.title} section={section} />
+              ))}
             </div>
           </div>
         </Modal.Body>

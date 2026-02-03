@@ -15,21 +15,14 @@ import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useSavePostMutation, useUnsavePostMutation } from '@/redux/api';
-import { PostsContextActionable, PostsContextData } from '@/contexts';
+import { PostsContextActionable, usePostContext } from '@/contexts';
 import { hotkeyStatus } from '@/common';
-
-interface PostContextData {
-  post: {
-    kind: string;
-    data: LinkData;
-  };
-}
 
 function PostSave() {
   const bearer = useAppSelector((state) => state.redditBearer);
-  const postContext = useContext(PostsContextData) as PostContextData;
-  const { post } = postContext;
-  const { data } = post;
+  const postContext = usePostContext();
+  const { post } = postContext!;
+  const data = post.data as LinkData;
   const actionable = useContext(PostsContextActionable) as boolean;
 
   const [savedState, setSavedState] = useState(data.saved);

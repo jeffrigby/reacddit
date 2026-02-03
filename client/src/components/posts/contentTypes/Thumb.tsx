@@ -1,18 +1,13 @@
-import { useContext } from 'react';
-import { PostsContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 import type { ThumbEmbedContent } from '@/components/posts/embeds/types';
 
 interface ThumbProps {
   content: ThumbEmbedContent;
 }
 
-interface PostContextData {
-  isLoaded: boolean;
-}
-
 function Thumb({ content }: ThumbProps) {
-  const postContext = useContext(PostsContextData) as PostContextData;
-  const { isLoaded } = postContext;
+  const postContext = usePostContext();
+  const { isLoaded } = postContext!;
 
   let img;
   if (isLoaded) {
