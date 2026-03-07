@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@inquirer/prompts": "^8.0.1",
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.3.5",
     "concurrently": "^9.0.1",
     "eslint": "^9.22.0",
     "open": "^11.0.0",
