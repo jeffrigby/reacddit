@@ -14,6 +14,7 @@ import { selectSubredditFilter } from '@/redux/slices/subredditFilterSlice';
 import {
   fetchSubredditsLastUpdated,
   lastUpdatedCleared,
+  selectNextExpirationMs,
 } from '@/redux/slices/subredditPollingSlice';
 import { getMenuStatus, hotkeyStatus, setMenuStatus, isEmpty } from '@/common';
 import NavigationItem from './NavigationItem';
@@ -26,6 +27,7 @@ function NavigationSubReddits() {
   const dispatch = useAppDispatch();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+  const nextExpirationMs = useAppSelector(selectNextExpirationMs);
   const prevWhereRef = useRef<string | null>(null);
 
   // Use RTK Query hook - automatically fetches and caches
@@ -65,22 +67,114 @@ function NavigationSubReddits() {
     prevWhereRef.current = where;
   }, [where, dispatch]);
 
+  // Visibility-aware smart polling for last updated timestamps.
+  // Instead of a blind 60-second interval, dynamically schedules the next
+  // check based on the earliest cache expiration time. Pauses when the tab
+  // is hidden or offline, and resumes immediately when the user returns.
   useEffect(() => {
-    const checkLastUpdated = setInterval(() => {
-      dispatch(fetchSubredditsLastUpdated());
-    }, 60000);
-    return () => {
-      clearInterval(checkLastUpdated);
-    };
-  }, [dispatch, where]);
+    const MIN_INTERVAL_MS = 60_000; // 60 seconds minimum
+    const MAX_INTERVAL_MS = 3_600_000; // 1 hour maximum
 
-  // Automatically refresh subreddit list every 15 minutes
-  useEffect(() => {
-    const refreshInterval = setInterval(() => {
-      refetch();
-    }, 900000); // 15 minutes
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const dispatchIfOnline = (): void => {
+      if (navigator.onLine) {
+        dispatch(fetchSubredditsLastUpdated());
+      }
+    };
+
+    const scheduleNextPoll = (): void => {
+      if (document.hidden) {
+        return;
+      }
+
+      // Calculate delay: use time until next expiration, clamped to bounds
+      let delayMs: number;
+      if (nextExpirationMs !== null && nextExpirationMs > MIN_INTERVAL_MS) {
+        delayMs = Math.min(nextExpirationMs, MAX_INTERVAL_MS);
+      } else {
+        delayMs = MIN_INTERVAL_MS;
+      }
+
+      timeoutId = setTimeout(() => {
+        dispatchIfOnline();
+      }, delayMs);
+    };
+
+    const cancelPoll = (): void => {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    const handleVisibilityChange = (): void => {
+      if (document.hidden) {
+        cancelPoll();
+      } else {
+        // Tab became visible — poll immediately if online, then schedule next
+        dispatchIfOnline();
+        scheduleNextPoll();
+      }
+    };
+
+    const handleOnline = (): void => {
+      if (!document.hidden) {
+        dispatchIfOnline();
+        cancelPoll();
+        scheduleNextPoll();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+
+    // Start scheduling (only if tab is visible)
+    if (!document.hidden) {
+      scheduleNextPoll();
+    }
+
     return () => {
-      clearInterval(refreshInterval);
+      cancelPoll();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [dispatch, where, nextExpirationMs]);
+
+  // Automatically refresh subreddit list every 15 minutes (visibility-aware)
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startRefreshInterval = (): void => {
+      intervalId = setInterval(() => {
+        refetch();
+      }, 900_000); // 15 minutes
+    };
+
+    const stopRefreshInterval = (): void => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibility = (): void => {
+      if (document.hidden) {
+        stopRefreshInterval();
+      } else {
+        startRefreshInterval();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    if (!document.hidden) {
+      startRefreshInterval();
+    }
+
+    return () => {
+      stopRefreshInterval();
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [refetch]);
 
