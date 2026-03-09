@@ -224,9 +224,8 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
         })
       );
 
-      // Batch size for dispatching results (reduces re-renders)
+      // Batch size for dispatching results and progress updates (reduces re-renders)
       const BATCH_SIZE = 10;
-      const PROGRESS_INTERVAL = 5;
       let batchResults: LastUpdatedTracking = {};
       let batchCount = 0;
 
@@ -246,10 +245,11 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
           }
         }
 
-        // Update progress counter (throttled to every PROGRESS_INTERVAL)
+        // Update progress counter (throttled to reduce dispatches).
+        // Note: completedCount tracks all lookups, batchCount only non-null results.
         completedCount += 1;
         if (
-          completedCount % PROGRESS_INTERVAL === 0 ||
+          completedCount % BATCH_SIZE === 0 ||
           completedCount === lookups.length
         ) {
           dispatch(
@@ -310,20 +310,22 @@ export const selectLastUpdatedProgress = (state: RootState) =>
   state.subredditPolling.lastUpdatedProgress;
 
 /**
- * Returns milliseconds until the earliest cache entry expires.
- * Used by NavigationSubreddits to schedule the next polling run dynamically
- * instead of polling on a fixed 60-second interval.
+ * Returns the earliest cache expiration timestamp (unix seconds).
+ * Used by NavigationSubreddits to schedule the next polling run dynamically.
+ *
+ * Returns the raw timestamp rather than a computed duration so the selector
+ * produces a stable value — it only changes when tracking data updates,
+ * not on every Redux dispatch (which would happen with Date.now()).
  *
  * Returns null if no tracking entries exist (triggers default interval).
  */
-export const selectNextExpirationMs = (state: RootState): number | null => {
+export const selectEarliestExpiration = (state: RootState): number | null => {
   const tracking = state.subredditPolling.lastUpdatedTracking;
   const entries = Object.values(tracking);
   if (entries.length === 0) {
     return null;
   }
 
-  const nowSec = Date.now() / 1000;
   let earliest = Infinity;
   for (const entry of entries) {
     if (entry.expires < earliest) {
@@ -331,10 +333,5 @@ export const selectNextExpirationMs = (state: RootState): number | null => {
     }
   }
 
-  if (earliest === Infinity) {
-    return null;
-  }
-
-  const msUntilExpiry = (earliest - nowSec) * 1000;
-  return Math.max(msUntilExpiry, 0);
+  return earliest === Infinity ? null : earliest;
 };

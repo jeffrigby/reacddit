@@ -14,7 +14,7 @@ import { selectSubredditFilter } from '@/redux/slices/subredditFilterSlice';
 import {
   fetchSubredditsLastUpdated,
   lastUpdatedCleared,
-  selectNextExpirationMs,
+  selectEarliestExpiration,
 } from '@/redux/slices/subredditPollingSlice';
 import { getMenuStatus, hotkeyStatus, setMenuStatus, isEmpty } from '@/common';
 import NavigationItem from './NavigationItem';
@@ -27,8 +27,10 @@ function NavigationSubReddits() {
   const dispatch = useAppDispatch();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-  const nextExpirationMs = useAppSelector(selectNextExpirationMs);
+  const earliestExpiration = useAppSelector(selectEarliestExpiration);
+  const earliestExpirationRef = useRef(earliestExpiration);
   const prevWhereRef = useRef<string | null>(null);
+  const lastRefreshTimeRef = useRef(Date.now());
 
   // Use RTK Query hook - automatically fetches and caches
   const { data, isLoading, isError, refetch } = useGetSubredditsQuery(
@@ -67,10 +69,19 @@ function NavigationSubReddits() {
     prevWhereRef.current = where;
   }, [where, dispatch]);
 
+  // Keep ref in sync so the polling effect can read the latest value
+  // without re-running (avoids tearing down event listeners on each batch flush)
+  useEffect(() => {
+    earliestExpirationRef.current = earliestExpiration;
+  }, [earliestExpiration]);
+
   // Visibility-aware smart polling for last updated timestamps.
   // Instead of a blind 60-second interval, dynamically schedules the next
   // check based on the earliest cache expiration time. Pauses when the tab
   // is hidden or offline, and resumes immediately when the user returns.
+  //
+  // Uses earliestExpirationRef (not earliestExpiration directly) so the
+  // effect doesn't tear down/re-register listeners on each batch dispatch.
   useEffect(() => {
     const MIN_INTERVAL_MS = 60_000; // 60 seconds minimum
     const MAX_INTERVAL_MS = 3_600_000; // 1 hour maximum
@@ -83,22 +94,27 @@ function NavigationSubReddits() {
       }
     };
 
+    const computeDelay = (): number => {
+      const exp = earliestExpirationRef.current;
+      if (exp === null) {
+        return MIN_INTERVAL_MS;
+      }
+      const msUntilExpiry = (exp - Date.now() / 1000) * 1000;
+      return Math.min(
+        Math.max(msUntilExpiry, MIN_INTERVAL_MS),
+        MAX_INTERVAL_MS
+      );
+    };
+
     const scheduleNextPoll = (): void => {
       if (document.hidden) {
         return;
       }
 
-      // Calculate delay: use time until next expiration, clamped to bounds
-      let delayMs: number;
-      if (nextExpirationMs !== null && nextExpirationMs > MIN_INTERVAL_MS) {
-        delayMs = Math.min(nextExpirationMs, MAX_INTERVAL_MS);
-      } else {
-        delayMs = MIN_INTERVAL_MS;
-      }
-
       timeoutId = setTimeout(() => {
         dispatchIfOnline();
-      }, delayMs);
+        scheduleNextPoll();
+      }, computeDelay());
     };
 
     const cancelPoll = (): void => {
@@ -114,6 +130,7 @@ function NavigationSubReddits() {
       } else {
         // Tab became visible — poll immediately if online, then schedule next
         dispatchIfOnline();
+        cancelPoll();
         scheduleNextPoll();
       }
     };
@@ -139,16 +156,20 @@ function NavigationSubReddits() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
     };
-  }, [dispatch, where, nextExpirationMs]);
+  }, [dispatch, where]);
 
-  // Automatically refresh subreddit list every 15 minutes (visibility-aware)
+  // Automatically refresh subreddit list every 15 minutes (visibility-aware).
+  // Refetches immediately on tab return if enough time has elapsed.
+  // Uses lastRefreshTimeRef so the timestamp survives effect re-runs.
   useEffect(() => {
+    const REFRESH_INTERVAL_MS = 900_000; // 15 minutes
     let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const startRefreshInterval = (): void => {
       intervalId = setInterval(() => {
         refetch();
-      }, 900_000); // 15 minutes
+        lastRefreshTimeRef.current = Date.now();
+      }, REFRESH_INTERVAL_MS);
     };
 
     const stopRefreshInterval = (): void => {
@@ -162,6 +183,11 @@ function NavigationSubReddits() {
       if (document.hidden) {
         stopRefreshInterval();
       } else {
+        // Refetch immediately if enough time passed while hidden
+        if (Date.now() - lastRefreshTimeRef.current >= REFRESH_INTERVAL_MS) {
+          refetch();
+          lastRefreshTimeRef.current = Date.now();
+        }
         startRefreshInterval();
       }
     };

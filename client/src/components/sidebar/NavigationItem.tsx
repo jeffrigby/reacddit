@@ -19,9 +19,9 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
   const me = useAppSelector((state) => state.redditMe?.me);
   const location = useLocation();
 
-  // Select only this item's lastPost value — prevents re-renders when other
-  // subreddits update (strict === equality means only this item's change
-  // triggers a re-render)
+  // Select only this item's lastPost value — the returned number is compared
+  // via strict === equality, so re-renders only occur when this specific
+  // subreddit's timestamp changes (not when other subreddits update)
   const lastUpdated = useAppSelector(
     (state: RootState) =>
       state.subredditPolling.lastUpdatedTracking[item.name]?.lastPost ?? 0
