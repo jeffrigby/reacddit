@@ -82,7 +82,7 @@ export default defineConfig(({ mode }) => {
         // Silence deprecation warnings from Bootstrap 5.x
         // Bootstrap still uses legacy Sass syntax (@import, global functions)
         // These will be fixed in Bootstrap 6, but are harmless for now
-        silenceDeprecations: ['import', 'global-builtin', 'color-functions'],
+        silenceDeprecations: ['import', 'global-builtin', 'color-functions', 'if-function'],
       },
     },
   },
@@ -112,9 +112,6 @@ export default defineConfig(({ mode }) => {
   build: {
     outDir: 'dist',
     sourcemap: false, // Disabled for production builds
-
-    // Target modern browsers to reduce polyfill overhead
-    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
 
     // Optimize chunking for better caching and tree-shaking
     rollupOptions: {
