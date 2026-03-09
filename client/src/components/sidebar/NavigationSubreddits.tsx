@@ -31,6 +31,7 @@ function NavigationSubReddits() {
   const earliestExpirationRef = useRef(earliestExpiration);
   const prevWhereRef = useRef<string | null>(null);
   const lastRefreshTimeRef = useRef(Date.now());
+  const initialPollFiredRef = useRef(false);
 
   // Use RTK Query hook - automatically fetches and caches
   const { data, isLoading, isError, refetch } = useGetSubredditsQuery(
@@ -65,6 +66,7 @@ function NavigationSubReddits() {
       // RTK Query automatically handles separate caches for different 'where' values
       // Just clear polling state
       dispatch(lastUpdatedCleared());
+      initialPollFiredRef.current = false;
     }
     prevWhereRef.current = where;
   }, [where, dispatch]);
@@ -74,6 +76,15 @@ function NavigationSubReddits() {
   useEffect(() => {
     earliestExpirationRef.current = earliestExpiration;
   }, [earliestExpiration]);
+
+  // Fire the initial poll once subreddit data becomes available.
+  // Uses a ref so this only fires once (reset on auth change).
+  useEffect(() => {
+    if (data && !initialPollFiredRef.current && !document.hidden) {
+      initialPollFiredRef.current = true;
+      dispatch(fetchSubredditsLastUpdated());
+    }
+  }, [data, dispatch]);
 
   // Visibility-aware smart polling for last updated timestamps.
   // Instead of a blind 60-second interval, dynamically schedules the next
@@ -146,7 +157,6 @@ function NavigationSubReddits() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('online', handleOnline);
 
-    // Start scheduling (only if tab is visible)
     if (!document.hidden) {
       scheduleNextPoll();
     }

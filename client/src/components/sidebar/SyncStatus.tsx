@@ -43,13 +43,13 @@ function SyncStatus() {
   let statusIcon: React.ReactElement;
 
   if (isRunning && progress) {
-    statusText = `Checking: ${progress.completed}/${progress.total}`;
+    statusText = `Syncing new posts: ${progress.completed}/${progress.total}`;
     statusIcon = <FontAwesomeIcon spin icon={faSpinner} />;
   } else if (lastUpdatedTime > 0) {
-    statusText = `Last check: ${formatRelativeTime(lastUpdatedTime)}`;
+    statusText = `Synced ${formatRelativeTime(lastUpdatedTime)}`;
     statusIcon = <FontAwesomeIcon icon={faCheckCircle} />;
   } else {
-    statusText = 'Not checked';
+    statusText = 'New post sync pending';
     statusIcon = <FontAwesomeIcon icon={faCheckCircle} />;
   }
 
