@@ -61,11 +61,7 @@ function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
 
   const inlineRendered = resolvedContent[inlineIdx].content ? (
     <div className="inline-render">
-      <Content
-        content={resolvedContent[inlineIdx].content}
-        data={{ name }} // Just pass the name.
-        key={inlineKey}
-      />
+      <Content content={resolvedContent[inlineIdx].content} key={inlineKey} />
     </div>
   ) : (
     'Embed Failed'

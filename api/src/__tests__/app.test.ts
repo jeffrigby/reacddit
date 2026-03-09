@@ -9,6 +9,7 @@ import {
 } from "vitest";
 import request from "supertest";
 import type { AxiosInstance } from "axios";
+import axios from "axios";
 
 beforeAll(() => {
   vi.stubEnv("REDDIT_CLIENT_ID", "test-client-id");
@@ -27,6 +28,18 @@ beforeAll(() => {
   vi.stubEnv("DEBUG", "0");
   vi.stubEnv("ENCRYPTION_ALGORITHM", "aes-256-cbc");
   vi.stubEnv("IV_LENGTH", "16");
+});
+
+// Mock axios.head for share link resolver
+vi.mock("axios", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("axios")>();
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      head: vi.fn(),
+    },
+  };
 });
 
 vi.mock("../util.js", () => {
@@ -442,6 +455,176 @@ describe("API Endpoints", () => {
       // The CORS headers are set, even if the value is undefined due to env var issues
       expect(response.headers).toHaveProperty("access-control-allow-origin");
       expect(response.headers).toHaveProperty("access-control-allow-methods");
+    });
+  });
+
+  describe("POST /api/resolve-share", () => {
+    beforeEach(() => {
+      (axios.head as ReturnType<typeof vi.fn>).mockReset();
+    });
+
+    it("should resolve a valid share link to post ID", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location:
+            "https://www.reddit.com/r/funny/comments/abc123/some_post_title/",
+        },
+      });
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/funny/s/XYZ123"] })
+        .expect(200);
+
+      expect(response.body.results).toHaveProperty(
+        "https://www.reddit.com/r/funny/s/XYZ123",
+      );
+      expect(
+        response.body.results["https://www.reddit.com/r/funny/s/XYZ123"],
+      ).toEqual({ postId: "abc123" });
+    });
+
+    it("should resolve multiple share links in one request", async () => {
+      (axios.head as ReturnType<typeof vi.fn>)
+        .mockResolvedValueOnce({
+          headers: { location: "https://reddit.com/r/sub1/comments/post1/" },
+        })
+        .mockResolvedValueOnce({
+          headers: { location: "https://reddit.com/r/sub2/comments/post2/" },
+        });
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({
+          urls: [
+            "https://www.reddit.com/r/sub1/s/ABC",
+            "https://www.reddit.com/r/sub2/s/DEF",
+          ],
+        })
+        .expect(200);
+
+      expect(
+        response.body.results["https://www.reddit.com/r/sub1/s/ABC"],
+      ).toEqual({ postId: "post1" });
+      expect(
+        response.body.results["https://www.reddit.com/r/sub2/s/DEF"],
+      ).toEqual({ postId: "post2" });
+    });
+
+    it("should reject requests without urls array", async () => {
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({})
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: "Missing urls array in request body",
+      });
+    });
+
+    it("should reject non-array urls", async () => {
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: "not-an-array" })
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: "Missing urls array in request body",
+      });
+    });
+
+    it("should reject non-string URLs in array", async () => {
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: [123, "https://www.reddit.com/r/test/s/ABC"] })
+        .expect(400);
+
+      expect(response.body).toEqual({ error: "All URLs must be strings" });
+    });
+
+    it("should reject batch sizes exceeding limit", async () => {
+      const urls = Array.from(
+        { length: 21 },
+        (_, i) => `https://www.reddit.com/r/test/s/URL${i}`,
+      );
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls })
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: "Maximum 20 URLs per request",
+      });
+    });
+
+    it("should reject invalid share link formats", async () => {
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://evil.com/malicious"] })
+        .expect(200);
+
+      expect(response.body.results["https://evil.com/malicious"]).toEqual({
+        error: "Invalid Reddit share link format",
+      });
+    });
+
+    it("should handle share links that do not redirect", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {},
+      });
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(
+        response.body.results["https://www.reddit.com/r/test/s/ABC"],
+      ).toEqual({ error: "Share link did not redirect" });
+    });
+
+    it("should handle network errors gracefully", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error("Network error"),
+      );
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(
+        response.body.results["https://www.reddit.com/r/test/s/ABC"],
+      ).toEqual({ error: "Failed to resolve share link" });
+    });
+
+    it("should handle redirects without post ID in URL", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: { location: "https://www.reddit.com/r/test/" },
+      });
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(
+        response.body.results["https://www.reddit.com/r/test/s/ABC"],
+      ).toEqual({ error: "Could not extract post ID from redirect" });
+    });
+
+    it("should handle CORS preflight requests", async () => {
+      const response = await request(app.callback())
+        .options("/api/resolve-share")
+        .expect(204);
+
+      expect(response.headers["access-control-allow-methods"]).toContain(
+        "POST",
+      );
+      expect(response.headers["access-control-allow-headers"]).toContain(
+        "Content-Type",
+      );
     });
   });
 });

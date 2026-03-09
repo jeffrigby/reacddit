@@ -1,7 +1,7 @@
-import { useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import type { LinkData } from '@/types/redditApi';
-import { PostsContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 
 interface IFrameContent {
   src: string;
@@ -19,29 +19,21 @@ interface IFrameProps {
   content: IFrameContent;
 }
 
-interface PostContextData {
-  post: {
-    data: LinkData;
-  };
-  isLoaded: boolean;
-  fullyOffScreen: boolean;
-}
-
 function IFrame({
   content: {
     src,
     width = 16,
     height = 9,
     allow = 'fullscreen',
-    sandbox = 'allow-scripts allow-same-origin',
+    sandbox = 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox',
     referrerPolicy = 'no-referrer-when-downgrade',
     loading = 'eager',
     iframeStyle = {},
     onLoad = () => {},
   },
 }: IFrameProps) {
-  const postContext = useContext(PostsContextData) as PostContextData;
-  const { title } = postContext.post.data;
+  const postContext = usePostContext();
+  const { title } = postContext.post.data as LinkData;
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const hasBeenOnScreen = useRef(false);
 

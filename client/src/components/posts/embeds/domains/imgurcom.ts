@@ -1,5 +1,6 @@
 import parse from 'url-parse';
 import axios from 'axios';
+import { trimSlashes } from '@/common';
 import type { LinkData } from '@/types/redditApi';
 import type {
   VideoEmbedContent,
@@ -41,10 +42,7 @@ async function getMP4(
 }
 
 function cleanPath(pathname: string): string {
-  return pathname
-    .substring(1)
-    .replace(/\/new$/, '')
-    .replace(/^\/|\/$/g, '');
+  return trimSlashes(pathname.substring(1).replace(/\/new$/, ''));
 }
 
 function getEmbedId(entry: LinkData): string | false {

@@ -224,27 +224,41 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
         })
       );
 
+      // Batch size for dispatching results and progress updates (reduces re-renders)
+      const BATCH_SIZE = 10;
+      let batchResults: LastUpdatedTracking = {};
+      let batchCount = 0;
+
       // Fetch with delay and rate limiting
       const fetchWithDelay = async (lookup: (typeof lookups)[0]) => {
         const { type, path, id } = lookup;
         // CRITICAL: 2-5 second random delay for rate limiting
         const toUpdate = await getLastUpdatedWithDelay(type, path, id, 2, 5);
         if (toUpdate !== null) {
-          // PERFORMANCE NOTE: Dispatching individually (not batched)
-          // This creates one action per subreddit.
-          // Tradeoff: Progressive UI updates (good UX) vs batching (fewer re-renders).
-          // Current approach chosen for better perceived performance.
-          dispatch(lastUpdatedSet(toUpdate));
+          Object.assign(batchResults, toUpdate);
+          batchCount += 1;
+
+          // Flush batch every BATCH_SIZE completions
+          if (batchCount % BATCH_SIZE === 0) {
+            dispatch(lastUpdatedSet(batchResults));
+            batchResults = {};
+          }
         }
 
-        // Update progress counter
+        // Update progress counter (throttled to reduce dispatches).
+        // Note: completedCount tracks all lookups, batchCount only non-null results.
         completedCount += 1;
-        dispatch(
-          lastUpdatedProgressSet({
-            total: lookups.length,
-            completed: completedCount,
-          })
-        );
+        if (
+          completedCount % BATCH_SIZE === 0 ||
+          completedCount === lookups.length
+        ) {
+          dispatch(
+            lastUpdatedProgressSet({
+              total: lookups.length,
+              completed: completedCount,
+            })
+          );
+        }
       };
 
       // CRITICAL: p-limit(5) for concurrency control
@@ -254,6 +268,11 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
       );
 
       await Promise.all(fetchPromises);
+
+      // Flush any remaining batched results
+      if (Object.keys(batchResults).length > 0) {
+        dispatch(lastUpdatedSet(batchResults));
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Error fetching last updated';
@@ -289,3 +308,30 @@ export const selectLastUpdatedError = (state: RootState) =>
 
 export const selectLastUpdatedProgress = (state: RootState) =>
   state.subredditPolling.lastUpdatedProgress;
+
+/**
+ * Returns the earliest cache expiration timestamp (unix seconds).
+ * Used by NavigationSubreddits to schedule the next polling run dynamically.
+ *
+ * Returns the raw timestamp rather than a computed duration so the selector
+ * produces a stable value — it only changes when tracking data updates,
+ * not on every Redux dispatch (which would happen with Date.now()).
+ *
+ * Returns null if no tracking entries exist (triggers default interval).
+ */
+export const selectEarliestExpiration = (state: RootState): number | null => {
+  const tracking = state.subredditPolling.lastUpdatedTracking;
+  const entries = Object.values(tracking);
+  if (entries.length === 0) {
+    return null;
+  }
+
+  let earliest = Infinity;
+  for (const entry of entries) {
+    if (entry.expires < earliest) {
+      earliest = entry.expires;
+    }
+  }
+
+  return earliest === Infinity ? null : earliest;
+};

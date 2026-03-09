@@ -18,7 +18,7 @@
  */
 
 import { getListingSubreddit, getListingUser } from '@/reddit/redditApiTs';
-import type { Thing, LinkData } from '@/types/redditApi';
+import type { Thing, LinkData, CommentData } from '@/types/redditApi';
 
 /**
  * Entry in the lastUpdated tracking object
@@ -92,13 +92,15 @@ export function shouldUpdate(
  * @returns The first non-pinned post, or empty object if none found
  */
 function getLastUpdatedEntry(entry: {
-  data: { children: Thing<LinkData>[] };
+  data: { children: Thing<LinkData | CommentData>[] };
 }): Partial<LinkData> {
   let firstNonPinned: Partial<LinkData> = {};
 
   entry.data.children.some((post) => {
-    if (!post.data.pinned) {
-      firstNonPinned = post.data;
+    // Only LinkData has a pinned property - check for it safely
+    const data = post.data as LinkData;
+    if (!data.pinned) {
+      firstNonPinned = data;
       return true; // Break out of .some()
     }
     return false;

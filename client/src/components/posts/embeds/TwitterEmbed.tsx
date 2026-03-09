@@ -23,7 +23,7 @@ declare global {
  * - Remembers height to prevent scroll jumps
  * - Prevents video autoplay
  */
-function TwitterEmbed({ url }: TwitterEmbedProps): JSX.Element {
+function TwitterEmbed({ url }: TwitterEmbedProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);

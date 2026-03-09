@@ -55,7 +55,7 @@ function NavigationPrimaryLinks(): ReactElement {
         return false;
       }
 
-      const qs = queryString.parse(query);
+      const qs = queryString.parse(query ?? '');
 
       const keys = Object.keys(subredditEntities);
       const randomKey = keys[Math.floor(Math.random() * keys.length)];

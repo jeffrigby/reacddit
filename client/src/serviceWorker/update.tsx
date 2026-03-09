@@ -1,12 +1,65 @@
 import { useState, useEffect } from 'react';
 import { useWorkbox } from './WorkboxContext';
 
-function ServiceWorkerUpdate() {
+const styles = {
+  backdrop: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backdropFilter: 'blur(4px)',
+    zIndex: 9999,
+    animation: 'fadeIn 0.2s ease-out',
+  },
+  dialog: {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: '#2d3748',
+    color: 'white',
+    padding: '32px',
+    borderRadius: '12px',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+    zIndex: 10000,
+    maxWidth: '90vw',
+    width: '420px',
+    animation: 'slideUp 0.3s ease-out',
+  },
+  header: {
+    marginBottom: '24px',
+  },
+  title: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    margin: '0 0 8px 0',
+    letterSpacing: '-0.5px',
+  },
+  description: {
+    fontSize: '15px',
+    opacity: 0.85,
+    margin: 0,
+    lineHeight: '1.5',
+  },
+  buttonContainer: {
+    display: 'flex',
+    gap: '12px',
+  },
+  buttonBase: {
+    flex: 1,
+    padding: '12px 24px',
+    borderRadius: '8px',
+    fontSize: '15px',
+    transition: 'all 0.2s ease',
+  },
+} as const;
+
+function ServiceWorkerUpdate(): React.ReactNode {
   const workbox = useWorkbox();
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [laterButtonHover, setLaterButtonHover] = useState(false);
-  const [updateButtonHover, setUpdateButtonHover] = useState(false);
 
   useEffect(() => {
     if (!workbox) {
@@ -85,17 +138,7 @@ function ServiceWorkerUpdate() {
       {/* Modal backdrop overlay */}
       <div
         role="button"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          backdropFilter: 'blur(4px)',
-          zIndex: 9999,
-          animation: 'fadeIn 0.2s ease-out',
-        }}
+        style={styles.backdrop}
         tabIndex={0}
         onClick={handleBackdropClick}
         onKeyDown={handleBackdropClick}
@@ -106,121 +149,62 @@ function ServiceWorkerUpdate() {
         aria-describedby="update-dialog-description"
         aria-labelledby="update-dialog-title"
         role="dialog"
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundColor: '#2d3748',
-          color: 'white',
-          padding: '32px',
-          borderRadius: '12px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-          zIndex: 10000,
-          maxWidth: '90vw',
-          width: '420px',
-          animation: 'slideUp 0.3s ease-out',
-        }}
+        style={styles.dialog}
         tabIndex={-1}
         onClick={handleDialogClick}
         onKeyDown={handleDialogKeyDown}
       >
-        <div style={{ marginBottom: '24px' }}>
-          <h2
-            id="update-dialog-title"
-            style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              margin: '0 0 8px 0',
-              letterSpacing: '-0.5px',
-            }}
-          >
+        <div style={styles.header}>
+          <h2 id="update-dialog-title" style={styles.title}>
             Update Available
           </h2>
-          <p
-            id="update-dialog-description"
-            style={{
-              fontSize: '15px',
-              opacity: 0.85,
-              margin: 0,
-              lineHeight: '1.5',
-            }}
-          >
+          <p id="update-dialog-description" style={styles.description}>
             A new version of Reacddit is ready
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={styles.buttonContainer}>
           <button
+            className="sw-update-later-btn"
             disabled={isUpdating}
             style={{
-              flex: 1,
-              padding: '12px 24px',
-              backgroundColor:
-                laterButtonHover && !isUpdating
-                  ? 'rgba(255,255,255,0.08)'
-                  : 'transparent',
+              ...styles.buttonBase,
+              backgroundColor: 'transparent',
               color: 'white',
-              border: `2px solid ${
-                laterButtonHover && !isUpdating
-                  ? 'rgba(255,255,255,0.3)'
-                  : 'rgba(255,255,255,0.2)'
-              }`,
-              borderRadius: '8px',
+              border: '2px solid rgba(255,255,255,0.2)',
               cursor: isUpdating ? 'not-allowed' : 'pointer',
               opacity: isUpdating ? 0.5 : 1,
-              fontSize: '15px',
               fontWeight: '500',
-              transition: 'all 0.2s ease',
             }}
             onClick={handleDismiss}
-            onMouseEnter={() => setLaterButtonHover(true)}
-            onMouseLeave={() => setLaterButtonHover(false)}
           >
             Later
           </button>
           <button
+            className="sw-update-now-btn"
             disabled={isUpdating}
             style={{
-              flex: 1,
-              padding: '12px 24px',
-              backgroundColor:
-                updateButtonHover && !isUpdating ? '#3182ce' : '#4299e1',
+              ...styles.buttonBase,
+              backgroundColor: '#4299e1',
               color: 'white',
               border: 'none',
-              borderRadius: '8px',
               cursor: isUpdating ? 'not-allowed' : 'pointer',
               opacity: isUpdating ? 0.7 : 1,
-              fontSize: '15px',
               fontWeight: '600',
-              transition: 'all 0.2s ease',
-              boxShadow:
-                updateButtonHover && !isUpdating
-                  ? '0 6px 20px rgba(66, 153, 225, 0.5)'
-                  : '0 4px 14px rgba(66, 153, 225, 0.4)',
-              transform:
-                updateButtonHover && !isUpdating
-                  ? 'translateY(-1px)'
-                  : 'translateY(0)',
+              boxShadow: '0 4px 14px rgba(66, 153, 225, 0.4)',
             }}
             onClick={handleUpdate}
-            onMouseEnter={() => setUpdateButtonHover(true)}
-            onMouseLeave={() => setUpdateButtonHover(false)}
           >
             {isUpdating ? 'Updating...' : 'Update Now'}
           </button>
         </div>
       </div>
 
-      {/* CSS animations */}
+      {/* CSS animations and hover states */}
       <style>{`
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         @keyframes slideUp {
@@ -232,6 +216,17 @@ function ServiceWorkerUpdate() {
             opacity: 1;
             transform: translate(-50%, -50%);
           }
+        }
+
+        .sw-update-later-btn:not(:disabled):hover {
+          background-color: rgba(255,255,255,0.08) !important;
+          border-color: rgba(255,255,255,0.3) !important;
+        }
+
+        .sw-update-now-btn:not(:disabled):hover {
+          background-color: #3182ce !important;
+          box-shadow: 0 6px 20px rgba(66, 153, 225, 0.5) !important;
+          transform: translateY(-1px);
         }
       `}</style>
     </>

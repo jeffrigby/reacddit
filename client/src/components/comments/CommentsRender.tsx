@@ -8,15 +8,19 @@ type CommentOrMore = Thing<CommentData> | Thing<MoreChildrenData>;
 interface CommentsRenderProps {
   linkId: string;
   posts: Record<string, CommentOrMore>;
-  listType: string;
 }
 
 function CommentsRender({
   posts,
-  listType,
   linkId,
 }: CommentsRenderProps): ReactElement[] | null {
-  const renderComment = (comment: CommentOrMore, idx: number): ReactElement => {
+  const entriesKeys = Object.keys(posts);
+  if (entriesKeys.length === 0) {
+    return null;
+  }
+
+  return entriesKeys.map((key, idx) => {
+    const comment = posts[key];
     if (comment.kind === 'more') {
       return (
         <CommentsMore
@@ -36,15 +40,7 @@ function CommentsRender({
         postName={comment.data.name}
       />
     );
-  };
-
-  let comments: ReactElement[] | null = null;
-  const entriesKeys = Object.keys(posts);
-  if (entriesKeys.length > 0) {
-    comments = entriesKeys.map((key, idx) => renderComment(posts[key], idx));
-  }
-
-  return comments;
+  });
 }
 
 export default CommentsRender;

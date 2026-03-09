@@ -1,5 +1,5 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
-import { memo, useContext } from 'react';
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,7 +12,7 @@ import { faCopy } from '@fortawesome/free-regular-svg-icons';
 import { faReddit } from '@fortawesome/free-brands-svg-icons';
 import PostVote from '@/components/posts/postActions/PostVote';
 import PostSave from '@/components/posts/postActions/PostSave';
-import { PostsContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 import PostExpandContract from '@/components/posts/postActions/PostExpandContract';
 import { useAppSelector } from '@/redux/hooks';
 import type { LinkData } from '@/types/redditApi';
@@ -34,10 +34,7 @@ function PostHeader({
   duplicate,
   parent = false,
 }: PostHeaderProps): React.JSX.Element {
-  const postContext = useContext(PostsContextData) as {
-    post: { data: LinkData; kind: string };
-    isLoaded: boolean;
-  };
+  const postContext = usePostContext();
   const listType = useAppSelector(
     (state) => state.listings.currentFilter.listType
   );
@@ -50,19 +47,22 @@ function PostHeader({
     return <PostHeaderComment expand={expand} toggleView={toggleView} />;
   }
 
+  // After the kind check, data is LinkData (t3)
+  const linkData = data as LinkData;
+
   let linkFlair: React.JSX.Element | null = null;
-  if (data.link_flair_text) {
+  if (linkData.link_flair_text) {
     const flairLinkQuery = encodeURIComponent(
-      `flair:"${data.link_flair_text}"`
+      `flair:"${linkData.link_flair_text}"`
     );
-    const flairLink = `/r/${data.subreddit}/search`;
+    const flairLink = `/r/${linkData.subreddit}/search`;
     linkFlair = (
       <Link
         className="badge bg-dark mx-1"
         state={{ showBack: true }}
         to={`${flairLink}?q=${flairLinkQuery}`}
       >
-        {data.link_flair_text}
+        {linkData.link_flair_text}
       </Link>
     );
   }
@@ -76,7 +76,7 @@ function PostHeader({
     </div>
   ) : null;
 
-  const nsfwFlair = data.over_18 ? (
+  const nsfwFlair = linkData.over_18 ? (
     <div
       className="badge bg-danger mx-1"
       title="This post Contains NSFW content"
@@ -85,13 +85,13 @@ function PostHeader({
     </div>
   ) : null;
 
-  const pinned = data.pinned ? (
+  const pinned = linkData.pinned ? (
     <div className="badge me-1" title="Pinned Post">
       <FontAwesomeIcon icon={faThumbtack} />
     </div>
   ) : null;
 
-  const sticky = data.stickied ? (
+  const sticky = linkData.stickied ? (
     <div className="badge me-1" title="Sticky Post">
       <FontAwesomeIcon icon={faStickyNote} />
     </div>
@@ -108,8 +108,8 @@ function PostHeader({
 
   let searchLink: React.JSX.Element | null = null;
   let directLink: React.JSX.Element | null = null;
-  if (!data.is_self) {
-    const searchTo = `/duplicates/${data.id}`;
+  if (!linkData.is_self) {
+    const searchTo = `/duplicates/${linkData.id}`;
     searchLink = (
       <div>
         <Link
@@ -128,7 +128,7 @@ function PostHeader({
         <a
           aria-label="Open this link directly"
           className={btnClass}
-          href={data.url}
+          href={linkData.url}
           rel="noopener noreferrer"
           target="_blank"
           title="Open this link directly"
@@ -144,7 +144,7 @@ function PostHeader({
       <a
         aria-label="Open on Reddit"
         className={btnClass}
-        href={`https://reddit.com${data.permalink}`}
+        href={`https://reddit.com${linkData.permalink}`}
         rel="noopener noreferrer"
         target="_blank"
         title="Open on Reddit"
@@ -160,8 +160,8 @@ function PostHeader({
       <a
         aria-label="Title"
         className="list-group-item-heading align-middle"
-        dangerouslySetInnerHTML={{ __html: data.title }}
-        href={data.url}
+        dangerouslySetInnerHTML={{ __html: linkData.title }}
+        href={linkData.url}
         rel="noopener noreferrer"
         target="_blank"
       />
@@ -171,9 +171,9 @@ function PostHeader({
       <Link
         aria-label="Title"
         className="list-group-item-heading align-middle"
-        dangerouslySetInnerHTML={{ __html: data.title }}
+        dangerouslySetInnerHTML={{ __html: linkData.title }}
         state={{ showBack: true }}
-        to={data.permalink}
+        to={linkData.permalink}
       />
     );
   }
@@ -219,24 +219,24 @@ function PostHeader({
         >
           <span
             className="fw-bold"
-            dangerouslySetInnerHTML={{ __html: data.title }}
+            dangerouslySetInnerHTML={{ __html: linkData.title }}
           />
-          {data.is_self && data.selftext && (
-            <span className="ms-1 small">{data.selftext}</span>
+          {linkData.is_self && linkData.selftext && (
+            <span className="ms-1 small">{linkData.selftext}</span>
           )}
         </div>
         {showSubreddits && (
           <div className="me-2">
-            <PostSubLink subreddit={data.subreddit} />
+            <PostSubLink subreddit={linkData.subreddit} />
           </div>
         )}
         <div className="me-2">
-          <PostTimeAgo createdUtc={data.created_utc} />
+          <PostTimeAgo createdUtc={linkData.created_utc} />
         </div>
         <div>
           <PostCommentLink
-            numComments={data.num_comments}
-            permalink={data.permalink}
+            numComments={linkData.num_comments}
+            permalink={linkData.permalink}
           />
         </div>
       </header>

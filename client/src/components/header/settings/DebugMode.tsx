@@ -1,31 +1,17 @@
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
+import SettingsCheckbox from './SettingsCheckbox';
 
 interface DebugModeProps {
   className?: string;
 }
 
-function DebugMode({ className = '' }: DebugModeProps) {
-  const debug = useAppSelector((state) => state.siteSettings.debug ?? false);
-  const dispatch = useAppDispatch();
-
-  const debugToggle = () => {
-    dispatch(siteSettingsChanged({ debug: !debug }));
-  };
-
+function DebugMode({ className = '' }: DebugModeProps): React.JSX.Element {
   return (
-    <div className={`form-check ${className}`.trim()}>
-      <label className="form-check-label" htmlFor="debugCheck">
-        <input
-          checked={debug}
-          className="form-check-input"
-          id="debugCheck"
-          type="checkbox"
-          onChange={debugToggle}
-        />
-        Show Debug Info
-      </label>
-    </div>
+    <SettingsCheckbox
+      className={className}
+      id="debugCheck"
+      label="Show Debug Info"
+      settingKey="debug"
+    />
   );
 }
 

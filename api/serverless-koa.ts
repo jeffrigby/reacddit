@@ -12,9 +12,7 @@ const envValues = await getEnv(ssmEnvName);
 setProcessEnv(envValues);
 
 function setProcessEnv(envValues: Record<string, string>): void {
-  for (const key in envValues) {
-    process.env[key] = envValues[key]; // Add each key-value pair to process.env
-  }
+  Object.assign(process.env, envValues);
 }
 
 /**
@@ -28,46 +26,35 @@ async function getEnv(ssmName: string): Promise<Record<string, string>> {
     maxAge: 3600,
     decrypt: true,
   });
-  if (parameter) {
-    return dotenv.parse(parameter);
-  } else {
+
+  if (!parameter) {
     throw new Error(`Failed to get SSM parameter: ${ssmName}`);
   }
+
+  return dotenv.parse(parameter);
 }
 
+const REQUIRED_ENV_VARS = [
+  "REDDIT_CLIENT_ID",
+  "REDDIT_CLIENT_SECRET",
+  "REDDIT_CALLBACK_URI",
+  "REDDIT_SCOPE",
+  "CLIENT_PATH",
+] as const;
+
 export const handler: Handler = async (event, context: Context) => {
-  // Append awsRequestId to each log statement
-  logger.appendKeys({
-    awsRequestId: context.awsRequestId,
-  });
+  logger.appendKeys({ awsRequestId: context.awsRequestId });
 
-  const {
-    REDDIT_CLIENT_ID,
-    REDDIT_CLIENT_SECRET,
-    REDDIT_CALLBACK_URI,
-    REDDIT_SCOPE,
-    CLIENT_PATH,
-  } = process.env;
-
-  // Check if the environment variables are set
-  if (
-    !REDDIT_CLIENT_ID ||
-    !REDDIT_CLIENT_SECRET ||
-    !REDDIT_CALLBACK_URI ||
-    !REDDIT_SCOPE ||
-    !CLIENT_PATH
-  ) {
-    logger.error("Missing environment variables");
+  const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+  if (missingVars.length > 0) {
+    logger.error("Missing environment variables", { missingVars });
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: "Missing environment variables",
-      }),
+      body: JSON.stringify({ error: "Missing environment variables" }),
     };
   }
 
   try {
-    // Dynamically import the app after setting the environment variables
     const { default: app } = await import("./src/app.js");
     const serverlessHandler = serverless(app);
     return serverlessHandler(event, context);
@@ -75,9 +62,7 @@ export const handler: Handler = async (event, context: Context) => {
     logger.error("Failed to import the app", error as Error);
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: "Failed to import the app",
-      }),
+      body: JSON.stringify({ error: "Failed to import the app" }),
     };
   }
 };

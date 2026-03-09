@@ -23,7 +23,7 @@ declare global {
  * - Unloads when off screen for performance
  * - Remembers height to prevent scroll jumps
  */
-function FacebookEmbed({ url }: FacebookEmbedProps): JSX.Element {
+function FacebookEmbed({ url }: FacebookEmbedProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);

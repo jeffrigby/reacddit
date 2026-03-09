@@ -82,9 +82,11 @@ export const redditApi = createApi({
       const payload = action.payload as Record<string, unknown> | undefined;
 
       if (payload?.[reducerPath]) {
-        return payload[reducerPath];
+        // Cast to the expected return type for RTK Query rehydration
+        return payload[reducerPath] as unknown as undefined;
       }
     }
+    return undefined;
   },
 
   // Global cache configuration
@@ -98,10 +100,6 @@ export const redditApi = createApi({
 
   endpoints: () => ({}), // Endpoints will be injected from separate files
 });
-
-// Export hooks for usage in functional components
-// Note: Endpoint-specific hooks are exported from their respective endpoint files
-export const {} = redditApi;
 
 // Export the reducer and middleware for store configuration
 export const { reducer: redditApiReducer, middleware: redditApiMiddleware } =

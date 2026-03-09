@@ -1,35 +1,10 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { useModals } from '@/contexts/ModalContext';
-import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
+import SettingsCheckbox from './SettingsCheckbox';
 
-function CondensePrefs() {
-  const condenseStickySetting = useAppSelector(
-    (state) => state.siteSettings.condenseSticky
-  );
-  const condenseDuplicatesSetting = useAppSelector(
-    (state) => state.siteSettings.condenseDuplicate
-  );
-  const condensePinnedSetting = useAppSelector(
-    (state) => state.siteSettings.condensePinned
-  );
-  const dispatch = useAppDispatch();
+function CondensePrefs(): React.JSX.Element {
   const { setShowCondenseHelp } = useModals();
-
-  const toggleDupe = () => {
-    dispatch(
-      siteSettingsChanged({ condenseDuplicate: !condenseDuplicatesSetting })
-    );
-  };
-
-  const toggleSticky = () => {
-    dispatch(siteSettingsChanged({ condenseSticky: !condenseStickySetting }));
-  };
-
-  const togglePinned = () => {
-    dispatch(siteSettingsChanged({ condensePinned: !condensePinnedSetting }));
-  };
 
   return (
     <>
@@ -50,42 +25,21 @@ function CondensePrefs() {
           <FontAwesomeIcon icon={faInfoCircle} />
         </div>
       </div>
-      <div className="form-check">
-        <label className="form-check-label" htmlFor="condenseStickySetting">
-          <input
-            checked={condenseStickySetting}
-            className="form-check-input"
-            id="condenseStickySetting"
-            type="checkbox"
-            onChange={toggleSticky}
-          />
-          Sticky
-        </label>
-      </div>
-      <div className="form-check">
-        <label className="form-check-label" htmlFor="condensePinnedSetting">
-          <input
-            checked={condensePinnedSetting}
-            className="form-check-input"
-            id="condensePinnedSetting"
-            type="checkbox"
-            onChange={togglePinned}
-          />
-          Pinned
-        </label>
-      </div>
-      <div className="form-check">
-        <label className="form-check-label" htmlFor="condenseDuplicatesSetting">
-          <input
-            checked={condenseDuplicatesSetting}
-            className="form-check-input"
-            id="condenseDuplicatesSetting"
-            type="checkbox"
-            onChange={toggleDupe}
-          />
-          Duplicate
-        </label>
-      </div>
+      <SettingsCheckbox
+        id="condenseStickySetting"
+        label="Sticky"
+        settingKey="condenseSticky"
+      />
+      <SettingsCheckbox
+        id="condensePinnedSetting"
+        label="Pinned"
+        settingKey="condensePinned"
+      />
+      <SettingsCheckbox
+        id="condenseDuplicatesSetting"
+        label="Duplicate"
+        settingKey="condenseDuplicate"
+      />
     </>
   );
 }

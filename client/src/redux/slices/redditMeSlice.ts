@@ -56,9 +56,10 @@ export const fetchMe = createAsyncThunk<
       const currentBearer = state.redditBearer;
 
       // Fetch fresh data from Reddit API
+      // me() returns Thing<AccountData & UserPreferences>, extract the data property
       const meResp = await fetchMeAPI();
       return {
-        me: meResp,
+        me: meResp.data,
         id: currentBearer.bearer,
       };
     } catch (error) {
@@ -74,7 +75,7 @@ export const fetchMe = createAsyncThunk<
         return true;
       }
 
-      const state = getState() as RootState;
+      const state = getState();
       const currentMe = state.redditMe;
       const currentBearer = state.redditBearer;
       const isAuth = currentBearer.status === 'auth';

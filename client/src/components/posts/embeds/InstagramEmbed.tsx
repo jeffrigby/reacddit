@@ -22,7 +22,7 @@ declare global {
  * - Unloads when off screen for performance
  * - Remembers height to prevent scroll jumps
  */
-function InstagramEmbed({ url }: InstagramEmbedProps): JSX.Element {
+function InstagramEmbed({ url }: InstagramEmbedProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);

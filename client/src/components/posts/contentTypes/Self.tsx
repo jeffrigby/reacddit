@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -6,7 +6,7 @@ import {
   faAngleDoubleDown,
   faAngleDoubleUp,
 } from '@fortawesome/free-solid-svg-icons';
-import { PostsContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import SelfInline from './SelfInline';
@@ -22,13 +22,6 @@ interface SelfContent {
 interface SelfProps {
   name: string;
   content: SelfContent;
-}
-
-interface PostContextData {
-  post: {
-    kind: string;
-  };
-  isLoaded: boolean;
 }
 
 const cleanLinks = (html: string): string => {
@@ -65,13 +58,13 @@ const cleanLinks = (html: string): string => {
 };
 
 function Self({ name, content }: SelfProps) {
-  const postContext = useContext(PostsContextData) as PostContextData;
+  const postContext = usePostContext();
   const { post } = postContext;
 
   const listType = useAppSelector(
     (state) => state.listings.currentFilter.listType
   );
-  const debug = useAppSelector((state) => state.siteSettings.debugMode);
+  const debug = useAppSelector((state) => state.siteSettings.debug);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(content?.expand ?? false);

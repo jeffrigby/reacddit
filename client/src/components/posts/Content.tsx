@@ -1,9 +1,4 @@
-import { useContext } from 'react';
-import {
-  PostsContextData,
-  PostsContextContent,
-  type PostContextData,
-} from '@/contexts';
+import { usePostContext } from '@/contexts';
 import type { LinkData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import ImageComp from './contentTypes/ImageComp';
@@ -23,7 +18,7 @@ interface ContentProps {
 }
 
 function Content({ content = null }: ContentProps) {
-  const postContext = useContext(PostsContextData) as PostContextData;
+  const postContext = usePostContext();
   const { post } = postContext;
   const { data } = post;
   const linkData = data as LinkData;
@@ -38,56 +33,46 @@ function Content({ content = null }: ContentProps) {
     return <Placeholder />;
   }
 
-  let contentRendered: React.JSX.Element | null = null;
-  if (content.type) {
-    switch (content.type) {
-      case 'image':
-        contentRendered = <ImageComp content={content} />;
-        break;
-      case 'video':
-        contentRendered = <VideoComp content={content} link={url} />;
-        break;
-      case 'iframe':
-        contentRendered = <IFrame content={content} />;
-        break;
-      case 'imgur_album':
-        contentRendered = <ImgurAlbum content={content} />;
-        break;
-      case 'thumb':
-        contentRendered = <Thumb content={content} />;
-        break;
-      case 'self':
-        contentRendered = <Self content={content} name={name} />;
-        break;
-      case 'raw_html':
-        contentRendered = <RawHTML content={content} />;
-        break;
-      case 'social':
-        contentRendered = (
-          <Social
-            network={content.network as 'x' | 'instagram' | 'facebook'}
-            url={content.url}
-          />
-        );
-        break;
-      case 'httpserror':
-        contentRendered = <HTTPSError content={content} />;
-        break;
-      case 'redditGallery':
-        contentRendered = <RedditGallery content={content} />;
-        break;
-      default:
-        break;
-    }
-  } else {
-    // couldn't load an embed
+  if (!content.type) {
     return null;
   }
-  return (
-    <PostsContextContent.Provider value={postContext}>
-      <div className="content">{contentRendered}</div>
-    </PostsContextContent.Provider>
-  );
+
+  let contentRendered: React.JSX.Element | null = null;
+  switch (content.type) {
+    case 'image':
+      contentRendered = <ImageComp content={content} />;
+      break;
+    case 'video':
+      contentRendered = <VideoComp content={content} link={url} />;
+      break;
+    case 'iframe':
+      contentRendered = <IFrame content={content} />;
+      break;
+    case 'imgur_album':
+      contentRendered = <ImgurAlbum content={content} />;
+      break;
+    case 'thumb':
+      contentRendered = <Thumb content={content} />;
+      break;
+    case 'self':
+      contentRendered = <Self content={content} name={name} />;
+      break;
+    case 'raw_html':
+      contentRendered = <RawHTML content={content} />;
+      break;
+    case 'social':
+      contentRendered = <Social network={content.network} url={content.url} />;
+      break;
+    case 'httpserror':
+      contentRendered = <HTTPSError content={content} />;
+      break;
+    case 'redditGallery':
+      contentRendered = <RedditGallery content={content} />;
+      break;
+    default:
+      break;
+  }
+  return <div className="content">{contentRendered}</div>;
 }
 
 export default Content;

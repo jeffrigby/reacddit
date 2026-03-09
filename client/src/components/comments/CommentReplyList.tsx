@@ -25,9 +25,7 @@ function CommentReplyList({ replies, linkId }: CommentReplyListProps) {
     {}
   );
 
-  return (
-    <CommentsRender linkId={linkId} listType="reply" posts={keyedReplies} />
-  );
+  return <CommentsRender linkId={linkId} posts={keyedReplies} />;
 }
 
 export default CommentReplyList;

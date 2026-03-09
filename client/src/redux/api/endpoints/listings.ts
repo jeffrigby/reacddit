@@ -10,7 +10,13 @@
 
 import queryString from 'query-string';
 import type { ListingsFilter } from '@/types/listings';
-import type { Thing, LinkData, SubredditData } from '@/types/redditApi';
+import type {
+  Thing,
+  LinkData,
+  SubredditData,
+  Listing,
+  SubredditAboutResponse,
+} from '@/types/redditApi';
 import {
   getListingSubreddit,
   getListingMulti,
@@ -21,8 +27,53 @@ import {
   getComments,
   subredditAbout,
 } from '@/reddit/redditApiTs';
-import { keyEntryChildren } from '@/common';
 import { redditApi } from '@/redux/api/redditApi';
+
+/**
+ * Type for entries returned by getContent after keying children
+ */
+interface KeyedListingData {
+  data: {
+    before: string | null;
+    after: string | null;
+    children: Record<string, Thing<LinkData>>;
+  };
+  requestUrl?: string;
+  originalPost?: Listing<LinkData>;
+}
+
+/**
+ * Base listing structure with array children
+ */
+interface BaseListingResponse {
+  data: {
+    children: Array<{ data: { name: string } }>;
+    before: string | null;
+    after: string | null;
+  };
+  requestUrl?: string;
+  originalPost?: Listing<LinkData>;
+}
+
+/**
+ * Transform listing children array to keyed object by name
+ */
+function keyEntryChildren(entries: BaseListingResponse): KeyedListingData {
+  const newChildren: Record<string, Thing<LinkData>> = {};
+  for (const item of entries.data.children) {
+    newChildren[item.data.name] = item as Thing<LinkData>;
+  }
+
+  return {
+    data: {
+      before: entries.data.before,
+      after: entries.data.after,
+      children: newChildren,
+    },
+    requestUrl: entries.requestUrl,
+    originalPost: entries.originalPost,
+  };
+}
 
 const MAX_POSTS_IN_MEMORY = 500;
 
@@ -299,7 +350,7 @@ export const listingsApi = redditApi.injectEndpoints({
       },
 
       forceRefetch: ({ currentArg, previousArg }) => {
-        if (!previousArg) {
+        if (!currentArg || !previousArg) {
           return true;
         }
 
@@ -349,7 +400,11 @@ export const listingsApi = redditApi.injectEndpoints({
 
         try {
           const about = await subredditAbout(subreddit);
-          return { data: about.data };
+          // Type guard: SubredditAboutResponse has 'kind' and 'data' properties
+          if ('data' in about && 'kind' in about) {
+            return { data: (about as SubredditAboutResponse).data };
+          }
+          return { data: {} };
         } catch {
           return { data: {} };
         }

@@ -1571,6 +1571,7 @@ export interface EmojiData {
 export interface TokenData {
   accessToken: string;
   expires: number;
+  auth: boolean;
   loginURL?: string;
 }
 

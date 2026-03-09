@@ -14,15 +14,18 @@ function ListingsHeader() {
     selectListingStatus(state, location.key)
   );
 
-  let header;
-  if (status === 'error') {
-    header = <ListingsHeaderError />;
-  } else if (listType === 'm') {
-    header = <ListingsHeaderMulti />;
-  } else if (listType === 'comments' || listType === 'duplicates') {
+  if (listType === 'comments' || listType === 'duplicates') {
     return null;
-  } else {
-    header = <ListingsHeaderSub />;
+  }
+
+  let header: React.ReactElement;
+  switch (status) {
+    case 'error':
+      header = <ListingsHeaderError />;
+      break;
+    default:
+      header =
+        listType === 'm' ? <ListingsHeaderMulti /> : <ListingsHeaderSub />;
   }
 
   return <div className="list-group-item listings-header">{header}</div>;

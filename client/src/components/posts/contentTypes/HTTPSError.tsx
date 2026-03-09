@@ -1,9 +1,9 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
-import type { HTTPSErrorContent } from './types';
+import type { HttpsErrorContent } from '@/components/posts/embeds/types';
 
 interface HTTPSErrorProps {
-  content: HTTPSErrorContent;
+  content: HttpsErrorContent;
 }
 
 function HTTPSError({ content }: HTTPSErrorProps) {

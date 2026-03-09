@@ -5,7 +5,6 @@ import Post from '@/components/posts/postDetail/Post';
 
 interface PostsRenderProps {
   posts: Record<string, Thing<LinkData | CommentData>>;
-  listType: string;
   idxOffset?: number;
 }
 
@@ -15,7 +14,6 @@ interface PostsRenderProps {
  */
 function PostsRender({
   posts,
-  listType,
   idxOffset = 0,
 }: PostsRenderProps): ReactElement[] {
   return useMemo(() => {

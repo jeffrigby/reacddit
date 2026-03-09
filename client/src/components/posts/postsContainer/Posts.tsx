@@ -3,7 +3,7 @@ import { memo, useMemo } from 'react';
 import { IntersectionObserverProvider } from '@/contexts';
 import { useListingsContext } from '@/contexts/ListingsContext';
 import { useAppSelector } from '@/redux/hooks';
-import { selectFilter } from '@/redux/slices/listingsSlice';
+import { selectCurrentFilter } from '@/redux/slices/listingsSlice';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
@@ -14,7 +14,7 @@ function Posts(): ReactElement {
   const { data } = useListingsContext();
 
   // Get listType from current filter
-  const filter = useAppSelector(selectFilter);
+  const filter = useAppSelector(selectCurrentFilter);
   const listType = filter.listType;
 
   const entriesObject = data?.children;
@@ -37,11 +37,7 @@ function Posts(): ReactElement {
       <>
         {hasParent && originalPost && <PostsParent post={originalPost} />}
         <PostsLoadingStatus />
-        <PostsRender
-          idxOffset={idxOffset}
-          listType={listType}
-          posts={entriesObject}
-        />
+        <PostsRender idxOffset={idxOffset} posts={entriesObject} />
         <PostsFooter />
       </>
     </IntersectionObserverProvider>

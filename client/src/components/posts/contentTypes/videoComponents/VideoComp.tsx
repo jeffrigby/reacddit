@@ -4,7 +4,6 @@ import {
   useEffect,
   useRef,
   useMemo,
-  useContext,
   useCallback,
   type SyntheticEvent,
 } from 'react';
@@ -17,7 +16,7 @@ import {
   faToggleOff,
 } from '@fortawesome/free-solid-svg-icons';
 import '@/styles/video.scss';
-import { PostsContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
 import VideoDebug from './VideoDebug';
 import VideoAudioButton from './VideoAudioButton';
@@ -34,14 +33,6 @@ import type {
 interface VideoCompProps {
   link?: string;
   content: VideoContent;
-}
-
-interface PostContextData {
-  isLoaded: boolean;
-  fullyOffScreen: boolean;
-  post?: {
-    kind: string;
-  };
 }
 
 /**
@@ -107,7 +98,7 @@ function getBuffers(
  * Renders a video player component.
  */
 function VideoComp({ link = '', content }: VideoCompProps) {
-  const postContext = useContext(PostsContextData) as PostContextData;
+  const postContext = usePostContext();
   const { isLoaded, fullyOffScreen } = postContext;
   const videoRef = useRef<HTMLVideoElement>(null);
   const isPlaying = useRef<boolean>(false);
@@ -117,9 +108,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const wasPlayingBeforeOffScreen = useRef<boolean>(false);
 
   const debug = useAppSelector((state) => state.siteSettings.debug);
-  const autoplay = useAppSelector(
-    (state) => state.siteSettings.autoplay as boolean
-  );
+  const autoplay = useAppSelector((state) => state.siteSettings.autoplay);
 
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(autoplay);

@@ -1,6 +1,8 @@
 // Reacddit Service Worker with Workbox
 // Optimized for Reddit's media-heavy content
 
+/// <reference lib="webworker" />
+
 import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
@@ -11,10 +13,14 @@ import {
   CacheFirst,
 } from 'workbox-strategies';
 
-// Extend the ServiceWorkerGlobalScope to include __WB_MANIFEST
-declare const self: ServiceWorkerGlobalScope & {
-  __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
-};
+// Cast self to ServiceWorkerGlobalScope for proper typing
+// The webworker lib provides the base types, and workbox-precaching extends
+// ServiceWorkerGlobalScope to include __WB_MANIFEST
+const sw = self as unknown as ServiceWorkerGlobalScope;
+
+function hasExtension(pathname: string, extensions: string[]): boolean {
+  return extensions.some((ext) => pathname.endsWith(ext));
+}
 
 // Claim clients when service worker activates
 // Note: We don't call skipWaiting() here - we wait for user confirmation
@@ -25,7 +31,8 @@ clientsClaim();
 // Their URLs are injected into the manifest variable below.
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
-const manifest = self.__WB_MANIFEST;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const manifest = (self as any).__WB_MANIFEST;
 precacheAndRoute(manifest);
 
 // Set up App Shell-style routing using NavigationRoute
@@ -66,6 +73,11 @@ const REDDIT_API_ORIGINS = new Set([
   'https://old.reddit.com',
 ]);
 
+// Image and video file extensions for caching
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+const VIDEO_EXTENSIONS = ['.mp4', '.webm'];
+const LOCAL_IMAGE_EXTENSIONS = ['.png', '.jpg', '.svg', '.ico'];
+
 // Cache Reddit images with StaleWhileRevalidate
 // Shows cached version immediately while fetching fresh copy in background
 registerRoute(
@@ -73,11 +85,7 @@ registerRoute(
     (REDDIT_MEDIA_ORIGINS.has(url.origin) ||
       REDDIT_API_ORIGINS.has(url.origin) ||
       REDDIT_STATIC_ORIGINS.has(url.origin)) &&
-    (url.pathname.endsWith('.png') ||
-      url.pathname.endsWith('.jpg') ||
-      url.pathname.endsWith('.jpeg') ||
-      url.pathname.endsWith('.gif') ||
-      url.pathname.endsWith('.webp')),
+    hasExtension(url.pathname, IMAGE_EXTENSIONS),
   new StaleWhileRevalidate({
     cacheName: 'reddit-images',
     plugins: [
@@ -115,8 +123,7 @@ registerRoute(
   ({ url }): boolean =>
     (REDDIT_MEDIA_ORIGINS.has(url.origin) ||
       REDDIT_API_ORIGINS.has(url.origin)) &&
-    (url.pathname.endsWith('.mp4') ||
-      url.pathname.endsWith('.webm') ||
+    (hasExtension(url.pathname, VIDEO_EXTENSIONS) ||
       url.pathname.includes('/DASH_')),
   new CacheFirst({
     cacheName: 'reddit-videos',
@@ -133,11 +140,8 @@ registerRoute(
 // Cache local static assets with StaleWhileRevalidate
 registerRoute(
   ({ url }): boolean =>
-    url.origin === self.location.origin &&
-    (url.pathname.endsWith('.png') ||
-      url.pathname.endsWith('.jpg') ||
-      url.pathname.endsWith('.svg') ||
-      url.pathname.endsWith('.ico')),
+    url.origin === sw.location.origin &&
+    hasExtension(url.pathname, LOCAL_IMAGE_EXTENSIONS),
   new StaleWhileRevalidate({
     cacheName: 'local-images',
     plugins: [
@@ -151,8 +155,8 @@ registerRoute(
 
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
-self.addEventListener('message', (event: ExtendableMessageEvent) => {
+sw.addEventListener('message', (event: ExtendableMessageEvent) => {
   if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+    sw.skipWaiting();
   }
 });

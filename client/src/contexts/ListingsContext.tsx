@@ -1,13 +1,14 @@
 import { createContext, useContext } from 'react';
+import type { Context } from 'react';
 import type { UseListingsQueryResult } from '@/hooks/useListingsQuery';
 import type { ListingsData } from '@/redux/api/endpoints/listings';
 
 /**
  * Context for tracking last expanded post in listings
  */
-export const ListingsContextLastExpanded = createContext<
-  [string, (value: string) => void] | object
->({});
+export const ListingsContextLastExpanded: Context<
+  [string, (value: string) => void] | null
+> = createContext<[string, (value: string) => void] | null>(null);
 
 /**
  * Context for listings data and actions

@@ -33,7 +33,7 @@ function Navigation({ redditBearer, subredditsFilter }: NavigationProps) {
 
   const { filterText, active } = subredditsFilter;
   const hideExtras = !isEmpty(filterText) || active;
-  const loggedIn = redditBearer.status === 'auth' || false;
+  const loggedIn = redditBearer.status === 'auth';
 
   // Hiding the components with CSS is significantly faster than destroying and re-rendering.
   return (

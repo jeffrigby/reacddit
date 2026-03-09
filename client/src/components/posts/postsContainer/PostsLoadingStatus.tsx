@@ -9,7 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useListingsContext } from '@/contexts/ListingsContext';
 import { useAppSelector } from '@/redux/hooks';
-import { selectFilter } from '@/redux/slices/listingsSlice';
+import { selectCurrentFilter } from '@/redux/slices/listingsSlice';
 
 type ListingStatus =
   | 'error'
@@ -115,7 +115,7 @@ function PostsLoadingStatus(): ReactElement | null {
   // Get data and status from RTK Query via context
   const { data, status } = useListingsContext();
   const location = useLocation();
-  const filter = useAppSelector(selectFilter);
+  const filter = useAppSelector(selectCurrentFilter);
 
   // Parse search query from URL
   const searchQuery = useMemo(() => {

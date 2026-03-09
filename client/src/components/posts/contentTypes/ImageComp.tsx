@@ -1,12 +1,5 @@
-import {
-  memo,
-  useContext,
-  useEffect,
-  useState,
-  useMemo,
-  type CSSProperties,
-} from 'react';
-import { PostsContextData, type PostContextData } from '@/contexts';
+import { memo, useEffect, useState, useMemo, type CSSProperties } from 'react';
+import { usePostContext } from '@/contexts';
 import type { ImageContent } from './types';
 
 interface ImageMetadata {
@@ -38,7 +31,8 @@ function getMeta(url: string): Promise<ImageMetadata> {
 }
 
 function ImageComp({ content }: ImageCompProps) {
-  const { isLoaded, idx } = useContext(PostsContextData) as PostContextData;
+  const postContext = usePostContext();
+  const { isLoaded, idx } = postContext;
   const { title, width, height, src } = content;
 
   const [aspectRatio, setAspectRatio] = useState<number | null>(

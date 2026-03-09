@@ -22,7 +22,7 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const sort = useAppSelector((state) => state.listings.currentFilter.sort);
-  const auth = redditBearer.status === 'auth' || false;
+  const auth = redditBearer.status === 'auth';
   const location = useLocation();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';

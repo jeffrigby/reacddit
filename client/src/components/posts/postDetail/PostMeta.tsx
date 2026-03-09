@@ -1,37 +1,38 @@
-import { useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRandom, faStickyNote } from '@fortawesome/free-solid-svg-icons';
-import { PostsContextData } from '@/contexts';
+import { usePostContext } from '@/contexts';
 import type { LinkData } from '@/types/redditApi';
 import PostByline from './PostByline';
 
 function PostMeta(): React.JSX.Element {
-  const postContext = useContext(PostsContextData) as {
-    post: { data: LinkData; kind: string };
-  };
+  const postContext = usePostContext();
   const { post } = postContext;
   const { data, kind } = post;
-  const sticky = data.stickied ?? false;
+
+  // PostMeta is only used for link posts (t3), so we can safely assert LinkData
+  const linkData = data as LinkData;
+
+  const sticky = linkData.stickied ?? false;
 
   const crossPost =
-    (data.crosspost_parent && data.crosspost_parent_list?.[0]) ?? false;
+    (linkData.crosspost_parent && linkData.crosspost_parent_list?.[0]) ?? false;
 
-  if (data.crosspost_parent && !data.crosspost_parent_list?.[0]) {
+  if (linkData.crosspost_parent && !linkData.crosspost_parent_list?.[0]) {
     // This is weird and occasionally happens.
-    // console.log(data);
+    // console.log(linkData);
   }
 
   return (
     <>
-      <PostByline data={data} kind={kind} />
-      {crossPost && data.crosspost_parent_list && (
+      <PostByline data={linkData} kind={kind} />
+      {crossPost && linkData.crosspost_parent_list && (
         <div>
           <FontAwesomeIcon
             className="pe-2"
             icon={faRandom}
             title="Crossposted"
           />
-          <PostByline data={data.crosspost_parent_list[0]} kind={kind} />
+          <PostByline data={linkData.crosspost_parent_list[0]} kind={kind} />
         </div>
       )}
       {sticky && (

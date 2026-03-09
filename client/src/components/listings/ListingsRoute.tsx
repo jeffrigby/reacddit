@@ -35,7 +35,10 @@ function ListingsRoute({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
-  const overrideMatch = { ...match, ...overrides };
+  const overrideMatch: Record<string, string | boolean | undefined> = {
+    ...match,
+    ...overrides,
+  };
 
   const validated = Object.keys(validations).every((key) => {
     const validation = validations[key];

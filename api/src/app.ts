@@ -2,6 +2,7 @@ import Koa from "koa";
 import Router from "@koa/router";
 import session from "koa-session";
 import logger from "koa-logger";
+import bodyParser from "koa-bodyparser";
 import { randomUUID } from "crypto";
 import qs from "qs";
 import { config } from "./config.js";
@@ -19,7 +20,7 @@ import type {
   CookieStorage,
 } from "./types/reddit.js";
 import type { SessionData } from "./types/session.js";
-import { AxiosError, type AxiosResponse } from "axios";
+import axios, { AxiosError, type AxiosResponse } from "axios";
 
 function getSessionConfig() {
   return {
@@ -87,6 +88,7 @@ function setCookie(token: ExtendedToken, ctx: Koa.Context): void {
 /**
  * Set both the session and cookie with token information
  * The session is encrypted, while the cookie is accessible to the client
+ * Errors are caught and logged to allow the flow to continue even if cookie setting fails
  * @param token - The token object
  * @param ctx - The Koa context
  */
@@ -239,9 +241,15 @@ app.keys = [config.SALT];
 app.use(session(getSessionConfig(), app));
 app.use(async (ctx, next) => {
   ctx.set("Access-Control-Allow-Origin", config.CLIENT_PATH);
-  ctx.set("Access-Control-Allow-Methods", "GET");
+  ctx.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  ctx.set("Access-Control-Allow-Headers", "Content-Type");
+  if (ctx.method === "OPTIONS") {
+    ctx.status = 204;
+    return;
+  }
   await next();
 });
+app.use(bodyParser());
 app.use(logger());
 
 const router = new Router();
@@ -334,14 +342,28 @@ function setSessionAndRespond(
 }
 
 /**
+ * Helper function to grant an anonymous token and set the session
+ * @param ctx - The Koa context
+ * @param type - Token response type ('new' or 'newanon')
+ * @param reason - Log message explaining why anon token is being granted
+ */
+async function grantAnonToken(
+  ctx: Koa.Context,
+  type: "new" | "newanon",
+  reason: string,
+): Promise<void> {
+  console.log(reason);
+  const anonToken = await getAnonToken();
+  setSessionAndRespond(addExtraInfoToToken(anonToken.token, false), ctx, type);
+}
+
+/**
  * Helper function to handle the scenario when there's no token available.
  * Grants an anonymous token and sets the session.
  * @param ctx - The Koa context
  */
 async function getAnonTokenAndSetSession(ctx: Koa.Context): Promise<void> {
-  console.log("ANON TOKEN GRANTED");
-  const anonToken = await getAnonToken();
-  setSessionAndRespond(addExtraInfoToToken(anonToken.token, false), ctx, "new");
+  await grantAnonToken(ctx, "new", "ANON TOKEN GRANTED");
 }
 
 /**
@@ -355,7 +377,7 @@ async function returnCachedTokenAndSetSession(
   token: ExtendedToken,
 ): Promise<void> {
   console.log("CACHED TOKEN RETURNED");
-  await setSessionAndRespond(token, ctx, "cached");
+  setSessionAndRespond(token, ctx, "cached");
 }
 
 /**
@@ -370,38 +392,35 @@ async function refreshOrGetAnonTokenAndSetSession(
   token: ExtendedToken,
   forceRefresh: boolean,
 ): Promise<void> {
-  if (token.refresh_token) {
-    try {
-      const refreshedTokenResult = await getRefreshToken(token);
-
-      const newToken: ExtendedToken = {
-        ...refreshedTokenResult,
-        refresh_token: token.refresh_token,
-        expires: addExtraInfoToToken(refreshedTokenResult, true).expires,
-        auth: true,
-      };
-
-      const message = forceRefresh
-        ? "FORCED REFRESH. NEW TOKEN GRANTED"
-        : "TOKEN EXPIRED. NEW TOKEN GRANTED";
-      console.log(message);
-      await setSessionAndRespond(newToken, ctx, "refresh");
-    } catch {
-      console.log("REFRESH TOKEN ERROR. GETTING ANON TOKEN.");
-      const anonToken = await getAnonToken();
-      await setSessionAndRespond(
-        addExtraInfoToToken(anonToken.token, false),
-        ctx,
-        "new",
-      );
-    }
-  } else {
-    console.log("NO REFRESH TOKEN. GETTING ANON TOKEN.");
-    const anonToken = await getAnonToken();
-    await setSessionAndRespond(
-      addExtraInfoToToken(anonToken.token, false),
+  if (!token.refresh_token) {
+    await grantAnonToken(
       ctx,
       "newanon",
+      "NO REFRESH TOKEN. GETTING ANON TOKEN.",
+    );
+    return;
+  }
+
+  try {
+    const refreshedTokenResult = await getRefreshToken(token);
+
+    const newToken: ExtendedToken = {
+      ...refreshedTokenResult,
+      refresh_token: token.refresh_token,
+      expires: addExtraInfoToToken(refreshedTokenResult, true).expires,
+      auth: true,
+    };
+
+    const message = forceRefresh
+      ? "FORCED REFRESH. NEW TOKEN GRANTED"
+      : "TOKEN EXPIRED. NEW TOKEN GRANTED";
+    console.log(message);
+    setSessionAndRespond(newToken, ctx, "refresh");
+  } catch {
+    await grantAnonToken(
+      ctx,
+      "new",
+      "REFRESH TOKEN ERROR. GETTING ANON TOKEN.",
     );
   }
 }
@@ -434,6 +453,90 @@ router.get("/api/bearer", async (ctx) => {
   await refreshOrGetAnonTokenAndSetSession(ctx, token, forceRefresh);
 });
 
+// Regex for validating Reddit share links
+const SHARE_LINK_REGEX =
+  /^https?:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
+
+// Max URLs per batch request
+const MAX_BATCH_SIZE = 20;
+
+type ShareResolveResult = { postId: string } | { error: string };
+
+/**
+ * Resolve a single share link to a post ID by following redirects
+ */
+async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
+  if (!SHARE_LINK_REGEX.test(url)) {
+    return { error: "Invalid Reddit share link format" };
+  }
+
+  try {
+    const response = await axios.head(url, {
+      maxRedirects: 0,
+      validateStatus: (status) => status === 301 || status === 302,
+      timeout: 5000,
+    });
+
+    const location = response.headers["location"];
+    if (typeof location !== "string") {
+      return { error: "Share link did not redirect" };
+    }
+
+    const postId = location.match(/\/comments\/([a-z0-9]+)/i)?.[1];
+    if (!postId) {
+      return { error: "Could not extract post ID from redirect" };
+    }
+
+    return { postId };
+  } catch {
+    return { error: "Failed to resolve share link" };
+  }
+}
+
+/**
+ * POST /api/resolve-share
+ * Resolves one or more Reddit share links to post IDs by following redirects
+ * @route POST /api/resolve-share
+ * @body { urls: string[] }
+ * @returns { results: { [url: string]: { postId: string } | { error: string } } }
+ */
+router.post("/api/resolve-share", async (ctx) => {
+  const body = ctx.request.body as { urls?: unknown };
+
+  // Validate body has urls array
+  if (!body || !Array.isArray(body.urls)) {
+    ctx.status = 400;
+    ctx.body = { error: "Missing urls array in request body" };
+    return;
+  }
+
+  const urls = body.urls as unknown[];
+
+  // Validate all items are strings
+  if (!urls.every((u): u is string => typeof u === "string")) {
+    ctx.status = 400;
+    ctx.body = { error: "All URLs must be strings" };
+    return;
+  }
+
+  // Limit batch size
+  if (urls.length > MAX_BATCH_SIZE) {
+    ctx.status = 400;
+    ctx.body = { error: `Maximum ${MAX_BATCH_SIZE} URLs per request` };
+    return;
+  }
+
+  // Resolve all URLs in parallel
+  const entries = await Promise.all(
+    urls.map(async (url) => {
+      const result = await resolveShareUrl(url);
+      return [url, result] as const;
+    }),
+  );
+
+  ctx.body = { results: Object.fromEntries(entries) };
+});
+
 /**
  * GET /api/logout
  * Logs out the user by revoking their tokens, clearing the session, and redirecting to the client
@@ -442,45 +545,36 @@ router.get("/api/bearer", async (ctx) => {
 router.get("/api/logout", async (ctx) => {
   const token = ctx.session.token;
 
-  if (token) {
-    // Try to revoke tokens, but don't fail if revocation fails
-    try {
-      // Revoke the access token and the refresh token in parallel
-      const revokePromises: Promise<void>[] = [];
-      if (token.access_token) {
-        revokePromises.push(
-          revokeToken(token.access_token, "access_token").catch((error) => {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error);
-            console.error("Failed to revoke access token:", errorMessage);
-          }),
-        );
-      }
-      if (token.refresh_token) {
-        revokePromises.push(
-          revokeToken(token.refresh_token, "refresh_token").catch((error) => {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error);
-            console.error("Failed to revoke refresh token:", errorMessage);
-          }),
-        );
-      }
-      await Promise.all(revokePromises);
-    } catch (error) {
-      // Log the error but do not re-throw it
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      console.error("Error occurred while revoking tokens: ", errorMessage);
-      // Even if an error occurred, we still want to clear the session and cookie
-    }
-
-    // Clear the session and delete the token cookie
-    ctx.session.token = null;
-    ctx.cookies.set("token", null, { overwrite: true });
-
-    // Redirect the user to the logout page
-    return ctx.redirect(`${config.CLIENT_PATH}/?logout`);
+  if (!token) {
+    return;
   }
+
+  // Revoke tokens in parallel, logging but not failing on errors
+  const revokePromises: Promise<void>[] = [];
+
+  if (token.access_token) {
+    revokePromises.push(
+      revokeToken(token.access_token, "access_token").catch((error) => {
+        console.error("Failed to revoke access token:", error);
+      }),
+    );
+  }
+
+  if (token.refresh_token) {
+    revokePromises.push(
+      revokeToken(token.refresh_token, "refresh_token").catch((error) => {
+        console.error("Failed to revoke refresh token:", error);
+      }),
+    );
+  }
+
+  await Promise.all(revokePromises);
+
+  // Clear the session and delete the token cookie
+  ctx.session.token = null;
+  ctx.cookies.set("token", null, { overwrite: true });
+
+  return ctx.redirect(`${config.CLIENT_PATH}/?logout`);
 });
 
 app.use(router.routes()).use(router.allowedMethods());

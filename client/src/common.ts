@@ -1,3 +1,7 @@
+export function trimSlashes(path: string): string {
+  return path.replace(/^\/|\/$/g, '');
+}
+
 function getScrollContainer(): Element {
   const body = document.body;
   const html = document.documentElement;
@@ -39,25 +43,22 @@ export function setMenuStatus(menuID: string, status: boolean): void {
 
 export function getMenuStatus(menuID: string, defaultState = false): boolean {
   const menus = getAllMenus();
-  return menuID in menus ? menus[menuID] : defaultState;
+  return menus[menuID] ?? defaultState;
 }
 
 export function hotkeyStatus(): boolean {
   const { activeElement } = document;
-
   if (!activeElement) {
     return true;
   }
 
   const { nodeName } = activeElement;
+  const isTextArea = nodeName === 'TEXTAREA';
+  const isIframe = nodeName === 'IFRAME';
+  const isTextInput =
+    nodeName === 'INPUT' && (activeElement as HTMLInputElement).type === 'text';
 
-  if (nodeName === 'TEXTAREA' || nodeName === 'IFRAME') {
-    return false;
-  }
-
-  return !(
-    nodeName === 'INPUT' && (activeElement as HTMLInputElement).type === 'text'
-  );
+  return !isTextArea && !isIframe && !isTextInput;
 }
 
 interface RedditEntry {
@@ -165,11 +166,7 @@ export function isIOS(): boolean {
   }
 
   // Modern iPadOS 13+ reports as "Macintosh" with touch support
-  // Check for macOS user agent with touch capability (indicates iPad)
-  const isMacWithTouch =
-    navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
-
-  return isMacWithTouch;
+  return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
 }
 
 /**
@@ -186,13 +183,8 @@ export function formatRelativeTime(timestamp: number): string {
   const diffHour = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHour / 24);
 
-  // Handle future timestamps (shouldn't happen, but be safe)
-  if (diffMs < 0) {
-    return 'just now';
-  }
-
-  // Less than 1 minute
-  if (diffSec < 60) {
+  // Handle future timestamps or less than 1 minute
+  if (diffMs < 0 || diffSec < 60) {
     return 'just now';
   }
 

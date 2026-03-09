@@ -59,7 +59,7 @@ const fetchAllSubreddits = async (
   where: string
 ): Promise<Record<string, SubredditData>> => {
   let init = true;
-  let qsAfter: string | null = null;
+  let qsAfter: string | undefined;
   const allMapped: Record<string, SubredditData>[] = [];
 
   // Paginate through all results
@@ -73,7 +73,7 @@ const fetchAllSubreddits = async (
 
     const mapped = mapSubreddits(srs.data.children);
     allMapped.push(mapped);
-    qsAfter = srs.data.after ?? null;
+    qsAfter = srs.data.after ?? undefined;
   }
 
   // Merge all pages into single object

@@ -145,7 +145,7 @@ const selectSubredditsByLocation = (state: RootState) =>
   state.listings?.subredditsByLocation ?? {};
 const selectUiStateByLocation = (state: RootState) =>
   state.listings?.uiStateByLocation ?? {};
-const selectCurrentFilter = (state: RootState) =>
+export const selectCurrentFilter = (state: RootState): ListingsFilter =>
   state.listings?.currentFilter ?? {
     listType: 'r',
     target: 'mine',
@@ -215,11 +215,6 @@ export const selectUiState = createSelector(
       }
     );
   }
-);
-
-export const selectFilter = createSelector(
-  [selectCurrentFilter],
-  (filter) => filter
 );
 
 export const selectPostFocused = createSelector(

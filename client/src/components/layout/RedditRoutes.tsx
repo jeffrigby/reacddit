@@ -130,15 +130,14 @@ function filterValidations(
 }
 
 function RedditRoutes() {
-  const generatedRoutes: React.ReactElement[] = [];
-  routes.forEach((route) => {
+  const generatedRoutes = routes.flatMap((route) => {
     const { paths, overrides, validations } = route;
-    paths.forEach((path) => {
+    return paths.map((path) => {
       const filteredValidations = filterValidations(
         extractArgs(path),
         validations
       );
-      generatedRoutes.push(
+      return (
         <Route
           element={
             <ListingsRoute

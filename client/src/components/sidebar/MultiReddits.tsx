@@ -8,6 +8,7 @@ import {
   faPlus,
   faMinus,
 } from '@fortawesome/free-solid-svg-icons';
+import type { Thing, LabeledMultiData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetMultiRedditsQuery } from '@/redux/api';
 import { setMenuStatus, getMenuStatus } from '@/common';
@@ -80,12 +81,10 @@ function MultiReddits(): ReactElement | null {
       return [];
     }
 
-    return multireddits.map(
-      (item: { data: { display_name: string; created: number } }) => {
-        const key = `${item.data.display_name}-${item.data.created}`;
-        return <MultiRedditsItem item={item} key={key} />;
-      }
-    );
+    return multireddits.map((item: Thing<LabeledMultiData>) => {
+      const key = `${item.data.display_name}-${item.data.created}`;
+      return <MultiRedditsItem item={item} key={key} />;
+    });
   }, [multireddits]);
 
   // Don't render if not authenticated
