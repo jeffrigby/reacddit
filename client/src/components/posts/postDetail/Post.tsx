@@ -9,7 +9,7 @@ import {
   useMemo,
 } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
@@ -357,7 +357,7 @@ function Post({
   const isLoaded = hide ? false : shouldLoad;
 
   const commentDepth = kind === 't1' ? (data as CommentData).depth : undefined;
-  const classArray = classNames('entry', 'list-group-item', `kind-${kind}`, {
+  const classArray = clsx('entry', 'list-group-item', `kind-${kind}`, {
     focused,
     actionable,
     'post-parent': parent,

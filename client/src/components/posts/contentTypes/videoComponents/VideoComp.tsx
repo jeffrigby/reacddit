@@ -8,7 +8,7 @@ import {
   type SyntheticEvent,
 } from 'react';
 import throttle from 'lodash/throttle';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCircleNotch,
@@ -336,7 +336,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     }
   };
 
-  const videoClasses = classNames('loaded', 'preload', {
+  const videoClasses = clsx('loaded', 'preload', {
     'video-playing': playing,
     'video-paused': !playing,
     'audio-muted': muted,
