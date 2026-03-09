@@ -2,9 +2,9 @@ import queryString from 'query-string';
 import { formatDistanceToNow } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import type { SubredditData } from '@/types/redditApi';
+import type { RootState } from '@/types/redux';
 import { trimSlashes } from '@/common';
 import { useAppSelector } from '@/redux/hooks';
-import { selectLastUpdatedTracking } from '@/redux/slices/subredditPollingSlice';
 import { getDiffClassName, buildSortPath } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
@@ -17,13 +17,15 @@ interface NavigationItemProps {
 function NavigationItem({ item, trigger }: NavigationItemProps) {
   const sort = useAppSelector((state) => state.listings.currentFilter.sort);
   const me = useAppSelector((state) => state.redditMe?.me);
-  const lastUpdatedTracking = useAppSelector(selectLastUpdatedTracking);
   const location = useLocation();
 
-  // Get last updated timestamp for this subreddit
-  const lastUpdated = item.name
-    ? (lastUpdatedTracking[item.name]?.lastPost ?? 0)
-    : 0;
+  // Select only this item's lastPost value — the returned number is compared
+  // via strict === equality, so re-renders only occur when this specific
+  // subreddit's timestamp changes (not when other subreddits update)
+  const lastUpdated = useAppSelector(
+    (state: RootState) =>
+      state.subredditPolling.lastUpdatedTracking[item.name]?.lastPost ?? 0
+  );
 
   const query = queryString.parse(location.search);
   const { t } = query;
