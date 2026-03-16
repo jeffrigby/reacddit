@@ -29,7 +29,8 @@ export default defineConfig(({ mode }) => {
       },
       manifest: false, // Use existing public/pwa/manifest.json instead of generating
       devOptions: {
-        enabled: false,
+        enabled: true, // Enable service worker in development mode
+        type: 'module', // Required: Vite serves dev SW with ES module imports
       },
     }),
 
