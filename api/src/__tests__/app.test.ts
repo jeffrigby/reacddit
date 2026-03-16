@@ -26,8 +26,6 @@ beforeAll(() => {
   vi.stubEnv("TOKEN_EXPIRY_PADDING_SECS", "300");
   vi.stubEnv("PORT", "3001");
   vi.stubEnv("DEBUG", "0");
-  vi.stubEnv("ENCRYPTION_ALGORITHM", "aes-256-cbc");
-  vi.stubEnv("IV_LENGTH", "16");
 });
 
 // Mock axios.head for share link resolver
@@ -51,8 +49,13 @@ vi.mock("../util.js", () => {
   return {
     axiosInstance: mockAxiosInstance,
     checkEnvErrors: vi.fn(),
-    encryptToken: vi.fn(() => ({ iv: "mock-iv", token: "mock-encrypted" })),
+    encryptToken: vi.fn(() => ({
+      iv: "mock-iv",
+      authTag: "mock-auth-tag",
+      token: "mock-encrypted",
+    })),
     decryptToken: vi.fn(() => ({ mock: "decrypted-token" })),
+    deriveSigningKey: vi.fn(() => "mock-signing-key"),
     isTokenExpired: vi.fn((token) => {
       if (!token || !token.expires) return true;
       const now = Date.now() / 1000;

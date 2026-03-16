@@ -15,6 +15,7 @@ import PostSave from '@/components/posts/postActions/PostSave';
 import { usePostContext } from '@/contexts';
 import PostExpandContract from '@/components/posts/postActions/PostExpandContract';
 import { useAppSelector } from '@/redux/hooks';
+import { decodeHTMLEntities } from '@/utils/sanitize';
 import type { LinkData } from '@/types/redditApi';
 import PostHeaderComment from './PostHeaderComment';
 import PostTimeAgo from './PostTimeAgo';
@@ -160,21 +161,23 @@ function PostHeader({
       <a
         aria-label="Title"
         className="list-group-item-heading align-middle"
-        dangerouslySetInnerHTML={{ __html: linkData.title }}
         href={linkData.url}
         rel="noopener noreferrer"
         target="_blank"
-      />
+      >
+        {decodeHTMLEntities(linkData.title)}
+      </a>
     );
   } else {
     titleLink = (
       <Link
         aria-label="Title"
         className="list-group-item-heading align-middle"
-        dangerouslySetInnerHTML={{ __html: linkData.title }}
         state={{ showBack: true }}
         to={linkData.permalink}
-      />
+      >
+        {decodeHTMLEntities(linkData.title)}
+      </Link>
     );
   }
 
@@ -217,10 +220,7 @@ function PostHeader({
           onClick={toggleView}
           onKeyDown={handleKeyDown}
         >
-          <span
-            className="fw-bold"
-            dangerouslySetInnerHTML={{ __html: linkData.title }}
-          />
+          <span className="fw-bold">{decodeHTMLEntities(linkData.title)}</span>
           {linkData.is_self && linkData.selftext && (
             <span className="ms-1 small">{linkData.selftext}</span>
           )}

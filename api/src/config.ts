@@ -14,8 +14,6 @@ interface AppConfig {
   SESSION_LENGTH_SECS: number;
   TOKEN_EXPIRY_PADDING_SECS: number;
   PORT: number;
-  ENCRYPTION_ALGORITHM: string;
-  IV_LENGTH: number;
 }
 
 const red = chalk.red;
@@ -57,8 +55,6 @@ function validateEnv(): void {
     SESSION_LENGTH_SECS,
     TOKEN_EXPIRY_PADDING_SECS,
     PORT,
-    ENCRYPTION_ALGORITHM,
-    IV_LENGTH,
   } = process.env;
 
   const checks = [
@@ -90,14 +86,6 @@ function validateEnv(): void {
       message:
         "You must set your CLIENT_PATH. This is the URL to the client app (used for redirects and CORS).",
     },
-    {
-      condition: !ENCRYPTION_ALGORITHM,
-      message: "ENCRYPTION_ALGORITHM must be set (default: aes-256-cbc).",
-    },
-    {
-      condition: !isPositiveInt(IV_LENGTH),
-      message: "IV_LENGTH must be a valid positive integer (default: 16).",
-    },
   ];
 
   const errors = checks
@@ -124,8 +112,6 @@ const TEST_DEFAULTS = {
   SALT: "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM",
   SESSION_LENGTH_SECS: "604800",
   TOKEN_EXPIRY_PADDING_SECS: "300",
-  ENCRYPTION_ALGORITHM: "aes-256-cbc",
-  IV_LENGTH: "16",
 } as const;
 
 /**
@@ -157,8 +143,6 @@ function loadConfig(): AppConfig {
       getEnvVar("TOKEN_EXPIRY_PADDING_SECS", "0"),
     ),
     PORT: parseInt(process.env["PORT"] || "3001"),
-    ENCRYPTION_ALGORITHM: getEnvVar("ENCRYPTION_ALGORITHM"),
-    IV_LENGTH: parseInt(getEnvVar("IV_LENGTH", "0")),
   };
 }
 

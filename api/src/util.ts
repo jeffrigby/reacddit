@@ -1,11 +1,36 @@
 import axios from "axios";
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  hkdfSync,
+  randomBytes,
+} from "crypto";
 import { config } from "./config.js";
 import type {
   RedditAccessTokenResponse,
   ExtendedToken,
   EncryptedToken,
 } from "./types/reddit.js";
+
+/** AES-256-GCM constants */
+const GCM_ALGORITHM = "aes-256-gcm";
+const GCM_IV_LENGTH = 12;
+const GCM_AUTH_TAG_LENGTH = 16;
+
+/** Cached encryption key derived once at startup via HKDF */
+const encryptionKey = Buffer.from(
+  hkdfSync("sha256", config.SALT, "", "encryption", 32),
+);
+
+/**
+ * Derive a signing key from the SALT using HKDF for cookie signing
+ * @returns Hex-encoded 32-byte key string for use as Koa app.keys
+ */
+export function deriveSigningKey(): string {
+  return Buffer.from(
+    hkdfSync("sha256", config.SALT, "", "signing", 32),
+  ).toString("hex");
+}
 
 export const axiosInstance = axios.create({
   baseURL: "https://www.reddit.com",
@@ -54,29 +79,34 @@ export function addExtraInfoToToken(
 }
 
 /**
- * Encrypt the token for storage in the cookie. The IV is
- * unique for every token.
+ * Encrypt the token for storage in the cookie using AES-256-GCM.
+ * The IV is unique for every token. The auth tag provides authenticated
+ * encryption, preventing padding oracle attacks.
  * @param token - The token object
- * @returns Object containing IV and encrypted token
+ * @returns Object containing IV, auth tag, and encrypted token
  */
 export function encryptToken(token: unknown): EncryptedToken {
-  const iv = randomBytes(config.IV_LENGTH);
+  const iv = randomBytes(GCM_IV_LENGTH);
   const tokenString = JSON.stringify(token);
-  const cipher = createCipheriv(
-    config.ENCRYPTION_ALGORITHM,
-    Buffer.from(config.SALT),
-    iv,
-  );
+  const cipher = createCipheriv(GCM_ALGORITHM, encryptionKey, iv, {
+    authTagLength: GCM_AUTH_TAG_LENGTH,
+  });
   let encrypted = cipher.update(tokenString);
   encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return { iv: iv.toString("hex"), token: encrypted.toString("hex") };
+  const authTag = cipher.getAuthTag();
+  return {
+    iv: iv.toString("hex"),
+    authTag: authTag.toString("hex"),
+    token: encrypted.toString("hex"),
+  };
 }
 
 /**
- * Decrypt the session token cookie
- * @param encryptedToken - The encrypted token object with iv and token properties
- * @returns The decrypted token object
- * @throws If the token is invalid or decryption fails
+ * Decrypt the session token cookie using AES-256-GCM.
+ * If decryption fails (e.g., old CBC-encrypted tokens), returns null
+ * so the session is treated as new (forces re-authentication).
+ * @param encryptedToken - The encrypted token object with iv, authTag, and token properties
+ * @returns The decrypted token object, or null if decryption fails
  */
 export function decryptToken(encryptedToken: EncryptedToken): unknown {
   if (
@@ -84,17 +114,17 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
     encryptedToken.iv === undefined ||
     encryptedToken.token === undefined
   ) {
-    throw new Error("Invalid encrypted token: missing iv or token");
+    return null;
   }
 
   try {
     const iv = Buffer.from(encryptedToken.iv, "hex");
+    const authTag = Buffer.from(encryptedToken.authTag, "hex");
     const encryptedText = Buffer.from(encryptedToken.token, "hex");
-    const decipher = createDecipheriv(
-      config.ENCRYPTION_ALGORITHM,
-      Buffer.from(config.SALT),
-      iv,
-    );
+    const decipher = createDecipheriv(GCM_ALGORITHM, encryptionKey, iv, {
+      authTagLength: GCM_AUTH_TAG_LENGTH,
+    });
+    decipher.setAuthTag(authTag);
     let decrypted = decipher.update(encryptedText);
     decrypted = Buffer.concat([decrypted, decipher.final()]);
 
@@ -102,6 +132,8 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Failed to decrypt token:", errorMessage);
-    throw new Error(`Token decryption failed: ${errorMessage}`);
+    // Return null for any decryption failure (including old CBC-encrypted sessions).
+    // This forces a new session instead of falling back to insecure decryption.
+    return null;
   }
 }

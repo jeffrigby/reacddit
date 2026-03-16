@@ -6,7 +6,7 @@ function render(entry: LinkData): IFrameEmbedContent | null {
   const parsedUrl = parse(entry.url, true);
   const youtubeid = parsedUrl.query.v;
 
-  if (!youtubeid) {
+  if (!youtubeid || !/^[a-zA-Z0-9_-]{11}$/.test(youtubeid)) {
     return null;
   }
 

@@ -15,6 +15,7 @@ import redditVideoPreview from '@/components/posts/embeds/defaults/redditVideoPr
 import redditImagePreview from '@/components/posts/embeds/defaults/redditImagePreview';
 import redditMediaEmbed from '@/components/posts/embeds/defaults/redditMediaEmbed';
 import redditGallery from '@/components/posts/embeds/defaults/redditGallery';
+import { isSafeUrl } from '@/utils/sanitize';
 
 // Compile URL regex once for performance
 const URL_REGEX = urlRegex();
@@ -242,6 +243,10 @@ function nonSSLFallback(
 ): EmbedContent {
   const isSSL = window.location.protocol;
   if (isSSL === 'https:' && content && 'src' in content && content.src) {
+    // Block dangerous protocols (javascript:, data:, vbscript:, etc.)
+    if (!isSafeUrl(content.src)) {
+      return null;
+    }
     const { protocol } = parse(content.src);
     if (protocol === 'http:') {
       // Check for preview image:

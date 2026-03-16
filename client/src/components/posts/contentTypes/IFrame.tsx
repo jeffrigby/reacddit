@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import type { LinkData } from '@/types/redditApi';
 import { usePostContext } from '@/contexts';
+import { isSafeUrl } from '@/utils/sanitize';
 
 interface IFrameContent {
   src: string;
@@ -53,6 +54,11 @@ function IFrame({
     setIframeLoaded(true);
     onLoad();
   }, [onLoad]);
+
+  // Block non-https protocols (javascript:, data:, vbscript:, etc.)
+  if (!isSafeUrl(src, true)) {
+    return null;
+  }
 
   // Only unmount iframe if it's been on-screen before
   // This allows iframes to load initially (even if below viewport)
