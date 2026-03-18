@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -130,7 +130,7 @@ function Self({ name, content }: SelfProps) {
 
   const rawhtml = sanitizeHTML(cleanLinks(content.html));
 
-  const contentClasses = classNames('self-html', {
+  const contentClasses = clsx('self-html', {
     'self-fade': hasOverflow && !isExpanded,
     'sf-html-show-all': isExpanded,
   });

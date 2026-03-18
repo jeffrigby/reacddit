@@ -22,7 +22,7 @@ const shareCache = new LRUCache<string, string>({
 
 // Batch resolver: collects URLs during a render cycle, resolves in one API call
 type ResolveCallback = (postId: string | null) => void;
-const pendingBatch = new Map<string, ResolveCallback[]>();
+let pendingBatch = new Map<string, ResolveCallback[]>();
 let batchScheduled = false;
 
 /**
@@ -32,8 +32,8 @@ async function executeBatch(): Promise<void> {
   batchScheduled = false;
 
   // Snapshot and clear pending batch
-  const batch = new Map(pendingBatch);
-  pendingBatch.clear();
+  const batch = pendingBatch;
+  pendingBatch = new Map();
 
   if (batch.size === 0) {
     return;

@@ -41,9 +41,9 @@ function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
     return '';
   }
 
-  const prevEntry = async () => {
+  const prevEntry = () => {
     const prevIdx = inlineIdx === 0 ? totalLinks - 1 : inlineIdx - 1;
-    await setInlineIdx(prevIdx);
+    setInlineIdx(prevIdx);
   };
 
   const nextEntry = () => {

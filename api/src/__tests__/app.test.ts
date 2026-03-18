@@ -227,24 +227,21 @@ describe("API Endpoints", () => {
     it("should handle callback errors", async () => {
       const response = await request(app.callback())
         .get("/api/callback?error=access_denied")
-        .expect(500);
+        .expect(400);
 
       expect(response.body).toHaveProperty("status", "error");
       // When only error is provided without code/state, it triggers the missing params error
-      expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
-      );
+      // Error details are logged server-side only, not exposed to client
+      expect(response.body).toHaveProperty("message", "Authentication failed");
     });
 
     it("should handle missing state in callback", async () => {
       const response = await request(app.callback())
         .get("/api/callback?code=test-code")
-        .expect(500);
+        .expect(400);
 
       expect(response.body).toHaveProperty("status", "error");
-      expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
-      );
+      expect(response.body).toHaveProperty("message", "Authentication failed");
     });
   });
 
@@ -314,10 +311,10 @@ describe("API Endpoints", () => {
       const response = await request(app.callback())
         .get("/api/callback?code=test-code&state=invalid-state-456")
         .set("x-session-id", sessionId)
-        .expect(500);
+        .expect(403);
 
       expect(response.body).toHaveProperty("status", "error");
-      expect(response.body.message).toContain("THE STATE DOESN'T MATCH");
+      expect(response.body).toHaveProperty("message", "Authentication failed");
     });
 
     it("should handle token exchange failure in callback", async () => {
@@ -337,7 +334,7 @@ describe("API Endpoints", () => {
       const response = await request(app.callback())
         .get(`/api/callback?code=test-code&state=${state}`)
         .set("x-session-id", sessionId)
-        .expect(500);
+        .expect(502);
 
       expect(response.body).toHaveProperty("status", "error");
     });
@@ -347,7 +344,7 @@ describe("API Endpoints", () => {
         .get(
           "/api/callback?error=access_denied&error_description=User%20denied%20access",
         )
-        .expect(500);
+        .expect(400);
 
       expect(response.body).toHaveProperty("status", "error");
       // The current implementation treats this as missing code/state, but it's still an error case
@@ -412,19 +409,17 @@ describe("API Endpoints", () => {
     it("should handle malformed callback URLs", async () => {
       const response = await request(app.callback())
         .get("/api/callback?code=&state=")
-        .expect(500);
+        .expect(400);
 
       expect(response.body).toHaveProperty("status", "error");
-      expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
-      );
+      expect(response.body).toHaveProperty("message", "Authentication failed");
     });
 
     it("should handle very long state parameters", async () => {
       const longState = "a".repeat(1000);
       const response = await request(app.callback())
         .get(`/api/callback?code=test-code&state=${longState}`)
-        .expect(500);
+        .expect(403);
 
       expect(response.body).toHaveProperty("status", "error");
     });

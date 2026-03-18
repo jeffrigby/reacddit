@@ -246,13 +246,14 @@ app.use(async (ctx, next) => {
   ctx.set("Access-Control-Allow-Origin", config.CLIENT_PATH);
   ctx.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   ctx.set("Access-Control-Allow-Headers", "Content-Type");
+  ctx.set("Access-Control-Allow-Credentials", "true");
   if (ctx.method === "OPTIONS") {
     ctx.status = 204;
     return;
   }
   await next();
 });
-app.use(bodyParser());
+app.use(bodyParser({ jsonLimit: "16kb" }));
 app.use(async (ctx, next) => {
   await next();
   ctx.set("X-Content-Type-Options", "nosniff");
@@ -286,26 +287,26 @@ router.get("/api/callback", async (ctx) => {
   const savedState = ctx.session.state;
   ctx.session.state = null;
 
-  const handleError = (message: string, status = 500): void => {
-    console.error(message);
+  const handleError = (logMessage: string, status: number): void => {
+    console.error(logMessage);
     ctx.status = status;
-    ctx.body = { status: "error", message };
+    ctx.body = { status: "error", message: "Authentication failed" };
   };
 
   if (!code || !state) {
-    return handleError("Code and/or state query strings missing.");
+    return handleError("Code and/or state query strings missing.", 400);
   }
 
   if (error) {
-    return handleError(`ERROR RETRIEVING THE TOKEN. ${error}`);
+    return handleError(`ERROR RETRIEVING THE TOKEN. ${error}`, 403);
   }
 
   if (!savedState) {
-    return handleError("ERROR: SAVED STATE NOT FOUND.");
+    return handleError("ERROR: SAVED STATE NOT FOUND.", 403);
   }
 
   if (state !== savedState) {
-    return handleError("ERROR: THE STATE DOESN'T MATCH.");
+    return handleError("ERROR: THE STATE DOESN'T MATCH.", 403);
   }
 
   const options = {
@@ -331,7 +332,7 @@ router.get("/api/callback", async (ctx) => {
   } catch (exception) {
     const errorMessage =
       exception instanceof Error ? exception.message : String(exception);
-    return handleError(`ACCESS TOKEN ERROR ${errorMessage}`);
+    return handleError(`ACCESS TOKEN ERROR ${errorMessage}`, 502);
   }
 
   ctx.body = "callback";
