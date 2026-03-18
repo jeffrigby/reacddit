@@ -6,6 +6,7 @@ import {
   randomBytes,
 } from "crypto";
 import { config } from "./config.js";
+import { logger } from "./logger.js";
 import type {
   RedditAccessTokenResponse,
   ExtendedToken,
@@ -137,7 +138,7 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
 
     return JSON.parse(decrypted.toString());
   } catch (error) {
-    console.error("Failed to decrypt token:", getErrorMessage(error));
+    logger.error("Failed to decrypt token", { error: getErrorMessage(error) });
     // Return null for any decryption failure (including old CBC-encrypted sessions).
     // This forces a new session instead of falling back to insecure decryption.
     return null;

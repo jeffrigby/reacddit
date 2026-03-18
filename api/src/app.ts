@@ -1,7 +1,8 @@
 import Koa from "koa";
 import Router from "@koa/router";
 import session from "koa-session";
-import logger from "koa-logger";
+import koaLogger from "koa-logger";
+import { logger } from "./logger.js";
 import bodyParser from "koa-bodyparser";
 import { randomUUID } from "crypto";
 import qs from "qs";
@@ -49,7 +50,9 @@ function getSessionConfig() {
         const encryptedData = JSON.parse(stringifiedEncryptedData);
         return decryptToken(encryptedData);
       } catch (error) {
-        console.error("Failed to decode session:", getErrorMessage(error));
+        logger.error("Failed to decode session", {
+          error: getErrorMessage(error),
+        });
         return null;
       }
     },
@@ -106,7 +109,9 @@ function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): void {
     setSession(token, ctx);
     setCookie(token, ctx);
   } catch (error) {
-    console.error("Error setting session and cookie:", error);
+    logger.error("Error setting session and cookie", {
+      error: getErrorMessage(error),
+    });
   }
 }
 
@@ -127,12 +132,14 @@ async function getAnonToken(): Promise<{ token: RedditAccessTokenResponse }> {
       await axiosInstance.post("/api/v1/access_token", params);
     return { token: res.data };
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error: Anon Access Token error", error.message);
-    }
+    const detail: Record<string, unknown> = {};
     if (error instanceof AxiosError && error.response) {
-      console.error("Error response from Reddit:", error.response.data);
+      detail.status = error.response.status;
     }
+    if (error instanceof Error) {
+      detail.error = error.message;
+    }
+    logger.error("Anon access token error", detail);
     throw new Error("Failed to retrieve anonymous access token from Reddit.");
   }
 }
@@ -154,7 +161,7 @@ async function revokeToken(
     });
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    console.error("Revoke Token error", errorMessage);
+    logger.error("Revoke token error", { error: errorMessage });
     throw new Error(`Failed to revoke ${tokenType}: ${errorMessage}`);
   }
 }
@@ -182,7 +189,7 @@ async function getRefreshToken(
     return newToken.data;
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    console.error("Refresh Access Token error", errorMessage);
+    logger.error("Refresh access token error", { error: errorMessage });
     throw new Error(`Failed to refresh token: ${errorMessage}`);
   }
 }
@@ -268,7 +275,7 @@ app.use(async (ctx, next) => {
   ctx.set("Cache-Control", "no-store");
   ctx.set("X-XSS-Protection", "0");
 });
-app.use(logger());
+app.use(koaLogger());
 
 const router = new Router();
 
@@ -294,7 +301,7 @@ router.get("/api/callback", async (ctx) => {
   ctx.session.state = null;
 
   const handleError = (logMessage: string, status: number): void => {
-    console.error(logMessage);
+    logger.error(logMessage);
     ctx.status = status;
     ctx.body = { status: "error", message: "Authentication failed" };
   };
@@ -326,10 +333,10 @@ router.get("/api/callback", async (ctx) => {
       await axiosInstance.post("/api/v1/access_token", qs.stringify(options));
 
     const { data } = AccessToken;
-    console.log("TOKEN RETRIEVED SUCCESSFULLY.");
+    logger.info("Token retrieved successfully");
 
     if (data.access_token) {
-      console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
+      logger.info("Token retrieved, redirecting to client");
       const accessToken = addExtraInfoToToken(data, true);
       setSessAndCookie(accessToken, ctx);
       ctx.redirect(`${config.CLIENT_PATH}/?login`);
@@ -368,7 +375,7 @@ async function grantAnonToken(
   type: "new" | "newanon",
   reason: string,
 ): Promise<void> {
-  console.log(reason);
+  logger.info(reason);
   const anonToken = await getAnonToken();
   setSessionAndRespond(addExtraInfoToToken(anonToken.token, false), ctx, type);
 }
@@ -392,7 +399,7 @@ async function returnCachedTokenAndSetSession(
   ctx: Koa.Context,
   token: ExtendedToken,
 ): Promise<void> {
-  console.log("CACHED TOKEN RETURNED");
+  logger.info("Cached token returned");
   setSessionAndRespond(token, ctx, "cached");
 }
 
@@ -430,7 +437,7 @@ async function refreshOrGetAnonTokenAndSetSession(
     const message = forceRefresh
       ? "FORCED REFRESH. NEW TOKEN GRANTED"
       : "TOKEN EXPIRED. NEW TOKEN GRANTED";
-    console.log(message);
+    logger.info(message);
     setSessionAndRespond(newToken, ctx, "refresh");
   } catch {
     await grantAnonToken(
@@ -578,7 +585,9 @@ router.get("/api/logout", async (ctx) => {
     if (token.access_token) {
       revokePromises.push(
         revokeToken(token.access_token, "access_token").catch((error) => {
-          console.error("Failed to revoke access token:", error);
+          logger.error("Failed to revoke access token", {
+            error: getErrorMessage(error),
+          });
         }),
       );
     }
@@ -586,7 +595,9 @@ router.get("/api/logout", async (ctx) => {
     if (token.refresh_token) {
       revokePromises.push(
         revokeToken(token.refresh_token, "refresh_token").catch((error) => {
-          console.error("Failed to revoke refresh token:", error);
+          logger.error("Failed to revoke refresh token", {
+            error: getErrorMessage(error),
+          });
         }),
       );
     }

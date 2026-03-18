@@ -42,14 +42,40 @@ export function setParams(
   );
 }
 
+const REDDIT_OAUTH_ORIGIN = 'https://www.reddit.com';
+
 // Type guard to check if parsed token is valid TokenData
 function isTokenData(data: unknown): data is TokenData {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'accessToken' in data &&
-    'expires' in data
-  );
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+  const obj = data as Record<string, unknown>;
+
+  if (typeof obj.accessToken !== 'string' || obj.accessToken.length === 0) {
+    return false;
+  }
+  if (typeof obj.expires !== 'number' || !Number.isFinite(obj.expires)) {
+    return false;
+  }
+  if (typeof obj.auth !== 'boolean') {
+    return false;
+  }
+
+  // Validate optional loginURL origin to prevent open redirects
+  if (obj.loginURL !== undefined) {
+    if (typeof obj.loginURL !== 'string') {
+      return false;
+    }
+    try {
+      if (new URL(obj.loginURL).origin !== REDDIT_OAUTH_ORIGIN) {
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /**
