@@ -270,6 +270,8 @@ function proxyRequest(
     method: requestMethod,
     headers: {
       ...filteredHeaders,
+      host: `localhost:${targetPort}`,
+      'x-forwarded-host': proxyConfig.domain,
       'x-forwarded-proto': 'https',
       'x-forwarded-for': req.socket.remoteAddress || '',
       'x-real-ip': req.socket.remoteAddress || '',
@@ -298,8 +300,13 @@ function proxyRequest(
       delete headers[header];
     }
 
-    // Add security headers (but not for API responses with their own headers)
-    if (!isApi) {
+    if (isApi) {
+      // Transport-level headers only — API server manages its own CSP, X-Frame-Options, etc.
+      headers['Strict-Transport-Security'] =
+        securityHeaders['Strict-Transport-Security'];
+      headers['X-Content-Type-Options'] =
+        securityHeaders['X-Content-Type-Options'];
+    } else {
       Object.assign(headers, securityHeaders);
     }
 
@@ -546,6 +553,8 @@ function startServer(): void {
       cert,
       key,
       allowHTTP1: true, // Required for WebSocket upgrades
+      minVersion: 'TLSv1.2',
+      honorCipherOrder: true,
     },
     (req, res) => {
       // Type assertion needed because http2 streams are compatible with http messages
