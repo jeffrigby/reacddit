@@ -32,6 +32,27 @@ export function isSafeUrl(url: string, httpsOnly = false): boolean {
   }
 }
 
+/**
+ * Sanitize a URL for use in an anchor tag href attribute.
+ * Allows http:, https:, and mailto: protocols via isSafeUrl.
+ * Returns '#' for unsafe or malformed URLs.
+ */
+export function sanitizeHref(url: string): string {
+  try {
+    const { protocol } = new URL(url);
+    if (
+      protocol === 'https:' ||
+      protocol === 'http:' ||
+      protocol === 'mailto:'
+    ) {
+      return url;
+    }
+    return '#';
+  } catch {
+    return '#';
+  }
+}
+
 // Reuse a single textarea element for entity decoding
 const textareaDecoder = document.createElement('textarea');
 

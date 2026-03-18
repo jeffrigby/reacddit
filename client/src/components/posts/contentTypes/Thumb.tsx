@@ -1,4 +1,5 @@
 import { usePostContext } from '@/contexts';
+import { sanitizeHref } from '@/utils/sanitize';
 import type { ThumbEmbedContent } from '@/components/posts/embeds/types';
 
 interface ThumbProps {
@@ -32,7 +33,11 @@ function Thumb({ content }: ThumbProps) {
 
   return (
     <div>
-      <a href={content.url} rel="noopener noreferrer" target="_blank">
+      <a
+        href={sanitizeHref(content.url)}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
         {img}
       </a>
       <div className="no-embed">

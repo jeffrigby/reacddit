@@ -22,6 +22,7 @@ import {
   useIntersectionObservers,
 } from '@/contexts';
 import { hotkeyStatus, scrollByAmount } from '@/common';
+import { isSafeUrl } from '@/utils/sanitize';
 import {
   selectListingStatus,
   selectPostFocused,
@@ -302,7 +303,10 @@ function Post({
 
   const openLink = useCallback(() => {
     const linkData = data as LinkData;
-    window.open(linkData.url, '_blank');
+    if (!isSafeUrl(linkData.url)) {
+      return;
+    }
+    window.open(linkData.url, '_blank', 'noopener,noreferrer');
   }, [data]);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { sanitizeHref } from '@/utils/sanitize';
 import type { HttpsErrorContent } from '@/components/posts/embeds/types';
 
 interface HTTPSErrorProps {
@@ -12,7 +13,7 @@ function HTTPSError({ content }: HTTPSErrorProps) {
     <div className="self">
       <p>
         <FontAwesomeIcon icon={faExclamationCircle} /> Link is not HTTPS. Click{' '}
-        <a href={src} rel="noreferrer" target="_blank">
+        <a href={sanitizeHref(src)} rel="noreferrer" target="_blank">
           here
         </a>{' '}
         to load the link in a new window.

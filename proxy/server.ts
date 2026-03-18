@@ -23,6 +23,8 @@ const httpAgent = new http.Agent({
   timeout: 60000, // Socket timeout (60s)
 });
 
+const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB request body limit
+
 // Load environment variables from root .env
 // Try multiple paths to handle different execution contexts (sudo, npm scripts, etc.)
 const envPaths = [
@@ -388,6 +390,23 @@ function proxyRequest(
     }
   });
 
+  // Enforce request body size limit (10MB) to prevent abuse
+  let bodySize = 0;
+  let limitExceeded = false;
+  req.on('data', (chunk: Buffer) => {
+    if (limitExceeded) return;
+    bodySize += chunk.length;
+    if (bodySize > MAX_BODY_SIZE) {
+      limitExceeded = true;
+      req.destroy();
+      proxy.destroy();
+      if (!res.headersSent) {
+        res.writeHead(413, { 'Content-Type': 'text/plain' });
+        res.end('Request Entity Too Large');
+      }
+    }
+  });
+
   req.pipe(proxy);
 }
 
@@ -412,16 +431,40 @@ function handleWebSocketUpgrade(
   });
 
   proxyReq.on('upgrade', (proxyRes, proxySocket, proxyHead) => {
+    // Filter out headers with CRLF characters to prevent header injection
+    const sanitizedHeaders = Object.entries(proxyRes.headers)
+      .filter(([key, value]) => {
+        const str = String(value);
+        return (
+          !key.includes('\r') &&
+          !key.includes('\n') &&
+          !str.includes('\r') &&
+          !str.includes('\n')
+        );
+      })
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\r\n');
+
     socket.write(
       `HTTP/1.1 ${proxyRes.statusCode} ${proxyRes.statusMessage}\r\n` +
-        Object.entries(proxyRes.headers)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\r\n') +
+        sanitizedHeaders +
         '\r\n\r\n'
     );
 
     proxySocket.pipe(socket);
     socket.pipe(proxySocket);
+
+    // Symmetric cleanup: destroy the peer when either side closes or errors
+    socket.once('close', () => proxySocket.destroy());
+    socket.once('error', (err) => {
+      console.error(`❌ WebSocket client error for ${req.url}:`, err.message);
+      proxySocket.destroy();
+    });
+    proxySocket.once('close', () => socket.destroy());
+    proxySocket.once('error', (err) => {
+      console.error(`❌ WebSocket upstream error for ${req.url}:`, err.message);
+      socket.destroy();
+    });
 
     if (proxyHead.length > 0) {
       socket.write(proxyHead);
@@ -433,8 +476,12 @@ function handleWebSocketUpgrade(
     socket.destroy();
   });
 
-  // Set timeout (24 hours for WebSocket connections)
-  proxyReq.setTimeout(24 * 60 * 60 * 1000);
+  // Set timeout (5 minutes for WebSocket connections)
+  proxyReq.setTimeout(5 * 60 * 1000, () => {
+    console.error(`⏱️  WebSocket timeout for ${req.url} (exceeded 5 minutes)`);
+    socket.destroy();
+    proxyReq.destroy();
+  });
 
   proxyReq.end();
 }

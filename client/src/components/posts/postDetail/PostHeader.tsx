@@ -15,7 +15,7 @@ import PostSave from '@/components/posts/postActions/PostSave';
 import { usePostContext } from '@/contexts';
 import PostExpandContract from '@/components/posts/postActions/PostExpandContract';
 import { useAppSelector } from '@/redux/hooks';
-import { decodeHTMLEntities } from '@/utils/sanitize';
+import { decodeHTMLEntities, sanitizeHref } from '@/utils/sanitize';
 import type { LinkData } from '@/types/redditApi';
 import PostHeaderComment from './PostHeaderComment';
 import PostTimeAgo from './PostTimeAgo';
@@ -129,7 +129,7 @@ function PostHeader({
         <a
           aria-label="Open this link directly"
           className={btnClass}
-          href={linkData.url}
+          href={sanitizeHref(linkData.url)}
           rel="noopener noreferrer"
           target="_blank"
           title="Open this link directly"
@@ -161,7 +161,7 @@ function PostHeader({
       <a
         aria-label="Title"
         className="list-group-item-heading align-middle"
-        href={linkData.url}
+        href={sanitizeHref(linkData.url)}
         rel="noopener noreferrer"
         target="_blank"
       >

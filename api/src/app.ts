@@ -38,6 +38,7 @@ function getSessionConfig() {
      The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
     renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
      (default is false) */,
+    sameSite: "lax" as const,
     encode: (rawData: unknown): string => {
       const encrypted = encryptToken(rawData);
       return JSON.stringify(encrypted);
@@ -83,6 +84,7 @@ function setCookie(token: ExtendedToken, ctx: Koa.Context): void {
     httpOnly: false,
     secure: true,
     overwrite: true,
+    sameSite: "lax",
   });
 }
 
@@ -251,6 +253,14 @@ app.use(async (ctx, next) => {
   await next();
 });
 app.use(bodyParser());
+app.use(async (ctx, next) => {
+  await next();
+  ctx.set("X-Content-Type-Options", "nosniff");
+  ctx.set("X-Frame-Options", "DENY");
+  ctx.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  ctx.set("Cache-Control", "no-store");
+  ctx.set("X-XSS-Protection", "0");
+});
 app.use(logger());
 
 const router = new Router();

@@ -5,6 +5,7 @@ import {
   faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 import Content from '@/components/posts/Content';
+import { sanitizeHref } from '@/utils/sanitize';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 
 interface ResolvedContent {
@@ -109,7 +110,7 @@ function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
       <div className="small">
         Source:{' '}
         <a
-          href={inlineLink}
+          href={sanitizeHref(inlineLink)}
           rel="noreferrer"
           target="_blank"
           title={inlineLink}
