@@ -32,7 +32,14 @@ interface MenusStorage {
 
 function getAllMenus(): MenusStorage {
   const storedMenus = localStorage.getItem('menus');
-  return storedMenus ? JSON.parse(storedMenus) : {};
+  if (!storedMenus) {
+    return {};
+  }
+  try {
+    return JSON.parse(storedMenus) as MenusStorage;
+  } catch {
+    return {};
+  }
 }
 
 export function setMenuStatus(menuID: string, status: boolean): void {

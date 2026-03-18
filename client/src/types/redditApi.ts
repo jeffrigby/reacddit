@@ -1037,7 +1037,7 @@ export interface LeaveModeratorParams {
 }
 export type LeaveModeratorResponse = ApiResponse;
 
-export type MeResponse = Thing<AccountData & UserPreferences>;
+export type MeResponse = AccountData & UserPreferences;
 export type GetUserPreferencesResponse = UserPreferences;
 export type PatchUserPreferencesBody = Partial<UserPreferences> & {
   api_type: 'json';

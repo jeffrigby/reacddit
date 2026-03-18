@@ -11,6 +11,7 @@ import {
   encryptToken,
   decryptToken,
   deriveSigningKey,
+  getErrorMessage,
   isTokenExpired,
   addExtraInfoToToken,
 } from "./util.js";
@@ -44,8 +45,13 @@ function getSessionConfig() {
       return JSON.stringify(encrypted);
     },
     decode: (stringifiedEncryptedData: string): unknown => {
-      const encryptedData = JSON.parse(stringifiedEncryptedData);
-      return decryptToken(encryptedData);
+      try {
+        const encryptedData = JSON.parse(stringifiedEncryptedData);
+        return decryptToken(encryptedData);
+      } catch (error) {
+        console.error("Failed to decode session:", getErrorMessage(error));
+        return null;
+      }
     },
   };
 }
@@ -147,7 +153,7 @@ async function revokeToken(
       token_type_hint: tokenType,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = getErrorMessage(error);
     console.error("Revoke Token error", errorMessage);
     throw new Error(`Failed to revoke ${tokenType}: ${errorMessage}`);
   }
@@ -175,7 +181,7 @@ async function getRefreshToken(
       await axiosInstance.post("/api/v1/access_token", params);
     return newToken.data;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = getErrorMessage(error);
     console.error("Refresh Access Token error", errorMessage);
     throw new Error(`Failed to refresh token: ${errorMessage}`);
   }
@@ -330,9 +336,7 @@ router.get("/api/callback", async (ctx) => {
       return;
     }
   } catch (exception) {
-    const errorMessage =
-      exception instanceof Error ? exception.message : String(exception);
-    return handleError(`ACCESS TOKEN ERROR ${errorMessage}`, 502);
+    return handleError(`ACCESS TOKEN ERROR ${getErrorMessage(exception)}`, 502);
   }
 
   ctx.body = "callback";
@@ -524,6 +528,13 @@ router.post("/api/resolve-share", async (ctx) => {
 
   const urls = body.urls as unknown[];
 
+  // Reject empty arrays
+  if (urls.length === 0) {
+    ctx.status = 400;
+    ctx.body = { error: "URLs array cannot be empty" };
+    return;
+  }
+
   // Validate all items are strings
   if (!urls.every((u): u is string => typeof u === "string")) {
     ctx.status = 400;
@@ -538,9 +549,12 @@ router.post("/api/resolve-share", async (ctx) => {
     return;
   }
 
-  // Resolve all URLs in parallel
+  // Deduplicate URLs
+  const uniqueUrls = [...new Set(urls)];
+
+  // Resolve all unique URLs in parallel
   const entries = await Promise.all(
-    urls.map(async (url) => {
+    uniqueUrls.map(async (url) => {
       const result = await resolveShareUrl(url);
       return [url, result] as const;
     }),
@@ -557,32 +571,30 @@ router.post("/api/resolve-share", async (ctx) => {
 router.get("/api/logout", async (ctx) => {
   const token = ctx.session.token;
 
-  if (!token) {
-    return;
+  if (token) {
+    // Revoke tokens in parallel, logging but not failing on errors
+    const revokePromises: Promise<void>[] = [];
+
+    if (token.access_token) {
+      revokePromises.push(
+        revokeToken(token.access_token, "access_token").catch((error) => {
+          console.error("Failed to revoke access token:", error);
+        }),
+      );
+    }
+
+    if (token.refresh_token) {
+      revokePromises.push(
+        revokeToken(token.refresh_token, "refresh_token").catch((error) => {
+          console.error("Failed to revoke refresh token:", error);
+        }),
+      );
+    }
+
+    await Promise.all(revokePromises);
   }
 
-  // Revoke tokens in parallel, logging but not failing on errors
-  const revokePromises: Promise<void>[] = [];
-
-  if (token.access_token) {
-    revokePromises.push(
-      revokeToken(token.access_token, "access_token").catch((error) => {
-        console.error("Failed to revoke access token:", error);
-      }),
-    );
-  }
-
-  if (token.refresh_token) {
-    revokePromises.push(
-      revokeToken(token.refresh_token, "refresh_token").catch((error) => {
-        console.error("Failed to revoke refresh token:", error);
-      }),
-    );
-  }
-
-  await Promise.all(revokePromises);
-
-  // Clear the session and delete the token cookie
+  // Always clear session and redirect, even if no token existed
   ctx.session.token = null;
   ctx.cookies.set("token", null, { overwrite: true });
 

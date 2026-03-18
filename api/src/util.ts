@@ -12,6 +12,13 @@ import type {
   EncryptedToken,
 } from "./types/reddit.js";
 
+/**
+ * Extract a message string from an unknown error value
+ */
+export function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /** AES-256-GCM constants */
 const GCM_ALGORITHM = "aes-256-gcm";
 const GCM_IV_LENGTH = 12;
@@ -130,8 +137,7 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
 
     return JSON.parse(decrypted.toString());
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Failed to decrypt token:", errorMessage);
+    console.error("Failed to decrypt token:", getErrorMessage(error));
     // Return null for any decryption failure (including old CBC-encrypted sessions).
     // This forces a new session instead of falling back to insecure decryption.
     return null;

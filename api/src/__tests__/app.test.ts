@@ -48,6 +48,8 @@ vi.mock("../util.js", () => {
 
   return {
     axiosInstance: mockAxiosInstance,
+    getErrorMessage: (error: unknown) =>
+      error instanceof Error ? error.message : String(error),
     checkEnvErrors: vi.fn(),
     encryptToken: vi.fn(() => ({
       iv: "mock-iv",
@@ -247,7 +249,10 @@ describe("API Endpoints", () => {
 
   describe("Logout", () => {
     it("should handle logout when no token exists", async () => {
-      await request(app.callback()).get("/api/logout").expect(404);
+      const response = await request(app.callback())
+        .get("/api/logout")
+        .expect(302);
+      expect(response.headers["location"]).toContain("/?logout");
     });
 
     it("should successfully logout with valid token", async () => {
@@ -610,6 +615,42 @@ describe("API Endpoints", () => {
       expect(
         response.body.results["https://www.reddit.com/r/test/s/ABC"],
       ).toEqual({ error: "Could not extract post ID from redirect" });
+    });
+
+    it("should reject empty urls array", async () => {
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: [] })
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: "URLs array cannot be empty",
+      });
+    });
+
+    it("should deduplicate URLs in batch", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location:
+            "https://reddit.com/r/test/comments/abc123/some_post_title/",
+        },
+      });
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({
+          urls: [
+            "https://www.reddit.com/r/test/s/ABC",
+            "https://www.reddit.com/r/test/s/ABC",
+          ],
+        })
+        .expect(200);
+
+      // Should only make one HEAD request despite duplicate URLs
+      expect(axios.head).toHaveBeenCalledTimes(1);
+      expect(
+        response.body.results["https://www.reddit.com/r/test/s/ABC"],
+      ).toEqual({ postId: "abc123" });
     });
 
     it("should handle CORS preflight requests", async () => {

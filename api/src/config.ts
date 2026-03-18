@@ -63,6 +63,10 @@ function validateEnv(): void {
       message: "The SALT must be exactly 32 characters.",
     },
     {
+      condition: SALT && SALT.length === 32 && new Set(SALT).size === 1,
+      message: "The SALT must not be all the same character.",
+    },
+    {
       condition:
         !REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET || !REDDIT_CALLBACK_URI,
       message:
@@ -95,6 +99,14 @@ function validateEnv(): void {
   if (errors.length > 0) {
     errors.forEach((error) => console.log(red(`.env ERROR: ${error}`)));
     process.exit(1);
+  }
+
+  if (SALT === TEST_DEFAULTS.SALT) {
+    console.log(
+      red(
+        "WARNING: SALT matches the test default. Generate a unique SALT for production.",
+      ),
+    );
   }
 }
 
