@@ -8,6 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { usePostContext } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
+import { sanitizeHTML } from '@/utils/sanitize';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import SelfInline from './SelfInline';
 import '../../../styles/self.scss';
@@ -127,7 +128,7 @@ function Self({ name, content }: SelfProps) {
     return null;
   }
 
-  const rawhtml = cleanLinks(content.html);
+  const rawhtml = sanitizeHTML(cleanLinks(content.html));
 
   const contentClasses = classNames('self-html', {
     'self-fade': hasOverflow && !isExpanded,

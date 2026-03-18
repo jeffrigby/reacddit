@@ -18,10 +18,11 @@ export interface ExtendedToken extends RedditAccessTokenResponse {
 }
 
 /**
- * Encrypted Token Structure
+ * Encrypted Token Structure (AES-256-GCM)
  */
 export interface EncryptedToken {
   iv: string;
+  authTag: string;
   token: string;
 }
 

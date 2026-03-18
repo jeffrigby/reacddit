@@ -1,6 +1,6 @@
 # Reacddit API
 
-Koa.js OAuth2 server for Reddit authentication (TypeScript). Handles ONLY authentication - no other Reddit API operations.
+Koa.js OAuth2 server for Reddit authentication and utility endpoints (TypeScript).
 
 ## Commands
 
@@ -35,6 +35,20 @@ npm run build          # SAM build for Lambda deployment (requires Docker)
 - Use `config` object instead of direct `process.env` access
 - Validates on startup - fails fast with clear errors
 
+## API Endpoints
+
+**OAuth:**
+- `GET /api/bearer` - Get/refresh anonymous or authenticated token
+- `GET /api/authorize` - Redirect to Reddit OAuth login (alias: `/api/login`)
+- `GET /api/callback` - Reddit OAuth redirect callback
+- `GET /api/logout` - Revoke tokens, clear session, redirect to client
+
+**Utility:**
+- `POST /api/resolve-share` - Batch resolve Reddit share links (`/r/sub/s/code`) to post IDs
+  - Body: `{ urls: string[] }` (max 20 per request)
+  - Returns: `{ results: { [url]: { postId } | { error } } }`
+  - Required because Reddit share link redirects are blocked by CORS in the browser
+
 ## OAuth Flow
 
 1. Client requests `/api/bearer` (anonymous) or `/api/authorize` (user auth)
@@ -64,7 +78,7 @@ npm run build          # SAM build for Lambda deployment (requires Docker)
 - No `--build-in-source` flag needed (we don't have cross-workspace imports)
 
 **Template:** `template.yaml`
-- Lambda function (Node.js 22)
+- Lambda function (Node.js 24)
 - API Gateway integration
 - Environment variables from Parameter Store
 

@@ -10,8 +10,6 @@ declare global {
       SESSION_LENGTH_SECS?: string;
       TOKEN_EXPIRY_PADDING_SECS?: string;
       PORT?: string;
-      ENCRYPTION_ALGORITHM?: string;
-      IV_LENGTH?: string;
       DEBUG?: string;
       ENV_SSM_PARAM?: string;
     }

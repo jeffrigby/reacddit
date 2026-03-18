@@ -51,6 +51,9 @@ stats.json
 /reddit-api-tester/.token-cache.json
 /reddit-api-tester/dist/
 
+# Security audit reports (contain unfixed vulnerability details)
+SECURITY-AUDIT-*.md
+
 # Agent-specific documentation (not general codebase docs)
 /agentDocs/
 /.claude/

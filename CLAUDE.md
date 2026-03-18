@@ -4,7 +4,7 @@ Reacddit is a Reddit client with enhanced media viewing and embedded content sup
 
 ## Tech Stack
 
-- **Client:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 6
+- **Client:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 7
 - **API:** Koa.js OAuth2 server (Reddit auth only)
 - **Proxy:** Node.js HTTPS reverse proxy for local dev SSL
 - **Deployment:** AWS Lambda via SAM/CloudFormation
@@ -79,9 +79,10 @@ npm test                  # Run tests with Vitest
 **Embed System (Key Differentiator):**
 - Plugin-based architecture for embedded content
 - Entry: `client/src/components/posts/embeds/index.ts`
-- Domain handlers: `domains/` directory (YouTube, Twitter, etc.)
+- Domain handlers: `domains/` directory (YouTube, Twitter, Reddit, etc.)
 - Adult content: `domains_custom/` (separate)
 - Dynamic loading via `import.meta.glob`
+- Reddit share link resolution via `POST /api/resolve-share` (batch, with client-side LRU cache)
 - Add new embeds: Create `domains/[domain].ts` with default export render function
 
 **Routing:**
@@ -105,7 +106,7 @@ npm test                  # Run tests with Vitest
 - `client/src/types/redditApi.ts` - Reddit API types (centralized, may be incomplete)
 
 **API:**
-- `api/src/app.ts` - Koa OAuth server
+- `api/src/app.ts` - Koa OAuth server + share link resolver
 - `api/src/config.ts` - Environment config with validation
 
 **Proxy:**

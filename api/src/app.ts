@@ -10,6 +10,7 @@ import {
   axiosInstance,
   encryptToken,
   decryptToken,
+  deriveSigningKey,
   isTokenExpired,
   addExtraInfoToToken,
 } from "./util.js";
@@ -237,7 +238,7 @@ function getLoginUrl(ctx: Koa.Context): string {
 const app = new Koa<Koa.DefaultState, Koa.Context & { session: SessionData }>();
 app.proxy = true;
 
-app.keys = [config.SALT];
+app.keys = [deriveSigningKey()];
 app.use(session(getSessionConfig(), app));
 app.use(async (ctx, next) => {
   ctx.set("Access-Control-Allow-Origin", config.CLIENT_PATH);

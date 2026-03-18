@@ -81,7 +81,7 @@ sam deploy           # Subsequent deployments
 
 The `api/template.yaml` provisions a complete serverless infrastructure:
 
-- **Lambda Function** - OAuth2 API running on Node.js 22 (arm64)
+- **Lambda Function** - OAuth2 API running on Node.js 24 (arm64)
 - **S3 Bucket** - Static site hosting for the client with encryption and versioning
 - **CloudFront Distribution** - CDN with custom domain and SSL
   - Primary origin: S3 bucket (serves client at `/dist`)
@@ -197,7 +197,7 @@ While AWS SAM is the recommended approach, you can deploy using alternative meth
 
 The client is a standard React SPA and the API is a Node.js application, so they can be deployed to any platform that supports:
 - Static site hosting (client)
-- Node.js 22+ runtime (API)
+- Node.js 24+ runtime (API)
 - Environment variable configuration
 - HTTPS/SSL (required)
 
