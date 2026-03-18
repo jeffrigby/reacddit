@@ -4,8 +4,10 @@ import {
   mkdirSync,
   writeFileSync,
   chmodSync,
+  unlinkSync,
 } from 'fs';
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
+import { X509Certificate } from 'crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -22,6 +24,32 @@ interface Certificates {
   cert: Buffer;
   key: Buffer;
   isCustom: boolean;
+}
+
+/**
+ * Check certificate expiration and log warnings
+ * @returns days until expiry, or -1 if expired/unparseable
+ */
+function checkCertExpiry(certBuffer: Buffer): number {
+  try {
+    const cert = new X509Certificate(certBuffer);
+    const expiryDate = new Date(cert.validTo);
+    const daysUntilExpiry = Math.floor(
+      (expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysUntilExpiry <= 0) {
+      console.log(`⚠️  Certificate has expired!`);
+    } else if (daysUntilExpiry <= 30) {
+      console.log(
+        `⚠️  Certificate expires in ${daysUntilExpiry} day${daysUntilExpiry === 1 ? '' : 's'}`
+      );
+    }
+
+    return daysUntilExpiry;
+  } catch {
+    return -1;
+  }
 }
 
 /**
@@ -43,9 +71,12 @@ export function getCertificates(
       throw new Error(`Private key not found at: ${keyPath}`);
     }
 
+    const certBuffer = readFileSync(certPath);
+    checkCertExpiry(certBuffer);
+
     console.log(`✅ Using custom SSL certificates from ${certPath}`);
     return {
-      cert: readFileSync(certPath),
+      cert: certBuffer,
       key: readFileSync(keyPath),
       isCustom: true,
     };
@@ -58,12 +89,28 @@ export function getCertificates(
 
   // Check if self-signed certs already exist
   if (existsSync(generatedCertPath) && existsSync(generatedKeyPath)) {
-    console.log(`✅ Using existing self-signed certificates for ${domain}`);
-    return {
-      cert: readFileSync(generatedCertPath),
-      key: readFileSync(generatedKeyPath),
-      isCustom: false,
-    };
+    const certBuffer = readFileSync(generatedCertPath);
+    const daysUntilExpiry = checkCertExpiry(certBuffer);
+
+    if (daysUntilExpiry <= 0) {
+      console.log(`🔐 Regenerating expired self-signed certificate...`);
+      // Fall through to generation below
+    } else {
+      console.log(`✅ Using existing self-signed certificates for ${domain}`);
+      return {
+        cert: certBuffer,
+        key: readFileSync(generatedKeyPath),
+        isCustom: false,
+      };
+    }
+  }
+
+  // Validate domain to prevent injection into OpenSSL config
+  const DOMAIN_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$/;
+  if (!DOMAIN_REGEX.test(domain)) {
+    throw new Error(
+      `Invalid domain "${domain}": must contain only alphanumeric characters, dots, and hyphens`
+    );
   }
 
   // Generate self-signed certificates
@@ -121,20 +168,32 @@ IP.2 = ::1
     // Certificate can be world-readable (it's public)
     chmodSync(generatedCertPath, 0o644);
 
+    // Clean up OpenSSL config file (no longer needed after generation)
+    try {
+      unlinkSync(configPath);
+    } catch {
+      // Non-critical: config file contains no secrets
+    }
+
     // If running as root (via sudo), chown files back to the original user
     // This prevents EACCES errors on subsequent non-sudo runs
     if (process.getuid && process.getuid() === 0) {
       const sudoUid = process.env.SUDO_UID;
       const sudoGid = process.env.SUDO_GID;
 
-      if (sudoUid && sudoGid) {
+      if (
+        sudoUid &&
+        sudoGid &&
+        /^\d+$/.test(sudoUid) &&
+        /^\d+$/.test(sudoGid)
+      ) {
         console.log(
           `🔐 Changing ownership of .ssl directory to original user (${sudoUid}:${sudoGid})...`
         );
 
         try {
           // Recursively chown the entire .ssl directory and its contents
-          execSync(`chown -R ${sudoUid}:${sudoGid} "${sslDir}"`, {
+          execFileSync('chown', ['-R', `${sudoUid}:${sudoGid}`, sslDir], {
             stdio: 'pipe',
           });
         } catch (chownError) {
