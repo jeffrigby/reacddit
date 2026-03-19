@@ -281,6 +281,9 @@ app.use(koaLogger());
 
 const router = new Router();
 
+// In-memory rate limiting — only effective for local dev and warm Lambda instances.
+// On Lambda, state resets on cold starts and isn't shared across concurrent instances.
+// For production, use AWS WAF rate-based rules or API Gateway throttling instead.
 const authDb = new Map();
 const bearerDb = new Map();
 const shareDb = new Map();
