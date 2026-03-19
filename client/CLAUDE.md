@@ -69,6 +69,19 @@ npm run lint           # Prettier + ESLint (CRITICAL: zero errors required)
 - Debounce search inputs
 - Lazy-load routes/components
 
+**Embed System:**
+- Plugin-based: `src/components/posts/embeds/domains/` (one file per domain)
+- Entry point: `src/components/posts/embeds/index.ts`
+- Reddit cross-posts: `domains/redditcom.ts` resolves linked posts via OAuth API, delegates rendering to the appropriate domain handler
+- Share links (`/r/sub/s/code`): batched via `POST /api/resolve-share` with client-side LRU cache
+- Add new embeds: Create `domains/[domain].ts` with default export async render function
+
+**Security:**
+- HTML sanitization via DOMPurify: `src/utils/sanitize.ts` (`sanitizeHTML`)
+- URL validation: `isSafeUrl()` and `sanitizeHref()` in `src/utils/sanitize.ts`
+- Always use `sanitizeHTML()` when rendering user-provided HTML (e.g., Reddit selftext_html)
+- Always use `sanitizeHref()` for dynamic href attributes
+
 ## Error Handling
 
 - Try/catch for async operations

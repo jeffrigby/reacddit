@@ -5,7 +5,7 @@ Koa.js OAuth2 server for Reddit authentication and utility endpoints (TypeScript
 ## Commands
 
 ```bash
-npm start              # Development server with nodemon + tsx
+npm start              # Development server with tsx watch
 npm run type-check     # TypeScript type checking
 npm test               # Run tests with Vitest
 npm run build          # SAM build for Lambda deployment (requires Docker)
@@ -58,15 +58,23 @@ npm run build          # SAM build for Lambda deployment (requires Docker)
 5. Subsequent requests include encrypted token in session cookie
 
 **Session management:**
-- Koa-session with signed cookies
-- Tokens encrypted with AES-256-GCM using `SALT`
-- See `src/util.ts` for encryption helpers
+- Koa-session with signed cookies (HKDF-derived signing key)
+- Session data encrypted with AES-256-GCM (HKDF-derived encryption key from `SALT`)
+- See `src/util.ts` for encryption helpers (`encryptToken`, `decryptToken`, `deriveSigningKey`)
+
+**Security middleware:**
+- Per-endpoint rate limiting via `koa-ratelimit` (in-memory; for production use AWS WAF)
+- SSRF protection on share link resolver via `request-filtering-agent`
+- Security response headers: X-Content-Type-Options, X-Frame-Options, HSTS, Cache-Control
+- Body parser limited to 16kb JSON
+- CORS restricted to `CLIENT_PATH` origin
 
 ## Key Files
 
-- `src/app.ts` - Koa server, routes, middleware
+- `src/app.ts` - Koa server, routes, middleware, rate limiting
 - `src/config.ts` - Environment configuration with validation
-- `src/util.ts` - Encryption helpers (encrypt/decrypt tokens)
+- `src/util.ts` - AES-256-GCM encryption (HKDF key derivation), token helpers
+- `src/logger.ts` - Structured logging (`@aws-lambda-powertools/logger`)
 - `src/types/` - TypeScript type definitions
 - `template.yaml` - SAM CloudFormation template for AWS Lambda deployment
 

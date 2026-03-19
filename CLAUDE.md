@@ -5,7 +5,7 @@ Reacddit is a Reddit client with enhanced media viewing and embedded content sup
 ## Tech Stack
 
 - **Client:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 7
-- **API:** Koa.js OAuth2 server (Reddit auth only)
+- **API:** Koa.js OAuth2 server (Reddit auth + share link resolver)
 - **Proxy:** Node.js HTTPS reverse proxy for local dev SSL
 - **Deployment:** AWS Lambda via SAM/CloudFormation
 - **Package Management:** npm workspaces (client, api, proxy)
@@ -79,10 +79,11 @@ npm test                  # Run tests with Vitest
 **Embed System (Key Differentiator):**
 - Plugin-based architecture for embedded content
 - Entry: `client/src/components/posts/embeds/index.ts`
-- Domain handlers: `domains/` directory (YouTube, Twitter, Reddit, etc.)
+- Domain handlers: `domains/` directory (YouTube, Twitter, Reddit, Imgur, Facebook, Instagram, etc.)
+- Reddit cross-post handler: `domains/redditcom.ts` fetches linked post data via OAuth API, delegates to appropriate domain handler
+- Reddit share link resolution via `POST /api/resolve-share` (batch, with client-side LRU cache in `redditcom.ts`)
 - Adult content: `domains_custom/` (separate)
 - Dynamic loading via `import.meta.glob`
-- Reddit share link resolution via `POST /api/resolve-share` (batch, with client-side LRU cache)
 - Add new embeds: Create `domains/[domain].ts` with default export render function
 
 **Routing:**
@@ -91,9 +92,12 @@ npm test                  # Run tests with Vitest
 
 **HTTPS Proxy (`/proxy/`):**
 - Required for embedded content (iframes need HTTPS)
-- Auto-generates self-signed certs on first run
+- HTTP/2 with HTTP/1.1 fallback, Brotli/gzip compression for API responses
+- Auto-generates self-signed certs on first run (also supports Let's Encrypt)
 - Routes `/api/*` → Koa (3001), everything else → Vite (3000)
 - WebSocket support for HMR
+- Request hardening: 10MB body limit, path normalization, hop-by-hop header stripping
+- Security headers: HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
 - Config: `proxy/server.ts`, certs: `proxy/certs.ts`
 
 ## Key Files
@@ -102,12 +106,16 @@ npm test                  # Run tests with Vitest
 - `client/src/components/layout/App.tsx` - Main app & routing
 - `client/src/redux/configureStore.ts` - Redux store
 - `client/src/redux/api/redditApi.ts` - RTK Query config
-- `client/src/components/posts/embeds/index.ts` - Embed system
+- `client/src/components/posts/embeds/index.ts` - Embed system entry
+- `client/src/components/posts/embeds/domains/redditcom.ts` - Reddit cross-post embed handler (share link batch resolver)
+- `client/src/utils/sanitize.ts` - HTML sanitization (DOMPurify) and URL validation
 - `client/src/types/redditApi.ts` - Reddit API types (centralized, may be incomplete)
 
 **API:**
-- `api/src/app.ts` - Koa OAuth server + share link resolver
+- `api/src/app.ts` - Koa OAuth server, share link resolver, rate limiting
 - `api/src/config.ts` - Environment config with validation
+- `api/src/util.ts` - AES-256-GCM encryption (HKDF key derivation), token helpers
+- `api/src/logger.ts` - Structured logging (@aws-lambda-powertools/logger)
 
 **Proxy:**
 - `proxy/server.ts` - HTTPS reverse proxy
