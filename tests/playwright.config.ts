@@ -1,11 +1,32 @@
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from '@playwright/test';
 
-const baseURL = process.env['BASE_URL'];
-if (!baseURL) {
+function loadBaseURL(): string {
+  if (process.env['BASE_URL']) {
+    return process.env['BASE_URL'];
+  }
+
+  // Read PROXY_DOMAIN from root .env
+  const dir = dirname(fileURLToPath(import.meta.url));
+  const envPath = resolve(dir, '..', '.env');
+  try {
+    const envFile = readFileSync(envPath, 'utf-8');
+    const match = envFile.match(/^PROXY_DOMAIN=(.+)$/m);
+    if (match?.[1]) {
+      return `https://${match[1].trim()}`;
+    }
+  } catch {
+    // .env not found — fall through to error
+  }
+
   throw new Error(
-    'BASE_URL environment variable is required (e.g. BASE_URL=https://dev.reacdd.it)'
+    'No BASE_URL env var and no PROXY_DOMAIN in root .env file'
   );
 }
+
+const baseURL = loadBaseURL();
 
 export default defineConfig({
   testDir: './e2e',
