@@ -489,13 +489,6 @@ function handleWebSocketUpgrade(
     socket.destroy();
   });
 
-  // Set timeout (30 minutes for WebSocket connections — allows idle HMR during dev)
-  proxyReq.setTimeout(30 * 60 * 1000, () => {
-    console.error(`⏱️  WebSocket timeout for ${req.url} (exceeded 30 minutes)`);
-    socket.destroy();
-    proxyReq.destroy();
-  });
-
   proxyReq.end();
 }
 
