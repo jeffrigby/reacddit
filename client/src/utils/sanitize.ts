@@ -12,10 +12,6 @@ export function sanitizeHTML(html: string): string {
 }
 
 /**
- * Decode HTML entities in a string and return plain text.
- * Used for post titles where HTML rendering is not needed.
- */
-/**
  * Check if a URL uses a safe protocol.
  * @param url - URL string to validate
  * @param httpsOnly - If true, only allow https:. If false, allow https: and http:.

@@ -460,6 +460,49 @@ describe("API Endpoints", () => {
       expect(response.headers).toHaveProperty("access-control-allow-origin");
       expect(response.headers).toHaveProperty("access-control-allow-methods");
     });
+
+    it("should include security response headers", async () => {
+      const mockRedditResponse = {
+        access_token: "test-token",
+        expires_in: 3600,
+      };
+
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        data: mockRedditResponse,
+      });
+
+      const response = await request(app.callback())
+        .get("/api/bearer")
+        .expect(200);
+
+      expect(response.headers["x-content-type-options"]).toBe("nosniff");
+      expect(response.headers["x-frame-options"]).toBe("DENY");
+      expect(response.headers["strict-transport-security"]).toBe(
+        "max-age=31536000; includeSubDomains",
+      );
+      expect(response.headers["cache-control"]).toBe("no-store");
+      expect(response.headers["x-xss-protection"]).toBe("0");
+    });
+
+    it("should pass SSRF-safe agent to share link resolver", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location: "https://www.reddit.com/r/test/comments/abc123/post_title/",
+        },
+      });
+
+      await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(axios.head).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          httpsAgent: expect.anything(),
+        }),
+      );
+    });
   });
 
   describe("Rate Limiting", () => {
@@ -500,6 +543,30 @@ describe("API Endpoints", () => {
       expect(response.headers).toHaveProperty("ratelimit-limit");
       expect(response.headers).toHaveProperty("ratelimit-remaining");
       expect(response.headers).toHaveProperty("ratelimit-reset");
+    });
+
+    it("should return 429 when bearer rate limit is exceeded", async () => {
+      const mockRedditResponse = {
+        access_token: "test-access-token",
+        token_type: "bearer",
+        expires_in: 3600,
+        scope: "*",
+      };
+
+      // Bearer limit is 30 requests per minute
+      for (let i = 0; i < 30; i++) {
+        (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+          data: mockRedditResponse,
+        });
+        await request(app.callback()).get("/api/bearer").expect(200);
+      }
+
+      // 31st request should be rate limited
+      const response = await request(app.callback())
+        .get("/api/bearer")
+        .expect(429);
+
+      expect(response.headers).toHaveProperty("retry-after");
     });
   });
 

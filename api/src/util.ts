@@ -120,6 +120,7 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
   if (
     !encryptedToken ||
     encryptedToken.iv === undefined ||
+    encryptedToken.authTag === undefined ||
     encryptedToken.token === undefined
   ) {
     return null;

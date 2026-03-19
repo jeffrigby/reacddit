@@ -51,6 +51,7 @@ async function executeBatch(): Promise<void> {
     });
 
     if (!response.ok) {
+      console.error(`Share link batch resolution failed: ${response.status}`);
       resolveAll(null);
       return;
     }
@@ -67,7 +68,8 @@ async function executeBatch(): Promise<void> {
       }
       callbacks.forEach((cb) => cb(postId));
     });
-  } catch {
+  } catch (error) {
+    console.error('Share link batch resolution error:', error);
     resolveAll(null);
   }
 }
@@ -95,7 +97,7 @@ function extractPostId(url: string): string | null {
  * Check if URL is a share link (cannot be resolved client-side due to CORS)
  */
 function isShareLink(url: string): boolean {
-  return url.includes('/s/');
+  return /\/r\/[^/]+\/s\/[a-zA-Z0-9]+/.test(url);
 }
 
 /**
@@ -160,7 +162,8 @@ async function fetchPostData(
       title: post.title ?? '',
       preview: post.preview,
     };
-  } catch {
+  } catch (error) {
+    console.error(`Failed to fetch post data for ${postId}:`, error);
     return null;
   }
 }
@@ -179,7 +182,8 @@ async function tryDomainHandler(
   try {
     const content = await Embeds[domainKey](entry);
     return content ? { ...content, renderFunction: domainKey } : null;
-  } catch {
+  } catch (error) {
+    console.error(`Domain handler "${domainKey}" error:`, error);
     return null;
   }
 }

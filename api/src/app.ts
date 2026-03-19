@@ -483,7 +483,8 @@ async function refreshOrGetAnonTokenAndSetSession(
       : "TOKEN EXPIRED. NEW TOKEN GRANTED";
     logger.info(message);
     setSessionAndRespond(newToken, ctx, "refresh");
-  } catch {
+  } catch (error) {
+    logger.error("Token refresh failed", { error: getErrorMessage(error) });
     await grantAnonToken(
       ctx,
       "new",
@@ -556,7 +557,11 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
     }
 
     return { postId };
-  } catch {
+  } catch (error) {
+    logger.warn("Share link resolution failed", {
+      url,
+      error: getErrorMessage(error),
+    });
     return { error: "Failed to resolve share link" };
   }
 }
