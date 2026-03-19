@@ -24,6 +24,8 @@ import type {
 } from "./types/reddit.js";
 import type { SessionData } from "./types/session.js";
 import axios, { AxiosError, type AxiosResponse } from "axios";
+import pLimit from "p-limit";
+import { LRUCache } from "lru-cache";
 import ratelimit from "koa-ratelimit";
 import { globalHttpsAgent as ssrfSafeAgent } from "request-filtering-agent";
 
@@ -529,16 +531,36 @@ const SHARE_LINK_REGEX =
   /^https?:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
 
 // Max URLs per batch request
-const MAX_BATCH_SIZE = 20;
+const MAX_BATCH_SIZE = 50;
 
 type ShareResolveResult = { postId: string } | { error: string };
 
+// Server-side cache for resolved share links.
+// Only successful resolutions are cached; errors are retried on next request.
+// In-memory only — resets on Lambda cold starts and isn't shared across instances.
+// TODO: Move to ElastiCache/DynamoDB for persistence across Lambda invocations.
+const shareCache = new LRUCache<string, string>({
+  max: 5000,
+  ttl: 1000 * 60 * 60 * 6, // 6 hours (share links are stable)
+});
+
+/** Reset the share link cache. For testing only. */
+export function _resetShareCache(): void {
+  shareCache.clear();
+}
+
 /**
- * Resolve a single share link to a post ID by following redirects
+ * Resolve a single share link to a post ID by following redirects.
+ * Returns cached result if available.
  */
 async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
   if (!SHARE_LINK_REGEX.test(url)) {
     return { error: "Invalid Reddit share link format" };
+  }
+
+  const cached = shareCache.get(url);
+  if (cached !== undefined) {
+    return { postId: cached };
   }
 
   try {
@@ -559,6 +581,7 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
       return { error: "Could not extract post ID from redirect" };
     }
 
+    shareCache.set(url, postId);
     return { postId };
   } catch (error) {
     logger.warn("Share link resolution failed", {
@@ -612,10 +635,11 @@ router.post("/api/resolve-share", shareRateLimit, async (ctx) => {
   // Deduplicate URLs
   const uniqueUrls = [...new Set(urls)];
 
-  // Resolve all unique URLs in parallel
+  // Resolve all unique URLs with concurrency limit to avoid overwhelming Reddit
+  const resolveLimit = pLimit(10);
   const entries = await Promise.all(
     uniqueUrls.map(async (url) => {
-      const result = await resolveShareUrl(url);
+      const result = await resolveLimit(() => resolveShareUrl(url));
       return [url, result] as const;
     }),
   );

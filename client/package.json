@@ -36,6 +36,7 @@
     "lodash": "^4.17.15",
     "lru-cache": "^11.2.2",
     "p-limit": "^7.1.1",
+    "p-queue": "^9.1.0",
     "query-string": "^9.0.0",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.10",

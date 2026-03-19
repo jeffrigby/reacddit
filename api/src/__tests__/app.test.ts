@@ -91,7 +91,7 @@ vi.mock("koa-session", () => ({
     },
 }));
 
-import app, { _resetRateLimiters } from "../app.js";
+import app, { _resetRateLimiters, _resetShareCache } from "../app.js";
 import { axiosInstance } from "../util.js";
 
 describe("API Endpoints", () => {
@@ -99,6 +99,7 @@ describe("API Endpoints", () => {
     vi.clearAllMocks();
     sessionStore = {}; // Reset session store
     _resetRateLimiters(); // Reset rate limit counters
+    _resetShareCache(); // Reset share link cache
     (axiosInstance.post as ReturnType<typeof vi.fn>).mockReset();
     (axiosInstance.get as ReturnType<typeof vi.fn>).mockReset();
   });
@@ -656,7 +657,7 @@ describe("API Endpoints", () => {
 
     it("should reject batch sizes exceeding limit", async () => {
       const urls = Array.from(
-        { length: 21 },
+        { length: 51 },
         (_, i) => `https://www.reddit.com/r/test/s/URL${i}`,
       );
 
@@ -666,7 +667,7 @@ describe("API Endpoints", () => {
         .expect(400);
 
       expect(response.body).toEqual({
-        error: "Maximum 20 URLs per request",
+        error: "Maximum 50 URLs per request",
       });
     });
 
@@ -760,6 +761,66 @@ describe("API Endpoints", () => {
       expect(
         response.body.results["https://www.reddit.com/r/test/s/ABC"],
       ).toEqual({ postId: "abc123" });
+    });
+
+    it("should return cached results without making additional HEAD requests", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location:
+            "https://reddit.com/r/test/comments/abc123/some_post_title/",
+        },
+      });
+
+      // First request resolves via HEAD
+      await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(axios.head).toHaveBeenCalledTimes(1);
+
+      // Second request should use cache — no additional HEAD request
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(axios.head).toHaveBeenCalledTimes(1);
+      expect(
+        response.body.results["https://www.reddit.com/r/test/s/ABC"],
+      ).toEqual({ postId: "abc123" });
+    });
+
+    it("should not cache error results", async () => {
+      (axios.head as ReturnType<typeof vi.fn>)
+        .mockRejectedValueOnce(new Error("Network error"))
+        .mockResolvedValueOnce({
+          headers: {
+            location:
+              "https://reddit.com/r/test/comments/abc123/some_post_title/",
+          },
+        });
+
+      // First request fails
+      const first = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(first.body.results["https://www.reddit.com/r/test/s/ABC"]).toEqual(
+        { error: "Failed to resolve share link" },
+      );
+
+      // Second request retries and succeeds
+      const second = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(
+        second.body.results["https://www.reddit.com/r/test/s/ABC"],
+      ).toEqual({ postId: "abc123" });
+      expect(axios.head).toHaveBeenCalledTimes(2);
     });
 
     it("should handle CORS preflight requests", async () => {
