@@ -91,13 +91,14 @@ vi.mock("koa-session", () => ({
     },
 }));
 
-import app from "../app.js";
+import app, { _resetRateLimiters } from "../app.js";
 import { axiosInstance } from "../util.js";
 
 describe("API Endpoints", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStore = {}; // Reset session store
+    _resetRateLimiters(); // Reset rate limit counters
     (axiosInstance.post as ReturnType<typeof vi.fn>).mockReset();
     (axiosInstance.get as ReturnType<typeof vi.fn>).mockReset();
   });
@@ -458,6 +459,47 @@ describe("API Endpoints", () => {
       // The CORS headers are set, even if the value is undefined due to env var issues
       expect(response.headers).toHaveProperty("access-control-allow-origin");
       expect(response.headers).toHaveProperty("access-control-allow-methods");
+    });
+  });
+
+  describe("Rate Limiting", () => {
+    it("should include rate limit headers on /api/bearer", async () => {
+      const mockRedditResponse = {
+        access_token: "test-access-token",
+        token_type: "bearer",
+        expires_in: 3600,
+        scope: "*",
+      };
+
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        data: mockRedditResponse,
+      });
+
+      const response = await request(app.callback())
+        .get("/api/bearer")
+        .expect(200);
+
+      expect(response.headers).toHaveProperty("ratelimit-limit");
+      expect(response.headers).toHaveProperty("ratelimit-remaining");
+      expect(response.headers).toHaveProperty("ratelimit-reset");
+    });
+
+    it("should include rate limit headers on /api/resolve-share", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location:
+            "https://www.reddit.com/r/funny/comments/abc123/post_title/",
+        },
+      });
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/funny/s/XYZ123"] })
+        .expect(200);
+
+      expect(response.headers).toHaveProperty("ratelimit-limit");
+      expect(response.headers).toHaveProperty("ratelimit-remaining");
+      expect(response.headers).toHaveProperty("ratelimit-reset");
     });
   });
 

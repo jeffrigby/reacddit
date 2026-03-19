@@ -24,6 +24,8 @@ import type {
 } from "./types/reddit.js";
 import type { SessionData } from "./types/session.js";
 import axios, { AxiosError, type AxiosResponse } from "axios";
+import ratelimit from "koa-ratelimit";
+import { globalHttpsAgent as ssrfSafeAgent } from "request-filtering-agent";
 
 function getSessionConfig() {
   return {
@@ -279,12 +281,54 @@ app.use(koaLogger());
 
 const router = new Router();
 
+const authDb = new Map();
+const bearerDb = new Map();
+const shareDb = new Map();
+
+const rateLimitHeaders = {
+  remaining: "RateLimit-Remaining",
+  reset: "RateLimit-Reset",
+  total: "RateLimit-Limit",
+};
+
+const authRateLimit = ratelimit({
+  driver: "memory",
+  db: authDb,
+  duration: 15 * 60 * 1000,
+  max: 30,
+  headers: rateLimitHeaders,
+  errorMessage: "Too many requests, please try again later",
+});
+const bearerRateLimit = ratelimit({
+  driver: "memory",
+  db: bearerDb,
+  duration: 60 * 1000,
+  max: 30,
+  headers: rateLimitHeaders,
+  errorMessage: "Too many requests, please try again later",
+});
+const shareRateLimit = ratelimit({
+  driver: "memory",
+  db: shareDb,
+  duration: 60 * 1000,
+  max: 100,
+  headers: rateLimitHeaders,
+  errorMessage: "Too many requests, please try again later",
+});
+
+/** Reset all rate limit stores. For testing only. */
+export function _resetRateLimiters(): void {
+  authDb.clear();
+  bearerDb.clear();
+  shareDb.clear();
+}
+
 /**
  * GET /api/login
  * Redirects to the Reddit authorization page to begin OAuth flow
  * @route GET /api/login
  */
-router.get("/api/login", (ctx) => {
+router.get("/api/login", authRateLimit, (ctx) => {
   const authorizationUri = getLoginUrl(ctx);
   ctx.redirect(authorizationUri);
 });
@@ -295,7 +339,7 @@ router.get("/api/login", (ctx) => {
  * Exchanges the authorization code for an access token
  * @route GET /api/callback
  */
-router.get("/api/callback", async (ctx) => {
+router.get("/api/callback", authRateLimit, async (ctx) => {
   const { code, state, error } = ctx.query;
   const savedState = ctx.session.state;
   ctx.session.state = null;
@@ -455,7 +499,7 @@ async function refreshOrGetAnonTokenAndSetSession(
  *   - refresh: if present, forces a token refresh
  * @route GET /api/bearer
  */
-router.get("/api/bearer", async (ctx) => {
+router.get("/api/bearer", bearerRateLimit, async (ctx) => {
   const token = ctx.session.token;
   const forceRefresh = ctx.query["refresh"] !== undefined;
 
@@ -498,6 +542,7 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
       maxRedirects: 0,
       validateStatus: (status) => status === 301 || status === 302,
       timeout: 5000,
+      httpsAgent: ssrfSafeAgent,
     });
 
     const location = response.headers["location"];
@@ -523,7 +568,7 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
  * @body { urls: string[] }
  * @returns { results: { [url: string]: { postId: string } | { error: string } } }
  */
-router.post("/api/resolve-share", async (ctx) => {
+router.post("/api/resolve-share", shareRateLimit, async (ctx) => {
   const body = ctx.request.body as { urls?: unknown };
 
   // Validate body has urls array
@@ -575,7 +620,7 @@ router.post("/api/resolve-share", async (ctx) => {
  * Logs out the user by revoking their tokens, clearing the session, and redirecting to the client
  * @route GET /api/logout
  */
-router.get("/api/logout", async (ctx) => {
+router.get("/api/logout", authRateLimit, async (ctx) => {
   const token = ctx.session.token;
 
   if (token) {
