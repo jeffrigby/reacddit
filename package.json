@@ -7,7 +7,8 @@
   "workspaces": [
     "client",
     "api",
-    "proxy"
+    "proxy",
+    "tests"
   ],
   "scripts": {
     "setup": "tsx scripts/setup-wizard.ts",
@@ -18,7 +19,10 @@
     "start-api": "npm run start -w api",
     "lint-all": "npm run lint --workspaces --if-present",
     "outdated-all": "npm outdated --workspaces",
-    "update-all": "npm update --workspaces"
+    "update-all": "npm update --workspaces",
+    "test:e2e": "npm run test:e2e -w tests",
+    "test:e2e:ui": "npm run test:e2e:ui -w tests",
+    "test:component": "npm run test:component -w client"
   },
   "keywords": [
     "es6",

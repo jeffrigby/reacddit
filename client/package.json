@@ -17,7 +17,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "profile": "PROFILE=true vite build",
-    "lint": "prettier --write 'src/**/*.{js,jsx,ts,tsx}' && eslint --fix 'src/**/*.{js,jsx,ts,tsx}'"
+    "lint": "prettier --write 'src/**/*.{js,jsx,ts,tsx}' && eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
+    "test:component": "vitest --browser"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -69,6 +70,7 @@
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "@vitest/browser-playwright": "^4.1.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-import-resolver-typescript": "^4.3.5",
     "eslint-plugin-import": "^2.20.0",
@@ -80,6 +82,7 @@
     "rollup-plugin-visualizer": "^7.0.1",
     "sass": "^1.94.2",
     "vite": "^7.2.4",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.1.0"
   }
 }
