@@ -12,10 +12,6 @@ export function sanitizeHTML(html: string): string {
 }
 
 /**
- * Decode HTML entities in a string and return plain text.
- * Used for post titles where HTML rendering is not needed.
- */
-/**
  * Check if a URL uses a safe protocol.
  * @param url - URL string to validate
  * @param httpsOnly - If true, only allow https:. If false, allow https: and http:.
@@ -29,6 +25,27 @@ export function isSafeUrl(url: string, httpsOnly = false): boolean {
       : protocol === 'https:' || protocol === 'http:';
   } catch {
     return false;
+  }
+}
+
+/**
+ * Sanitize a URL for use in an anchor tag href attribute.
+ * Allows http:, https:, and mailto: protocols via isSafeUrl.
+ * Returns '#' for unsafe or malformed URLs.
+ */
+export function sanitizeHref(url: string): string {
+  try {
+    const { protocol } = new URL(url);
+    if (
+      protocol === 'https:' ||
+      protocol === 'http:' ||
+      protocol === 'mailto:'
+    ) {
+      return url;
+    }
+    return '#';
+  } catch {
+    return '#';
   }
 }
 

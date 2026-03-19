@@ -79,7 +79,7 @@ server {
 
     # Prevent clickjacking
     # Note: Using 'DENY' since reacddit needs to embed external iframes, not be embedded itself
-    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Frame-Options "DENY" always;
 
     # Prevent MIME sniffing
     add_header X-Content-Type-Options "nosniff" always;

@@ -114,7 +114,7 @@ async function render(
   // Check if an MP4 exists for animated images without a video embed.
   // This is to cover cases when the image is animated but Reddit doesn't have a video embed for it.
   if (
-    !cleanedPath.match(/[gif|jpg|jpeg|mp4|gifv]$/) &&
+    !cleanedPath.match(/\.(gif|jpg|jpeg|mp4|gifv)$/) &&
     !cleanedPath.startsWith('a/') &&
     !cleanedPath.startsWith('gallery/')
   ) {

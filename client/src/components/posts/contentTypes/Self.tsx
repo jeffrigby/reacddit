@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import classNames from 'classnames';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -25,37 +25,34 @@ interface SelfProps {
   content: SelfContent;
 }
 
+const HTTP_URL_RE = /^https?:\/\//;
+const WHITESPACE_ONLY_RE = /^\s*$/;
+
 const cleanLinks = (html: string): string => {
-  let rawhtml = html;
-  rawhtml = rawhtml
-    .replace(
-      /<a\s+href=/gi,
-      '<a target="_blank" rel="noopener noreferrer" href='
-    )
-    .replace(/<p>&#x200B;<\/p>/gi, '')
-    .replace(/<p>\s+<\/p>/gi, '');
+  const doc = new DOMParser().parseFromString(html, 'text/html');
 
-  // Shorten all text in anchor tags
-  const regex = /<a [^>]+>(https?:\/\/[^>]+)<\/a>/gm;
-  const matches: string[] = [];
-  let match = regex.exec(rawhtml);
-  while (match !== null) {
-    matches.push(match[1]);
-    match = regex.exec(rawhtml);
-  }
+  // Set target and rel on all anchor tags; shorten long URL text
+  doc.querySelectorAll('a').forEach((anchor) => {
+    anchor.setAttribute('target', '_blank');
+    anchor.setAttribute('rel', 'noopener noreferrer');
+    const text = anchor.textContent ?? '';
+    if (HTTP_URL_RE.test(text) && text.length >= 20) {
+      const shortened = `${text.replace(HTTP_URL_RE, '').substring(0, 25)}...`;
+      anchor.replaceChildren(shortened);
+    }
+  });
 
-  if (matches.length > 0) {
-    matches.forEach((link) => {
-      if (link.length >= 20) {
-        const newLink = `${link
-          .replace(/https?:\/\//, '')
-          .substring(0, 25)}...`;
-        rawhtml = rawhtml.replace(`>${link}<`, `>${newLink}<`);
-      }
-    });
-  }
+  // Remove zero-width-space and whitespace-only paragraphs
+  doc.querySelectorAll('p').forEach((p) => {
+    if (
+      p.textContent === '\u200B' ||
+      WHITESPACE_ONLY_RE.test(p.textContent ?? '')
+    ) {
+      p.remove();
+    }
+  });
 
-  return rawhtml;
+  return doc.body.innerHTML;
 };
 
 function Self({ name, content }: SelfProps) {
@@ -124,13 +121,16 @@ function Self({ name, content }: SelfProps) {
     setIsExpanded((prev) => !prev);
   }, [content.expand]);
 
+  const rawhtml = useMemo(
+    () => (content.html ? sanitizeHTML(cleanLinks(content.html)) : ''),
+    [content.html]
+  );
+
   if (!content?.html) {
     return null;
   }
 
-  const rawhtml = sanitizeHTML(cleanLinks(content.html));
-
-  const contentClasses = classNames('self-html', {
+  const contentClasses = clsx('self-html', {
     'self-fade': hasOverflow && !isExpanded,
     'sf-html-show-all': isExpanded,
   });

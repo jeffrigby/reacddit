@@ -56,10 +56,10 @@ export const fetchMe = createAsyncThunk<
       const currentBearer = state.redditBearer;
 
       // Fetch fresh data from Reddit API
-      // me() returns Thing<AccountData & UserPreferences>, extract the data property
+      // me() returns AccountData directly (not a Thing wrapper)
       const meResp = await fetchMeAPI();
       return {
-        me: meResp.data,
+        me: meResp,
         id: currentBearer.bearer,
       };
     } catch (error) {

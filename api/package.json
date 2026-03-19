@@ -28,8 +28,10 @@
     "koa": "^3.0.0",
     "koa-bodyparser": "^4.4.1",
     "koa-logger": "^4.0.0",
+    "koa-ratelimit": "^6.0.0",
     "koa-session": "^7.0.2",
     "qs": "^6.11.1",
+    "request-filtering-agent": "^3.2.0",
     "serverless-http": "^4.0.0"
   },
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@types/aws-lambda": "^8.10.159",
     "@types/koa": "^3.0.1",
     "@types/koa-logger": "^3.1.5",
+    "@types/koa-ratelimit": "^5.0.5",
     "@types/node": "^25.0.0",
     "@types/qs": "^6.9.17",
     "@types/supertest": "^7.2.0",

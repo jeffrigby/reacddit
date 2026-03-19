@@ -1,7 +1,8 @@
 import Koa from "koa";
 import Router from "@koa/router";
 import session from "koa-session";
-import logger from "koa-logger";
+import koaLogger from "koa-logger";
+import { logger } from "./logger.js";
 import bodyParser from "koa-bodyparser";
 import { randomUUID } from "crypto";
 import qs from "qs";
@@ -11,6 +12,7 @@ import {
   encryptToken,
   decryptToken,
   deriveSigningKey,
+  getErrorMessage,
   isTokenExpired,
   addExtraInfoToToken,
 } from "./util.js";
@@ -22,6 +24,8 @@ import type {
 } from "./types/reddit.js";
 import type { SessionData } from "./types/session.js";
 import axios, { AxiosError, type AxiosResponse } from "axios";
+import ratelimit from "koa-ratelimit";
+import { globalHttpsAgent as ssrfSafeAgent } from "request-filtering-agent";
 
 function getSessionConfig() {
   return {
@@ -38,13 +42,21 @@ function getSessionConfig() {
      The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
     renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
      (default is false) */,
+    sameSite: "lax" as const,
     encode: (rawData: unknown): string => {
       const encrypted = encryptToken(rawData);
       return JSON.stringify(encrypted);
     },
     decode: (stringifiedEncryptedData: string): unknown => {
-      const encryptedData = JSON.parse(stringifiedEncryptedData);
-      return decryptToken(encryptedData);
+      try {
+        const encryptedData = JSON.parse(stringifiedEncryptedData);
+        return decryptToken(encryptedData);
+      } catch (error) {
+        logger.error("Failed to decode session", {
+          error: getErrorMessage(error),
+        });
+        return null;
+      }
     },
   };
 }
@@ -83,6 +95,7 @@ function setCookie(token: ExtendedToken, ctx: Koa.Context): void {
     httpOnly: false,
     secure: true,
     overwrite: true,
+    sameSite: "lax",
   });
 }
 
@@ -98,7 +111,9 @@ function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): void {
     setSession(token, ctx);
     setCookie(token, ctx);
   } catch (error) {
-    console.error("Error setting session and cookie:", error);
+    logger.error("Error setting session and cookie", {
+      error: getErrorMessage(error),
+    });
   }
 }
 
@@ -119,12 +134,14 @@ async function getAnonToken(): Promise<{ token: RedditAccessTokenResponse }> {
       await axiosInstance.post("/api/v1/access_token", params);
     return { token: res.data };
   } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error: Anon Access Token error", error.message);
-    }
+    const detail: Record<string, unknown> = {};
     if (error instanceof AxiosError && error.response) {
-      console.error("Error response from Reddit:", error.response.data);
+      detail.status = error.response.status;
     }
+    if (error instanceof Error) {
+      detail.error = error.message;
+    }
+    logger.error("Anon access token error", detail);
     throw new Error("Failed to retrieve anonymous access token from Reddit.");
   }
 }
@@ -145,8 +162,8 @@ async function revokeToken(
       token_type_hint: tokenType,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Revoke Token error", errorMessage);
+    const errorMessage = getErrorMessage(error);
+    logger.error("Revoke token error", { error: errorMessage });
     throw new Error(`Failed to revoke ${tokenType}: ${errorMessage}`);
   }
 }
@@ -173,8 +190,8 @@ async function getRefreshToken(
       await axiosInstance.post("/api/v1/access_token", params);
     return newToken.data;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Refresh Access Token error", errorMessage);
+    const errorMessage = getErrorMessage(error);
+    logger.error("Refresh access token error", { error: errorMessage });
     throw new Error(`Failed to refresh token: ${errorMessage}`);
   }
 }
@@ -244,23 +261,77 @@ app.use(async (ctx, next) => {
   ctx.set("Access-Control-Allow-Origin", config.CLIENT_PATH);
   ctx.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   ctx.set("Access-Control-Allow-Headers", "Content-Type");
+  ctx.set("Access-Control-Allow-Credentials", "true");
   if (ctx.method === "OPTIONS") {
     ctx.status = 204;
     return;
   }
   await next();
 });
-app.use(bodyParser());
-app.use(logger());
+app.use(bodyParser({ jsonLimit: "16kb" }));
+app.use(async (ctx, next) => {
+  await next();
+  ctx.set("X-Content-Type-Options", "nosniff");
+  ctx.set("X-Frame-Options", "DENY");
+  ctx.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  ctx.set("Cache-Control", "no-store");
+  ctx.set("X-XSS-Protection", "0");
+});
+app.use(koaLogger());
 
 const router = new Router();
+
+// In-memory rate limiting — only effective for local dev and warm Lambda instances.
+// On Lambda, state resets on cold starts and isn't shared across concurrent instances.
+// For production, use AWS WAF rate-based rules or API Gateway throttling instead.
+const authDb = new Map();
+const bearerDb = new Map();
+const shareDb = new Map();
+
+const rateLimitHeaders = {
+  remaining: "RateLimit-Remaining",
+  reset: "RateLimit-Reset",
+  total: "RateLimit-Limit",
+};
+
+const authRateLimit = ratelimit({
+  driver: "memory",
+  db: authDb,
+  duration: 15 * 60 * 1000,
+  max: 30,
+  headers: rateLimitHeaders,
+  errorMessage: "Too many requests, please try again later",
+});
+const bearerRateLimit = ratelimit({
+  driver: "memory",
+  db: bearerDb,
+  duration: 60 * 1000,
+  max: 30,
+  headers: rateLimitHeaders,
+  errorMessage: "Too many requests, please try again later",
+});
+const shareRateLimit = ratelimit({
+  driver: "memory",
+  db: shareDb,
+  duration: 60 * 1000,
+  max: 100,
+  headers: rateLimitHeaders,
+  errorMessage: "Too many requests, please try again later",
+});
+
+/** Reset all rate limit stores. For testing only. */
+export function _resetRateLimiters(): void {
+  authDb.clear();
+  bearerDb.clear();
+  shareDb.clear();
+}
 
 /**
  * GET /api/login
  * Redirects to the Reddit authorization page to begin OAuth flow
  * @route GET /api/login
  */
-router.get("/api/login", (ctx) => {
+router.get("/api/login", authRateLimit, (ctx) => {
   const authorizationUri = getLoginUrl(ctx);
   ctx.redirect(authorizationUri);
 });
@@ -271,31 +342,31 @@ router.get("/api/login", (ctx) => {
  * Exchanges the authorization code for an access token
  * @route GET /api/callback
  */
-router.get("/api/callback", async (ctx) => {
+router.get("/api/callback", authRateLimit, async (ctx) => {
   const { code, state, error } = ctx.query;
   const savedState = ctx.session.state;
   ctx.session.state = null;
 
-  const handleError = (message: string, status = 500): void => {
-    console.error(message);
+  const handleError = (logMessage: string, status: number): void => {
+    logger.error(logMessage);
     ctx.status = status;
-    ctx.body = { status: "error", message };
+    ctx.body = { status: "error", message: "Authentication failed" };
   };
 
   if (!code || !state) {
-    return handleError("Code and/or state query strings missing.");
+    return handleError("Code and/or state query strings missing.", 400);
   }
 
   if (error) {
-    return handleError(`ERROR RETRIEVING THE TOKEN. ${error}`);
+    return handleError(`ERROR RETRIEVING THE TOKEN. ${error}`, 403);
   }
 
   if (!savedState) {
-    return handleError("ERROR: SAVED STATE NOT FOUND.");
+    return handleError("ERROR: SAVED STATE NOT FOUND.", 403);
   }
 
   if (state !== savedState) {
-    return handleError("ERROR: THE STATE DOESN'T MATCH.");
+    return handleError("ERROR: THE STATE DOESN'T MATCH.", 403);
   }
 
   const options = {
@@ -309,19 +380,17 @@ router.get("/api/callback", async (ctx) => {
       await axiosInstance.post("/api/v1/access_token", qs.stringify(options));
 
     const { data } = AccessToken;
-    console.log("TOKEN RETRIEVED SUCCESSFULLY.");
+    logger.info("Token retrieved successfully");
 
     if (data.access_token) {
-      console.log("TOKEN RETRIEVED SUCCESSFULLY. REDIRECTING TO FRONT.");
+      logger.info("Token retrieved, redirecting to client");
       const accessToken = addExtraInfoToToken(data, true);
       setSessAndCookie(accessToken, ctx);
       ctx.redirect(`${config.CLIENT_PATH}/?login`);
       return;
     }
   } catch (exception) {
-    const errorMessage =
-      exception instanceof Error ? exception.message : String(exception);
-    return handleError(`ACCESS TOKEN ERROR ${errorMessage}`);
+    return handleError(`ACCESS TOKEN ERROR ${getErrorMessage(exception)}`, 502);
   }
 
   ctx.body = "callback";
@@ -353,7 +422,7 @@ async function grantAnonToken(
   type: "new" | "newanon",
   reason: string,
 ): Promise<void> {
-  console.log(reason);
+  logger.info(reason);
   const anonToken = await getAnonToken();
   setSessionAndRespond(addExtraInfoToToken(anonToken.token, false), ctx, type);
 }
@@ -377,7 +446,7 @@ async function returnCachedTokenAndSetSession(
   ctx: Koa.Context,
   token: ExtendedToken,
 ): Promise<void> {
-  console.log("CACHED TOKEN RETURNED");
+  logger.info("Cached token returned");
   setSessionAndRespond(token, ctx, "cached");
 }
 
@@ -415,9 +484,10 @@ async function refreshOrGetAnonTokenAndSetSession(
     const message = forceRefresh
       ? "FORCED REFRESH. NEW TOKEN GRANTED"
       : "TOKEN EXPIRED. NEW TOKEN GRANTED";
-    console.log(message);
+    logger.info(message);
     setSessionAndRespond(newToken, ctx, "refresh");
-  } catch {
+  } catch (error) {
+    logger.error("Token refresh failed", { error: getErrorMessage(error) });
     await grantAnonToken(
       ctx,
       "new",
@@ -433,7 +503,7 @@ async function refreshOrGetAnonTokenAndSetSession(
  *   - refresh: if present, forces a token refresh
  * @route GET /api/bearer
  */
-router.get("/api/bearer", async (ctx) => {
+router.get("/api/bearer", bearerRateLimit, async (ctx) => {
   const token = ctx.session.token;
   const forceRefresh = ctx.query["refresh"] !== undefined;
 
@@ -476,6 +546,7 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
       maxRedirects: 0,
       validateStatus: (status) => status === 301 || status === 302,
       timeout: 5000,
+      httpsAgent: ssrfSafeAgent,
     });
 
     const location = response.headers["location"];
@@ -489,7 +560,11 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
     }
 
     return { postId };
-  } catch {
+  } catch (error) {
+    logger.warn("Share link resolution failed", {
+      url,
+      error: getErrorMessage(error),
+    });
     return { error: "Failed to resolve share link" };
   }
 }
@@ -501,7 +576,7 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
  * @body { urls: string[] }
  * @returns { results: { [url: string]: { postId: string } | { error: string } } }
  */
-router.post("/api/resolve-share", async (ctx) => {
+router.post("/api/resolve-share", shareRateLimit, async (ctx) => {
   const body = ctx.request.body as { urls?: unknown };
 
   // Validate body has urls array
@@ -512,6 +587,13 @@ router.post("/api/resolve-share", async (ctx) => {
   }
 
   const urls = body.urls as unknown[];
+
+  // Reject empty arrays
+  if (urls.length === 0) {
+    ctx.status = 400;
+    ctx.body = { error: "URLs array cannot be empty" };
+    return;
+  }
 
   // Validate all items are strings
   if (!urls.every((u): u is string => typeof u === "string")) {
@@ -527,9 +609,12 @@ router.post("/api/resolve-share", async (ctx) => {
     return;
   }
 
-  // Resolve all URLs in parallel
+  // Deduplicate URLs
+  const uniqueUrls = [...new Set(urls)];
+
+  // Resolve all unique URLs in parallel
   const entries = await Promise.all(
-    urls.map(async (url) => {
+    uniqueUrls.map(async (url) => {
       const result = await resolveShareUrl(url);
       return [url, result] as const;
     }),
@@ -543,35 +628,37 @@ router.post("/api/resolve-share", async (ctx) => {
  * Logs out the user by revoking their tokens, clearing the session, and redirecting to the client
  * @route GET /api/logout
  */
-router.get("/api/logout", async (ctx) => {
+router.get("/api/logout", authRateLimit, async (ctx) => {
   const token = ctx.session.token;
 
-  if (!token) {
-    return;
+  if (token) {
+    // Revoke tokens in parallel, logging but not failing on errors
+    const revokePromises: Promise<void>[] = [];
+
+    if (token.access_token) {
+      revokePromises.push(
+        revokeToken(token.access_token, "access_token").catch((error) => {
+          logger.error("Failed to revoke access token", {
+            error: getErrorMessage(error),
+          });
+        }),
+      );
+    }
+
+    if (token.refresh_token) {
+      revokePromises.push(
+        revokeToken(token.refresh_token, "refresh_token").catch((error) => {
+          logger.error("Failed to revoke refresh token", {
+            error: getErrorMessage(error),
+          });
+        }),
+      );
+    }
+
+    await Promise.all(revokePromises);
   }
 
-  // Revoke tokens in parallel, logging but not failing on errors
-  const revokePromises: Promise<void>[] = [];
-
-  if (token.access_token) {
-    revokePromises.push(
-      revokeToken(token.access_token, "access_token").catch((error) => {
-        console.error("Failed to revoke access token:", error);
-      }),
-    );
-  }
-
-  if (token.refresh_token) {
-    revokePromises.push(
-      revokeToken(token.refresh_token, "refresh_token").catch((error) => {
-        console.error("Failed to revoke refresh token:", error);
-      }),
-    );
-  }
-
-  await Promise.all(revokePromises);
-
-  // Clear the session and delete the token cookie
+  // Always clear session and redirect, even if no token existed
   ctx.session.token = null;
   ctx.cookies.set("token", null, { overwrite: true });
 

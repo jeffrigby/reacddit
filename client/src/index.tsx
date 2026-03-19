@@ -53,7 +53,10 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
   }
 
   if (hash) {
-    window.history.replaceState({}, document.title, hash.substring(1));
+    const path = hash.substring(1);
+    if (path.startsWith('/') && !path.startsWith('//')) {
+      window.history.replaceState({}, document.title, path);
+    }
   }
 
   const persistedState = loadState();

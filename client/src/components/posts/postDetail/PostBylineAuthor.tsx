@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -105,7 +105,7 @@ function PostBylineAuthor({
     <span className="badge bg-dark">{flair}</span>
   ) : null;
 
-  const authorClasses = classNames({
+  const authorClasses = clsx({
     'is-followed': isFollowing,
     'is-submitter': isSubmitter,
   });

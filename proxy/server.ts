@@ -23,6 +23,21 @@ const httpAgent = new http.Agent({
   timeout: 60000, // Socket timeout (60s)
 });
 
+const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB request body limit
+
+// Headers that must not be forwarded by a proxy (RFC 7230 §6.1)
+const HOP_BY_HOP_HEADERS = new Set([
+  'connection',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'proxy-connection',
+  'te',
+  'trailers',
+  'transfer-encoding',
+  'upgrade',
+]);
+
 // Load environment variables from root .env
 // Try multiple paths to handle different execution contexts (sudo, npm scripts, etc.)
 const envPaths = [
@@ -97,7 +112,7 @@ function getConfig(): ProxyConfig {
 // Security headers (matching nginx config)
 const securityHeaders = {
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
-  'X-Frame-Options': 'SAMEORIGIN',
+  'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Content-Security-Policy':
     "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.instagram.com https://platform.instagram.com https://connect.facebook.net https://platform.twitter.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' ws: wss: https:; media-src 'self' https:; frame-src *; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
@@ -238,11 +253,12 @@ function proxyRequest(
   const requestUrl = req.url || '/';
   const requestMethod = req.method || 'GET';
 
-  // Filter out HTTP/2 pseudo-headers (they start with ':')
-  // These can't be forwarded to HTTP/1.1 upstream servers
+  // Filter out HTTP/2 pseudo-headers and hop-by-hop headers
+  // Pseudo-headers (starting with ':') can't be forwarded to HTTP/1.1 upstream servers
+  // Hop-by-hop headers are connection-specific and must not be forwarded (RFC 7230 §6.1)
   const filteredHeaders: http.OutgoingHttpHeaders = {};
   for (const [key, value] of Object.entries(req.headers)) {
-    if (!key.startsWith(':')) {
+    if (!key.startsWith(':') && !HOP_BY_HOP_HEADERS.has(key)) {
       filteredHeaders[key] = value;
     }
   }
@@ -254,6 +270,8 @@ function proxyRequest(
     method: requestMethod,
     headers: {
       ...filteredHeaders,
+      host: `localhost:${targetPort}`,
+      'x-forwarded-host': proxyConfig.domain,
       'x-forwarded-proto': 'https',
       'x-forwarded-for': req.socket.remoteAddress || '',
       'x-real-ip': req.socket.remoteAddress || '',
@@ -277,21 +295,18 @@ function proxyRequest(
     // Add security headers to response
     const headers: http.OutgoingHttpHeaders = { ...proxyRes.headers };
 
-    // Remove HTTP/1.1-specific headers that are forbidden in HTTP/2
-    // These are connection-specific and incompatible with HTTP/2
-    const forbiddenHeaders = [
-      'connection',
-      'keep-alive',
-      'proxy-connection',
-      'transfer-encoding',
-      'upgrade',
-    ];
-    forbiddenHeaders.forEach((header) => {
+    // Remove hop-by-hop headers from response (RFC 7230 §6.1)
+    for (const header of HOP_BY_HOP_HEADERS) {
       delete headers[header];
-    });
+    }
 
-    // Add security headers (but not for API responses with their own headers)
-    if (!isApi) {
+    if (isApi) {
+      // Transport-level headers only — API server manages its own CSP, X-Frame-Options, etc.
+      headers['Strict-Transport-Security'] =
+        securityHeaders['Strict-Transport-Security'];
+      headers['X-Content-Type-Options'] =
+        securityHeaders['X-Content-Type-Options'];
+    } else {
       Object.assign(headers, securityHeaders);
     }
 
@@ -388,6 +403,23 @@ function proxyRequest(
     }
   });
 
+  // Enforce request body size limit (10MB) to prevent abuse
+  let bodySize = 0;
+  let limitExceeded = false;
+  req.on('data', (chunk: Buffer) => {
+    if (limitExceeded) return;
+    bodySize += chunk.length;
+    if (bodySize > MAX_BODY_SIZE) {
+      limitExceeded = true;
+      req.destroy();
+      proxy.destroy();
+      if (!res.headersSent) {
+        res.writeHead(413, { 'Content-Type': 'text/plain' });
+        res.end('Request Entity Too Large');
+      }
+    }
+  });
+
   req.pipe(proxy);
 }
 
@@ -412,16 +444,40 @@ function handleWebSocketUpgrade(
   });
 
   proxyReq.on('upgrade', (proxyRes, proxySocket, proxyHead) => {
+    // Filter out headers with CRLF characters to prevent header injection
+    const sanitizedHeaders = Object.entries(proxyRes.headers)
+      .filter(([key, value]) => {
+        const str = String(value);
+        return (
+          !key.includes('\r') &&
+          !key.includes('\n') &&
+          !str.includes('\r') &&
+          !str.includes('\n')
+        );
+      })
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\r\n');
+
     socket.write(
       `HTTP/1.1 ${proxyRes.statusCode} ${proxyRes.statusMessage}\r\n` +
-        Object.entries(proxyRes.headers)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join('\r\n') +
+        sanitizedHeaders +
         '\r\n\r\n'
     );
 
     proxySocket.pipe(socket);
     socket.pipe(proxySocket);
+
+    // Symmetric cleanup: destroy the peer when either side closes or errors
+    socket.once('close', () => proxySocket.destroy());
+    socket.once('error', (err) => {
+      console.error(`❌ WebSocket client error for ${req.url}:`, err.message);
+      proxySocket.destroy();
+    });
+    proxySocket.once('close', () => socket.destroy());
+    proxySocket.once('error', (err) => {
+      console.error(`❌ WebSocket upstream error for ${req.url}:`, err.message);
+      socket.destroy();
+    });
 
     if (proxyHead.length > 0) {
       socket.write(proxyHead);
@@ -432,9 +488,6 @@ function handleWebSocketUpgrade(
     console.error(`❌ WebSocket proxy error for ${req.url}:`, err.message);
     socket.destroy();
   });
-
-  // Set timeout (24 hours for WebSocket connections)
-  proxyReq.setTimeout(24 * 60 * 60 * 1000);
 
   proxyReq.end();
 }
@@ -448,8 +501,19 @@ function handleRequest(
 ): void {
   const url = req.url || '/';
 
+  // Normalize the path for routing decisions to prevent bypass via
+  // encoded sequences (e.g., /api%2F..) while forwarding the raw URL
+  let normalizedPath: string;
+  try {
+    normalizedPath = new URL(url, 'http://localhost').pathname;
+  } catch {
+    res.writeHead(400);
+    res.end('Bad Request');
+    return;
+  }
+
   // Route to API server
-  if (url.startsWith('/api')) {
+  if (normalizedPath.startsWith('/api')) {
     proxyRequest(req, res, proxyConfig.apiPort, true);
     return;
   }
@@ -482,6 +546,8 @@ function startServer(): void {
       cert,
       key,
       allowHTTP1: true, // Required for WebSocket upgrades
+      minVersion: 'TLSv1.2',
+      honorCipherOrder: true,
     },
     (req, res) => {
       // Type assertion needed because http2 streams are compatible with http messages
@@ -497,8 +563,17 @@ function startServer(): void {
   server.on('upgrade', (req, socket, head) => {
     const url = req.url || '/';
 
+    // Normalize path for routing (same as handleRequest — prevent bypass via encoding)
+    let normalizedPath: string;
+    try {
+      normalizedPath = new URL(url, 'http://localhost').pathname;
+    } catch {
+      socket.destroy();
+      return;
+    }
+
     // API WebSocket support
-    if (url.startsWith('/api')) {
+    if (normalizedPath.startsWith('/api')) {
       handleWebSocketUpgrade(req, socket, head, proxyConfig.apiPort);
     }
     // Vite HMR WebSocket paths (everything else goes to Vite)

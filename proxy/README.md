@@ -89,7 +89,7 @@ The proxy adds the following production-grade security headers:
 
 - **HSTS** (HTTP Strict Transport Security)
 - **CSP** (Content Security Policy) - permissive for embeds
-- **X-Frame-Options** - SAMEORIGIN
+- **X-Frame-Options** - DENY
 - **X-Content-Type-Options** - nosniff
 - **Referrer-Policy** - strict-origin-when-cross-origin
 - **Permissions-Policy** - restricts geolocation, microphone, camera

@@ -48,6 +48,8 @@ vi.mock("../util.js", () => {
 
   return {
     axiosInstance: mockAxiosInstance,
+    getErrorMessage: (error: unknown) =>
+      error instanceof Error ? error.message : String(error),
     checkEnvErrors: vi.fn(),
     encryptToken: vi.fn(() => ({
       iv: "mock-iv",
@@ -89,13 +91,14 @@ vi.mock("koa-session", () => ({
     },
 }));
 
-import app from "../app.js";
+import app, { _resetRateLimiters } from "../app.js";
 import { axiosInstance } from "../util.js";
 
 describe("API Endpoints", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStore = {}; // Reset session store
+    _resetRateLimiters(); // Reset rate limit counters
     (axiosInstance.post as ReturnType<typeof vi.fn>).mockReset();
     (axiosInstance.get as ReturnType<typeof vi.fn>).mockReset();
   });
@@ -227,30 +230,30 @@ describe("API Endpoints", () => {
     it("should handle callback errors", async () => {
       const response = await request(app.callback())
         .get("/api/callback?error=access_denied")
-        .expect(500);
+        .expect(400);
 
       expect(response.body).toHaveProperty("status", "error");
       // When only error is provided without code/state, it triggers the missing params error
-      expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
-      );
+      // Error details are logged server-side only, not exposed to client
+      expect(response.body).toHaveProperty("message", "Authentication failed");
     });
 
     it("should handle missing state in callback", async () => {
       const response = await request(app.callback())
         .get("/api/callback?code=test-code")
-        .expect(500);
+        .expect(400);
 
       expect(response.body).toHaveProperty("status", "error");
-      expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
-      );
+      expect(response.body).toHaveProperty("message", "Authentication failed");
     });
   });
 
   describe("Logout", () => {
     it("should handle logout when no token exists", async () => {
-      await request(app.callback()).get("/api/logout").expect(404);
+      const response = await request(app.callback())
+        .get("/api/logout")
+        .expect(302);
+      expect(response.headers["location"]).toContain("/?logout");
     });
 
     it("should successfully logout with valid token", async () => {
@@ -314,10 +317,10 @@ describe("API Endpoints", () => {
       const response = await request(app.callback())
         .get("/api/callback?code=test-code&state=invalid-state-456")
         .set("x-session-id", sessionId)
-        .expect(500);
+        .expect(403);
 
       expect(response.body).toHaveProperty("status", "error");
-      expect(response.body.message).toContain("THE STATE DOESN'T MATCH");
+      expect(response.body).toHaveProperty("message", "Authentication failed");
     });
 
     it("should handle token exchange failure in callback", async () => {
@@ -337,7 +340,7 @@ describe("API Endpoints", () => {
       const response = await request(app.callback())
         .get(`/api/callback?code=test-code&state=${state}`)
         .set("x-session-id", sessionId)
-        .expect(500);
+        .expect(502);
 
       expect(response.body).toHaveProperty("status", "error");
     });
@@ -347,7 +350,7 @@ describe("API Endpoints", () => {
         .get(
           "/api/callback?error=access_denied&error_description=User%20denied%20access",
         )
-        .expect(500);
+        .expect(400);
 
       expect(response.body).toHaveProperty("status", "error");
       // The current implementation treats this as missing code/state, but it's still an error case
@@ -412,19 +415,17 @@ describe("API Endpoints", () => {
     it("should handle malformed callback URLs", async () => {
       const response = await request(app.callback())
         .get("/api/callback?code=&state=")
-        .expect(500);
+        .expect(400);
 
       expect(response.body).toHaveProperty("status", "error");
-      expect(response.body.message).toContain(
-        "Code and/or state query strings missing",
-      );
+      expect(response.body).toHaveProperty("message", "Authentication failed");
     });
 
     it("should handle very long state parameters", async () => {
       const longState = "a".repeat(1000);
       const response = await request(app.callback())
         .get(`/api/callback?code=test-code&state=${longState}`)
-        .expect(500);
+        .expect(403);
 
       expect(response.body).toHaveProperty("status", "error");
     });
@@ -458,6 +459,114 @@ describe("API Endpoints", () => {
       // The CORS headers are set, even if the value is undefined due to env var issues
       expect(response.headers).toHaveProperty("access-control-allow-origin");
       expect(response.headers).toHaveProperty("access-control-allow-methods");
+    });
+
+    it("should include security response headers", async () => {
+      const mockRedditResponse = {
+        access_token: "test-token",
+        expires_in: 3600,
+      };
+
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        data: mockRedditResponse,
+      });
+
+      const response = await request(app.callback())
+        .get("/api/bearer")
+        .expect(200);
+
+      expect(response.headers["x-content-type-options"]).toBe("nosniff");
+      expect(response.headers["x-frame-options"]).toBe("DENY");
+      expect(response.headers["strict-transport-security"]).toBe(
+        "max-age=31536000; includeSubDomains",
+      );
+      expect(response.headers["cache-control"]).toBe("no-store");
+      expect(response.headers["x-xss-protection"]).toBe("0");
+    });
+
+    it("should pass SSRF-safe agent to share link resolver", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location: "https://www.reddit.com/r/test/comments/abc123/post_title/",
+        },
+      });
+
+      await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .expect(200);
+
+      expect(axios.head).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          httpsAgent: expect.anything(),
+        }),
+      );
+    });
+  });
+
+  describe("Rate Limiting", () => {
+    it("should include rate limit headers on /api/bearer", async () => {
+      const mockRedditResponse = {
+        access_token: "test-access-token",
+        token_type: "bearer",
+        expires_in: 3600,
+        scope: "*",
+      };
+
+      (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        data: mockRedditResponse,
+      });
+
+      const response = await request(app.callback())
+        .get("/api/bearer")
+        .expect(200);
+
+      expect(response.headers).toHaveProperty("ratelimit-limit");
+      expect(response.headers).toHaveProperty("ratelimit-remaining");
+      expect(response.headers).toHaveProperty("ratelimit-reset");
+    });
+
+    it("should include rate limit headers on /api/resolve-share", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location:
+            "https://www.reddit.com/r/funny/comments/abc123/post_title/",
+        },
+      });
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: ["https://www.reddit.com/r/funny/s/XYZ123"] })
+        .expect(200);
+
+      expect(response.headers).toHaveProperty("ratelimit-limit");
+      expect(response.headers).toHaveProperty("ratelimit-remaining");
+      expect(response.headers).toHaveProperty("ratelimit-reset");
+    });
+
+    it("should return 429 when bearer rate limit is exceeded", async () => {
+      const mockRedditResponse = {
+        access_token: "test-access-token",
+        token_type: "bearer",
+        expires_in: 3600,
+        scope: "*",
+      };
+
+      // Bearer limit is 30 requests per minute
+      for (let i = 0; i < 30; i++) {
+        (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+          data: mockRedditResponse,
+        });
+        await request(app.callback()).get("/api/bearer").expect(200);
+      }
+
+      // 31st request should be rate limited
+      const response = await request(app.callback())
+        .get("/api/bearer")
+        .expect(429);
+
+      expect(response.headers).toHaveProperty("retry-after");
     });
   });
 
@@ -615,6 +724,42 @@ describe("API Endpoints", () => {
       expect(
         response.body.results["https://www.reddit.com/r/test/s/ABC"],
       ).toEqual({ error: "Could not extract post ID from redirect" });
+    });
+
+    it("should reject empty urls array", async () => {
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({ urls: [] })
+        .expect(400);
+
+      expect(response.body).toEqual({
+        error: "URLs array cannot be empty",
+      });
+    });
+
+    it("should deduplicate URLs in batch", async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location:
+            "https://reddit.com/r/test/comments/abc123/some_post_title/",
+        },
+      });
+
+      const response = await request(app.callback())
+        .post("/api/resolve-share")
+        .send({
+          urls: [
+            "https://www.reddit.com/r/test/s/ABC",
+            "https://www.reddit.com/r/test/s/ABC",
+          ],
+        })
+        .expect(200);
+
+      // Should only make one HEAD request despite duplicate URLs
+      expect(axios.head).toHaveBeenCalledTimes(1);
+      expect(
+        response.body.results["https://www.reddit.com/r/test/s/ABC"],
+      ).toEqual({ postId: "abc123" });
     });
 
     it("should handle CORS preflight requests", async () => {

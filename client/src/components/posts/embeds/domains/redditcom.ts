@@ -22,7 +22,7 @@ const shareCache = new LRUCache<string, string>({
 
 // Batch resolver: collects URLs during a render cycle, resolves in one API call
 type ResolveCallback = (postId: string | null) => void;
-const pendingBatch = new Map<string, ResolveCallback[]>();
+let pendingBatch = new Map<string, ResolveCallback[]>();
 let batchScheduled = false;
 
 /**
@@ -32,8 +32,8 @@ async function executeBatch(): Promise<void> {
   batchScheduled = false;
 
   // Snapshot and clear pending batch
-  const batch = new Map(pendingBatch);
-  pendingBatch.clear();
+  const batch = pendingBatch;
+  pendingBatch = new Map();
 
   if (batch.size === 0) {
     return;
@@ -51,6 +51,7 @@ async function executeBatch(): Promise<void> {
     });
 
     if (!response.ok) {
+      console.error(`Share link batch resolution failed: ${response.status}`);
       resolveAll(null);
       return;
     }
@@ -67,7 +68,8 @@ async function executeBatch(): Promise<void> {
       }
       callbacks.forEach((cb) => cb(postId));
     });
-  } catch {
+  } catch (error) {
+    console.error('Share link batch resolution error:', error);
     resolveAll(null);
   }
 }
@@ -95,7 +97,7 @@ function extractPostId(url: string): string | null {
  * Check if URL is a share link (cannot be resolved client-side due to CORS)
  */
 function isShareLink(url: string): boolean {
-  return url.includes('/s/');
+  return /\/r\/[^/]+\/s\/[a-zA-Z0-9]+/.test(url);
 }
 
 /**
@@ -160,7 +162,8 @@ async function fetchPostData(
       title: post.title ?? '',
       preview: post.preview,
     };
-  } catch {
+  } catch (error) {
+    console.error(`Failed to fetch post data for ${postId}:`, error);
     return null;
   }
 }
@@ -179,7 +182,8 @@ async function tryDomainHandler(
   try {
     const content = await Embeds[domainKey](entry);
     return content ? { ...content, renderFunction: domainKey } : null;
-  } catch {
+  } catch (error) {
+    console.error(`Domain handler "${domainKey}" error:`, error);
     return null;
   }
 }
