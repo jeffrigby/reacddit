@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from 'react-bootstrap';
 import { NavLink, useParams } from 'react-router';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
@@ -40,9 +40,6 @@ interface CommentsMoreProps {
 function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
   const { count, children } = moreList.data;
   const [shouldFetch, setShouldFetch] = useState(false);
-  const [replies, setReplies] = useState<Record<string, CommentOrMore> | null>(
-    null
-  );
   const { target, postName, postTitle } = useParams<{
     target: string;
     postName: string;
@@ -55,16 +52,16 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
     { skip: !shouldFetch }
   );
 
-  // Process fetched comment data into keyed object for rendering
-  useEffect(() => {
-    if (commentData?.json.data?.things && !replies) {
-      const commentRepliesKeyed = arrayToObject(
-        commentData.json.data.things as CommentOrMore[],
-        'name'
-      );
-      setReplies(commentRepliesKeyed);
+  // Derive keyed object from fetched comment data for rendering
+  const replies = useMemo(() => {
+    if (!commentData?.json.data?.things) {
+      return null;
     }
-  }, [commentData, replies]);
+    return arrayToObject(
+      commentData.json.data.things as CommentOrMore[],
+      'name'
+    );
+  }, [commentData]);
 
   const loadMoreComments = () => {
     setShouldFetch(true);

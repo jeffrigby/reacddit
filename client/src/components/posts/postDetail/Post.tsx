@@ -222,10 +222,14 @@ function Post({
 
   const [expand, setExpand] = useState(initView());
 
-  useEffect(() => {
-    const view = initView();
-    setExpand(view);
-  }, [initView]);
+  const prevInitViewRef = useRef(initView);
+  if (prevInitViewRef.current !== initView) {
+    prevInitViewRef.current = initView;
+    const newView = initView();
+    if (newView !== expand) {
+      setExpand(newView);
+    }
+  }
 
   useEffect(() => {
     let reposInt: NodeJS.Timeout | undefined;

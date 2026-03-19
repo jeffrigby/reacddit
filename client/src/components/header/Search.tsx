@@ -88,13 +88,6 @@ function Search() {
     };
   }, []);
 
-  useEffect(() => {
-    // When expanded on mobile, focus the input to trigger search-active state
-    if (expandedOnMobile && isSmallScreen && searchInput.current) {
-      searchInput.current.focus();
-    }
-  }, [expandedOnMobile, isSmallScreen]);
-
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
@@ -120,6 +113,7 @@ function Search() {
 
   const handleSearchIconClick = () => {
     setExpandedOnMobile(true);
+    requestAnimationFrame(() => searchInput.current?.focus());
   };
 
   const clearSearch = () => {
