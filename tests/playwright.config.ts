@@ -1,7 +1,13 @@
+import dotenv from 'dotenv';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from '@playwright/test';
+
+const dir = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: resolve(dir, '.env') });
+
+export const AUTH_FILE = resolve(dir, 'e2e', '.auth', 'user.json');
 
 function loadBaseURL(): string {
   if (process.env['BASE_URL']) {
@@ -9,7 +15,6 @@ function loadBaseURL(): string {
   }
 
   // Read PROXY_DOMAIN from root .env
-  const dir = dirname(fileURLToPath(import.meta.url));
   const envPath = resolve(dir, '..', '.env');
   try {
     const envFile = readFileSync(envPath, 'utf-8');
@@ -55,8 +60,21 @@ export default defineConfig({
 
   projects: [
     {
-      name: 'chromium',
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
       use: { channel: 'chrome' },
+    },
+    {
+      name: 'anonymous',
+      testMatch: /\.spec\.ts$/,
+      testIgnore: /auth\//,
+      use: { channel: 'chrome' },
+    },
+    {
+      name: 'authenticated',
+      testMatch: /auth\/.*\.spec\.ts$/,
+      dependencies: ['setup'],
+      use: { channel: 'chrome', storageState: AUTH_FILE },
     },
   ],
 });

@@ -34,5 +34,21 @@ test.describe('Comments', () => {
     await expect(
       firstComment.locator('svg[data-icon="clock"]').first()
     ).toBeAttached();
+
+    // Collapse a comment via caret toggle
+    const collapseButton = firstComment
+      .locator('button[aria-label="Collapse comment"]')
+      .first();
+    await expect(collapseButton).toBeVisible({ timeout: 5_000 });
+    await collapseButton.click();
+    await expect(firstComment).toHaveClass(/condensed/, { timeout: 5_000 });
+
+    // Re-expand the comment
+    const expandButton = firstComment
+      .locator('button[aria-label="Expand comment"]')
+      .first();
+    await expect(expandButton).toBeVisible({ timeout: 5_000 });
+    await expandButton.click();
+    await expect(firstComment).toHaveClass(/expanded/, { timeout: 5_000 });
   });
 });

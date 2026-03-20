@@ -30,11 +30,26 @@ test.describe('Settings', () => {
     await expect(page.locator('#condensePinnedSetting')).toBeAttached();
     await expect(page.locator('#condenseDuplicatesSetting')).toBeAttached();
 
-    // Enable debug mode
+    // Enable debug mode (while dropdown is still open)
     await page.locator('#debugCheck').check();
 
-    // Close dropdown
-    await page.locator('body').click({ position: { x: 0, y: 0 } });
+    // Auto-refresh info modal opens and closes
+    await page.locator('div[title="Auto Refresh Info"]').click();
+    await expect(page.locator('.modal-title')).toContainText(/auto refresh/i, {
+      timeout: 5_000,
+    });
+    await page.locator('.modal .btn-close').click();
+    await expect(page.locator('.modal-title')).not.toBeVisible();
+
+    // Condense help modal opens and closes
+    await page.locator('#dropdown-settings').click();
+    await expect(settingsMenu).toBeVisible({ timeout: 5_000 });
+    await page.locator('div[title="Condense Info"]').click();
+    await expect(page.locator('.modal-title')).toContainText(/condense/i, {
+      timeout: 5_000,
+    });
+    await page.locator('.modal .btn-close').click();
+    await expect(page.locator('.modal-title')).not.toBeVisible();
 
     // Verify debug info on an expanded post
     const firstPost = page.locator('#entries .entry').first();

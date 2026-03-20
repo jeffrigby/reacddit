@@ -2,9 +2,7 @@ import { test, expect } from '@playwright/test';
 import { waitForPosts } from './helpers';
 
 test.describe('Sidebar', () => {
-  test('sidebar visible by default, hide/show menu buttons work', async ({
-    page,
-  }) => {
+  test('sidebar hide/show and subreddit filter', async ({ page }) => {
     await waitForPosts(page, '/');
 
     // Sidebar is visible by default
@@ -17,14 +15,9 @@ test.describe('Sidebar', () => {
     // Show menu
     await page.locator('button[aria-label="Show Menu"]').click();
     await expect(page.locator('body')).toHaveClass(/show-menu/);
-  });
-
-  test('subreddit filter narrows and clears the list', async ({ page }) => {
-    await waitForPosts(page, '/');
-
-    const filterInput = page.locator('#subreddit-filter');
 
     // Type to filter
+    const filterInput = page.locator('#subreddit-filter');
     await filterInput.click();
     await filterInput.fill('javascript');
     const filteredItems = page.locator(
