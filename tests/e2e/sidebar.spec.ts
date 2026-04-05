@@ -9,12 +9,12 @@ test.describe('Sidebar', () => {
     await expect(page.locator('#navigation')).toBeVisible();
 
     // Hide menu
-    await page.locator('button[aria-label="Hide Menu"]').click();
-    await expect(page.locator('body')).toHaveClass(/hide-menu/);
+    await page.getByRole('button', { name: 'Hide Menu' }).click();
+    await expect(page.locator('#navigation')).not.toBeInViewport();
 
     // Show menu
-    await page.locator('button[aria-label="Show Menu"]').click();
-    await expect(page.locator('body')).toHaveClass(/show-menu/);
+    await page.getByRole('button', { name: 'Show Menu' }).click();
+    await expect(page.locator('#navigation')).toBeInViewport();
 
     // Type to filter
     const filterInput = page.locator('#subreddit-filter');
@@ -42,7 +42,7 @@ test.describe('Sidebar', () => {
       .getByText('Popular', { exact: true })
       .click();
     await expect(page).toHaveURL(/\/r\/popular/);
-    await expect(entries.first()).toBeVisible({ timeout: 15_000 });
+    await expect(entries.first()).toBeVisible();
 
     // Click Front
     await page
@@ -50,6 +50,6 @@ test.describe('Sidebar', () => {
       .getByText('Front', { exact: true })
       .click();
     await expect(page).not.toHaveURL(/\/r\/popular/);
-    await expect(entries.first()).toBeVisible({ timeout: 15_000 });
+    await expect(entries.first()).toBeVisible();
   });
 });

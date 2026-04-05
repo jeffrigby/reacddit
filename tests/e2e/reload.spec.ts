@@ -7,14 +7,14 @@ test.describe('Reload', () => {
   }) => {
     await waitForPosts(page);
 
-    const reloadButton = page.locator('button[aria-label="Load New Entries"]');
+    const reloadButton = page.getByRole('button', {
+      name: 'Load New Entries',
+    });
     await reloadButton.click();
 
     await expectReloadLoading(page);
 
     // Posts still present after reload completes
-    await expect(page.locator('#entries .entry').first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
   });
 });

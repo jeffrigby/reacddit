@@ -50,9 +50,9 @@ test.describe('Friends (authenticated)', () => {
     await expect(authorLink).toHaveClass(/is-followed/, { timeout: 5_000 });
 
     // Wait for the Friends section to appear in the sidebar (cache invalidation refetch)
-    const friendsToggle = page.locator(
-      'button[aria-label="Show Friends"], button[aria-label="Hide Friends"]'
-    );
+    const friendsToggle = page.getByRole('button', {
+      name: /Show Friends|Hide Friends/,
+    });
     await expect(friendsToggle).toBeVisible({ timeout: 30_000 });
 
     // Expand the friends list if collapsed
@@ -72,20 +72,19 @@ test.describe('Friends (authenticated)', () => {
       hasText: authorName!,
     });
     await friendItem.hover();
-    const removeButton = friendItem.locator('button[aria-label*="Remove"]');
+    const removeButton = friendItem.getByRole('button', { name: /Remove/ });
     await expect(removeButton).toBeVisible({ timeout: 5_000 });
     await removeButton.click();
 
     // Friend should disappear from the list
     await expect(
       friendsList.locator('a', { hasText: authorName! })
-    ).toBeHidden({ timeout: 15_000 });
+    ).toBeHidden();
 
     // The follow button on the post should also update
     await expect(followButton).toHaveAttribute(
       'title',
-      `follow ${authorName}`,
-      { timeout: 15_000 }
+      `follow ${authorName}`
     );
   });
 });

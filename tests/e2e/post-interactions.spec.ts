@@ -11,21 +11,14 @@ test.describe('Post Interactions', () => {
 
     // Title is visible before interaction
     const title = firstPost.locator('h6.title, .title');
-    await expect(title.first()).toBeVisible();
-    const titleText = await title.first().textContent();
-    expect(titleText?.trim().length).toBeGreaterThan(0);
+    await expect(title.first()).not.toBeEmpty();
 
     // Click to expand
     await firstPost.click();
-    await expect(firstPost).toHaveClass(/expanded/, { timeout: 15_000 });
-    await expect(firstPost.locator('.entry-after-header')).not.toBeEmpty({
-      timeout: 15_000,
-    });
+    await expect(firstPost.locator('.entry-after-header')).not.toBeEmpty();
 
     // Footer visible
-    await expect(firstPost.locator('footer')).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(firstPost.locator('footer')).toBeVisible();
 
     // Author link
     await expect(
@@ -43,53 +36,53 @@ test.describe('Post Interactions', () => {
     ).toBeAttached();
 
     // Open on Reddit link
-    const redditLink = firstPost.locator('a[title="Open on Reddit"]');
+    const redditLink = firstPost.getByRole('link', { name: 'Open on Reddit' });
     await expect(redditLink).toBeVisible({ timeout: 5_000 });
-    const href = await redditLink.getAttribute('href');
-    expect(href).toContain('reddit.com');
+    await expect(redditLink).toHaveAttribute('href', /reddit\.com/);
 
     // Vote buttons disabled for anonymous users
-    const voteContainer = firstPost.locator('div.vote');
-    const upvoteButton = voteContainer.locator('button').first();
-    const downvoteButton = voteContainer.locator('button').last();
+    const upvoteButton = firstPost.getByRole('button', { name: /Vote Up/ });
+    const downvoteButton = firstPost.getByRole('button', {
+      name: /Vote Down/,
+    });
     await expect(upvoteButton).toBeDisabled();
     await expect(downvoteButton).toBeDisabled();
 
     // Flair link points to flair search (if present)
     const flairLink = firstPost.locator('a.badge');
     if ((await flairLink.count()) > 0) {
-      const flairHref = await flairLink.first().getAttribute('href');
-      expect(flairHref).toMatch(/search\?q=flair(%3A|:)/);
+      await expect(flairLink.first()).toHaveAttribute(
+        'href',
+        /search\?q=flair(%3A|:)/
+      );
     }
 
     // Domain link points to site search (if not a self-post)
     const domainLink = firstPost.locator('footer a[href*="search?q=site:"]');
     if ((await domainLink.count()) > 0) {
-      const domainHref = await domainLink.getAttribute('href');
-      expect(domainHref).toMatch(/search\?q=site:/);
+      await expect(domainLink).toHaveAttribute('href', /search\?q=site:/);
     }
 
     // Duplicates link points to /duplicates/ (if not a self-post)
-    const duplicatesLink = firstPost.locator(
-      'a[title="Search for other posts linking to this link"]'
-    );
+    const duplicatesLink = firstPost.getByRole('link', {
+      name: 'Search for other posts linking to this link',
+    });
     if ((await duplicatesLink.count()) > 0) {
-      const dupHref = await duplicatesLink.getAttribute('href');
-      expect(dupHref).toMatch(/\/duplicates\//);
+      await expect(duplicatesLink).toHaveAttribute('href', /\/duplicates\//);
     }
 
     // Collapse via button
-    await firstPost.locator('button[aria-label="Collapse post"]').click();
-    await expect(firstPost).toHaveClass(/condensed/, { timeout: 5_000 });
+    await firstPost.getByRole('button', { name: 'Collapse post' }).click();
+    await expect(firstPost.locator('.entry-after-header')).toBeEmpty({
+      timeout: 5_000,
+    });
 
     // Navigate to comments, then back button returns to listing
     await firstPost.locator('a[href*="/comments/"]').first().click();
     await expect(page).toHaveURL(/\/comments\//);
-    const backButton = page.locator('button[aria-label="Go Back"]');
+    const backButton = page.getByRole('button', { name: 'Go Back' });
     await expect(backButton).toBeVisible({ timeout: 5_000 });
     await backButton.click();
-    await expect(page.locator('#entries .entry').first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
   });
 });

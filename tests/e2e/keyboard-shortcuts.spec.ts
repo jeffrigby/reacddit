@@ -21,7 +21,7 @@ test.describe('Keyboard Shortcuts', () => {
   }) => {
     await waitForPosts(page);
     const entries = page.locator('#entries .entry');
-    const focused = page.locator('#entries .entry.focused');
+    const focused = page.locator('#entries .entry[aria-current="true"]');
 
     // j focuses the first post
     await page.keyboard.press('j');
@@ -37,9 +37,13 @@ test.describe('Keyboard Shortcuts', () => {
 
     // x toggles expand/collapse — posts on /r/pics start expanded
     await page.keyboard.press('x');
-    await expect(focused).toHaveClass(/condensed/, { timeout: 5_000 });
+    await expect(focused.locator('.entry-after-header')).toBeEmpty({
+      timeout: 5_000,
+    });
     await page.keyboard.press('x');
-    await expect(focused).toHaveClass(/expanded/, { timeout: 5_000 });
+    await expect(focused.locator('.entry-after-header')).not.toBeEmpty({
+      timeout: 5_000,
+    });
 
     // l opens the post link
     const [lPopup] = await Promise.all([
@@ -64,14 +68,20 @@ test.describe('Keyboard Shortcuts', () => {
     // . loads new entries (triggers refresh)
     await page.keyboard.press('.');
     await expectReloadLoading(page);
-    await expect(entries.first()).toBeVisible({ timeout: 15_000 });
+    await expect(entries.first()).toBeVisible();
 
-    // > toggles stream/auto-refresh mode (reload button becomes primary)
-    const reloadButton = page.locator('button[aria-label="Load New Entries"]');
+    // > toggles stream/auto-refresh mode (reload button becomes pressed)
+    const reloadButton = page.getByRole('button', {
+      name: 'Load New Entries',
+    });
     await page.keyboard.press('>');
-    await expect(reloadButton).toHaveClass(/btn-primary/, { timeout: 5_000 });
+    await expect(reloadButton).toHaveAttribute('aria-pressed', 'true', {
+      timeout: 5_000,
+    });
     await page.keyboard.press('>');
-    await expect(reloadButton).toHaveClass(/btn-secondary/, { timeout: 5_000 });
+    await expect(reloadButton).toHaveAttribute('aria-pressed', 'false', {
+      timeout: 5_000,
+    });
 
     // q focuses sidebar filter input
     await page.keyboard.press('q');
@@ -120,7 +130,7 @@ test.describe('Keyboard Shortcuts', () => {
     for (const { key, url } of sortHotkeys) {
       await page.keyboard.press(key);
       await expect(page).toHaveURL(url);
-      await expect(entries.first()).toBeVisible({ timeout: 15_000 });
+      await expect(entries.first()).toBeVisible();
     }
 
     // Navigation combos (g then key)
@@ -133,7 +143,7 @@ test.describe('Keyboard Shortcuts', () => {
       } else {
         await expect(page).not.toHaveURL(url.not);
       }
-      await expect(entries.first()).toBeVisible({ timeout: 15_000 });
+      await expect(entries.first()).toBeVisible();
     }
   });
 });

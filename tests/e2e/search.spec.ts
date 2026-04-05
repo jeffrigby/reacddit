@@ -4,9 +4,7 @@ test.describe('Search', () => {
   test.describe('from homepage', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/');
-      await expect(page.locator('#entries .entry').first()).toBeVisible({
-        timeout: 15_000,
-      });
+      await expect(page.locator('#entries .entry').first()).toBeVisible();
     });
 
     test('searches and returns results', async ({ page }) => {
@@ -18,7 +16,7 @@ test.describe('Search', () => {
       await expect(page).toHaveURL(/search/);
 
       const results = page.locator('#entries .entry');
-      await expect(results.first()).toBeVisible({ timeout: 15_000 });
+      await expect(results.first()).toBeVisible();
     });
 
     test('can clear search input', async ({ page }) => {
@@ -30,16 +28,13 @@ test.describe('Search', () => {
       await expect(clearButton).toBeVisible();
       await clearButton.click();
 
-      const inputValue = await searchInput.inputValue();
-      expect(inputValue).toBe('');
+      await expect(searchInput).toHaveValue('');
     });
   });
 
   test('can search within a subreddit', async ({ page }) => {
     await page.goto('/r/javascript');
-    await expect(page.locator('#entries .entry').first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
 
     const searchInput = page.locator('#search input');
     await searchInput.click();
@@ -49,6 +44,6 @@ test.describe('Search', () => {
     await expect(page).toHaveURL(/r\/javascript\/search/);
 
     const results = page.locator('#entries .entry');
-    await expect(results.first()).toBeVisible({ timeout: 15_000 });
+    await expect(results.first()).toBeVisible();
   });
 });

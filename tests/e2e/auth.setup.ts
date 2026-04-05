@@ -38,13 +38,13 @@ setup('authenticate via Reddit OAuth', async ({ page, context }) => {
   await waitForPosts(page, '/');
 
   // Click the Reddit Login link in the sidebar
-  await page.locator('a[title*="Login to reddit"]').click();
+  await page.getByTitle(/Login to reddit/).click();
 
   // Reddit login page — fill credentials
   const usernameInput = page.locator(
     'input[name="username"], input#loginUsername, input[name="user"]'
   );
-  await expect(usernameInput.first()).toBeVisible({ timeout: 15_000 });
+  await expect(usernameInput.first()).toBeVisible();
   await usernameInput.first().fill(user);
 
   const passwordInput = page.locator(
@@ -59,7 +59,7 @@ setup('authenticate via Reddit OAuth', async ({ page, context }) => {
   const allowButton = page.locator(
     'input[name="authorize"], button:has-text("Allow"), input[value="Allow"]'
   );
-  await expect(allowButton.first()).toBeVisible({ timeout: 15_000 });
+  await expect(allowButton.first()).toBeVisible();
   await allowButton.first().click();
 
   // Wait for redirect back to app and auth to complete

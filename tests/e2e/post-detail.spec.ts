@@ -5,19 +5,19 @@ test.describe('Post Detail', () => {
     await page.goto('/r/AskReddit');
 
     const firstPost = page.locator('#entries .entry').first();
-    await expect(firstPost).toBeVisible({ timeout: 15_000 });
+    await expect(firstPost).toBeVisible();
 
     await firstPost.click();
 
     const interior = firstPost.locator('.entry-interior');
-    await expect(interior).toBeVisible({ timeout: 15_000 });
+    await expect(interior).toBeVisible();
   });
 
   test('loads comments via comment link', async ({ page }) => {
     await page.goto('/r/AskReddit');
 
     const firstPost = page.locator('#entries .entry').first();
-    await expect(firstPost).toBeVisible({ timeout: 15_000 });
+    await expect(firstPost).toBeVisible();
 
     // Click the comment count link to navigate to the comment page
     const commentLink = firstPost.locator('a[href*="/comments/"]').first();

@@ -12,16 +12,16 @@ test.describe('Theme', () => {
     );
 
     // Click toggle → light mode (empty data-bs-theme)
-    await page.locator('button[title="Light Mode"]').click();
+    await page.getByRole('button', { name: /Light Mode/ }).click();
     await expect(page.locator('html')).toHaveAttribute('data-bs-theme', '');
-    await expect(page.locator('button[title="Dark Mode"]')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Dark Mode/ })).toBeVisible();
   });
 
   test('theme persists across page reload', async ({ page }) => {
     await waitForPosts(page, '/');
 
     // Switch to light mode
-    await page.locator('button[title="Light Mode"]').click();
+    await page.getByRole('button', { name: /Light Mode/ }).click();
     await expect(page.locator('html')).toHaveAttribute('data-bs-theme', '');
 
     // Poll localStorage until the throttled save completes (1s throttle)
@@ -34,9 +34,7 @@ test.describe('Theme', () => {
     }).toPass({ timeout: 3_000 });
 
     await page.reload();
-    await expect(page.locator('#entries .entry').first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
 
     // Theme should still be light (not dark)
     await expect(page.locator('html')).not.toHaveAttribute(

@@ -13,23 +13,20 @@ test.describe('Voting (authenticated)', () => {
   test.beforeEach(async ({ page }) => {
     await waitForPosts(page, '/r/pics');
     firstPost = await expandFirstPost(page);
-    const voteContainer = firstPost.locator('div.vote');
-    upvoteButton = voteContainer.locator('button').first();
-    downvoteButton = voteContainer.locator('button').last();
+    upvoteButton = firstPost.getByRole('button', { name: /Vote Up/ });
+    downvoteButton = firstPost.getByRole('button', { name: /Vote Down/ });
     await expect(upvoteButton).toBeEnabled();
     await expect(downvoteButton).toBeEnabled();
   });
 
   test('upvote appears in upvoted list, then undo', async ({ page }) => {
-    const postTitle = await firstPost
-      .locator('h6.title, .title')
-      .first()
-      .textContent();
-    expect(postTitle?.trim().length).toBeGreaterThan(0);
+    const titleLocator = firstPost.locator('h6.title, .title').first();
+    await expect(titleLocator).not.toBeEmpty();
+    const postTitle = await titleLocator.textContent();
 
     // Upvote
     await upvoteButton.click();
-    await expect(upvoteButton.locator('svg[data-prefix="fas"]')).toBeVisible({
+    await expect(upvoteButton).toHaveAttribute('aria-pressed', 'true', {
       timeout: 5_000,
     });
 
@@ -44,25 +41,23 @@ test.describe('Voting (authenticated)', () => {
     // Navigate back to /r/pics and undo the upvote
     await waitForPosts(page, '/r/pics');
     firstPost = await expandFirstPost(page);
-    upvoteButton = firstPost.locator('div.vote button').first();
+    upvoteButton = firstPost.getByRole('button', { name: /Vote Up/ });
     await upvoteButton.click();
-    await expect(upvoteButton.locator('svg[data-prefix="far"]')).toBeVisible({
+    await expect(upvoteButton).toHaveAttribute('aria-pressed', 'false', {
       timeout: 5_000,
     });
   });
 
   test('downvote appears in downvoted list, then undo', async ({ page }) => {
-    const postTitle = await firstPost
-      .locator('h6.title, .title')
-      .first()
-      .textContent();
-    expect(postTitle?.trim().length).toBeGreaterThan(0);
+    const titleLocator = firstPost.locator('h6.title, .title').first();
+    await expect(titleLocator).not.toBeEmpty();
+    const postTitle = await titleLocator.textContent();
 
     // Downvote
     await downvoteButton.click();
-    await expect(
-      downvoteButton.locator('svg[data-prefix="fas"]')
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(downvoteButton).toHaveAttribute('aria-pressed', 'true', {
+      timeout: 5_000,
+    });
 
     // Verify in downvoted list
     await verifyPostInUserPage(
@@ -75,42 +70,38 @@ test.describe('Voting (authenticated)', () => {
     // Navigate back to /r/pics and undo the downvote
     await waitForPosts(page, '/r/pics');
     firstPost = await expandFirstPost(page);
-    downvoteButton = firstPost.locator('div.vote button').last();
+    downvoteButton = firstPost.getByRole('button', { name: /Vote Down/ });
     await downvoteButton.click();
-    await expect(
-      downvoteButton.locator('svg[data-prefix="far"]')
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(downvoteButton).toHaveAttribute('aria-pressed', 'false', {
+      timeout: 5_000,
+    });
   });
 
   test('switch upvote to downvote and back', async ({ page }) => {
     // Upvote
     await upvoteButton.click();
-    await expect(upvoteButton.locator('svg[data-prefix="fas"]')).toBeVisible({
+    await expect(upvoteButton).toHaveAttribute('aria-pressed', 'true', {
       timeout: 5_000,
     });
-    await expect(
-      downvoteButton.locator('svg[data-prefix="far"]')
-    ).toBeVisible();
+    await expect(downvoteButton).toHaveAttribute('aria-pressed', 'false');
 
     // Switch to downvote
     await downvoteButton.click();
-    await expect(
-      downvoteButton.locator('svg[data-prefix="fas"]')
-    ).toBeVisible({ timeout: 5_000 });
-    await expect(upvoteButton.locator('svg[data-prefix="far"]')).toBeVisible();
+    await expect(downvoteButton).toHaveAttribute('aria-pressed', 'true', {
+      timeout: 5_000,
+    });
+    await expect(upvoteButton).toHaveAttribute('aria-pressed', 'false');
 
     // Switch back to upvote
     await upvoteButton.click();
-    await expect(upvoteButton.locator('svg[data-prefix="fas"]')).toBeVisible({
+    await expect(upvoteButton).toHaveAttribute('aria-pressed', 'true', {
       timeout: 5_000,
     });
-    await expect(
-      downvoteButton.locator('svg[data-prefix="far"]')
-    ).toBeVisible();
+    await expect(downvoteButton).toHaveAttribute('aria-pressed', 'false');
 
     // Clean up — remove vote
     await upvoteButton.click();
-    await expect(upvoteButton.locator('svg[data-prefix="far"]')).toBeVisible({
+    await expect(upvoteButton).toHaveAttribute('aria-pressed', 'false', {
       timeout: 5_000,
     });
   });

@@ -407,6 +407,7 @@ function Post({
     <PostsContextData.Provider value={postContext}>
       <PostsContextActionable.Provider value={actionable}>
         <div
+          aria-current={focused || undefined}
           className={classArray}
           id={data.name}
           key={data.name}

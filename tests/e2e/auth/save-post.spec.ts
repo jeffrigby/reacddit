@@ -15,11 +15,9 @@ test.describe('Save Post (authenticated)', () => {
     await expect(saveButton).toBeVisible({ timeout: 5_000 });
 
     // Read post title for verification in saved feed
-    const postTitle = await firstPost
-      .locator('h6.title, .title')
-      .first()
-      .textContent();
-    expect(postTitle?.trim().length).toBeGreaterThan(0);
+    const titleLocator = firstPost.locator('h6.title, .title').first();
+    await expect(titleLocator).not.toBeEmpty();
+    const postTitle = await titleLocator.textContent();
 
     // Ensure the post is saved
     const initialTitle = await saveButton.getAttribute('title');

@@ -9,7 +9,7 @@ test.describe('Subscribe (authenticated)', () => {
 
     // Subscribe button visible (absent for anon)
     const subButton = page.locator('button.sub-un-sub');
-    await expect(subButton).toBeVisible({ timeout: 5_000 });
+    await expect(subButton).toBeVisible();
 
     const initialText = await subButton.textContent();
     expect(initialText).toBeTruthy();
@@ -26,7 +26,7 @@ test.describe('Subscribe (authenticated)', () => {
     await expect(subredditsList).toBeVisible();
     await expect(
       subredditsList.locator('a', { hasText: 'LifeProTips' })
-    ).toBeVisible({ timeout: 15_000 });
+    ).toBeVisible();
 
     // Unsubscribe
     await subButton.click();
@@ -35,7 +35,7 @@ test.describe('Subscribe (authenticated)', () => {
     // Verify LifeProTips disappears from sidebar (cache invalidation triggers refetch)
     await expect(
       subredditsList.locator('a', { hasText: 'LifeProTips' })
-    ).toBeHidden({ timeout: 15_000 });
+    ).toBeHidden();
 
     // Restore original state if it was subscribed
     if (wasSubscribed) {

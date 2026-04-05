@@ -6,16 +6,14 @@ export async function waitForPosts(
   path = '/r/pics'
 ): Promise<void> {
   await page.goto(path);
-  await expect(page.locator('#entries .entry').first()).toBeVisible({
-    timeout: 15_000,
-  });
+  await expect(page.locator('#entries .entry').first()).toBeVisible();
 }
 
 /** Click the first post to expand it and return its locator. */
 export async function expandFirstPost(page: Page): Promise<Locator> {
   const firstPost = page.locator('#entries .entry').first();
   await firstPost.click();
-  await expect(firstPost).toHaveClass(/expanded/, { timeout: 15_000 });
+  await expect(firstPost.locator('.entry-after-header')).not.toBeEmpty();
   return firstPost;
 }
 
@@ -35,14 +33,14 @@ export async function deleteAllCustomFeeds(page: Page): Promise<void> {
     // Click the first feed to navigate to its page
     await feedItems.first().locator('a').first().click();
 
-    const deleteButton = page.locator(
-      'button[aria-label="Delete Custom Feed"]'
-    );
-    await expect(deleteButton).toBeVisible({ timeout: 15_000 });
+    const deleteButton = page.getByRole('button', {
+      name: 'Delete Custom Feed',
+    });
+    await expect(deleteButton).toBeVisible();
     await deleteButton.click();
 
     // Wait for redirect and feed removal from sidebar
-    await expect(feedItems).toHaveCount(count - 1, { timeout: 15_000 });
+    await expect(feedItems).toHaveCount(count - 1);
     count--;
   }
 }
@@ -52,9 +50,9 @@ export async function deleteAllCustomFeeds(page: Page): Promise<void> {
  * Caller must register a dialog handler: page.on('dialog', d => d.accept())
  */
 export async function removeAllFriends(page: Page): Promise<void> {
-  const friendsToggle = page.locator(
-    'button[aria-label="Show Friends"], button[aria-label="Hide Friends"]'
-  );
+  const friendsToggle = page.getByRole('button', {
+    name: /Show Friends|Hide Friends/,
+  });
   if (!(await friendsToggle.isVisible())) return;
 
   // Expand friends list if collapsed
@@ -71,10 +69,10 @@ export async function removeAllFriends(page: Page): Promise<void> {
   while (count > 0) {
     const item = friendItems.first();
     await item.hover();
-    const removeButton = item.locator('button[aria-label*="Remove"]');
+    const removeButton = item.getByRole('button', { name: /Remove/ });
     await expect(removeButton).toBeVisible({ timeout: 5_000 });
     await removeButton.click();
-    await expect(friendItems).toHaveCount(count - 1, { timeout: 15_000 });
+    await expect(friendItems).toHaveCount(count - 1);
     count--;
   }
 }
@@ -87,17 +85,15 @@ export async function verifyPostInUserPage(
   postTitle: string
 ): Promise<void> {
   const account = page.locator('#sidebar-nav_account');
-  await account.locator(`a[title="${linkTitle}"]`).click();
+  await account.getByTitle(linkTitle).click();
   await expect(page).toHaveURL(urlPattern);
-  await expect(page.locator('#entries')).toBeVisible({ timeout: 15_000 });
-  await expect(
-    page.locator('#entries').getByText(postTitle)
-  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#entries')).toBeVisible();
+  await expect(page.locator('#entries').getByText(postTitle)).toBeVisible();
 }
 
 /** Assert the reload button enters a loading state (spinning icon or disabled). */
 export async function expectReloadLoading(page: Page): Promise<void> {
-  const reloadButton = page.locator('button[aria-label="Load New Entries"]');
+  const reloadButton = page.getByRole('button', { name: 'Load New Entries' });
   const spinIcon = reloadButton.locator('svg.fa-spin');
   await expect(async () => {
     const isSpinning = await spinIcon.count();

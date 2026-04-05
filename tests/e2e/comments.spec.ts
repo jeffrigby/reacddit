@@ -20,11 +20,11 @@ test.describe('Comments', () => {
 
     // Nested comments have indentation class
     const childComments = page.locator('.entry.kind-t1.comment-child');
-    await expect(childComments.first()).toBeAttached({ timeout: 15_000 });
+    await expect(childComments.first()).toBeAttached();
 
     // AskReddit threads have "more replies" buttons
     const moreComments = page.locator('.comments-more');
-    await expect(moreComments.first()).toBeAttached({ timeout: 15_000 });
+    await expect(moreComments.first()).toBeAttached();
 
     // First comment has author link and time info
     const firstComment = comments.first();
@@ -37,18 +37,22 @@ test.describe('Comments', () => {
 
     // Collapse a comment via caret toggle
     const collapseButton = firstComment
-      .locator('button[aria-label="Collapse comment"]')
+      .getByRole('button', { name: 'Collapse comment' })
       .first();
     await expect(collapseButton).toBeVisible({ timeout: 5_000 });
     await collapseButton.click();
-    await expect(firstComment).toHaveClass(/condensed/, { timeout: 5_000 });
+    await expect(
+      firstComment.locator('.entry-after-header').first()
+    ).toBeEmpty({ timeout: 5_000 });
 
     // Re-expand the comment
     const expandButton = firstComment
-      .locator('button[aria-label="Expand comment"]')
+      .getByRole('button', { name: 'Expand comment' })
       .first();
     await expect(expandButton).toBeVisible({ timeout: 5_000 });
     await expandButton.click();
-    await expect(firstComment).toHaveClass(/expanded/, { timeout: 5_000 });
+    await expect(
+      firstComment.locator('.entry-after-header').first()
+    ).not.toBeEmpty({ timeout: 5_000 });
   });
 });

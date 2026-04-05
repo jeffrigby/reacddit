@@ -42,6 +42,7 @@ export default defineConfig({
 
   // Fail fast in CI, retry once locally
   retries: process.env['CI'] ? 2 : 0,
+  forbidOnly: !!process.env['CI'],
 
   // Limit parallelism — live API tests should not hammer Reddit
   fullyParallel: false,

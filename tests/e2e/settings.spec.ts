@@ -54,9 +54,7 @@ test.describe('Settings', () => {
     // Verify debug info on an expanded post
     const firstPost = page.locator('#entries .entry').first();
     await firstPost.click();
-    await expect(firstPost.locator('.entry-interior')).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(firstPost.locator('.entry-interior')).toBeVisible();
     const debugButton = firstPost.locator('footer button', {
       hasText: /^t3_/,
     });

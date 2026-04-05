@@ -3,9 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Post Listing', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/r/pics');
-    await expect(page.locator('#entries .entry').first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
   });
 
   test('renders multiple posts', async ({ page }) => {
@@ -19,8 +17,7 @@ test.describe('Post Listing', () => {
     const count = await titles.count();
     expect(count).toBeGreaterThan(0);
 
-    const firstTitle = await titles.first().textContent();
-    expect(firstTitle?.trim().length).toBeGreaterThan(0);
+    await expect(titles.first()).not.toBeEmpty();
   });
 
   test('can change sort order', async ({ page }) => {
@@ -36,9 +33,7 @@ test.describe('Post Listing', () => {
 
     await expect(page).toHaveURL(/\/new/);
 
-    await expect(page.locator('#entries .entry').first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
   });
 
   test('loads more posts on scroll', async ({ page }) => {
