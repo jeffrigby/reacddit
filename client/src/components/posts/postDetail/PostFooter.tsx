@@ -29,7 +29,9 @@ function PostFooter({
   const [copied, setCopied] = useState(false);
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
-  const copyTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     return () => {

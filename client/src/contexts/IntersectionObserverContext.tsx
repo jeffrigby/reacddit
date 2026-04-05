@@ -112,7 +112,7 @@ export function IntersectionObserverProvider({
     const mediaControlObserver = mediaControlObserverRef.current;
 
     // Add scroll listener to manually check elements that should load
-    let scrollTimeout: NodeJS.Timeout;
+    let scrollTimeout: ReturnType<typeof setTimeout>;
     const handleScroll = () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {

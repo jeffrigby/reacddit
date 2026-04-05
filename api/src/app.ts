@@ -138,10 +138,10 @@ async function getAnonToken(): Promise<{ token: RedditAccessTokenResponse }> {
   } catch (error) {
     const detail: Record<string, unknown> = {};
     if (error instanceof AxiosError && error.response) {
-      detail.status = error.response.status;
+      detail["status"] = error.response.status;
     }
     if (error instanceof Error) {
-      detail.error = error.message;
+      detail["error"] = error.message;
     }
     logger.error("Anon access token error", detail);
     throw new Error("Failed to retrieve anonymous access token from Reddit.");

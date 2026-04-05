@@ -232,7 +232,7 @@ function Post({
   }
 
   useEffect(() => {
-    let reposInt: NodeJS.Timeout | undefined;
+    let reposInt: ReturnType<typeof setTimeout> | undefined;
     if (siteSettings.view === 'condensed' && lastExpanded) {
       if (expand && data.name !== lastExpanded) {
         setExpand(false);
