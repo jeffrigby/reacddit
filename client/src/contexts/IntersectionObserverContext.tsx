@@ -222,9 +222,9 @@ export function IntersectionObserverProvider({
   );
 
   return (
-    <IntersectionObserverContext.Provider value={value}>
+    <IntersectionObserverContext value={value}>
       {children}
-    </IntersectionObserverContext.Provider>
+    </IntersectionObserverContext>
   );
 }
 

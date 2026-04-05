@@ -40,7 +40,17 @@ if (!container) {
   throw new Error('Root element not found');
 }
 
-const root = createRoot(container);
+const root = createRoot(container, {
+  onCaughtError(error, errorInfo) {
+    console.error('React caught error:', error, errorInfo.componentStack);
+  },
+  onUncaughtError(error, errorInfo) {
+    console.error('React uncaught error:', error, errorInfo.componentStack);
+  },
+  onRecoverableError(error, errorInfo) {
+    console.error('React recoverable error:', error, errorInfo.componentStack);
+  },
+});
 
 if (parsed.login !== undefined || parsed.logout !== undefined) {
   root.render(<div className="app-loading" />);

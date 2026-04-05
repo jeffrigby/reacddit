@@ -34,9 +34,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
     [showHotkeys, showAutoRefresh, showCondenseHelp]
   );
 
-  return (
-    <ModalContext.Provider value={value}>{children}</ModalContext.Provider>
-  );
+  return <ModalContext value={value}>{children}</ModalContext>;
 }
 
 /**

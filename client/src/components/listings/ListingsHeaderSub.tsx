@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
@@ -135,13 +134,6 @@ function ListingsHeaderSub() {
       break;
   }
 
-  // Set document title in useEffect
-  useEffect(() => {
-    if (pageTitle) {
-      document.title = pageTitle;
-    }
-  }, [pageTitle]);
-
   // Only show loading placeholder if we're expecting subscriber data
   const getRenderedSubInfo = (): React.ReactNode => {
     if (subInfo) {
@@ -160,6 +152,7 @@ function ListingsHeaderSub() {
 
   return (
     <>
+      {pageTitle && <title>{pageTitle}</title>}
       <div className="d-flex">
         <div className="me-auto title-contrainer">
           <h5 className="m-0 p-0 w-100">

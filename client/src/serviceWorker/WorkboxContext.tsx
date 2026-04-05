@@ -10,11 +10,7 @@ interface WorkboxProviderProps {
 }
 
 export function WorkboxProvider({ workbox, children }: WorkboxProviderProps) {
-  return (
-    <WorkboxContext.Provider value={workbox}>
-      {children}
-    </WorkboxContext.Provider>
-  );
+  return <WorkboxContext value={workbox}>{children}</WorkboxContext>;
 }
 
 export function useWorkbox(): Workbox | null {

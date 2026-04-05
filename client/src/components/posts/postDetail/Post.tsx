@@ -404,8 +404,8 @@ function Post({
   );
 
   return (
-    <PostsContextData.Provider value={postContext}>
-      <PostsContextActionable.Provider value={actionable}>
+    <PostsContextData value={postContext}>
+      <PostsContextActionable value={actionable}>
         <div
           aria-current={focused || undefined}
           className={classArray}
@@ -447,8 +447,8 @@ function Post({
             </div>
           </div>
         </div>
-      </PostsContextActionable.Provider>
-    </PostsContextData.Provider>
+      </PostsContextActionable>
+    </PostsContextData>
   );
 }
 
