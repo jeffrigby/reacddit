@@ -2,11 +2,7 @@
  * Modern Redux Toolkit slice for Reddit User Account (Me)
  * Following Redux Toolkit 2.0+ best practices
  */
-import {
-  createSlice,
-  createAsyncThunk,
-  createSelector,
-} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/types/redux';
 import type { AccountData } from '@/types/redditApi';
@@ -127,6 +123,16 @@ const meSlice = createSlice({
       state.id = null;
     },
   },
+  selectors: {
+    selectMeState: (state): MeState => state,
+    selectMe: (state): AccountData | null => state.me,
+    selectMeStatus: (state): MeState['status'] => state.status,
+    selectMeError: (state): string | null => state.error,
+    selectMeLastUpdated: (state): number => state.lastUpdated,
+    selectMeLoaded: (state): boolean => state.status === 'succeeded',
+    selectMeLoading: (state): boolean => state.status === 'loading',
+    selectUsername: (state): string | null => state.me?.name ?? null,
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMe.pending, (state) => {
@@ -161,31 +167,13 @@ export const { meCleared } = meSlice.actions;
 
 export default meSlice.reducer;
 
-export const selectMeState = (state: RootState): MeState => state.redditMe;
-
-export const selectMe = (state: RootState): AccountData | null =>
-  state.redditMe.me;
-
-export const selectMeStatus = (state: RootState): MeState['status'] =>
-  state.redditMe.status;
-
-export const selectMeError = (state: RootState): string | null =>
-  state.redditMe.error;
-
-export const selectMeLastUpdated = (state: RootState): number =>
-  state.redditMe.lastUpdated;
-
-export const selectMeLoaded = createSelector(
-  [selectMeStatus],
-  (status) => status === 'succeeded'
-);
-
-export const selectMeLoading = createSelector(
-  [selectMeStatus],
-  (status) => status === 'loading'
-);
-
-export const selectUsername = createSelector(
-  [selectMe],
-  (me) => me?.name ?? null
-);
+export const {
+  selectMeState,
+  selectMe,
+  selectMeStatus,
+  selectMeError,
+  selectMeLastUpdated,
+  selectMeLoaded,
+  selectMeLoading,
+  selectUsername,
+} = meSlice.getSelectors((state: RootState) => state.redditMe);
