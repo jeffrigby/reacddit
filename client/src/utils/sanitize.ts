@@ -31,7 +31,7 @@ export function isSafeUrl(url: string, httpsOnly = false): boolean {
 
 /**
  * Sanitize a URL for use in an anchor tag href attribute.
- * Allows http:, https:, and mailto: protocols via isSafeUrl.
+ * Allows http:, https:, and mailto: protocols.
  * Returns '#' for unsafe or malformed URLs.
  */
 export function sanitizeHref(url: string): string {
@@ -50,10 +50,13 @@ export function sanitizeHref(url: string): string {
   }
 }
 
-// Reuse a single textarea element for entity decoding
-const textareaDecoder = document.createElement('textarea');
+// Lazily initialized textarea element for HTML entity decoding.
+// Uses innerHTML on an off-DOM textarea — this is a standard safe pattern
+// for decoding entities like &amp; → & without executing scripts.
+let textareaDecoder: HTMLTextAreaElement | null = null;
 
 export function decodeHTMLEntities(text: string): string {
-  textareaDecoder.innerHTML = text;
+  textareaDecoder ??= document.createElement('textarea');
+  textareaDecoder.innerHTML = text; // Safe: textarea never added to DOM, no script execution
   return textareaDecoder.value;
 }

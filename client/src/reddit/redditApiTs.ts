@@ -101,8 +101,8 @@ export function getTokenStorage(): TokenStorageResult {
     const token = expires >= currentTimestamp ? accessToken : 'expired';
 
     return { token, cookieTokenParsed: parsedToken };
-  } catch {
-    // If parsing fails, treat as no token
+  } catch (error) {
+    console.error('Failed to parse token cookie:', error);
     return { token: null, cookieTokenParsed: {} };
   }
 }
@@ -124,10 +124,9 @@ export async function getToken(reset = false): Promise<TokenApiResponse> {
         token: response.data.accessToken,
         cookieTokenParsed,
       };
-    } catch {
-      // Clear storage on token fetch failure
-      localStorage.clear();
-      sessionStorage.clear();
+    } catch (error) {
+      console.error('Failed to fetch bearer token:', error);
+      cookies.remove('token');
       return { token: null, cookieTokenParsed };
     }
   }

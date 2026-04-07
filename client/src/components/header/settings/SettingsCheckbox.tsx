@@ -24,15 +24,13 @@ function SettingsCheckbox({
   onChange,
 }: SettingsCheckboxProps): React.JSX.Element {
   const checked = useAppSelector(
-    (state) =>
-      (state.siteSettings[settingKey as keyof SiteSettingsState] as boolean) ??
-      false
+    (state) => state.siteSettings[settingKey] ?? false
   );
   const dispatch = useAppDispatch();
 
   const handleChange = (): void => {
     const newValue = !checked;
-    dispatch(siteSettingsChanged({ [settingKey as string]: newValue }));
+    dispatch(siteSettingsChanged({ [settingKey]: newValue }));
     onChange?.(newValue);
   };
 

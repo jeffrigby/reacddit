@@ -8,7 +8,7 @@ test.describe('User Profile', () => {
     // First post is authored by the profile user
     const firstPost = page.locator('#entries .entry').first();
     await expect(
-      firstPost.locator('a[href*="/user/spez"]')
+      firstPost.locator('a[href*="/user/spez"]').first()
     ).toBeAttached();
   });
 });

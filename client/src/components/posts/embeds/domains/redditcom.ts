@@ -198,9 +198,13 @@ export async function resolveShareLinks(
               shareCache.set(url, postId);
             }
           }
+        } else {
+          console.warn(
+            `Share link batch resolution returned ${response.status} for ${chunk.length} URLs`
+          );
         }
-      } catch {
-        // Fail silently — individual URLs will retry via resolveShareLink
+      } catch (error) {
+        console.error('Share link batch resolution error:', error);
       } finally {
         resolveChunkPromise();
         for (const url of chunk) {
@@ -249,7 +253,9 @@ function resolveShareLink(url: string): Promise<string | null> {
     // Schedule batch execution on next microtask
     if (!batchScheduled) {
       batchScheduled = true;
-      queueMicrotask(executeBatch);
+      queueMicrotask(() => {
+        executeBatch().catch(console.error);
+      });
     }
   });
 }
@@ -348,8 +354,11 @@ export async function prefetchPostData(postIds: string[]): Promise<void> {
           }
         }
       }
-    } catch {
-      // Fail silently — individual fetchPostData calls retry as fallback
+    } catch (error) {
+      console.error(
+        `Failed to prefetch post data for chunk of ${chunk.length} IDs:`,
+        error
+      );
     }
   };
 
@@ -367,9 +376,7 @@ export async function prefetchPostData(postIds: string[]): Promise<void> {
  * Supports:
  * - Standard URLs: reddit.com/r/sub/comments/abc123/...
  * - Short links: redd.it/abc123
- *
- * Does NOT support (CORS blocks redirects):
- * - Share links: reddit.com/r/sub/s/xyz
+ * - Share links: reddit.com/r/sub/s/xyz (resolved server-side via /api/resolve-share)
  */
 async function render(entry: LinkData | CommentData): Promise<EmbedContent> {
   // Get URL from entry

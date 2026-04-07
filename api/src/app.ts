@@ -108,15 +108,27 @@ function setCookie(token: ExtendedToken, ctx: Koa.Context): void {
  * @param token - The token object
  * @param ctx - The Koa context
  */
-function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): void {
+function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): boolean {
   try {
     setSession(token, ctx);
+  } catch (error) {
+    logger.error("Error setting session", {
+      error: getErrorMessage(error),
+    });
+    return false;
+  }
+
+  try {
     setCookie(token, ctx);
   } catch (error) {
-    logger.error("Error setting session and cookie", {
+    // Cookie failure is non-fatal — the session is the source of truth.
+    // This can happen in test environments where secure cookies require HTTPS.
+    logger.warn("Error setting cookie (non-fatal)", {
       error: getErrorMessage(error),
     });
   }
+
+  return true;
 }
 
 /**
@@ -387,15 +399,22 @@ router.get("/api/callback", authRateLimit, async (ctx) => {
     if (data.access_token) {
       logger.info("Token retrieved, redirecting to client");
       const accessToken = addExtraInfoToToken(data, true);
-      setSessAndCookie(accessToken, ctx);
+      if (!setSessAndCookie(accessToken, ctx)) {
+        return handleError("Failed to set session after authentication", 500);
+      }
       ctx.redirect(`${config.CLIENT_PATH}/?login`);
       return;
     }
+
+    const errorData = data as unknown as Record<string, unknown>;
+    logger.error("Reddit returned no access_token", {
+      error: errorData["error"],
+      errorDescription: errorData["error_description"],
+    });
+    return handleError("Reddit returned no access token", 502);
   } catch (exception) {
     return handleError(`ACCESS TOKEN ERROR ${getErrorMessage(exception)}`, 502);
   }
-
-  ctx.body = "callback";
 });
 
 /**
