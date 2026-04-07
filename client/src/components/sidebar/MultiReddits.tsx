@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { ReactElement, KeyboardEvent } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -24,7 +24,6 @@ function MultiReddits(): ReactElement | null {
   const [showAdd, setShowAdd] = useState<boolean>(false);
 
   const bearerStatus = useAppSelector((state) => state.redditBearer.status);
-  const prevStatusRef = useRef<string | null>(null);
 
   // RTK Query hook - only fetch when authenticated
   const {
@@ -41,18 +40,6 @@ function MultiReddits(): ReactElement | null {
       pollingInterval: bearerStatus === 'auth' ? 900000 : undefined, // Auto-refresh every 15 minutes when authenticated
     }
   );
-
-  // Clear cache when auth status changes
-  useEffect(() => {
-    if (
-      prevStatusRef.current !== null &&
-      prevStatusRef.current !== bearerStatus
-    ) {
-      // RTK Query will automatically handle cache invalidation
-      // when the component unmounts or the query is skipped
-    }
-    prevStatusRef.current = bearerStatus;
-  }, [bearerStatus]);
 
   const reloadMultis = useCallback(async (): Promise<void> => {
     await refetch();

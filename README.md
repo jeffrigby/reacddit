@@ -11,7 +11,7 @@ reacddit is a monorepo (npm workspaces) containing an OAuth2 API (for Reddit aut
 ## Tech Stack
 
 - **Frontend**: React 19, Redux Toolkit, React Router 7, TypeScript
-- **Build System**: Vite 7 with SWC for fast builds and hot module replacement
+- **Build System**: Vite 8 with Rolldown bundler for fast builds and hot module replacement
 - **Backend**: Koa.js OAuth2 server with rate limiting (TypeScript) - [API docs](api/README.md)
 - **Deployment**: AWS Lambda with SAM/CloudFormation - [Deployment guide](DEPLOYMENT.md)
 - **PWA**: Full Progressive Web App support with Vite PWA plugin

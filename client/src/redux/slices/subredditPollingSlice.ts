@@ -115,6 +115,41 @@ const subredditPollingSlice = createSlice({
       state.lastUpdatedProgress = action.payload;
     },
   },
+  selectors: {
+    selectLastUpdatedTracking: (state): LastUpdatedTracking =>
+      state.lastUpdatedTracking,
+    selectLastUpdatedTime: (state): number => state.lastUpdatedTime,
+    selectLastUpdatedRunning: (state): boolean => state.lastUpdatedRunning,
+    selectLastUpdatedError: (state): string | null => state.lastUpdatedError,
+    selectLastUpdatedProgress: (
+      state
+    ): { total: number; completed: number } | null => state.lastUpdatedProgress,
+    /**
+     * Returns the earliest cache expiration timestamp (unix seconds).
+     * Used by NavigationSubreddits to schedule the next polling run dynamically.
+     *
+     * Returns the raw timestamp rather than a computed duration so the selector
+     * produces a stable value — it only changes when tracking data updates,
+     * not on every Redux dispatch (which would happen with Date.now()).
+     *
+     * Returns null if no tracking entries exist (triggers default interval).
+     */
+    selectEarliestExpiration: (state): number | null => {
+      const entries = Object.values(state.lastUpdatedTracking);
+      if (entries.length === 0) {
+        return null;
+      }
+
+      let earliest = Infinity;
+      for (const entry of entries) {
+        if (entry.expires < earliest) {
+          earliest = entry.expires;
+        }
+      }
+
+      return earliest === Infinity ? null : earliest;
+    },
+  },
 });
 
 // Export actions
@@ -294,44 +329,11 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
 );
 
 // Selectors
-export const selectLastUpdatedTracking = (state: RootState) =>
-  state.subredditPolling.lastUpdatedTracking;
-
-export const selectLastUpdatedTime = (state: RootState) =>
-  state.subredditPolling.lastUpdatedTime;
-
-export const selectLastUpdatedRunning = (state: RootState) =>
-  state.subredditPolling.lastUpdatedRunning;
-
-export const selectLastUpdatedError = (state: RootState) =>
-  state.subredditPolling.lastUpdatedError;
-
-export const selectLastUpdatedProgress = (state: RootState) =>
-  state.subredditPolling.lastUpdatedProgress;
-
-/**
- * Returns the earliest cache expiration timestamp (unix seconds).
- * Used by NavigationSubreddits to schedule the next polling run dynamically.
- *
- * Returns the raw timestamp rather than a computed duration so the selector
- * produces a stable value — it only changes when tracking data updates,
- * not on every Redux dispatch (which would happen with Date.now()).
- *
- * Returns null if no tracking entries exist (triggers default interval).
- */
-export const selectEarliestExpiration = (state: RootState): number | null => {
-  const tracking = state.subredditPolling.lastUpdatedTracking;
-  const entries = Object.values(tracking);
-  if (entries.length === 0) {
-    return null;
-  }
-
-  let earliest = Infinity;
-  for (const entry of entries) {
-    if (entry.expires < earliest) {
-      earliest = entry.expires;
-    }
-  }
-
-  return earliest === Infinity ? null : earliest;
-};
+export const {
+  selectLastUpdatedTracking,
+  selectLastUpdatedTime,
+  selectLastUpdatedRunning,
+  selectLastUpdatedError,
+  selectLastUpdatedProgress,
+  selectEarliestExpiration,
+} = subredditPollingSlice.selectors;

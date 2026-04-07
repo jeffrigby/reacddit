@@ -118,7 +118,7 @@ const securityHeaders = {
     "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.instagram.com https://platform.instagram.com https://connect.facebook.net https://platform.twitter.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' ws: wss: https:; media-src 'self' https:; frame-src *; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
-  'X-XSS-Protection': '1; mode=block',
+  'X-XSS-Protection': '0',
 };
 
 /**
@@ -568,6 +568,7 @@ function startServer(): void {
     try {
       normalizedPath = new URL(url, 'http://localhost').pathname;
     } catch {
+      console.error(`Invalid WebSocket upgrade URL: ${url}`);
       socket.destroy();
       return;
     }

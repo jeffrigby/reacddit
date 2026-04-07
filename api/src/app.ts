@@ -24,6 +24,8 @@ import type {
 } from "./types/reddit.js";
 import type { SessionData } from "./types/session.js";
 import axios, { AxiosError, type AxiosResponse } from "axios";
+import pLimit from "p-limit";
+import { LRUCache } from "lru-cache";
 import ratelimit from "koa-ratelimit";
 import { globalHttpsAgent as ssrfSafeAgent } from "request-filtering-agent";
 
@@ -106,15 +108,27 @@ function setCookie(token: ExtendedToken, ctx: Koa.Context): void {
  * @param token - The token object
  * @param ctx - The Koa context
  */
-function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): void {
+function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): boolean {
   try {
     setSession(token, ctx);
+  } catch (error) {
+    logger.error("Error setting session", {
+      error: getErrorMessage(error),
+    });
+    return false;
+  }
+
+  try {
     setCookie(token, ctx);
   } catch (error) {
-    logger.error("Error setting session and cookie", {
+    // Cookie failure is non-fatal — the session is the source of truth.
+    // This can happen in test environments where secure cookies require HTTPS.
+    logger.warn("Error setting cookie (non-fatal)", {
       error: getErrorMessage(error),
     });
   }
+
+  return true;
 }
 
 /**
@@ -136,10 +150,10 @@ async function getAnonToken(): Promise<{ token: RedditAccessTokenResponse }> {
   } catch (error) {
     const detail: Record<string, unknown> = {};
     if (error instanceof AxiosError && error.response) {
-      detail.status = error.response.status;
+      detail["status"] = error.response.status;
     }
     if (error instanceof Error) {
-      detail.error = error.message;
+      detail["error"] = error.message;
     }
     logger.error("Anon access token error", detail);
     throw new Error("Failed to retrieve anonymous access token from Reddit.");
@@ -385,15 +399,22 @@ router.get("/api/callback", authRateLimit, async (ctx) => {
     if (data.access_token) {
       logger.info("Token retrieved, redirecting to client");
       const accessToken = addExtraInfoToToken(data, true);
-      setSessAndCookie(accessToken, ctx);
+      if (!setSessAndCookie(accessToken, ctx)) {
+        return handleError("Failed to set session after authentication", 500);
+      }
       ctx.redirect(`${config.CLIENT_PATH}/?login`);
       return;
     }
+
+    const errorData = data as unknown as Record<string, unknown>;
+    logger.error("Reddit returned no access_token", {
+      error: errorData["error"],
+      errorDescription: errorData["error_description"],
+    });
+    return handleError("Reddit returned no access token", 502);
   } catch (exception) {
     return handleError(`ACCESS TOKEN ERROR ${getErrorMessage(exception)}`, 502);
   }
-
-  ctx.body = "callback";
 });
 
 /**
@@ -529,16 +550,36 @@ const SHARE_LINK_REGEX =
   /^https?:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
 
 // Max URLs per batch request
-const MAX_BATCH_SIZE = 20;
+const MAX_BATCH_SIZE = 50;
 
 type ShareResolveResult = { postId: string } | { error: string };
 
+// Server-side cache for resolved share links.
+// Only successful resolutions are cached; errors are retried on next request.
+// In-memory only — resets on Lambda cold starts and isn't shared across instances.
+// TODO: Move to ElastiCache/DynamoDB for persistence across Lambda invocations.
+const shareCache = new LRUCache<string, string>({
+  max: 5000,
+  ttl: 1000 * 60 * 60 * 6, // 6 hours (share links are stable)
+});
+
+/** Reset the share link cache. For testing only. */
+export function _resetShareCache(): void {
+  shareCache.clear();
+}
+
 /**
- * Resolve a single share link to a post ID by following redirects
+ * Resolve a single share link to a post ID by following redirects.
+ * Returns cached result if available.
  */
 async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
   if (!SHARE_LINK_REGEX.test(url)) {
     return { error: "Invalid Reddit share link format" };
+  }
+
+  const cached = shareCache.get(url);
+  if (cached !== undefined) {
+    return { postId: cached };
   }
 
   try {
@@ -559,6 +600,7 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
       return { error: "Could not extract post ID from redirect" };
     }
 
+    shareCache.set(url, postId);
     return { postId };
   } catch (error) {
     logger.warn("Share link resolution failed", {
@@ -612,10 +654,11 @@ router.post("/api/resolve-share", shareRateLimit, async (ctx) => {
   // Deduplicate URLs
   const uniqueUrls = [...new Set(urls)];
 
-  // Resolve all unique URLs in parallel
+  // Resolve all unique URLs with concurrency limit to avoid overwhelming Reddit
+  const resolveLimit = pLimit(10);
   const entries = await Promise.all(
     uniqueUrls.map(async (url) => {
-      const result = await resolveShareUrl(url);
+      const result = await resolveLimit(() => resolveShareUrl(url));
       return [url, result] as const;
     }),
   );

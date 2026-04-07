@@ -11,7 +11,6 @@
  */
 
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '@/types/redux';
 
 /**
  * Filter state for sidebar subreddit navigation
@@ -56,6 +55,12 @@ const subredditFilterSlice = createSlice({
       Object.assign(state, initialState);
     },
   },
+  selectors: {
+    selectSubredditFilter: (state): SubredditFilterState => state,
+    selectFilterText: (state): string => state.filterText,
+    selectFilterActive: (state): boolean => state.active,
+    selectFilterIndex: (state): number => state.activeIndex,
+  },
 });
 
 // Export actions
@@ -65,11 +70,9 @@ export const { filterUpdated, filterCleared } = subredditFilterSlice.actions;
 export default subredditFilterSlice.reducer;
 
 // Selectors
-export const selectSubredditFilter = (state: RootState) =>
-  state.subredditFilter;
-export const selectFilterText = (state: RootState) =>
-  state.subredditFilter.filterText;
-export const selectFilterActive = (state: RootState) =>
-  state.subredditFilter.active;
-export const selectFilterIndex = (state: RootState) =>
-  state.subredditFilter.activeIndex;
+export const {
+  selectSubredditFilter,
+  selectFilterText,
+  selectFilterActive,
+  selectFilterIndex,
+} = subredditFilterSlice.selectors;

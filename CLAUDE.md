@@ -4,7 +4,7 @@ Reacddit is a Reddit client with enhanced media viewing and embedded content sup
 
 ## Tech Stack
 
-- **Client:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 7
+- **Client:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 8
 - **API:** Koa.js OAuth2 server (Reddit auth + share link resolver)
 - **Proxy:** Node.js HTTPS reverse proxy for local dev SSL
 - **Deployment:** AWS Lambda via SAM/CloudFormation

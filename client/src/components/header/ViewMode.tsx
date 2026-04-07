@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -18,10 +18,13 @@ function ViewMode() {
   );
   const dispatch = useAppDispatch();
 
-  const toggleView = async (view: ViewModeType) => {
-    scrollToPosition(0, 0);
-    await dispatch(siteSettingsChanged({ view }));
-  };
+  const toggleView = useCallback(
+    async (view: ViewModeType) => {
+      scrollToPosition(0, 0);
+      await dispatch(siteSettingsChanged({ view }));
+    },
+    [dispatch]
+  );
 
   const handleButtonClick =
     (view: ViewModeType) => (e: MouseEvent<HTMLButtonElement>) => {
@@ -29,28 +32,30 @@ function ViewMode() {
       toggleView(view);
     };
 
-  const hotkeys = (event: KeyboardEvent) => {
-    if (hotkeyStatus()) {
-      const pressedKey = event.key;
-      try {
-        if (pressedKey === 'v') {
-          const action: ViewModeType =
-            siteSettingsView === 'expanded' ? 'condensed' : 'expanded';
-          toggleView(action);
+  const hotkeys = useCallback(
+    (event: KeyboardEvent) => {
+      if (hotkeyStatus()) {
+        const pressedKey = event.key;
+        try {
+          if (pressedKey === 'v') {
+            const action: ViewModeType =
+              siteSettingsView === 'expanded' ? 'condensed' : 'expanded';
+            toggleView(action);
+          }
+        } catch (e) {
+          console.error('Error in view mode hotkeys', e);
         }
-      } catch (e) {
-        console.error('Error in view mode hotkeys', e);
       }
-    }
-  };
+    },
+    [siteSettingsView, toggleView]
+  );
 
   useEffect(() => {
     document.addEventListener('keydown', hotkeys);
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteSettingsView]);
+  }, [hotkeys]);
 
   const viewIcon =
     siteSettingsView === 'expanded' ? faCompressArrowsAlt : faExpandArrowsAlt;

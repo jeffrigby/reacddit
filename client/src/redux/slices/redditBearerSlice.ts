@@ -2,11 +2,7 @@
  * Modern Redux Toolkit slice for Reddit OAuth Bearer Token
  * Following Redux Toolkit 2.0+ best practices
  */
-import {
-  createSlice,
-  createAsyncThunk,
-  createSelector,
-} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/types/redux';
 import { getToken, getLoginUrl } from '@/reddit/redditApiTs';
@@ -128,6 +124,16 @@ const bearerSlice = createSlice({
       state.error = null;
     },
   },
+  selectors: {
+    selectBearerState: (state): BearerState => state,
+    selectBearer: (state): string | null => state.bearer,
+    selectBearerStatus: (state): BearerState['status'] => state.status,
+    selectLoginURL: (state): string | null => state.loginURL,
+    selectBearerError: (state): string | null => state.error,
+    selectIsAuth: (state): boolean => state.status === 'auth',
+    selectBearerLoading: (state): boolean =>
+      state.status === 'loading' || state.status === 'idle',
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchBearer.pending, (state) => {
@@ -164,27 +170,12 @@ export const { bearerCleared } = bearerSlice.actions;
 
 export default bearerSlice.reducer;
 
-export const selectBearerState = (state: RootState): BearerState =>
-  state.redditBearer;
-
-export const selectBearer = (state: RootState): string | null =>
-  state.redditBearer.bearer;
-
-export const selectBearerStatus = (state: RootState): BearerState['status'] =>
-  state.redditBearer.status;
-
-export const selectLoginURL = (state: RootState): string | null =>
-  state.redditBearer.loginURL;
-
-export const selectBearerError = (state: RootState): string | null =>
-  state.redditBearer.error;
-
-export const selectIsAuth = createSelector(
-  [selectBearerStatus],
-  (status) => status === 'auth'
-);
-
-export const selectBearerLoading = createSelector(
-  [selectBearerStatus],
-  (status) => status === 'loading' || status === 'idle'
-);
+export const {
+  selectBearerState,
+  selectBearer,
+  selectBearerStatus,
+  selectLoginURL,
+  selectBearerError,
+  selectIsAuth,
+  selectBearerLoading,
+} = bearerSlice.getSelectors((state: RootState) => state.redditBearer);

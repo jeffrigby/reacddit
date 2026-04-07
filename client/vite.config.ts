@@ -113,14 +113,27 @@ export default defineConfig(({ mode }) => {
     outDir: 'dist',
     sourcemap: false, // Disabled for production builds
 
-    // Optimize chunking for better caching and tree-shaking
-    rollupOptions: {
+    // Optimize chunking for better caching via Rolldown code splitting
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          // Separate vendor chunks for better caching
-          'react-vendor': ['react', 'react-dom', 'react-router', 'react-router-dom'],
-          'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
-          'ui-vendor': ['react-bootstrap', 'bootstrap'],
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react-vendor',
+              test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom)[\\/]/,
+              priority: 20,
+            },
+            {
+              name: 'redux-vendor',
+              test: /[\\/]node_modules[\\/](@reduxjs[\\/]toolkit|react-redux)[\\/]/,
+              priority: 15,
+            },
+            {
+              name: 'ui-vendor',
+              test: /[\\/]node_modules[\\/](react-bootstrap|bootstrap)[\\/]/,
+              priority: 10,
+            },
+          ],
         },
       },
     },

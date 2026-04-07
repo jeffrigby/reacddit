@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
@@ -57,56 +57,59 @@ function PostBylineAuthor({
 
   const isFollowed = useMemo(() => !!followedUser, [followedUser]);
 
-  const [isFollowing, setIsFollowing] = useState(isFollowed);
+  const [optimisticFollowing, setOptimisticFollowing] = useState<
+    boolean | null
+  >(null);
 
-  useEffect(() => {
-    setIsFollowing(isFollowed);
-  }, [isFollowed]);
+  // Use optimistic value if set, otherwise fall back to server state
+  const displayFollowing = optimisticFollowing ?? isFollowed;
 
   const unfollowUser = async (name: string): Promise<void> => {
+    setOptimisticFollowing(false);
     try {
-      setIsFollowing(false); // Optimistic update
       await subscribeToSubreddit({
         name,
         action: 'unsub',
         type: 'sr_name',
       }).unwrap();
+      setOptimisticFollowing(null); // Clear optimistic, use server state
     } catch (error) {
       console.error('Failed to unfollow user:', error);
-      setIsFollowing(true); // Revert optimistic update
+      setOptimisticFollowing(null); // Revert to server state on error
     }
   };
 
   const followUser = async (name: string): Promise<void> => {
+    setOptimisticFollowing(true);
     try {
-      setIsFollowing(true); // Optimistic update
       await subscribeToSubreddit({
         name,
         action: 'sub',
         type: 'sr_name',
       }).unwrap();
+      setOptimisticFollowing(null); // Clear optimistic, use server state
     } catch (error) {
       console.error('Failed to follow user:', error);
-      setIsFollowing(false); // Revert optimistic update
+      setOptimisticFollowing(null); // Revert to server state on error
     }
   };
 
   const onClick = (): void => {
-    if (isFollowing) {
+    if (displayFollowing) {
       unfollowUser(authorSub);
     } else {
       followUser(authorSub);
     }
   };
 
-  const title = !isFollowing ? `follow ${author}` : `unfollow ${author}`;
+  const title = !displayFollowing ? `follow ${author}` : `unfollow ${author}`;
 
   const authorFlair = flair ? (
     <span className="badge bg-dark">{flair}</span>
   ) : null;
 
   const authorClasses = clsx({
-    'is-followed': isFollowing,
+    'is-followed': displayFollowing,
     'is-submitter': isSubmitter,
   });
 
@@ -124,7 +127,7 @@ function PostBylineAuthor({
         variant="link"
         onClick={onClick}
       >
-        <FontAwesomeIcon icon={isFollowing ? faUserMinus : faUserPlus} />
+        <FontAwesomeIcon icon={displayFollowing ? faUserMinus : faUserPlus} />
       </Button>{' '}
       <Link
         className={authorClasses}

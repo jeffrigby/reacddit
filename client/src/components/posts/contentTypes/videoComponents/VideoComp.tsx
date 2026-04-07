@@ -112,7 +112,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
 
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(autoplay);
-  const [autoplayState, setAutoplayState] = useState(autoplay);
+  const prevAutoplayRef = useRef(autoplay);
   const [ctrLock, setCtrLock] = useState(false);
   const [controls, setControls] = useState(false);
   const [stalled, setStalled] = useState(false);
@@ -129,19 +129,17 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   });
 
   useEffect(() => {
-    // Prevent effect re-firing by tracking autoplay state separately
-    if (!videoRef.current || autoplay === autoplayState) {
+    if (!videoRef.current || autoplay === prevAutoplayRef.current) {
       return;
     }
+    prevAutoplayRef.current = autoplay;
 
     if (autoplay) {
-      setAutoplayState(true);
       videoRef.current.play();
     } else if (!videoRef.current.paused) {
-      setAutoplayState(false);
       videoRef.current.pause();
     }
-  }, [autoplay, autoplayState]);
+  }, [autoplay]);
 
   // Pause video when fully off-screen, resume when back on-screen
   useEffect(() => {
@@ -165,10 +163,12 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   }, [fullyOffScreen, isLoaded]);
 
   useEffect(() => {
+    if (canPlay || !isLoaded) {
+      return;
+    }
+
     const canPlayTimeout = setTimeout(() => {
-      if (!canPlay && isLoaded) {
-        setLoadError(true);
-      }
+      setLoadError(true);
     }, 5000);
     return () => {
       clearTimeout(canPlayTimeout);
@@ -193,10 +193,6 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
-
-  useEffect(() => {
-    getSetBuffer();
-  }, [getSetBuffer, playing, currentTime, duration, canPlay, canPlayThrough]);
 
   const { width = 16, height = 9, sources, thumb } = content;
 
@@ -238,6 +234,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const eventCanPlayThrough = (e: SyntheticEvent<HTMLVideoElement>) => {
     setCanPlayThrough(true);
     setStalled(false);
+    getSetBuffer();
   };
 
   const eventWaiting = () => {
@@ -265,6 +262,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const eventCanPlay = (e: SyntheticEvent<HTMLVideoElement>) => {
     setCanPlay(true);
     setStalled(false);
+    getSetBuffer();
   };
 
   const eventProgress = () => {
@@ -324,6 +322,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
 
   const eventPlay = (e: SyntheticEvent<HTMLVideoElement>) => {
     setPlaying(true);
+    getSetBuffer();
   };
 
   const eventPause = (e: SyntheticEvent<HTMLVideoElement>) => {
@@ -334,6 +333,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     if (videoRef.current) {
       setDuration(videoRef.current.duration);
     }
+    getSetBuffer();
   };
 
   const videoClasses = clsx('loaded', 'preload', {
