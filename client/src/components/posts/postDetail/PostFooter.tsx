@@ -1,10 +1,11 @@
 import type { MouseEvent } from 'react';
-import { memo, useState, useRef, useEffect } from 'react';
+import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { usePostContext } from '@/contexts';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import type { LinkData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import PostMeta from './PostMeta';
@@ -25,37 +26,13 @@ function PostFooter({
 }: PostFooterProps): React.JSX.Element | null {
   const postContext = usePostContext();
   const [showDebug, setShowDebug] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard(500);
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
-  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
-  );
-
-  useEffect(() => {
-    return () => {
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const copyID = (comp: MouseEvent<HTMLButtonElement>): void => {
     const id = comp.currentTarget.textContent || '';
-    navigator.clipboard.writeText(id).then(
-      () => {
-        setCopied(true);
-        if (copyTimeoutRef.current) {
-          clearTimeout(copyTimeoutRef.current);
-        }
-        copyTimeoutRef.current = setTimeout(() => {
-          setCopied(false);
-        }, 500);
-      },
-      (err: unknown) => {
-        console.error('Failed to copy to clipboard', err);
-      }
-    );
+    copy(id);
   };
 
   const debugLinks = (

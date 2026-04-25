@@ -11,6 +11,7 @@ import { useLocation, useParams } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetMeQuery } from '@/redux/api';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import {
   selectListingData,
   selectUiState,
@@ -21,13 +22,26 @@ import {
   selectIsAuth,
 } from '@/redux/slices/redditBearerSlice';
 
-interface CopiedState {
-  [key: string]: boolean;
+interface CopyButtonProps {
+  text: string;
 }
 
-function PostsDebug() {
+function CopyButton({ text }: CopyButtonProps): React.JSX.Element {
+  const { copied, copy } = useCopyToClipboard(2000);
+  return (
+    <Button
+      className="btn-copy"
+      size="sm"
+      variant="link"
+      onClick={() => copy(text)}
+    >
+      <FontAwesomeIcon icon={copied ? faCheck : faCopy} />
+    </Button>
+  );
+}
+
+function PostsDebug(): React.JSX.Element | null {
   const [closed, setClosed] = useState(true);
-  const [copied, setCopied] = useState<CopiedState>({});
   const location = useLocation();
   const match = useParams();
 
@@ -74,39 +88,6 @@ function PostsDebug() {
   const postIds = Object.keys(children ?? {});
 
   const qs = queryString.parse(location.search);
-
-  const handleCopy = (key: string, text: string): void => {
-    navigator.clipboard.writeText(text).then(
-      () => {
-        setCopied((prev) => ({ ...prev, [key]: true }));
-        setTimeout(() => {
-          setCopied((prev) => ({ ...prev, [key]: false }));
-        }, 2000);
-      },
-      (err: unknown) => {
-        console.error('Failed to copy:', text, err);
-      }
-    );
-  };
-
-  function CopyButton({
-    sectionKey,
-    text,
-  }: {
-    sectionKey: string;
-    text: string;
-  }) {
-    return (
-      <Button
-        className="btn-copy"
-        size="sm"
-        variant="link"
-        onClick={() => handleCopy(sectionKey, text)}
-      >
-        <FontAwesomeIcon icon={copied[sectionKey] ? faCheck : faCopy} />
-      </Button>
-    );
-  }
 
   const listingFilterString = JSON.stringify(
     { ...listingsFilter, t: qs.t },
@@ -174,7 +155,7 @@ function PostsDebug() {
             <div className="debug-section mb-3">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <h6 className="debug-section-title mb-0">Authentication</h6>
-                <CopyButton sectionKey="auth" text={authState} />
+                <CopyButton text={authState} />
               </div>
               <pre className="debug-code">{authState}</pre>
             </div>
@@ -182,7 +163,7 @@ function PostsDebug() {
             <div className="debug-section mb-3">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <h6 className="debug-section-title mb-0">Posts/Listings</h6>
-                <CopyButton sectionKey="posts" text={postsState} />
+                <CopyButton text={postsState} />
               </div>
               <pre className="debug-code">{postsState}</pre>
             </div>
@@ -190,7 +171,7 @@ function PostsDebug() {
             <div className="debug-section mb-3">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <h6 className="debug-section-title mb-0">Filter</h6>
-                <CopyButton sectionKey="filter" text={listingFilterString} />
+                <CopyButton text={listingFilterString} />
               </div>
               <pre className="debug-code">{listingFilterString}</pre>
             </div>
@@ -198,7 +179,7 @@ function PostsDebug() {
             <div className="debug-section mb-3">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <h6 className="debug-section-title mb-0">Viewport</h6>
-                <CopyButton sectionKey="viewport" text={visFocu} />
+                <CopyButton text={visFocu} />
               </div>
               <pre className="debug-code">{visFocu}</pre>
             </div>
@@ -206,7 +187,7 @@ function PostsDebug() {
             <div className="debug-section mb-3">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <h6 className="debug-section-title mb-0">Router</h6>
-                <CopyButton sectionKey="router" text={router} />
+                <CopyButton text={router} />
               </div>
               <pre className="debug-code">{router}</pre>
             </div>
@@ -214,7 +195,7 @@ function PostsDebug() {
             <div className="debug-section">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <h6 className="debug-section-title mb-0">Request URL</h6>
-                <CopyButton sectionKey="url" text={requestUrl ?? ''} />
+                <CopyButton text={requestUrl ?? ''} />
               </div>
               <div className="debug-url">{requestUrl}</div>
             </div>
