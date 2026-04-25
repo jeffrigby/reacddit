@@ -109,7 +109,7 @@ export function keyEntryChildren(entries: RedditEntry): KeyedRedditEntry {
       ...entries.data,
       children: newChildren,
     },
-  } as KeyedRedditEntry;
+  };
 }
 
 export function isNumeric(value: unknown): value is number | string {

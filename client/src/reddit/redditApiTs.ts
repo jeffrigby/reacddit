@@ -221,10 +221,7 @@ export async function subredditAbout(
     raw_json: 1 as const,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   let url = `/r/${subreddit}/about`;
   if (type && ['edit', 'rules', 'traffic'].includes(type)) {
@@ -262,10 +259,7 @@ export async function getListingSearch(
     sort: 'relevance',
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url = target ? `r/${target}/search` : 'search';
   const response = await redditAPI.get(url, { params });
@@ -307,10 +301,7 @@ export async function getListingSearchMulti(
     is_multi: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url =
     user === 'me'
@@ -349,10 +340,7 @@ export async function getListingSubreddit(
     raw_json: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url = subreddit ? `/r/${subreddit}/${sort}` : sort;
   const response = await redditAPI.get(url, { params });
@@ -389,10 +377,7 @@ export async function getListingMulti(
     raw_json: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url =
     user === 'me' ? `me/m/${name}/${sort}` : `user/${user}/m/${name}/${sort}`;
@@ -431,10 +416,7 @@ export async function getListingUser(
     raw_json: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url = `user/${user}/${type}?sort=${sort}`;
   const response = await redditAPI.get(url, { params });
@@ -470,10 +452,7 @@ export async function getListingDuplicates(
     article_id: article,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url = `duplicates/${article}`;
   const response = await redditAPI.get(url, { params });
@@ -538,10 +517,7 @@ export async function subreddits(
     raw_json: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const mine = where.match(/subscriber|contributer|moderator|streams/);
   const url =

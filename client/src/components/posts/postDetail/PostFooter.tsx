@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import copy from 'copy-to-clipboard';
 import { usePostContext } from '@/contexts';
 import type { LinkData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
@@ -43,19 +42,20 @@ function PostFooter({
 
   const copyID = (comp: MouseEvent<HTMLButtonElement>): void => {
     const id = comp.currentTarget.textContent || '';
-    const success = copy(id);
-
-    if (success) {
-      setCopied(true);
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
+    navigator.clipboard.writeText(id).then(
+      () => {
+        setCopied(true);
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current);
+        }
+        copyTimeoutRef.current = setTimeout(() => {
+          setCopied(false);
+        }, 500);
+      },
+      (err: unknown) => {
+        console.error('Failed to copy to clipboard', err);
       }
-      copyTimeoutRef.current = setTimeout(() => {
-        setCopied(false);
-      }, 500);
-    } else {
-      console.error('Failed to copy to clipboard');
-    }
+    );
   };
 
   const debugLinks = (

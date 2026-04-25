@@ -14,7 +14,7 @@ type ViewModeType = 'expanded' | 'condensed';
 
 function ViewMode() {
   const siteSettingsView = useAppSelector(
-    (state) => (state.siteSettings.view as ViewModeType) || 'expanded'
+    (state) => state.siteSettings.view || 'expanded'
   );
   const dispatch = useAppDispatch();
 
