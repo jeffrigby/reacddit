@@ -1,12 +1,12 @@
-import Koa from "koa";
-import Router from "@koa/router";
-import session from "koa-session";
-import koaLogger from "koa-logger";
-import { logger } from "./logger.js";
-import bodyParser from "koa-bodyparser";
-import { randomUUID } from "crypto";
-import qs from "qs";
-import { config } from "./config.js";
+import Koa from 'koa';
+import Router from '@koa/router';
+import session from 'koa-session';
+import koaLogger from 'koa-logger';
+import { logger } from './logger.js';
+import bodyParser from 'koa-bodyparser';
+import { randomUUID } from 'crypto';
+import qs from 'qs';
+import { config } from './config.js';
 import {
   axiosInstance,
   encryptToken,
@@ -15,23 +15,23 @@ import {
   getErrorMessage,
   isTokenExpired,
   addExtraInfoToToken,
-} from "./util.js";
+} from './util.js';
 import type {
   ExtendedToken,
   RedditAccessTokenResponse,
   BearerTokenResponse,
   CookieStorage,
-} from "./types/reddit.js";
-import type { SessionData } from "./types/session.js";
-import axios, { AxiosError, type AxiosResponse } from "axios";
-import pLimit from "p-limit";
-import { LRUCache } from "lru-cache";
-import ratelimit from "koa-ratelimit";
-import { globalHttpsAgent as ssrfSafeAgent } from "request-filtering-agent";
+} from './types/reddit.js';
+import type { SessionData } from './types/session.js';
+import axios, { AxiosError, type AxiosResponse } from 'axios';
+import pLimit from 'p-limit';
+import { LRUCache } from 'lru-cache';
+import ratelimit from 'koa-ratelimit';
+import { globalHttpsAgent as ssrfSafeAgent } from 'request-filtering-agent';
 
 function getSessionConfig() {
   return {
-    key: "reacddit:sess" /** (string) cookie key (default is koa:sess) */,
+    key: 'reacddit:sess' /** (string) cookie key (default is koa:sess) */,
     /** (number || 'session') maxAge in ms (default is 1 day) */
     /** 'session' will result in a cookie that expires when session/browser is closed */
     /** Warning: If a session cookie is stolen, this cookie will never expire */
@@ -44,7 +44,7 @@ function getSessionConfig() {
      The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */,
     renew: true /** (boolean) renew session when session is nearly expired, so we can always keep user logged in.
      (default is false) */,
-    sameSite: "lax" as const,
+    sameSite: 'lax' as const,
     encode: (rawData: unknown): string => {
       const encrypted = encryptToken(rawData);
       return JSON.stringify(encrypted);
@@ -54,7 +54,7 @@ function getSessionConfig() {
         const encryptedData = JSON.parse(stringifiedEncryptedData);
         return decryptToken(encryptedData);
       } catch (error) {
-        logger.error("Failed to decode session", {
+        logger.error('Failed to decode session', {
           error: getErrorMessage(error),
         });
         return null;
@@ -91,13 +91,13 @@ function setCookie(token: ExtendedToken, ctx: Koa.Context): void {
   const expiryTime = expireDate.getTime() + config.SESSION_LENGTH_SECS * 1000;
   expireDate.setTime(expiryTime);
 
-  ctx.cookies.set("token", tokenJson, {
+  ctx.cookies.set('token', tokenJson, {
     maxAge: config.SESSION_LENGTH_SECS * 1000,
     expires: expireDate,
     httpOnly: false,
     secure: true,
     overwrite: true,
-    sameSite: "lax",
+    sameSite: 'lax',
   });
 }
 
@@ -112,7 +112,7 @@ function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): boolean {
   try {
     setSession(token, ctx);
   } catch (error) {
-    logger.error("Error setting session", {
+    logger.error('Error setting session', {
       error: getErrorMessage(error),
     });
     return false;
@@ -123,7 +123,7 @@ function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): boolean {
   } catch (error) {
     // Cookie failure is non-fatal — the session is the source of truth.
     // This can happen in test environments where secure cookies require HTTPS.
-    logger.warn("Error setting cookie (non-fatal)", {
+    logger.warn('Error setting cookie (non-fatal)', {
       error: getErrorMessage(error),
     });
   }
@@ -140,23 +140,23 @@ function setSessAndCookie(token: ExtendedToken, ctx: Koa.Context): boolean {
 async function getAnonToken(): Promise<{ token: RedditAccessTokenResponse }> {
   // Request parameters
   const params = new URLSearchParams();
-  params.append("grant_type", "client_credentials");
-  params.append("scope", config.REDDIT_SCOPE);
+  params.append('grant_type', 'client_credentials');
+  params.append('scope', config.REDDIT_SCOPE);
 
   try {
     const res: AxiosResponse<RedditAccessTokenResponse> =
-      await axiosInstance.post("/api/v1/access_token", params);
+      await axiosInstance.post('/api/v1/access_token', params);
     return { token: res.data };
   } catch (error) {
     const detail: Record<string, unknown> = {};
     if (error instanceof AxiosError && error.response) {
-      detail["status"] = error.response.status;
+      detail['status'] = error.response.status;
     }
     if (error instanceof Error) {
-      detail["error"] = error.message;
+      detail['error'] = error.message;
     }
-    logger.error("Anon access token error", detail);
-    throw new Error("Failed to retrieve anonymous access token from Reddit.");
+    logger.error('Anon access token error', detail);
+    throw new Error('Failed to retrieve anonymous access token from Reddit.');
   }
 }
 
@@ -168,16 +168,16 @@ async function getAnonToken(): Promise<{ token: RedditAccessTokenResponse }> {
  */
 async function revokeToken(
   token: string,
-  tokenType: "access_token" | "refresh_token",
+  tokenType: 'access_token' | 'refresh_token'
 ): Promise<void> {
   try {
-    await axiosInstance.post("/api/v1/revoke_token", {
+    await axiosInstance.post('/api/v1/revoke_token', {
       token,
       token_type_hint: tokenType,
     });
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    logger.error("Revoke token error", { error: errorMessage });
+    logger.error('Revoke token error', { error: errorMessage });
     throw new Error(`Failed to revoke ${tokenType}: ${errorMessage}`);
   }
 }
@@ -189,23 +189,23 @@ async function revokeToken(
  * @throws If token refresh fails or refresh_token is missing
  */
 async function getRefreshToken(
-  prevToken: ExtendedToken,
+  prevToken: ExtendedToken
 ): Promise<RedditAccessTokenResponse> {
   if (!prevToken.refresh_token) {
-    throw new Error("Cannot refresh token: refresh_token is missing");
+    throw new Error('Cannot refresh token: refresh_token is missing');
   }
 
   const params = new URLSearchParams();
-  params.append("grant_type", "refresh_token");
-  params.append("refresh_token", prevToken.refresh_token);
+  params.append('grant_type', 'refresh_token');
+  params.append('refresh_token', prevToken.refresh_token);
 
   try {
     const newToken: AxiosResponse<RedditAccessTokenResponse> =
-      await axiosInstance.post("/api/v1/access_token", params);
+      await axiosInstance.post('/api/v1/access_token', params);
     return newToken.data;
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    logger.error("Refresh access token error", { error: errorMessage });
+    logger.error('Refresh access token error', { error: errorMessage });
     throw new Error(`Failed to refresh token: ${errorMessage}`);
   }
 }
@@ -218,17 +218,17 @@ async function getRefreshToken(
  */
 function getBearer(
   token: ExtendedToken,
-  params: Partial<BearerTokenResponse> = {},
+  params: Partial<BearerTokenResponse> = {}
 ): BearerTokenResponse {
   // Check for required properties
   if (!token.access_token) {
-    throw new Error("Missing access token");
+    throw new Error('Missing access token');
   }
   if (!token.expires) {
-    throw new Error("Missing expiry time");
+    throw new Error('Missing expiry time');
   }
   if (token.auth === undefined) {
-    throw new Error("Missing auth");
+    throw new Error('Missing auth');
   }
 
   const { access_token, expires, auth } = token;
@@ -237,8 +237,8 @@ function getBearer(
     accessToken: access_token,
     expires,
     auth,
-    type: "new",
-    loginUrl: "",
+    type: 'new',
+    loginUrl: '',
     ...params,
   };
 }
@@ -255,11 +255,11 @@ function getLoginUrl(ctx: Koa.Context): string {
   // Construct the query parameters
   const queryParams = new URLSearchParams({
     client_id: config.REDDIT_CLIENT_ID,
-    response_type: "code",
+    response_type: 'code',
     state,
     redirect_uri: config.REDDIT_CALLBACK_URI,
-    duration: "permanent",
-    scope: config.REDDIT_SCOPE.split(",").join(" "),
+    duration: 'permanent',
+    scope: config.REDDIT_SCOPE.split(',').join(' '),
   });
 
   // Construct the full authorization URL
@@ -272,24 +272,24 @@ app.proxy = true;
 app.keys = [deriveSigningKey()];
 app.use(session(getSessionConfig(), app));
 app.use(async (ctx, next) => {
-  ctx.set("Access-Control-Allow-Origin", config.CLIENT_PATH);
-  ctx.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  ctx.set("Access-Control-Allow-Headers", "Content-Type");
-  ctx.set("Access-Control-Allow-Credentials", "true");
-  if (ctx.method === "OPTIONS") {
+  ctx.set('Access-Control-Allow-Origin', config.CLIENT_PATH);
+  ctx.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  ctx.set('Access-Control-Allow-Headers', 'Content-Type');
+  ctx.set('Access-Control-Allow-Credentials', 'true');
+  if (ctx.method === 'OPTIONS') {
     ctx.status = 204;
     return;
   }
   await next();
 });
-app.use(bodyParser({ jsonLimit: "16kb" }));
+app.use(bodyParser({ jsonLimit: '16kb' }));
 app.use(async (ctx, next) => {
   await next();
-  ctx.set("X-Content-Type-Options", "nosniff");
-  ctx.set("X-Frame-Options", "DENY");
-  ctx.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-  ctx.set("Cache-Control", "no-store");
-  ctx.set("X-XSS-Protection", "0");
+  ctx.set('X-Content-Type-Options', 'nosniff');
+  ctx.set('X-Frame-Options', 'DENY');
+  ctx.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  ctx.set('Cache-Control', 'no-store');
+  ctx.set('X-XSS-Protection', '0');
 });
 app.use(koaLogger());
 
@@ -303,34 +303,34 @@ const bearerDb = new Map();
 const shareDb = new Map();
 
 const rateLimitHeaders = {
-  remaining: "RateLimit-Remaining",
-  reset: "RateLimit-Reset",
-  total: "RateLimit-Limit",
+  remaining: 'RateLimit-Remaining',
+  reset: 'RateLimit-Reset',
+  total: 'RateLimit-Limit',
 };
 
 const authRateLimit = ratelimit({
-  driver: "memory",
+  driver: 'memory',
   db: authDb,
   duration: 15 * 60 * 1000,
   max: 30,
   headers: rateLimitHeaders,
-  errorMessage: "Too many requests, please try again later",
+  errorMessage: 'Too many requests, please try again later',
 });
 const bearerRateLimit = ratelimit({
-  driver: "memory",
+  driver: 'memory',
   db: bearerDb,
   duration: 60 * 1000,
   max: 30,
   headers: rateLimitHeaders,
-  errorMessage: "Too many requests, please try again later",
+  errorMessage: 'Too many requests, please try again later',
 });
 const shareRateLimit = ratelimit({
-  driver: "memory",
+  driver: 'memory',
   db: shareDb,
   duration: 60 * 1000,
   max: 100,
   headers: rateLimitHeaders,
-  errorMessage: "Too many requests, please try again later",
+  errorMessage: 'Too many requests, please try again later',
 });
 
 /** Reset all rate limit stores. For testing only. */
@@ -345,7 +345,7 @@ export function _resetRateLimiters(): void {
  * Redirects to the Reddit authorization page to begin OAuth flow
  * @route GET /api/login
  */
-router.get("/api/login", authRateLimit, (ctx) => {
+router.get('/api/login', authRateLimit, (ctx) => {
   const authorizationUri = getLoginUrl(ctx);
   ctx.redirect(authorizationUri);
 });
@@ -356,7 +356,7 @@ router.get("/api/login", authRateLimit, (ctx) => {
  * Exchanges the authorization code for an access token
  * @route GET /api/callback
  */
-router.get("/api/callback", authRateLimit, async (ctx) => {
+router.get('/api/callback', authRateLimit, async (ctx) => {
   const { code, state, error } = ctx.query;
   const savedState = ctx.session.state;
   ctx.session.state = null;
@@ -364,11 +364,11 @@ router.get("/api/callback", authRateLimit, async (ctx) => {
   const handleError = (logMessage: string, status: number): void => {
     logger.error(logMessage);
     ctx.status = status;
-    ctx.body = { status: "error", message: "Authentication failed" };
+    ctx.body = { status: 'error', message: 'Authentication failed' };
   };
 
   if (!code || !state) {
-    return handleError("Code and/or state query strings missing.", 400);
+    return handleError('Code and/or state query strings missing.', 400);
   }
 
   if (error) {
@@ -376,7 +376,7 @@ router.get("/api/callback", authRateLimit, async (ctx) => {
   }
 
   if (!savedState) {
-    return handleError("ERROR: SAVED STATE NOT FOUND.", 403);
+    return handleError('ERROR: SAVED STATE NOT FOUND.', 403);
   }
 
   if (state !== savedState) {
@@ -384,34 +384,34 @@ router.get("/api/callback", authRateLimit, async (ctx) => {
   }
 
   const options = {
-    grant_type: "authorization_code",
+    grant_type: 'authorization_code',
     code: code as string,
     redirect_uri: config.REDDIT_CALLBACK_URI,
   };
 
   try {
     const AccessToken: AxiosResponse<RedditAccessTokenResponse> =
-      await axiosInstance.post("/api/v1/access_token", qs.stringify(options));
+      await axiosInstance.post('/api/v1/access_token', qs.stringify(options));
 
     const { data } = AccessToken;
-    logger.info("Token retrieved successfully");
+    logger.info('Token retrieved successfully');
 
     if (data.access_token) {
-      logger.info("Token retrieved, redirecting to client");
+      logger.info('Token retrieved, redirecting to client');
       const accessToken = addExtraInfoToToken(data, true);
       if (!setSessAndCookie(accessToken, ctx)) {
-        return handleError("Failed to set session after authentication", 500);
+        return handleError('Failed to set session after authentication', 500);
       }
       ctx.redirect(`${config.CLIENT_PATH}/?login`);
       return;
     }
 
     const errorData = data as unknown as Record<string, unknown>;
-    logger.error("Reddit returned no access_token", {
-      error: errorData["error"],
-      errorDescription: errorData["error_description"],
+    logger.error('Reddit returned no access_token', {
+      error: errorData['error'],
+      errorDescription: errorData['error_description'],
     });
-    return handleError("Reddit returned no access token", 502);
+    return handleError('Reddit returned no access token', 502);
   } catch (exception) {
     return handleError(`ACCESS TOKEN ERROR ${getErrorMessage(exception)}`, 502);
   }
@@ -426,7 +426,7 @@ router.get("/api/callback", authRateLimit, async (ctx) => {
 function setSessionAndRespond(
   token: ExtendedToken,
   ctx: Koa.Context,
-  type: BearerTokenResponse["type"],
+  type: BearerTokenResponse['type']
 ): void {
   setSessAndCookie(token, ctx);
   ctx.body = getBearer(token, { type, loginUrl: getLoginUrl(ctx) });
@@ -440,8 +440,8 @@ function setSessionAndRespond(
  */
 async function grantAnonToken(
   ctx: Koa.Context,
-  type: "new" | "newanon",
-  reason: string,
+  type: 'new' | 'newanon',
+  reason: string
 ): Promise<void> {
   logger.info(reason);
   const anonToken = await getAnonToken();
@@ -454,7 +454,7 @@ async function grantAnonToken(
  * @param ctx - The Koa context
  */
 async function getAnonTokenAndSetSession(ctx: Koa.Context): Promise<void> {
-  await grantAnonToken(ctx, "new", "ANON TOKEN GRANTED");
+  await grantAnonToken(ctx, 'new', 'ANON TOKEN GRANTED');
 }
 
 /**
@@ -465,10 +465,10 @@ async function getAnonTokenAndSetSession(ctx: Koa.Context): Promise<void> {
  */
 async function returnCachedTokenAndSetSession(
   ctx: Koa.Context,
-  token: ExtendedToken,
+  token: ExtendedToken
 ): Promise<void> {
-  logger.info("Cached token returned");
-  setSessionAndRespond(token, ctx, "cached");
+  logger.info('Cached token returned');
+  setSessionAndRespond(token, ctx, 'cached');
 }
 
 /**
@@ -481,13 +481,13 @@ async function returnCachedTokenAndSetSession(
 async function refreshOrGetAnonTokenAndSetSession(
   ctx: Koa.Context,
   token: ExtendedToken,
-  forceRefresh: boolean,
+  forceRefresh: boolean
 ): Promise<void> {
   if (!token.refresh_token) {
     await grantAnonToken(
       ctx,
-      "newanon",
-      "NO REFRESH TOKEN. GETTING ANON TOKEN.",
+      'newanon',
+      'NO REFRESH TOKEN. GETTING ANON TOKEN.'
     );
     return;
   }
@@ -503,16 +503,16 @@ async function refreshOrGetAnonTokenAndSetSession(
     };
 
     const message = forceRefresh
-      ? "FORCED REFRESH. NEW TOKEN GRANTED"
-      : "TOKEN EXPIRED. NEW TOKEN GRANTED";
+      ? 'FORCED REFRESH. NEW TOKEN GRANTED'
+      : 'TOKEN EXPIRED. NEW TOKEN GRANTED';
     logger.info(message);
-    setSessionAndRespond(newToken, ctx, "refresh");
+    setSessionAndRespond(newToken, ctx, 'refresh');
   } catch (error) {
-    logger.error("Token refresh failed", { error: getErrorMessage(error) });
+    logger.error('Token refresh failed', { error: getErrorMessage(error) });
     await grantAnonToken(
       ctx,
-      "new",
-      "REFRESH TOKEN ERROR. GETTING ANON TOKEN.",
+      'new',
+      'REFRESH TOKEN ERROR. GETTING ANON TOKEN.'
     );
   }
 }
@@ -524,9 +524,9 @@ async function refreshOrGetAnonTokenAndSetSession(
  *   - refresh: if present, forces a token refresh
  * @route GET /api/bearer
  */
-router.get("/api/bearer", bearerRateLimit, async (ctx) => {
+router.get('/api/bearer', bearerRateLimit, async (ctx) => {
   const token = ctx.session.token;
-  const forceRefresh = ctx.query["refresh"] !== undefined;
+  const forceRefresh = ctx.query['refresh'] !== undefined;
 
   // Case 1: No existing token. Get an anon token.
   if (!token) {
@@ -574,7 +574,7 @@ export function _resetShareCache(): void {
  */
 async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
   if (!SHARE_LINK_REGEX.test(url)) {
-    return { error: "Invalid Reddit share link format" };
+    return { error: 'Invalid Reddit share link format' };
   }
 
   const cached = shareCache.get(url);
@@ -590,24 +590,24 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
       httpsAgent: ssrfSafeAgent,
     });
 
-    const location = response.headers["location"];
-    if (typeof location !== "string") {
-      return { error: "Share link did not redirect" };
+    const location = response.headers['location'];
+    if (typeof location !== 'string') {
+      return { error: 'Share link did not redirect' };
     }
 
     const postId = location.match(/\/comments\/([a-z0-9]+)/i)?.[1];
     if (!postId) {
-      return { error: "Could not extract post ID from redirect" };
+      return { error: 'Could not extract post ID from redirect' };
     }
 
     shareCache.set(url, postId);
     return { postId };
   } catch (error) {
-    logger.warn("Share link resolution failed", {
+    logger.warn('Share link resolution failed', {
       url,
       error: getErrorMessage(error),
     });
-    return { error: "Failed to resolve share link" };
+    return { error: 'Failed to resolve share link' };
   }
 }
 
@@ -618,13 +618,13 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
  * @body { urls: string[] }
  * @returns { results: { [url: string]: { postId: string } | { error: string } } }
  */
-router.post("/api/resolve-share", shareRateLimit, async (ctx) => {
+router.post('/api/resolve-share', shareRateLimit, async (ctx) => {
   const body = ctx.request.body as { urls?: unknown };
 
   // Validate body has urls array
   if (!body || !Array.isArray(body.urls)) {
     ctx.status = 400;
-    ctx.body = { error: "Missing urls array in request body" };
+    ctx.body = { error: 'Missing urls array in request body' };
     return;
   }
 
@@ -633,14 +633,14 @@ router.post("/api/resolve-share", shareRateLimit, async (ctx) => {
   // Reject empty arrays
   if (urls.length === 0) {
     ctx.status = 400;
-    ctx.body = { error: "URLs array cannot be empty" };
+    ctx.body = { error: 'URLs array cannot be empty' };
     return;
   }
 
   // Validate all items are strings
-  if (!urls.every((u): u is string => typeof u === "string")) {
+  if (!urls.every((u): u is string => typeof u === 'string')) {
     ctx.status = 400;
-    ctx.body = { error: "All URLs must be strings" };
+    ctx.body = { error: 'All URLs must be strings' };
     return;
   }
 
@@ -660,7 +660,7 @@ router.post("/api/resolve-share", shareRateLimit, async (ctx) => {
     uniqueUrls.map(async (url) => {
       const result = await resolveLimit(() => resolveShareUrl(url));
       return [url, result] as const;
-    }),
+    })
   );
 
   ctx.body = { results: Object.fromEntries(entries) };
@@ -671,7 +671,7 @@ router.post("/api/resolve-share", shareRateLimit, async (ctx) => {
  * Logs out the user by revoking their tokens, clearing the session, and redirecting to the client
  * @route GET /api/logout
  */
-router.get("/api/logout", authRateLimit, async (ctx) => {
+router.get('/api/logout', authRateLimit, async (ctx) => {
   const token = ctx.session.token;
 
   if (token) {
@@ -680,21 +680,21 @@ router.get("/api/logout", authRateLimit, async (ctx) => {
 
     if (token.access_token) {
       revokePromises.push(
-        revokeToken(token.access_token, "access_token").catch((error) => {
-          logger.error("Failed to revoke access token", {
+        revokeToken(token.access_token, 'access_token').catch((error) => {
+          logger.error('Failed to revoke access token', {
             error: getErrorMessage(error),
           });
-        }),
+        })
       );
     }
 
     if (token.refresh_token) {
       revokePromises.push(
-        revokeToken(token.refresh_token, "refresh_token").catch((error) => {
-          logger.error("Failed to revoke refresh token", {
+        revokeToken(token.refresh_token, 'refresh_token').catch((error) => {
+          logger.error('Failed to revoke refresh token', {
             error: getErrorMessage(error),
           });
-        }),
+        })
       );
     }
 
@@ -703,7 +703,7 @@ router.get("/api/logout", authRateLimit, async (ctx) => {
 
   // Always clear session and redirect, even if no token existed
   ctx.session.token = null;
-  ctx.cookies.set("token", null, { overwrite: true });
+  ctx.cookies.set('token', null, { overwrite: true });
 
   return ctx.redirect(`${config.CLIENT_PATH}/?logout`);
 });

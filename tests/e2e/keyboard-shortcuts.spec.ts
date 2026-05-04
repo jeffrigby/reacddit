@@ -103,12 +103,8 @@ test.describe('Keyboard Shortcuts', () => {
     await expect(
       modal.getByRole('heading', { name: 'Navigation' })
     ).toBeVisible();
-    await expect(
-      modal.getByRole('heading', { name: 'Posts' })
-    ).toBeVisible();
-    await expect(
-      modal.getByRole('heading', { name: 'Sort' })
-    ).toBeVisible();
+    await expect(modal.getByRole('heading', { name: 'Posts' })).toBeVisible();
+    await expect(modal.getByRole('heading', { name: 'Sort' })).toBeVisible();
     expect(await modal.locator('kbd').count()).toBeGreaterThan(10);
     await modal.locator('.btn-close').click();
     await expect(modal).not.toBeVisible({ timeout: 5_000 });

@@ -20,8 +20,8 @@ test.describe('Save Post (authenticated)', () => {
     const postTitle = await titleLocator.textContent();
 
     // Ensure the post is saved
-    const initialTitle = await saveButton.getAttribute('title');
-    expect(initialTitle).toBeTruthy();
+    const initialTitle = saveButton;
+    await expect(initialTitle).toHaveAttribute('title');
     if (initialTitle !== 'Unsave Post (s)') {
       await saveButton.click();
       await expect(saveButton).toHaveAttribute('title', 'Unsave Post (s)', {

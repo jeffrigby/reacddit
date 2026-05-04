@@ -6,10 +6,7 @@ test.describe('Theme', () => {
     await waitForPosts(page, '/');
 
     // Default is dark
-    await expect(page.locator('html')).toHaveAttribute(
-      'data-bs-theme',
-      'dark'
-    );
+    await expect(page.locator('html')).toHaveAttribute('data-bs-theme', 'dark');
 
     // Click toggle → light mode (empty data-bs-theme)
     await page.getByRole('button', { name: /Light Mode/ }).click();

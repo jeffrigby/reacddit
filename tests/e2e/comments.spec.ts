@@ -41,9 +41,9 @@ test.describe('Comments', () => {
       .first();
     await expect(collapseButton).toBeVisible({ timeout: 5_000 });
     await collapseButton.click();
-    await expect(
-      firstComment.locator('.entry-after-header').first()
-    ).toBeEmpty({ timeout: 5_000 });
+    await expect(firstComment.locator('.entry-after-header').first()).toBeEmpty(
+      { timeout: 5_000 }
+    );
 
     // Re-expand the comment
     const expandButton = firstComment

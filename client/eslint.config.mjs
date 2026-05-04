@@ -1,18 +1,16 @@
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11Y from 'eslint-plugin-jsx-a11y';
-import prettier from 'eslint-plugin-prettier';
-import importPlugin from 'eslint-plugin-import';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
+import importPlugin from 'eslint-plugin-import-x';
+import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier';
 import globals from 'globals';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export default tseslint.config(
+  {
+    ignores: ['**/dist/**', '**/node_modules/**', '**/dev-dist/**'],
+  },
 
-export default [
   // Base JavaScript configuration
   {
     files: ['**/*.{js,jsx}'],
@@ -20,8 +18,7 @@ export default [
       react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11Y,
-      prettier,
-      import: importPlugin,
+      'import-x': importPlugin,
     },
     settings: {
       react: {
@@ -43,7 +40,6 @@ export default [
       },
     },
     rules: {
-      'prettier/prettier': 'warn',
       'no-param-reassign': [
         'error',
         {
@@ -67,7 +63,7 @@ export default [
           allowTernary: false,
         },
       ],
-      'import/no-cycle': ['error', { maxDepth: 1 }],
+      'import-x/no-cycle': ['error', { maxDepth: 1 }],
       'no-unreachable': 'warn',
       'react/forbid-prop-types': 'off',
       'react/require-default-props': 'off',
@@ -104,7 +100,7 @@ export default [
       'prefer-const': 'warn',
       'no-var': 'error',
       eqeqeq: ['error', 'always', { null: 'ignore' }],
-      'import/order': [
+      'import-x/order': [
         'warn',
         {
           groups: [
@@ -122,23 +118,21 @@ export default [
   {
     files: ['**/*.{ts,tsx}'],
     plugins: {
-      '@typescript-eslint': typescriptEslint,
+      '@typescript-eslint': tseslint.plugin,
       react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11Y,
-      prettier,
-      import: importPlugin,
+      'import-x': importPlugin,
     },
     languageOptions: {
-      parser: typescriptParser,
+      parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 2024,
         sourceType: 'module',
         ecmaFeatures: {
           jsx: true,
         },
-        project: './tsconfig.json',
-        tsconfigRootDir: __dirname,
+        projectService: true,
       },
       globals: {
         ...globals.browser,
@@ -150,15 +144,15 @@ export default [
       react: {
         version: 'detect',
       },
-      'import/resolver': {
+      'import-x/resolver': {
         typescript: {
           alwaysTryTypes: true,
           project: './tsconfig.json',
         },
+        node: true,
       },
     },
     rules: {
-      'prettier/prettier': 'warn',
       'no-param-reassign': [
         'error',
         {
@@ -174,7 +168,7 @@ export default [
           allowTernary: false,
         },
       ],
-      'import/no-cycle': ['error', { maxDepth: 1 }],
+      'import-x/no-cycle': ['error', { maxDepth: 1 }],
       'no-unreachable': 'warn',
       'react/forbid-prop-types': 'off',
       'react/require-default-props': 'off',
@@ -209,7 +203,7 @@ export default [
       'prefer-const': 'warn',
       'no-var': 'error',
       eqeqeq: ['error', 'always', { null: 'ignore' }],
-      'import/order': [
+      'import-x/order': [
         'warn',
         {
           groups: [
@@ -251,4 +245,6 @@ export default [
       ],
     },
   },
-];
+
+  eslintConfigPrettier
+);

@@ -1,47 +1,44 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "@typescript-eslint/eslint-plugin";
-import tsparser from "@typescript-eslint/parser";
+import globals from 'globals';
+import pluginJs from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
-export default [
+export default tseslint.config(
   {
-    ignores: ["**/.aws-sam/**", "**/dist/**", "**/node_modules/**"],
+    ignores: ['**/.aws-sam/**', '**/dist/**', '**/node_modules/**'],
   },
   {
-    files: ["**/*.{js,mjs,cjs}"],
+    files: ['**/*.{js,mjs,cjs}'],
     languageOptions: {
       globals: {
         ...globals.node,
-        process: "readonly",
+        process: 'readonly',
       },
-      ecmaVersion: "latest",
-      sourceType: "module",
+      ecmaVersion: 'latest',
+      sourceType: 'module',
     },
     ...pluginJs.configs.recommended,
   },
   {
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
+    extends: [...tseslint.configs.recommended],
     languageOptions: {
       globals: {
         ...globals.node,
-        process: "readonly",
+        process: 'readonly',
       },
-      parser: tsparser,
       parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
+        ecmaVersion: 'latest',
+        sourceType: 'module',
       },
-    },
-    plugins: {
-      "@typescript-eslint": tseslint,
     },
     rules: {
-      ...tseslint.configs.recommended.rules,
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
     },
   },
-];
+  eslintConfigPrettier
+);

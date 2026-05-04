@@ -39,7 +39,7 @@ test.describe('Settings', () => {
       timeout: 5_000,
     });
     await page.locator('.modal .btn-close').click();
-    await expect(page.locator('.modal-title')).not.toBeVisible();
+    await expect(page.locator('.modal-title')).toBeHidden();
 
     // Condense help modal opens and closes
     await page.locator('#dropdown-settings').click();
@@ -49,7 +49,7 @@ test.describe('Settings', () => {
       timeout: 5_000,
     });
     await page.locator('.modal .btn-close').click();
-    await expect(page.locator('.modal-title')).not.toBeVisible();
+    await expect(page.locator('.modal-title')).toBeHidden();
 
     // Verify debug info on an expanded post
     const firstPost = page.locator('#entries .entry').first();

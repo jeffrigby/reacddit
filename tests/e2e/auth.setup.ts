@@ -21,7 +21,6 @@ function hasValidToken(): boolean {
 
 setup('authenticate via Reddit OAuth', async ({ page, context }) => {
   if (hasValidToken()) {
-    // eslint-disable-next-line no-console
     console.log('Reusing saved auth state — token still valid');
     return;
   }

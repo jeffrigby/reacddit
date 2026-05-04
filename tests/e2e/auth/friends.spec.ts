@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test';
-import {
-  expandFirstPost,
-  removeAllFriends,
-  waitForPosts,
-} from '../helpers';
+import { expandFirstPost, removeAllFriends, waitForPosts } from '../helpers';
 
 test.describe('Friends (authenticated)', () => {
   test('follow user from post, verify in friends list, unfollow from both', async ({
@@ -82,9 +78,6 @@ test.describe('Friends (authenticated)', () => {
     ).toBeHidden();
 
     // The follow button on the post should also update
-    await expect(followButton).toHaveAttribute(
-      'title',
-      `follow ${authorName}`
-    );
+    await expect(followButton).toHaveAttribute('title', `follow ${authorName}`);
   });
 });

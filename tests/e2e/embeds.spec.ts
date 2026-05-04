@@ -1,9 +1,6 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
 
-async function openFirstPost(
-  page: Page,
-  subreddit: string
-): Promise<Locator> {
+async function openFirstPost(page: Page, subreddit: string): Promise<Locator> {
   await page.goto(`/r/${subreddit}`);
 
   const firstPost = page.locator('#entries .entry').first();
@@ -30,9 +27,7 @@ test.describe('Embeds', () => {
   test('renders video embed containers', async ({ page }) => {
     const interior = await openFirstPost(page, 'videos');
 
-    const embedElement = interior.locator(
-      'iframe, video, .media-cont, .ratio'
-    );
+    const embedElement = interior.locator('iframe, video, .media-cont, .ratio');
     // Verify embed container structure exists (content varies by post)
     await expect(embedElement.first()).toBeAttached();
   });

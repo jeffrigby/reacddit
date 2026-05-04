@@ -1,17 +1,17 @@
-import axios from "axios";
+import axios from 'axios';
 import {
   createCipheriv,
   createDecipheriv,
   hkdfSync,
   randomBytes,
-} from "crypto";
-import { config } from "./config.js";
-import { logger } from "./logger.js";
+} from 'crypto';
+import { config } from './config.js';
+import { logger } from './logger.js';
 import type {
   RedditAccessTokenResponse,
   ExtendedToken,
   EncryptedToken,
-} from "./types/reddit.js";
+} from './types/reddit.js';
 
 /**
  * Extract a message string from an unknown error value
@@ -21,13 +21,13 @@ export function getErrorMessage(error: unknown): string {
 }
 
 /** AES-256-GCM constants */
-const GCM_ALGORITHM = "aes-256-gcm";
+const GCM_ALGORITHM = 'aes-256-gcm';
 const GCM_IV_LENGTH = 12;
 const GCM_AUTH_TAG_LENGTH = 16;
 
 /** Cached encryption key derived once at startup via HKDF */
 const encryptionKey = Buffer.from(
-  hkdfSync("sha256", config.SALT, "", "encryption", 32),
+  hkdfSync('sha256', config.SALT, '', 'encryption', 32)
 );
 
 /**
@@ -36,14 +36,14 @@ const encryptionKey = Buffer.from(
  */
 export function deriveSigningKey(): string {
   return Buffer.from(
-    hkdfSync("sha256", config.SALT, "", "signing", 32),
-  ).toString("hex");
+    hkdfSync('sha256', config.SALT, '', 'signing', 32)
+  ).toString('hex');
 }
 
 export const axiosInstance = axios.create({
-  baseURL: "https://www.reddit.com",
+  baseURL: 'https://www.reddit.com',
   headers: {
-    "Content-Type": "application/x-www-form-urlencoded",
+    'Content-Type': 'application/x-www-form-urlencoded',
   },
   auth: {
     username: config.REDDIT_CLIENT_ID,
@@ -57,7 +57,7 @@ export const axiosInstance = axios.create({
  * @returns Returns true if the token is expired, false otherwise
  */
 export function isTokenExpired(
-  token: ExtendedToken | null | undefined,
+  token: ExtendedToken | null | undefined
 ): boolean {
   if (!token || !token.expires) {
     return true;
@@ -74,7 +74,7 @@ export function isTokenExpired(
  */
 export function addExtraInfoToToken(
   token: RedditAccessTokenResponse,
-  auth = false,
+  auth = false
 ): ExtendedToken {
   const now = Date.now() / 1000; // Convert to Unix timestamp (seconds since Unix epoch)
   const expires = now + token.expires_in - 120;
@@ -103,9 +103,9 @@ export function encryptToken(token: unknown): EncryptedToken {
   encrypted = Buffer.concat([encrypted, cipher.final()]);
   const authTag = cipher.getAuthTag();
   return {
-    iv: iv.toString("hex"),
-    authTag: authTag.toString("hex"),
-    token: encrypted.toString("hex"),
+    iv: iv.toString('hex'),
+    authTag: authTag.toString('hex'),
+    token: encrypted.toString('hex'),
   };
 }
 
@@ -127,9 +127,9 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
   }
 
   try {
-    const iv = Buffer.from(encryptedToken.iv, "hex");
-    const authTag = Buffer.from(encryptedToken.authTag, "hex");
-    const encryptedText = Buffer.from(encryptedToken.token, "hex");
+    const iv = Buffer.from(encryptedToken.iv, 'hex');
+    const authTag = Buffer.from(encryptedToken.authTag, 'hex');
+    const encryptedText = Buffer.from(encryptedToken.token, 'hex');
     const decipher = createDecipheriv(GCM_ALGORITHM, encryptionKey, iv, {
       authTagLength: GCM_AUTH_TAG_LENGTH,
     });
@@ -139,7 +139,7 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
 
     return JSON.parse(decrypted.toString());
   } catch (error) {
-    logger.error("Failed to decrypt token", { error: getErrorMessage(error) });
+    logger.error('Failed to decrypt token', { error: getErrorMessage(error) });
     // Return null for any decryption failure (including old CBC-encrypted sessions).
     // This forces a new session instead of falling back to insecure decryption.
     return null;

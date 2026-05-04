@@ -65,7 +65,9 @@ test.describe('Custom Feeds (authenticated)', () => {
     await showSubsButton.click();
 
     // Verify pics appears as a subreddit under the feed
-    await expect(feedItem.locator('ul.subnav a', { hasText: 'pics' })).toBeVisible();
+    await expect(
+      feedItem.locator('ul.subnav a', { hasText: 'pics' })
+    ).toBeVisible();
 
     // Navigate to the feed page
     await feedItem.locator('a').first().click();

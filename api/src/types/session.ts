@@ -1,4 +1,4 @@
-import type { ExtendedToken } from "./reddit.js";
+import type { ExtendedToken } from './reddit.js';
 
 /**
  * Koa Session Data Structure
@@ -8,7 +8,7 @@ export interface SessionData {
   token?: ExtendedToken | null;
 }
 
-declare module "koa" {
+declare module 'koa' {
   interface DefaultContext {
     session: SessionData;
   }

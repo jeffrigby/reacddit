@@ -26,9 +26,7 @@ function loadBaseURL(): string {
     // .env not found — fall through to error
   }
 
-  throw new Error(
-    'No BASE_URL env var and no PROXY_DOMAIN in root .env file'
-  );
+  throw new Error('No BASE_URL env var and no PROXY_DOMAIN in root .env file');
 }
 
 const baseURL = loadBaseURL();

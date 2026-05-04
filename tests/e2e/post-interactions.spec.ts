@@ -21,9 +21,7 @@ test.describe('Post Interactions', () => {
     await expect(firstPost.locator('footer')).toBeVisible();
 
     // Author link
-    await expect(
-      firstPost.locator('a[href*="/user/"]').first()
-    ).toBeAttached();
+    await expect(firstPost.locator('a[href*="/user/"]').first()).toBeAttached();
 
     // Time info (clock icon)
     await expect(
