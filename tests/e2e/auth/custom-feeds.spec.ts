@@ -12,12 +12,13 @@ test.describe('Custom Feeds (authenticated)', () => {
 
     await waitForPosts(page, '/r/pics');
 
-    // Clean up any orphaned feeds from previous runs
-    const multisSection = page.locator('#sidebar-multis');
+    // Clean up any orphaned feeds from previous runs. Each delete navigates
+    // to '/' (see MultiDelete.tsx), so we must re-navigate to /r/pics after
+    // cleanup — the multis dropdown only renders on /r/<sub> pages.
     await deleteAllCustomFeeds(page);
-    if (!(await multisSection.isVisible())) {
-      await waitForPosts(page, '/r/pics');
-    }
+    await waitForPosts(page, '/r/pics');
+
+    const multisSection = page.locator('#sidebar-multis');
     await expect(multisSection).toBeVisible();
 
     // Click "+" to open add form
@@ -52,7 +53,12 @@ test.describe('Custom Feeds (authenticated)', () => {
       .locator('input[type="checkbox"]');
     await expect(feedCheckbox).toBeVisible({ timeout: 10_000 });
 
-    // Add r/pics to the feed
+    // Add r/pics to the feed.
+    // KNOWN FAILURE: Reddit's PUT /api/multi/.../r/<sub> response is
+    // currently blocked by CORS, so this mutation never persists. The
+    // assertions below that depend on the subreddit being added will fail
+    // until that upstream issue is resolved. Test left in place as a
+    // canary for when CORS is fixed — do not silently skip.
     await feedCheckbox.check();
 
     // Close dropdown
@@ -64,7 +70,8 @@ test.describe('Custom Feeds (authenticated)', () => {
     });
     await showSubsButton.click();
 
-    // Verify pics appears as a subreddit under the feed
+    // Verify pics appears as a subreddit under the feed.
+    // Will fail while the add-subreddit CORS issue above is unresolved.
     await expect(
       feedItem.locator('ul.subnav a', { hasText: 'pics' })
     ).toBeVisible();
