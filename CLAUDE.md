@@ -8,7 +8,9 @@ Reacddit is a Reddit client with enhanced media viewing and embedded content sup
 - **API:** Koa.js OAuth2 server (Reddit auth + share link resolver)
 - **Proxy:** Node.js HTTPS reverse proxy for local dev SSL
 - **Deployment:** AWS Lambda via SAM/CloudFormation
-- **Package Management:** npm workspaces (client, api, proxy)
+- **Package Management:** npm workspaces (client, api, proxy, tests)
+- **E2E Tests:** Playwright (`tests/` workspace)
+- **Standalone tool:** `reddit-api-tester/` — not a workspace; install/run separately
 
 ## Quick Start
 
@@ -18,7 +20,7 @@ npm run setup            # Interactive setup wizard (first-time)
 npm start                # Start proxy + client + API
 ```
 
-Access: https://localhost:5173 (or custom domain via setup wizard)
+Access via the domain configured in `.env` (`PROXY_DOMAIN` + `PROXY_PORT`). Default `.env.dist` uses `localhost:5173`; this project's dev URL is `https://dev.reacdd.it/` (see Important Notes).
 
 ## Development Commands
 
@@ -26,6 +28,9 @@ Access: https://localhost:5173 (or custom domain via setup wizard)
 npm start                   # Start all services (proxy + client + API)
 npm run lint-all            # Lint all workspaces (ALWAYS run after changes)
 npm run build-client        # Production build
+npm run test:e2e            # Playwright E2E tests (tests/ workspace)
+npm run test:e2e:ui         # Playwright E2E with UI runner
+npm run test:component      # Component tests (vitest browser mode in client/)
 npm outdated --workspaces   # Check outdated packages
 npm run <script> -w client  # Run script in specific workspace
 ```
@@ -35,14 +40,17 @@ npm run <script> -w client  # Run script in specific workspace
 cd client
 npm run lint              # Prettier + ESLint (CRITICAL: zero warnings/errors required)
 npm run build             # Production build
-npm test                  # Run tests
+npm run test:component    # Component tests (vitest browser mode + Playwright)
 ```
 
 **API-specific:**
 ```bash
 cd api
+npm run lint              # Prettier + ESLint
 npm run type-check        # TypeScript type checking
 npm test                  # Run tests with Vitest
+npm run test:run          # Run tests once (CI mode)
+npm run test:coverage     # Run tests with coverage
 ```
 
 ## Code Quality (CRITICAL)

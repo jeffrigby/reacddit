@@ -6,8 +6,11 @@ Koa.js OAuth2 server for Reddit authentication and utility endpoints (TypeScript
 
 ```bash
 npm start              # Development server with tsx watch
+npm run lint           # Prettier + ESLint
 npm run type-check     # TypeScript type checking
-npm test               # Run tests with Vitest
+npm test               # Run tests with Vitest (watch mode)
+npm run test:run       # Run tests once (CI mode)
+npm run test:coverage  # Run tests with coverage
 npm run build          # SAM build for Lambda deployment (requires Docker)
 ```
 
