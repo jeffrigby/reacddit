@@ -6,6 +6,7 @@ import {
   faTimes,
   faCopy,
   faCheck,
+  faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useParams } from 'react-router';
 import queryString from 'query-string';
@@ -27,15 +28,29 @@ interface CopyButtonProps {
 }
 
 function CopyButton({ text }: CopyButtonProps): React.JSX.Element {
-  const { copied, copy } = useCopyToClipboard(2000);
+  const { copied, error, copy } = useCopyToClipboard(2000);
+  const status: 'error' | 'copied' | 'idle' = error
+    ? 'error'
+    : copied
+      ? 'copied'
+      : 'idle';
+  const view = {
+    idle: { icon: faCopy, title: undefined as string | undefined },
+    copied: { icon: faCheck, title: 'Copied' as string | undefined },
+    error: {
+      icon: faTriangleExclamation,
+      title: `Copy failed: ${error?.message ?? ''}` as string | undefined,
+    },
+  }[status];
   return (
     <Button
       className="btn-copy"
       size="sm"
+      title={view.title}
       variant="link"
       onClick={() => copy(text)}
     >
-      <FontAwesomeIcon icon={copied ? faCheck : faCopy} />
+      <FontAwesomeIcon icon={view.icon} />
     </Button>
   );
 }

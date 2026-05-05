@@ -1,9 +1,15 @@
 import { LRUCache } from 'lru-cache';
 import PQueue from 'p-queue';
-import type { LinkData, CommentData } from '@/types/redditApi';
+import type {
+  LinkData,
+  CommentData,
+  Listing,
+  RedditThing,
+} from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import { redditAPI } from '@/reddit/redditApiTs';
 import { getKeys, tryDomainHandlers } from '@/components/posts/embeds/embeds';
+import { getAxiosErrorStatus } from '@/utils/axiosError';
 
 // Regex patterns for extracting post IDs
 const REDDIT_POST_REGEX = /\/r\/[^/]+\/comments\/([a-z0-9]+)/i;
@@ -36,7 +42,33 @@ function chunkArray<T>(items: T[], size: number): T[][] {
 interface PostData {
   url: string;
   title: string;
-  preview?: unknown;
+}
+
+/**
+ * Shape of the response from POST /api/resolve-share.
+ * Each input URL maps to either a resolved postId or an error string.
+ */
+interface ResolveShareResponse {
+  results: Record<string, { postId?: string; error?: string }>;
+}
+
+function logShareError(
+  operation: string,
+  message: string,
+  ctx: Record<string, unknown>,
+  error: unknown
+): void {
+  console.error(`redditcom.${operation}: ${message}`, {
+    ...ctx,
+    status: getAxiosErrorStatus(error),
+    error,
+  });
+}
+
+function firstChildData<T extends RedditThing['data']>(
+  listing: Listing<T> | undefined
+): Partial<T> | undefined {
+  return listing?.data?.children?.[0]?.data;
 }
 
 // Cache for post data to avoid redundant /api/info calls
@@ -87,22 +119,31 @@ async function executeBatch(): Promise<void> {
     batch.forEach((callbacks) => callbacks.forEach((cb) => cb(postId)));
   };
 
+  const urls = Array.from(batch.keys());
+
   try {
     const response = await fetch('/api/resolve-share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls: Array.from(batch.keys()) }),
+      body: JSON.stringify({ urls }),
     });
 
     if (!response.ok) {
-      console.error(`Share link batch resolution failed: ${response.status}`);
+      console.error(
+        'redditcom.executeBatch: HTTP error from /api/resolve-share',
+        {
+          operation: 'executeBatch',
+          status: response.status,
+          statusText: response.statusText,
+          urlCount: urls.length,
+          urls,
+        }
+      );
       resolveAll(null);
       return;
     }
 
-    const data = (await response.json()) as {
-      results: Record<string, { postId?: string; error?: string }>;
-    };
+    const data = (await response.json()) as ResolveShareResponse;
 
     // Distribute results to all waiting callers
     batch.forEach((callbacks, url) => {
@@ -113,7 +154,12 @@ async function executeBatch(): Promise<void> {
       callbacks.forEach((cb) => cb(postId));
     });
   } catch (error) {
-    console.error('Share link batch resolution error:', error);
+    logShareError(
+      'executeBatch',
+      'failed to resolve share links',
+      { operation: 'executeBatch', urlCount: urls.length, urls },
+      error
+    );
     resolveAll(null);
   }
 }
@@ -188,9 +234,7 @@ export async function resolveShareLinks(
         });
 
         if (response.ok) {
-          const data = (await response.json()) as {
-            results: Record<string, { postId?: string; error?: string }>;
-          };
+          const data = (await response.json()) as ResolveShareResponse;
 
           for (const url of chunk) {
             const postId = data.results[url]?.postId;
@@ -200,11 +244,27 @@ export async function resolveShareLinks(
           }
         } else {
           console.warn(
-            `Share link batch resolution returned ${response.status} for ${chunk.length} URLs`
+            'redditcom.resolveShareLinks: HTTP error from /api/resolve-share',
+            {
+              operation: 'resolveShareLinks',
+              status: response.status,
+              statusText: response.statusText,
+              chunkSize: chunk.length,
+              urls: chunk,
+            }
           );
         }
       } catch (error) {
-        console.error('Share link batch resolution error:', error);
+        logShareError(
+          'resolveShareLinks',
+          'failed to resolve share-link chunk',
+          {
+            operation: 'resolveShareLinks',
+            chunkSize: chunk.length,
+            urls: chunk,
+          },
+          error
+        );
       } finally {
         resolveChunkPromise();
         for (const url of chunk) {
@@ -261,17 +321,14 @@ function resolveShareLink(url: string): Promise<string | null> {
 }
 
 /**
- * Parse a single child from a Reddit /api/info response into PostData
+ * Parse a single child's `data` field from a Reddit /api/info Listing<LinkData>
+ * response into a minimal PostData. Returns null when the URL is missing.
  */
-function parsePostChild(data: {
-  url?: string;
-  title?: string;
-  preview?: unknown;
-}): PostData | null {
+function parsePostChild(data: Partial<LinkData>): PostData | null {
   if (!data.url) {
     return null;
   }
-  return { url: data.url, title: data.title ?? '', preview: data.preview };
+  return { url: data.url, title: data.title ?? '' };
 }
 
 /**
@@ -291,14 +348,14 @@ async function fetchPostData(postId: string): Promise<PostData | null> {
       return rechecked;
     }
 
+    const url = `/api/info?id=t3_${postId}`;
+
     try {
-      const response = await redditAPI.get('/api/info', {
+      const response = await redditAPI.get<Listing<LinkData>>('/api/info', {
         params: { id: `t3_${postId}`, raw_json: 1 },
       });
 
-      const child = response.data?.data?.children?.[0]?.data as
-        | { url?: string; title?: string; preview?: unknown }
-        | undefined;
+      const child = firstChildData(response.data);
 
       const postData = child ? parsePostChild(child) : null;
       if (!postData) {
@@ -308,7 +365,12 @@ async function fetchPostData(postId: string): Promise<PostData | null> {
       postDataCache.set(postId, postData);
       return postData;
     } catch (error) {
-      console.error(`Failed to fetch post data for ${postId}:`, error);
+      logShareError(
+        'fetchPostData',
+        'failed to fetch post',
+        { operation: 'fetchPostData', postId, url },
+        error
+      );
       return null;
     }
   });
@@ -329,34 +391,34 @@ export async function prefetchPostData(postIds: string[]): Promise<void> {
   const chunks = chunkArray(unique, REDDIT_API_INFO_LIMIT);
 
   const fetchChunk = async (chunk: string[]): Promise<void> => {
+    const ids = chunk.map((id) => `t3_${id}`).join(',');
+    const url = `/api/info?id=${ids}`;
     try {
-      const ids = chunk.map((id) => `t3_${id}`).join(',');
-      const response = await redditAPI.get('/api/info', {
+      const response = await redditAPI.get<Listing<LinkData>>('/api/info', {
         params: { id: ids, raw_json: 1 },
       });
 
-      const children = response.data?.data?.children as
-        | Array<{
-            data: {
-              id?: string;
-              url?: string;
-              title?: string;
-              preview?: unknown;
-            };
-          }>
-        | undefined;
+      const children = response.data?.data?.children;
 
       if (children) {
         for (const child of children) {
-          const postData = parsePostChild(child.data);
-          if (child.data.id && postData) {
-            postDataCache.set(child.data.id, postData);
+          const data = child.data as Partial<LinkData>;
+          const postData = parsePostChild(data);
+          if (data.id && postData) {
+            postDataCache.set(data.id, postData);
           }
         }
       }
     } catch (error) {
-      console.error(
-        `Failed to prefetch post data for chunk of ${chunk.length} IDs:`,
+      logShareError(
+        'prefetchPostData',
+        'failed to prefetch chunk',
+        {
+          operation: 'prefetchPostData',
+          chunkSize: chunk.length,
+          postIds: chunk,
+          url,
+        },
         error
       );
     }
@@ -378,7 +440,9 @@ export async function prefetchPostData(postIds: string[]): Promise<void> {
  * - Short links: redd.it/abc123
  * - Share links: reddit.com/r/sub/s/xyz (resolved server-side via /api/resolve-share)
  */
-async function render(entry: LinkData | CommentData): Promise<EmbedContent> {
+async function render(
+  entry: LinkData | CommentData
+): Promise<EmbedContent | null> {
   // Get URL from entry
   const url = 'url' in entry ? entry.url : undefined;
 

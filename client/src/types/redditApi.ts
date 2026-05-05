@@ -23,21 +23,43 @@ export type RedditKind =
   | 'LiveUpdateEvent';
 
 /**
- * Base interface for any Reddit "Thing".
- * @template T The type of the 'data' field.
+ * Discriminated union of every known Reddit "Thing" shape.
+ *
+ * `kind` and `data` are paired so that narrowing on `kind` narrows `data`
+ * to the corresponding payload (and vice-versa). Use {@link Thing}<T>
+ * (below) when you only know the data type — it derives the kind for you.
+ *
+ * Adding a new RedditKind/data pairing? Add an arm here so consumers
+ * automatically benefit from narrowing.
  */
-export interface Thing<T> {
-  /** The kind of object. e.g., "t1" for Comment, "t3" for Link, "t5" for Subreddit. */
-  kind: RedditKind;
-  /** The data payload for this object. */
-  data: T;
-}
+export type RedditThing =
+  | { kind: 't1'; data: CommentData }
+  | { kind: 't2'; data: AccountData }
+  | { kind: 't3'; data: LinkData }
+  | { kind: 't4'; data: MessageData }
+  | { kind: 't5'; data: SubredditData }
+  | { kind: 't6'; data: TrophyData }
+  | { kind: 'more'; data: MoreChildrenData }
+  | { kind: 'modaction'; data: ModActionData }
+  | { kind: 'LabeledMulti'; data: LabeledMultiData }
+  | { kind: 'subreddit_settings'; data: SubredditSettingsData };
+
+/**
+ * Base type for any Reddit "Thing", deriving `kind` from `data`.
+ *
+ * @template T The type of the 'data' field. Must be one of the data types
+ * paired in {@link RedditThing}.
+ */
+export type Thing<T extends RedditThing['data']> = Extract<
+  RedditThing,
+  { data: T }
+>;
 
 /**
  * Represents a listing of Reddit Things, used for paginated results.
  * @template TData The type of the 'data' field for each child Thing in the listing.
  */
-export interface Listing<TData> {
+export interface Listing<TData extends RedditThing['data']> {
   kind: 'Listing';
   data: {
     /** The full name of the listing item that comes before this page. null if there is no previous page. */
@@ -55,18 +77,13 @@ export interface Listing<TData> {
   };
 }
 
-/**
- * Generic type for simple API responses, often an empty object on success
- * or an object with errors.
- */
+/** Generic Reddit API response shape (empty on success, populated on error). */
 export interface ApiResponse {
   json?: {
     errors?: ApiError[];
     data?: Record<string, unknown>;
     ratelimit?: number;
   };
-  // For robustness, allow any other properties that might appear.
-  [key: string]: unknown;
 }
 
 /**
@@ -1132,7 +1149,6 @@ export interface UserPreferences {
   treat_as_unlinked?: boolean;
   use_global_defaults?: boolean;
   video_autoplay?: boolean;
-  [key: string]: unknown;
 }
 
 export interface KarmaBreakdown {
@@ -1463,9 +1479,12 @@ export interface BlockedUsersResponse {
 }
 
 // Captcha
-export interface NeedsCaptchaResponse {
-  [key: string]: boolean;
-}
+/**
+ * Response from `GET /api/needs_captcha`.
+ * Reddit returns a bare boolean as the response body (not an object).
+ * @see https://www.reddit.com/dev/api/#GET_api_needs_captcha
+ */
+export type NeedsCaptchaResponse = boolean;
 
 // Additional Comment Actions
 export interface LockParams {
@@ -1571,7 +1590,8 @@ export interface EmojiData {
 export interface TokenData {
   accessToken: string;
   expires: number;
-  auth: boolean;
+  /** Whether the cookie represents an authenticated user. Treat `undefined` as `false`. */
+  auth?: boolean;
   loginURL?: string;
 }
 
@@ -1585,7 +1605,7 @@ export interface SearchOptions extends SearchParams {}
 
 export interface UserListingOptions extends UserActivityParams {}
 
-export interface ListingResponseWithUrl<T> {
+export interface ListingResponseWithUrl<T extends RedditThing['data']> {
   kind: 'Listing';
   data: {
     before: string | null;
@@ -1615,14 +1635,24 @@ export interface DuplicatesOptions extends DuplicatesParams {}
 
 export interface TokenApiResponse {
   token: string | null;
-  cookieTokenParsed: TokenData | Record<string, never>;
+  cookieTokenParsed: Partial<TokenData>;
+  /**
+   * Set when the bearer endpoint failed (network/HTTP error). When present,
+   * `token` will be `null` but the failure was transient — callers can show
+   * a retry UI rather than treating it as an intentional logout.
+   * Absent on success and on genuine anonymous/logged-out states.
+   */
+  error?: TokenFetchError;
 }
 
-export interface BearerTokenResponse {
-  accessToken: string;
+/** Reason a token fetch failed; populated only on transient API errors. */
+export interface TokenFetchError {
+  message: string;
+  /** HTTP status if the failure was an HTTP response, undefined for network errors. */
+  status?: number;
 }
 
 export interface TokenStorageResult {
   token: string | null | 'expired';
-  cookieTokenParsed: TokenData | Record<string, never>;
+  cookieTokenParsed: Partial<TokenData>;
 }

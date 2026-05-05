@@ -57,10 +57,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
     if (!commentData?.json.data?.things) {
       return null;
     }
-    return arrayToObject(
-      commentData.json.data.things as CommentOrMore[],
-      'name'
-    );
+    return arrayToObject(commentData.json.data.things, 'name');
   }, [commentData]);
 
   const loadMoreComments = () => {

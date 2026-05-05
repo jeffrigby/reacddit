@@ -13,7 +13,7 @@ import PostDebug from './PostDebug';
 
 interface PostFooterProps {
   debug: boolean;
-  renderedContent?: EmbedContent;
+  renderedContent?: EmbedContent | null;
   setShowVisToggle: (show: boolean) => void;
   showVisToggle: boolean;
 }
@@ -26,7 +26,7 @@ function PostFooter({
 }: PostFooterProps): React.JSX.Element | null {
   const postContext = usePostContext();
   const [showDebug, setShowDebug] = useState(false);
-  const { copied, copy } = useCopyToClipboard(500);
+  const { copied, error: copyError, copy } = useCopyToClipboard(500);
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
 
@@ -35,15 +35,29 @@ function PostFooter({
     copy(id);
   };
 
+  const status: 'error' | 'copied' | 'idle' = copyError
+    ? 'error'
+    : copied
+      ? 'copied'
+      : 'idle';
+  const view = {
+    idle: { label: data.name, title: 'Click to copy' },
+    copied: { label: 'Copied', title: 'Click to copy' },
+    error: {
+      label: 'Copy failed',
+      title: `Copy failed: ${copyError?.message ?? ''}`,
+    },
+  }[status];
+
   const debugLinks = (
     <>
       <Button
         className="shadow-none m-0 p-0 me-1"
-        title="Click to copy"
+        title={view.title}
         variant="link"
         onClick={copyID}
       >
-        {copied ? 'Copied' : data.name}
+        {view.label}
       </Button>
       <Button
         aria-label={showDebug ? 'Hide debug' : 'Show debug'}

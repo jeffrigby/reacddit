@@ -15,7 +15,7 @@ interface ModalContextType {
   setShowCondenseHelp: (show: boolean) => void;
 }
 
-const ModalContext = createContext<ModalContextType | undefined>(undefined);
+const ModalContext = createContext<ModalContextType | null>(null);
 
 export function ModalProvider({ children }: { children: ReactNode }) {
   const [showHotkeys, setShowHotkeys] = useState(false);
@@ -43,7 +43,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
  */
 export function useModals() {
   const context = useContext(ModalContext);
-  if (context === undefined) {
+  if (context === null) {
     throw new Error('useModals must be used within ModalProvider');
   }
   return context;

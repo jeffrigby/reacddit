@@ -26,7 +26,7 @@ function CommentsRender({
         <CommentsMore
           key={comment.data.id}
           linkId={linkId}
-          moreList={comment as Thing<MoreChildrenData>}
+          moreList={comment}
         />
       );
     }
@@ -36,7 +36,7 @@ function CommentsRender({
         duplicate={false}
         idx={idx}
         key={comment.data.id}
-        post={comment as Thing<CommentData>}
+        post={comment}
         postName={comment.data.name}
       />
     );

@@ -101,3 +101,122 @@ export async function expectReloadLoading(page: Page): Promise<void> {
     expect(isSpinning > 0 || isDisabled).toBeTruthy();
   }).toPass({ timeout: 5_000 });
 }
+
+export interface LoadMorePostsOptions {
+  /** Wait until count reaches at least this value. */
+  min?: number;
+  /** Wait until count exceeds this baseline. */
+  greaterThan?: number;
+  /** Poll timeout in ms. */
+  timeout?: number;
+}
+
+/**
+ * Scroll the listing to the bottom and poll until more posts load.
+ * Pass `min` to wait for an absolute count, or `greaterThan` to wait for
+ * growth past a baseline. Defaults to growth past the current count.
+ */
+export async function loadMorePosts(
+  page: Page,
+  options: LoadMorePostsOptions = {}
+): Promise<void> {
+  const posts = page.locator('#entries .entry');
+  const timeout = options.timeout ?? 15_000;
+  const baseline =
+    options.min === undefined
+      ? (options.greaterThan ?? (await posts.count()))
+      : 0;
+
+  await page.evaluate(() =>
+    document.body.scrollTo(0, document.body.scrollHeight)
+  );
+
+  if (options.min !== undefined) {
+    await expect
+      .poll(async () => await posts.count(), { timeout })
+      .toBeGreaterThanOrEqual(options.min);
+  } else {
+    await expect
+      .poll(async () => await posts.count(), { timeout })
+      .toBeGreaterThan(baseline);
+  }
+}
+
+/**
+ * Selector that distinguishes a resolved embed (real media) from the thumb
+ * fallback. Excludes `.reddit-thumb` and `.no-embed` so this never matches a
+ * post the embed pipeline failed to handle.
+ */
+export const RESOLVED_EMBED_SELECTOR =
+  'iframe, video, img:not(.reddit-thumb), .albumEntry, .redditGallery';
+
+/**
+ * Locate the first post whose footer domain link matches any of `domains`.
+ * Returns `null` if no candidate is visible.
+ */
+export async function findPostByDomain(
+  page: Page,
+  domains: string[]
+): Promise<Locator | null> {
+  for (const domain of domains) {
+    const candidates = page.locator(
+      `#entries .entry:has(footer a[href*='site:%22${domain}%22'])`
+    );
+    if ((await candidates.count()) > 0) return candidates.first();
+  }
+  return null;
+}
+
+/**
+ * Click into a post and wait for `embedSelector` (or the thumb / no-embed
+ * fallback) to appear inside its interior. Returns the interior locator.
+ */
+export async function expandAndAwaitEmbed(
+  _page: Page,
+  postLocator: Locator,
+  embedSelector: string
+): Promise<Locator> {
+  await postLocator.scrollIntoViewIfNeeded();
+  await postLocator.click();
+  const interior = postLocator.locator('.entry-interior');
+  await expect(interior).toBeVisible();
+
+  await expect
+    .poll(
+      async () =>
+        await interior
+          .locator(`${embedSelector}, .reddit-thumb, .no-embed`)
+          .count(),
+      { timeout: 30_000 }
+    )
+    .toBeGreaterThan(0);
+
+  return interior;
+}
+
+export interface FindResolvableDomainPostOptions {
+  subreddits: string[];
+  domains: string[];
+  /** Minimum post count to load before searching each subreddit. */
+  min?: number;
+}
+
+/**
+ * Walk `subreddits` in order, loading each listing and returning the first
+ * post matching any of `domains`. Returns `null` if none of the subreddits
+ * surface a matching post.
+ */
+export async function findResolvableDomainPost(
+  page: Page,
+  { subreddits, domains, min = 11 }: FindResolvableDomainPostOptions
+): Promise<{ post: Locator; sub: string } | null> {
+  for (const sub of subreddits) {
+    await page.goto(`/r/${sub}`);
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
+    await loadMorePosts(page, { min });
+
+    const post = await findPostByDomain(page, domains);
+    if (post) return { post, sub };
+  }
+  return null;
+}

@@ -41,7 +41,7 @@ import PostHeader from './PostHeader';
 import PostFooter from './PostFooter';
 
 interface UseRenderedContentReturn {
-  renderedContent: EmbedContent;
+  renderedContent: EmbedContent | null;
 }
 
 function useRenderedContent(
@@ -49,7 +49,9 @@ function useRenderedContent(
   kind: string,
   shouldLoad: boolean
 ): UseRenderedContentReturn {
-  const [renderedContent, setRenderedContent] = useState<EmbedContent>(null);
+  const [renderedContent, setRenderedContent] = useState<EmbedContent | null>(
+    null
+  );
   const isRendered = useRef(false);
 
   useEffect(() => {

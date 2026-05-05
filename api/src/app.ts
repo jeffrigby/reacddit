@@ -29,6 +29,60 @@ import { LRUCache } from 'lru-cache';
 import ratelimit from 'koa-ratelimit';
 import { globalHttpsAgent as ssrfSafeAgent } from 'request-filtering-agent';
 
+// In-memory only — Lambda cold starts reset state and instances don't share it.
+const SESSION_DECODE_FAILURE_WINDOW_MS = 5 * 60 * 1000;
+const SESSION_DECODE_FAILURE_THRESHOLD = 10;
+const SESSION_DECODE_FAILURE_MAX_TIMESTAMPS = 1000;
+
+export interface SessionDecodeFailureTracker {
+  record(): void;
+  reset(): void;
+}
+
+export function createSessionDecodeFailureTracker(
+  log: typeof logger
+): SessionDecodeFailureTracker {
+  const timestamps: number[] = [];
+  let lastWarnAt = 0;
+
+  return {
+    record(): void {
+      const now = Date.now();
+      while (
+        timestamps.length > 0 &&
+        now - timestamps[0]! > SESSION_DECODE_FAILURE_WINDOW_MS
+      ) {
+        timestamps.shift();
+      }
+      timestamps.push(now);
+      if (timestamps.length > SESSION_DECODE_FAILURE_MAX_TIMESTAMPS) {
+        timestamps.shift();
+      }
+
+      if (
+        timestamps.length >= SESSION_DECODE_FAILURE_THRESHOLD &&
+        now - lastWarnAt > SESSION_DECODE_FAILURE_WINDOW_MS
+      ) {
+        lastWarnAt = now;
+        log.warn(
+          'systemic session decode failure — likely SALT rotation or corruption',
+          {
+            failuresInWindow: timestamps.length,
+            windowMs: SESSION_DECODE_FAILURE_WINDOW_MS,
+            threshold: SESSION_DECODE_FAILURE_THRESHOLD,
+          }
+        );
+      }
+    },
+    reset(): void {
+      timestamps.length = 0;
+      lastWarnAt = 0;
+    },
+  };
+}
+
+export const sessionDecodeTracker = createSessionDecodeFailureTracker(logger);
+
 function getSessionConfig() {
   return {
     key: 'reacddit:sess' /** (string) cookie key (default is koa:sess) */,
@@ -57,6 +111,7 @@ function getSessionConfig() {
         logger.error('Failed to decode session', {
           error: getErrorMessage(error),
         });
+        sessionDecodeTracker.record();
         return null;
       }
     },
@@ -359,7 +414,7 @@ router.get('/api/login', authRateLimit, (ctx) => {
 router.get('/api/callback', authRateLimit, async (ctx) => {
   const { code, state, error } = ctx.query;
   const savedState = ctx.session.state;
-  ctx.session.state = null;
+  delete ctx.session.state;
 
   const handleError = (logMessage: string, status: number): void => {
     logger.error(logMessage);
@@ -545,9 +600,9 @@ router.get('/api/bearer', bearerRateLimit, async (ctx) => {
   await refreshOrGetAnonTokenAndSetSession(ctx, token, forceRefresh);
 });
 
-// Regex for validating Reddit share links
+// HTTPS only — http would defeat SSRF protection.
 const SHARE_LINK_REGEX =
-  /^https?:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
+  /^https:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
 
 // Max URLs per batch request
 const MAX_BATCH_SIZE = 50;
@@ -702,7 +757,7 @@ router.get('/api/logout', authRateLimit, async (ctx) => {
   }
 
   // Always clear session and redirect, even if no token existed
-  ctx.session.token = null;
+  delete ctx.session.token;
   ctx.cookies.set('token', null, { overwrite: true });
 
   return ctx.redirect(`${config.CLIENT_PATH}/?logout`);

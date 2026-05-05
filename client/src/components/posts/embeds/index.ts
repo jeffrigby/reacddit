@@ -201,9 +201,9 @@ async function inlineLinks(
 }
 
 function nonSSLFallback(
-  content: EmbedContent,
+  content: EmbedContent | null,
   entry: LinkData | CommentData
-): EmbedContent {
+): EmbedContent | null {
   const isSSL = window.location.protocol;
   if (isSSL === 'https:' && content && 'src' in content && content.src) {
     // Block dangerous protocols (javascript:, data:, vbscript:, etc.)
@@ -250,7 +250,7 @@ function nonSSLFallback(
 async function getContent(
   keys: DomainKeys,
   entry: LinkData | CommentData
-): Promise<EmbedContent> {
+): Promise<EmbedContent | null> {
   // is this a gallery or has media_metadata?
   if (isLinkData(entry) && entry.media_metadata) {
     try {
@@ -329,7 +329,7 @@ async function getContent(
 async function RenderContent(
   entry: LinkData | CommentData,
   kind: string
-): Promise<EmbedContent> {
+): Promise<EmbedContent | null> {
   // Create cache key from URL (or id for comments)
   const { id } = entry;
   const { url } = isLinkData(entry) ? entry : { url: undefined };
@@ -346,7 +346,7 @@ async function RenderContent(
     return cached;
   }
 
-  let result: EmbedContent = null;
+  let result: EmbedContent | null = null;
 
   try {
     if (kind === REDDIT_KIND.COMMENT) {

@@ -16,6 +16,7 @@ npm start  # Starts proxy + client + API
 ```
 
 The proxy automatically:
+
 - Generates self-signed SSL certificates for localhost on first run
 - Routes `/api/*` to the API server (port 3001)
 - Routes all other requests to the Vite dev server (port 3000)
@@ -23,6 +24,7 @@ The proxy automatically:
 - Adds production-grade security headers (HSTS, CSP, etc.)
 
 For custom domains with Let's Encrypt certificates, configure `.env`:
+
 ```bash
 PROXY_DOMAIN=dev.yourdomain.com
 PROXY_CERT_PATH=/path/to/fullchain.pem
@@ -63,6 +65,7 @@ The project includes a complete AWS SAM template that provisions all necessary i
 #### Deployment Steps
 
 **1. Build the client:**
+
 ```bash
 cd client
 npm run build
@@ -70,6 +73,7 @@ npm run build
 ```
 
 **2. Deploy with SAM:**
+
 ```bash
 cd api
 sam build
@@ -93,9 +97,10 @@ The `api/template.yaml` provisions a complete serverless infrastructure:
 
 When running `sam deploy --guided`, you'll be prompted for:
 
-- `Domain` - Your custom domain name
-- `ACMCertificateArn` - SSL certificate ARN (must be in us-east-1)
-- `ENVSsmParam` - SSM Parameter Store path containing environment variables
+- `DomainAlias` - Custom domain alias for CloudFront (e.g., `reacdd.it`, `staging.reacdd.it`)
+- `ACMCertificateArn` - ACM SSL certificate ARN (must be in us-east-1)
+- `AllowedOrigin` - CORS allowed origin for the Lambda function URL (e.g., `https://reacdd.it`)
+- `ENVSsmParam` - SSM Parameter Store name containing the production `.env` contents
 
 #### Configuration
 
@@ -110,8 +115,6 @@ REDDIT_CLIENT_SECRET=your_reddit_client_secret
 REDDIT_CALLBACK_URI=https://yourdomain.com/api/callback
 SALT=your_32_character_encryption_salt
 SESSION_LENGTH_SECS=2592000
-IV_LENGTH=16
-ENCRYPTION_ALGORITHM=aes-256-cbc
 ```
 
 **Reddit OAuth Setup:**
@@ -128,9 +131,11 @@ For detailed API configuration and all available environment variables, see [api
 #### Post-Deployment
 
 1. **Upload client build to S3:**
+
    ```bash
    aws s3 sync client/dist/ s3://your-bucket-name/dist/
    ```
+
    (Get bucket name from SAM outputs: `sam list stack-outputs`)
 
 2. **Configure DNS:**
@@ -155,6 +160,7 @@ After deployment, SAM provides these outputs:
 #### Updating the Application
 
 **Client updates:**
+
 ```bash
 cd client
 npm run build
@@ -164,6 +170,7 @@ aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
 ```
 
 **API updates:**
+
 ```bash
 cd api
 sam build
@@ -175,6 +182,7 @@ sam deploy  # Uses saved parameters from previous deployment
 ## Infrastructure Details
 
 See `api/template.yaml` for complete SAM configuration including:
+
 - CloudFront cache policies and behaviors
 - S3 bucket lifecycle rules and encryption
 - Lambda function configuration and environment variables
@@ -196,6 +204,7 @@ While AWS SAM is the recommended approach, you can deploy using alternative meth
 ### Other Platforms
 
 The client is a standard React SPA and the API is a Node.js application, so they can be deployed to any platform that supports:
+
 - Static site hosting (client)
 - Node.js 24+ runtime (API)
 - Environment variable configuration

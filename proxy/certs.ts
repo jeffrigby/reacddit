@@ -27,10 +27,14 @@ interface Certificates {
 }
 
 /**
- * Check certificate expiration and log warnings
- * @returns days until expiry, or -1 if expired/unparseable
+ * Check certificate expiration and log warnings.
+ *
+ * Returns days-until-expiry (may be <= 0 if the cert is genuinely expired),
+ * or `null` if the cert could not be parsed. Callers MUST distinguish
+ * "unparseable" from "expired": regenerating an unparseable cert can destroy
+ * a user-supplied custom certificate that we simply failed to read.
  */
-function checkCertExpiry(certBuffer: Buffer): number {
+function checkCertExpiry(certBuffer: Buffer, certPath?: string): number | null {
   try {
     const cert = new X509Certificate(certBuffer);
     const expiryDate = new Date(cert.validTo);
@@ -47,8 +51,13 @@ function checkCertExpiry(certBuffer: Buffer): number {
     }
 
     return daysUntilExpiry;
-  } catch {
-    return -1;
+  } catch (error) {
+    console.error(
+      `⚠️  Failed to parse certificate${certPath ? ` at ${certPath}` : ''}: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+    return null;
   }
 }
 
@@ -72,7 +81,7 @@ export function getCertificates(
     }
 
     const certBuffer = readFileSync(certPath);
-    checkCertExpiry(certBuffer);
+    checkCertExpiry(certBuffer, certPath);
 
     console.log(`✅ Using custom SSL certificates from ${certPath}`);
     return {
@@ -90,7 +99,24 @@ export function getCertificates(
   // Check if self-signed certs already exist
   if (existsSync(generatedCertPath) && existsSync(generatedKeyPath)) {
     const certBuffer = readFileSync(generatedCertPath);
-    const daysUntilExpiry = checkCertExpiry(certBuffer);
+    const daysUntilExpiry = checkCertExpiry(certBuffer, generatedCertPath);
+
+    if (daysUntilExpiry === null) {
+      // Cert exists but is unparseable. Do NOT regenerate — that would
+      // destroy a cert the user may have placed there manually (e.g.,
+      // Let's Encrypt). Surface the problem and reuse the existing files;
+      // the HTTPS server will fail loudly if they're truly invalid.
+      console.error(
+        `⚠️  Could not parse self-signed certificate at ${generatedCertPath}. ` +
+          `Refusing to regenerate to avoid clobbering a possibly-valid cert. ` +
+          `Inspect the file manually or remove it to force regeneration.`
+      );
+      return {
+        cert: certBuffer,
+        key: readFileSync(generatedKeyPath),
+        isCustom: false,
+      };
+    }
 
     if (daysUntilExpiry <= 0) {
       console.log(`🔐 Regenerating expired self-signed certificate...`);
@@ -168,11 +194,19 @@ IP.2 = ::1
     // Certificate can be world-readable (it's public)
     chmodSync(generatedCertPath, 0o644);
 
-    // Clean up OpenSSL config file (no longer needed after generation)
+    // Clean up OpenSSL config file (no longer needed after generation).
+    // Non-critical: config file contains no secrets, but log so persistent
+    // cleanup failures (e.g., permissions issues) are discoverable.
     try {
       unlinkSync(configPath);
-    } catch {
-      // Non-critical: config file contains no secrets
+    } catch (cleanupError) {
+      console.error(
+        `⚠️  Failed to remove OpenSSL config at ${configPath}: ${
+          cleanupError instanceof Error
+            ? cleanupError.message
+            : String(cleanupError)
+        }`
+      );
     }
 
     // If running as root (via sudo), chown files back to the original user

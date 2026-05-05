@@ -8,6 +8,7 @@ import {
   type MeResponse,
   type TokenData,
   type TokenApiResponse,
+  type TokenFetchError,
   type TokenStorageResult,
   type SubredditAboutResponse,
   type SubredditRulesResponse,
@@ -26,6 +27,7 @@ import {
   type SubredditsListingParams,
   type SubredditsListingResponse,
 } from '@/types/redditApi';
+import { getAxiosErrorStatus } from '@/utils/axiosError';
 
 // Utility function to clean null/empty values from params
 export function setParams(
@@ -57,7 +59,10 @@ function isTokenData(data: unknown): data is TokenData {
   if (typeof obj.expires !== 'number' || !Number.isFinite(obj.expires)) {
     return false;
   }
-  if (typeof obj.auth !== 'boolean') {
+  // `auth` is optional for backwards compatibility with legacy cookies
+  // issued before the field existed. When absent or non-boolean, callers
+  // must treat the token as anonymous (auth === false).
+  if (obj.auth !== undefined && typeof obj.auth !== 'boolean') {
     return false;
   }
 
@@ -109,6 +114,17 @@ export function getTokenStorage(): TokenStorageResult {
 
 /**
  * Get the token from cookie if possible, if not get it from the server.
+ *
+ * On `/api/bearer` failure, returns `{ token: null, error: {...} }`. The
+ * `error` field distinguishes a transient API outage from an intentional
+ * anonymous/logout state (where `error` is absent). Consumers can render a
+ * "retry" UI when `error` is present rather than the anonymous experience.
+ *
+ * Note: the cookie is intentionally NOT cleared on transient errors. Old
+ * behavior (always clearing on failure) caused users to lose their session
+ * during brief network blips. Cookie clearing now happens only via explicit
+ * logout flows.
+ *
  * @param reset - Always get it from the server.
  */
 export async function getToken(reset = false): Promise<TokenApiResponse> {
@@ -124,10 +140,17 @@ export async function getToken(reset = false): Promise<TokenApiResponse> {
         token: response.data.accessToken,
         cookieTokenParsed,
       };
-    } catch (error) {
-      console.error('Failed to fetch bearer token:', error);
-      cookies.remove('token');
-      return { token: null, cookieTokenParsed };
+    } catch (err) {
+      console.error('Failed to fetch bearer token:', err);
+      const error: TokenFetchError = {
+        message: err instanceof Error ? err.message : String(err),
+        status: getAxiosErrorStatus(err),
+      };
+      return {
+        token: null,
+        cookieTokenParsed,
+        error,
+      };
     }
   }
 

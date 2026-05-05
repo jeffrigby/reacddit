@@ -1,34 +1,72 @@
-import { test, expect, type Page, type Locator } from '@playwright/test';
-
-async function openFirstPost(page: Page, subreddit: string): Promise<Locator> {
-  await page.goto(`/r/${subreddit}`);
-
-  const firstPost = page.locator('#entries .entry').first();
-  await expect(firstPost).toBeVisible();
-
-  await firstPost.click();
-
-  const interior = firstPost.locator('.entry-interior');
-  await expect(interior).toBeVisible();
-  return interior;
-}
+import { test, expect } from '@playwright/test';
+import {
+  RESOLVED_EMBED_SELECTOR,
+  expandAndAwaitEmbed,
+  findResolvableDomainPost,
+  loadMorePosts,
+} from './helpers';
 
 test.describe('Embeds', () => {
-  test('renders media containers for image posts', async ({ page }) => {
-    const interior = await openFirstPost(page, 'pics');
+  test('resolves Reddit cross-post and share-link embeds', async ({ page }) => {
+    const result = await findResolvableDomainPost(page, {
+      subreddits: ['SubredditDrama', 'all'],
+      domains: ['reddit.com', 'redd.it'],
+    });
 
-    const mediaContainer = interior.locator(
-      '.media-cont, .media-ratio, img, iframe'
+    if (!result) {
+      test.info().annotations.push({
+        type: 'reason',
+        description:
+          'No Reddit-linked posts visible; asserting general embed pipeline instead',
+      });
+      await page.goto('/r/all');
+      await expect(page.locator('#entries .entry').first()).toBeVisible();
+      await loadMorePosts(page, { min: 11 });
+      await expect(
+        page.locator(`#entries ${RESOLVED_EMBED_SELECTOR}`).first()
+      ).toBeAttached({ timeout: 30_000 });
+      return;
+    }
+
+    test.info().annotations.push({
+      type: 'reddit-link-found',
+      description: `Resolved cross-post from r/${result.sub}`,
+    });
+    const interior = await expandAndAwaitEmbed(
+      page,
+      result.post,
+      RESOLVED_EMBED_SELECTOR
     );
-    // r/pics should have image content in the first post
-    await expect(mediaContainer.first()).toBeAttached();
+    await expect(
+      interior.locator(RESOLVED_EMBED_SELECTOR).first()
+    ).toBeAttached();
   });
 
-  test('renders video embed containers', async ({ page }) => {
-    const interior = await openFirstPost(page, 'videos');
+  test('renders domain-specific iframe embeds for YouTube posts', async ({
+    page,
+  }) => {
+    const result = await findResolvableDomainPost(page, {
+      subreddits: ['videos'],
+      domains: ['youtube.com', 'youtu.be'],
+    });
 
-    const embedElement = interior.locator('iframe, video, .media-cont, .ratio');
-    // Verify embed container structure exists (content varies by post)
-    await expect(embedElement.first()).toBeAttached();
+    if (!result) {
+      test.info().annotations.push({
+        type: 'reason',
+        description:
+          'No YouTube posts visible; asserting an iframe still renders elsewhere',
+      });
+      await expect(page.locator('#entries iframe').first()).toBeAttached({
+        timeout: 30_000,
+      });
+      return;
+    }
+
+    test.info().annotations.push({
+      type: 'youtube-post-found',
+      description: `Found YouTube-domain post in r/${result.sub}`,
+    });
+    const interior = await expandAndAwaitEmbed(page, result.post, 'iframe');
+    await expect(interior.locator('iframe').first()).toBeAttached();
   });
 });

@@ -58,8 +58,14 @@ export const fetchBearer = createAsyncThunk<
     // Note: force parameter is used by condition function below, not here
     try {
       // This is the second call to getToken() - see note above about double fetch
-      const { token, cookieTokenParsed } = await getToken(false);
-      const { auth } = cookieTokenParsed;
+      const tokenResult = await getToken(false);
+      const { token, cookieTokenParsed, error: tokenError } = tokenResult;
+
+      if (tokenError) {
+        return rejectWithValue(tokenError.message);
+      }
+
+      const auth = cookieTokenParsed.auth ?? false;
       const loginURL = getLoginUrl();
 
       return {
@@ -97,7 +103,7 @@ export const fetchBearer = createAsyncThunk<
       // See PERFORMANCE NOTE above for why this double fetch is acceptable
       try {
         const { token, cookieTokenParsed } = await getToken(false);
-        const { auth } = cookieTokenParsed;
+        const auth = cookieTokenParsed.auth ?? false;
         const loginURL = getLoginUrl();
         const newStatus = auth ? 'auth' : 'anon';
 

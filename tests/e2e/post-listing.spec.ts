@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { loadMorePosts } from './helpers';
 
 test.describe('Post Listing', () => {
   test.beforeEach(async ({ page }) => {
@@ -39,15 +40,7 @@ test.describe('Post Listing', () => {
   test('loads more posts on scroll', async ({ page }) => {
     const posts = page.locator('#entries .entry');
     const initialCount = await posts.count();
-
-    await page.evaluate(() => {
-      document.body.scrollTo(0, document.body.scrollHeight);
-    });
-
-    // Wait for post count to increase rather than using a hardcoded sleep
-    await expect(async () => {
-      const newCount = await posts.count();
-      expect(newCount).toBeGreaterThan(initialCount);
-    }).toPass({ timeout: 15_000 });
+    await loadMorePosts(page, { greaterThan: initialCount });
+    expect(await posts.count()).toBeGreaterThan(initialCount);
   });
 });

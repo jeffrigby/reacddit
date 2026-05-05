@@ -111,8 +111,6 @@ export function encryptToken(token: unknown): EncryptedToken {
 
 /**
  * Decrypt the session token cookie using AES-256-GCM.
- * If decryption fails (e.g., old CBC-encrypted tokens), returns null
- * so the session is treated as new (forces re-authentication).
  * @param encryptedToken - The encrypted token object with iv, authTag, and token properties
  * @returns The decrypted token object, or null if decryption fails
  */
@@ -140,8 +138,6 @@ export function decryptToken(encryptedToken: EncryptedToken): unknown {
     return JSON.parse(decrypted.toString());
   } catch (error) {
     logger.error('Failed to decrypt token', { error: getErrorMessage(error) });
-    // Return null for any decryption failure (including old CBC-encrypted sessions).
-    // This forces a new session instead of falling back to insecure decryption.
     return null;
   }
 }

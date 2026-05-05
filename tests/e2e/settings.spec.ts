@@ -59,5 +59,18 @@ test.describe('Settings', () => {
       hasText: /^t3_/,
     });
     await expect(debugButton).toBeVisible({ timeout: 5_000 });
+
+    const postId = await debugButton.textContent();
+    const copyButton = firstPost.locator(
+      `footer button[title="Click to copy"]`
+    );
+    await page
+      .context()
+      .grantPermissions(['clipboard-read', 'clipboard-write']);
+    await copyButton.click();
+    await expect(copyButton).toHaveText(/^(Copied|Copy failed)$/, {
+      timeout: 2_000,
+    });
+    await expect(copyButton).toHaveText(postId!, { timeout: 5_000 });
   });
 });

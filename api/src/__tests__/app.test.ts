@@ -10,6 +10,7 @@ import {
 import request from 'supertest';
 import type { AxiosInstance } from 'axios';
 import axios from 'axios';
+import { globalHttpsAgent as ssrfSafeAgent } from 'request-filtering-agent';
 
 beforeAll(() => {
   vi.stubEnv('REDDIT_CLIENT_ID', 'test-client-id');
@@ -71,20 +72,20 @@ vi.mock('../util.js', () => {
   };
 });
 
-let sessionStore: Record<string, { state: string | null; token: unknown }> = {};
+let sessionStore: Record<string, { state?: string; token?: unknown }> = {};
 vi.mock('koa-session', () => ({
   default:
     () =>
     (
       ctx: {
         headers: Record<string, string>;
-        session: { state: string | null; token: unknown };
+        session: { state?: string; token?: unknown };
       },
       next: () => Promise<void>
     ) => {
       const sessionId = ctx.headers['x-session-id'] || 'test-session';
       if (!sessionStore[sessionId]) {
-        sessionStore[sessionId] = { state: null, token: null };
+        sessionStore[sessionId] = {};
       }
       ctx.session = sessionStore[sessionId]!;
       return next();
@@ -261,7 +262,6 @@ describe('API Endpoints', () => {
       const sessionId = 'test-session-logout';
 
       sessionStore[sessionId] = {
-        state: null,
         token: {
           access_token: 'test-access-token',
           refresh_token: 'test-refresh-token',
@@ -286,7 +286,6 @@ describe('API Endpoints', () => {
       const sessionId = 'test-session-logout-fail';
 
       sessionStore[sessionId] = {
-        state: null,
         token: {
           access_token: 'test-access-token',
           refresh_token: 'test-refresh-token',
@@ -313,7 +312,7 @@ describe('API Endpoints', () => {
     it('should handle callback with invalid state', async () => {
       const sessionId = 'test-session-invalid-state';
 
-      sessionStore[sessionId] = { state: 'valid-state-123', token: null };
+      sessionStore[sessionId] = { state: 'valid-state-123' };
 
       const response = await request(app.callback())
         .get('/api/callback?code=test-code&state=invalid-state-456')
@@ -497,12 +496,12 @@ describe('API Endpoints', () => {
         .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
         .expect(200);
 
-      expect(axios.head).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          httpsAgent: expect.anything(),
-        })
-      );
+      const headMock = axios.head as ReturnType<typeof vi.fn>;
+      expect(headMock).toHaveBeenCalledTimes(1);
+      const callOptions = headMock.mock.calls[0]?.[1] as {
+        httpsAgent?: unknown;
+      };
+      expect(callOptions?.httpsAgent).toBe(ssrfSafeAgent);
     });
   });
 
@@ -569,6 +568,40 @@ describe('API Endpoints', () => {
 
       expect(response.headers).toHaveProperty('retry-after');
     });
+
+    it.each([
+      {
+        name: 'authRateLimit on /api/login',
+        method: 'get' as const,
+        path: '/api/login',
+        body: undefined,
+        max: 30,
+        successStatus: 302,
+      },
+      {
+        name: 'shareRateLimit on /api/resolve-share',
+        method: 'post' as const,
+        path: '/api/resolve-share',
+        body: { urls: ['https://evil.com/not-a-share-link'] },
+        max: 100,
+        successStatus: 200,
+      },
+    ])(
+      'should return 429 when $name is exceeded',
+      async ({ method, path, body, max, successStatus }) => {
+        for (let i = 0; i < max; i++) {
+          const req = request(app.callback())[method](path);
+          if (body) req.send(body);
+          await req.expect(successStatus);
+        }
+
+        const finalReq = request(app.callback())[method](path);
+        if (body) finalReq.send(body);
+        const response = await finalReq.expect(429);
+
+        expect(response.headers).toHaveProperty('retry-after');
+      }
+    );
   });
 
   describe('POST /api/resolve-share', () => {

@@ -76,7 +76,7 @@ export function getKeys(url: string): DomainKeys | null {
 export async function tryDomainHandlers(
   keys: DomainKeys,
   entry: LinkData | CommentData
-): Promise<EmbedContent> {
+): Promise<EmbedContent | null> {
   // Try greedy domain first (e.g., "youtube" from "youtube.com")
   if (typeof Embeds[keys.greedyDomain] === 'function') {
     const content = await Embeds[keys.greedyDomain](entry);
