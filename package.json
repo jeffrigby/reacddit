@@ -18,6 +18,7 @@
     "build-client": "npm run build -w client",
     "start-api": "npm run start -w api",
     "lint-all": "npm run lint --workspaces --if-present",
+    "lint-all:check": "npm run lint:check --workspaces --if-present",
     "outdated-all": "npm outdated --workspaces",
     "update-all": "npm update --workspaces",
     "test:e2e": "npm run test:e2e -w tests",

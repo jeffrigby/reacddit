@@ -12,6 +12,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "prettier --write 'src/**/*.{ts,js,mjs}' && eslint --fix 'src/**/*.{ts,js,mjs}'",
+    "lint:check": "prettier --check 'src/**/*.{ts,js,mjs}' && eslint 'src/**/*.{ts,js,mjs}'",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

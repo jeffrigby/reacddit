@@ -6,7 +6,8 @@
     "scripts": {
         "start": "tsx server.ts",
         "dev": "tsx watch server.ts",
-        "lint": "prettier --write '**/*.{ts,js,mjs}' && eslint --fix '**/*.{ts,js,mjs}'"
+        "lint": "prettier --write '**/*.{ts,js,mjs}' && eslint --fix '**/*.{ts,js,mjs}'",
+        "lint:check": "prettier --check '**/*.{ts,js,mjs}' && eslint '**/*.{ts,js,mjs}'"
     },
     "dependencies": {
         "boxen": "^8.0.1",

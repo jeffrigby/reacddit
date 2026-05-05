@@ -5,6 +5,7 @@ import {
   beforeEach,
   afterEach,
   beforeAll,
+  afterAll,
   vi,
 } from 'vitest';
 import request from 'supertest';
@@ -27,6 +28,10 @@ beforeAll(() => {
   vi.stubEnv('TOKEN_EXPIRY_PADDING_SECS', '300');
   vi.stubEnv('PORT', '3001');
   vi.stubEnv('DEBUG', '0');
+});
+
+afterAll(() => {
+  vi.unstubAllEnvs();
 });
 
 // Mock axios.head for share link resolver
