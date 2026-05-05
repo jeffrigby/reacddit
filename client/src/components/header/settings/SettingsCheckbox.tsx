@@ -3,7 +3,9 @@ import type { SiteSettingsState } from '@/redux/slices/siteSettingsSlice';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 
 type BooleanSettingKey = {
-  [K in keyof SiteSettingsState]: SiteSettingsState[K] extends boolean
+  [K in keyof SiteSettingsState]-?: NonNullable<
+    SiteSettingsState[K]
+  > extends boolean
     ? K
     : never;
 }[keyof SiteSettingsState];

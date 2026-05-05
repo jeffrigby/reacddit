@@ -23,17 +23,27 @@ test.describe('Keyboard Shortcuts', () => {
     const entries = page.locator('#entries .entry');
     const focused = page.locator('#entries .entry[aria-current="true"]');
 
+    // Wait for focus to actually move; rapid presses are dropped otherwise.
+    const pressAndWaitForFocusChange = async (
+      key: string,
+      currentId: string | null
+    ): Promise<string | null> => {
+      await page.keyboard.press(key);
+      if (currentId) {
+        await expect(focused).not.toHaveId(currentId, { timeout: 5_000 });
+      }
+      return focused.getAttribute('id');
+    };
+
     // j focuses the first post
     await page.keyboard.press('j');
     await expect(focused).toBeVisible({ timeout: 5_000 });
+    const firstId = await focused.getAttribute('id');
 
     // j+j moves forward, k moves back
-    await page.keyboard.press('j');
-    await page.keyboard.press('j');
-    const thirdId = await focused.getAttribute('id');
-
-    await page.keyboard.press('k');
-    await expect(focused).not.toHaveId(thirdId!, { timeout: 5_000 });
+    const secondId = await pressAndWaitForFocusChange('j', firstId);
+    const thirdId = await pressAndWaitForFocusChange('j', secondId);
+    await pressAndWaitForFocusChange('k', thirdId);
 
     // x toggles expand/collapse — posts on /r/pics start expanded
     await page.keyboard.press('x');
