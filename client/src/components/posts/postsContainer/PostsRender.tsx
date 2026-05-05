@@ -19,11 +19,7 @@ function PostsRender({
   return useMemo(() => {
     const links = new Set<string>();
 
-    const filteredPosts = Object.values(posts).filter(
-      (post) => post.kind !== 'more'
-    );
-
-    return filteredPosts.map((post, idx) => {
+    return Object.values(posts).map((post, idx) => {
       const {
         kind,
         data: { name, id },
@@ -31,7 +27,7 @@ function PostsRender({
 
       let duplicate = false;
       if (kind === 't3') {
-        const linkData = post.data as LinkData;
+        const linkData = post.data;
         if (!links.has(linkData.url)) {
           links.add(linkData.url);
         } else {

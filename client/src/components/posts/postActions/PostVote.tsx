@@ -160,6 +160,7 @@ function PostVote() {
   return (
     <div className="vote">
       <Button
+        aria-pressed={optimisticVoteState.likes === true}
         className="shadow-none"
         disabled={disabled}
         size="sm"
@@ -173,6 +174,7 @@ function PostVote() {
       <span>{optimisticVoteState.ups.toLocaleString()}</span>
       <Button
         aria-label="Vote Down"
+        aria-pressed={optimisticVoteState.likes === false}
         className="shadow-none"
         disabled={disabled}
         size="sm"

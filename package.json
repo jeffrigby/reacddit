@@ -7,7 +7,8 @@
   "workspaces": [
     "client",
     "api",
-    "proxy"
+    "proxy",
+    "tests"
   ],
   "scripts": {
     "setup": "tsx scripts/setup-wizard.ts",
@@ -17,8 +18,12 @@
     "build-client": "npm run build -w client",
     "start-api": "npm run start -w api",
     "lint-all": "npm run lint --workspaces --if-present",
+    "lint-all:check": "npm run lint:check --workspaces --if-present",
     "outdated-all": "npm outdated --workspaces",
-    "update-all": "npm update --workspaces"
+    "update-all": "npm update --workspaces",
+    "test:e2e": "npm run test:e2e -w tests",
+    "test:e2e:ui": "npm run test:e2e:ui -w tests",
+    "test:component": "npm run test:component -w client"
   },
   "keywords": [
     "es6",
@@ -43,6 +48,6 @@
     "open": "^11.0.0",
     "prettier": "^3.3.3",
     "tsx": "^4.19.2",
-    "typescript": "^5.8.3"
+    "typescript": "^6.0.0"
   }
 }

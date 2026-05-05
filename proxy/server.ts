@@ -13,17 +13,16 @@ import { getCertificates } from './certs.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// HTTP connection pooling agent for upstream requests
-// Reuses TCP connections to reduce handshake overhead
 const httpAgent = new http.Agent({
   keepAlive: true,
-  keepAliveMsecs: 30000, // Keep idle connections alive for 30s
-  maxSockets: 50, // Max 50 concurrent connections per host
-  maxFreeSockets: 10, // Keep 10 idle connections ready
-  timeout: 60000, // Socket timeout (60s)
+  keepAliveMsecs: 30000,
+  maxSockets: 50,
+  maxFreeSockets: 10,
+  timeout: 60000,
 });
 
-const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB request body limit
+// 10 MB cap on proxied request bodies to limit memory pressure from uploads.
+const MAX_BODY_SIZE = 10 * 1024 * 1024;
 
 // Headers that must not be forwarded by a proxy (RFC 7230 §6.1)
 const HOP_BY_HOP_HEADERS = new Set([
@@ -38,12 +37,11 @@ const HOP_BY_HOP_HEADERS = new Set([
   'upgrade',
 ]);
 
-// Load environment variables from root .env
-// Try multiple paths to handle different execution contexts (sudo, npm scripts, etc.)
+// Try multiple .env paths to handle different execution contexts (sudo, npm scripts, etc.)
 const envPaths = [
-  join(__dirname, '..', '.env'), // Normal: proxy/../.env
-  join(process.cwd(), '.env'), // From root directory
-  join(process.cwd(), '..', '.env'), // From proxy directory
+  join(__dirname, '..', '.env'),
+  join(process.cwd(), '.env'),
+  join(process.cwd(), '..', '.env'),
 ];
 
 let envLoaded = false;
@@ -72,10 +70,8 @@ interface ProxyConfig {
   apiPort: number;
 }
 
-// Module-level configuration (set during startup)
 let proxyConfig: ProxyConfig;
 
-// Parse configuration from environment variables
 function getConfig(): ProxyConfig {
   const config = {
     domain: process.env.PROXY_DOMAIN || 'localhost',
@@ -118,20 +114,14 @@ const securityHeaders = {
     "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.instagram.com https://platform.instagram.com https://connect.facebook.net https://platform.twitter.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' ws: wss: https:; media-src 'self' https:; frame-src *; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
-  'X-XSS-Protection': '1; mode=block',
+  'X-XSS-Protection': '0',
 };
 
-/**
- * Format timestamp for logging
- */
 function timestamp(): string {
   const now = new Date();
   return now.toISOString().replace('T', ' ').substring(0, 19);
 }
 
-/**
- * Get status color for logging
- */
 function getStatusColor(status: number): string {
   if (status >= 500) return '\x1b[31m'; // Red
   if (status >= 400) return '\x1b[33m'; // Yellow
@@ -253,9 +243,8 @@ function proxyRequest(
   const requestUrl = req.url || '/';
   const requestMethod = req.method || 'GET';
 
-  // Filter out HTTP/2 pseudo-headers and hop-by-hop headers
-  // Pseudo-headers (starting with ':') can't be forwarded to HTTP/1.1 upstream servers
-  // Hop-by-hop headers are connection-specific and must not be forwarded (RFC 7230 §6.1)
+  // HTTP/2 pseudo-headers (starting with ':') can't be forwarded to HTTP/1.1 upstream servers.
+  // Hop-by-hop headers are connection-specific and must not be forwarded (RFC 7230 §6.1).
   const filteredHeaders: http.OutgoingHttpHeaders = {};
   for (const [key, value] of Object.entries(req.headers)) {
     if (!key.startsWith(':') && !HOP_BY_HOP_HEADERS.has(key)) {
@@ -388,10 +377,9 @@ function proxyRequest(
     }
   });
 
-  // Set timeout (5 minutes for regular requests)
+  // 5-minute upstream window; the timeout handler tears down hung connections.
   proxy.setTimeout(5 * 60 * 1000);
 
-  // Handle timeout event to prevent hung connections
   proxy.on('timeout', () => {
     console.error(
       `⏱️  Timeout for ${req.method} ${req.url} → localhost:${targetPort} (exceeded 5 minutes)`
@@ -403,7 +391,6 @@ function proxyRequest(
     }
   });
 
-  // Enforce request body size limit (10MB) to prevent abuse
   let bodySize = 0;
   let limitExceeded = false;
   req.on('data', (chunk: Buffer) => {
@@ -568,6 +555,7 @@ function startServer(): void {
     try {
       normalizedPath = new URL(url, 'http://localhost').pathname;
     } catch {
+      console.error(`Invalid WebSocket upgrade URL: ${url}`);
       socket.destroy();
       return;
     }

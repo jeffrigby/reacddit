@@ -157,14 +157,8 @@ function TwitterEmbed({ url }: TwitterEmbedProps): React.JSX.Element {
       attributeFilter: ['autoplay', 'src'],
     });
 
-    // Also check periodically for the first 2 seconds (catch late-loading videos)
-    const intervalId = setInterval(disableAutoplay, 100);
-    const timeoutId = setTimeout(() => clearInterval(intervalId), 2000);
-
     return () => {
       observer.disconnect();
-      clearInterval(intervalId);
-      clearTimeout(timeoutId);
     };
   }, [isVisible, url]);
 

@@ -20,7 +20,7 @@ function CommentReplyList({ replies, linkId }: CommentReplyListProps) {
   >(
     (acc, item) => ({
       ...acc,
-      [item.data.name]: item as CommentOrMore,
+      [item.data.name]: item,
     }),
     {}
   );

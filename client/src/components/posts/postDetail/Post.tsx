@@ -41,7 +41,7 @@ import PostHeader from './PostHeader';
 import PostFooter from './PostFooter';
 
 interface UseRenderedContentReturn {
-  renderedContent: EmbedContent;
+  renderedContent: EmbedContent | null;
 }
 
 function useRenderedContent(
@@ -49,7 +49,9 @@ function useRenderedContent(
   kind: string,
   shouldLoad: boolean
 ): UseRenderedContentReturn {
-  const [renderedContent, setRenderedContent] = useState<EmbedContent>(null);
+  const [renderedContent, setRenderedContent] = useState<EmbedContent | null>(
+    null
+  );
   const isRendered = useRef(false);
 
   useEffect(() => {
@@ -222,13 +224,17 @@ function Post({
 
   const [expand, setExpand] = useState(initView());
 
-  useEffect(() => {
-    const view = initView();
-    setExpand(view);
-  }, [initView]);
+  const prevInitViewRef = useRef(initView);
+  if (prevInitViewRef.current !== initView) {
+    prevInitViewRef.current = initView;
+    const newView = initView();
+    if (newView !== expand) {
+      setExpand(newView);
+    }
+  }
 
   useEffect(() => {
-    let reposInt: NodeJS.Timeout | undefined;
+    let reposInt: ReturnType<typeof setTimeout> | undefined;
     if (siteSettings.view === 'condensed' && lastExpanded) {
       if (expand && data.name !== lastExpanded) {
         setExpand(false);
@@ -400,9 +406,10 @@ function Post({
   );
 
   return (
-    <PostsContextData.Provider value={postContext}>
-      <PostsContextActionable.Provider value={actionable}>
+    <PostsContextData value={postContext}>
+      <PostsContextActionable value={actionable}>
         <div
+          aria-current={focused || undefined}
           className={classArray}
           id={data.name}
           key={data.name}
@@ -442,8 +449,8 @@ function Post({
             </div>
           </div>
         </div>
-      </PostsContextActionable.Provider>
-    </PostsContextData.Provider>
+      </PostsContextActionable>
+    </PostsContextData>
   );
 }
 

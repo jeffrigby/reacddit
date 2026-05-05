@@ -34,7 +34,8 @@
     "allowUnreachableCode": false,
 
     /* Completeness */
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": ["src/**/*", "index.ts", "serverless-koa.ts"],
   "exclude": ["node_modules", "dist", ".aws-sam"]

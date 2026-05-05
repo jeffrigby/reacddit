@@ -81,12 +81,6 @@ PORT=3001
 # Enable debug mode with additional logging
 # Default: 0
 DEBUG=0
-
-# Encryption settings (advanced)
-# Default: aes-256-cbc
-ENCRYPTION_ALGORITHM=aes-256-cbc
-# Default: 16
-IV_LENGTH=16
 ```
 
 ### Starting the server

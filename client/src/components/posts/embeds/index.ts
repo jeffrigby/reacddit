@@ -1,4 +1,3 @@
-import { getPublicSuffix, getDomain } from 'tldts';
 import parse from 'url-parse';
 import pLimit from 'p-limit';
 import { LRUCache } from 'lru-cache';
@@ -10,12 +9,19 @@ import type {
   InlineLinksResult,
   HttpsErrorContent,
 } from '@/components/posts/embeds/types';
-import Embeds from '@/components/posts/embeds/embeds';
+import { getKeys, tryDomainHandlers } from '@/components/posts/embeds/embeds';
 import redditVideoPreview from '@/components/posts/embeds/defaults/redditVideoPreview';
 import redditImagePreview from '@/components/posts/embeds/defaults/redditImagePreview';
 import redditMediaEmbed from '@/components/posts/embeds/defaults/redditMediaEmbed';
 import redditGallery from '@/components/posts/embeds/defaults/redditGallery';
 import { isSafeUrl } from '@/utils/sanitize';
+import {
+  isRedditShareLink,
+  resolveShareLinks,
+  extractPostId,
+  isShareLink,
+  prefetchPostData,
+} from '@/components/posts/embeds/domains/redditcom';
 
 // Compile URL regex once for performance
 const URL_REGEX = urlRegex();
@@ -61,75 +67,6 @@ function isCommentData(entry: LinkData | CommentData): entry is CommentData {
 }
 
 /**
- * Try domain handlers in order: greedyDomain first, then exact domain
- * @param keys - Domain keys containing greedyDomain and domain
- * @param entry - Reddit entry to render
- * @returns Embed content with renderFunction set, or null
- */
-async function tryDomainHandlers(
-  keys: DomainKeys,
-  entry: LinkData | CommentData
-): Promise<EmbedContent> {
-  // Try greedy domain first (e.g., "youtube" from "youtube.com")
-  if (typeof Embeds[keys.greedyDomain] === 'function') {
-    const content = await Embeds[keys.greedyDomain](entry);
-    if (content) {
-      return { ...content, renderFunction: keys.greedyDomain };
-    }
-  }
-
-  // Try exact domain if greedy didn't match (e.g., "youtubecom")
-  if (typeof Embeds[keys.domain] === 'function') {
-    const content = await Embeds[keys.domain](entry);
-    if (content) {
-      return { ...content, renderFunction: keys.domain };
-    }
-  }
-
-  return null;
-}
-
-/**
- * Extract domain keys from a URL for handler lookup
- * @param url - The URL to extract keys from
- * @returns Domain keys for handler lookup, or null if invalid
- *
- * @example
- * getKeys('https://youtube.com/watch?v=123')
- * // Returns: { domain: 'youtubecom', greedyDomain: 'youtube' }
- */
-function getKeys(url: string): DomainKeys | null {
-  // Regex to keep only alphanumeric characters for handler names
-  const ALPHANUMERIC_ONLY = /[^a-zA-Z0-9]/g;
-
-  // Handle self posts (text posts)
-  if (url.startsWith('self.')) {
-    return {
-      domain: url.replace(ALPHANUMERIC_ONLY, ''),
-      greedyDomain: 'self',
-    };
-  }
-
-  // Extract domain using tldts library
-  const parsedDomain = getDomain(url, { detectIp: false });
-  const suffix = getPublicSuffix(url, { detectIp: false });
-
-  if (!parsedDomain) {
-    return null;
-  }
-
-  // Create handler-friendly names (e.g., 'youtube.com' → 'youtubecom')
-  const domain = parsedDomain.replace(ALPHANUMERIC_ONLY, '');
-
-  // Create greedy domain by removing TLD (e.g., 'youtube.com' → 'youtube')
-  const greedyDomain = parsedDomain
-    .replace(suffix ?? '', '')
-    .replace(ALPHANUMERIC_ONLY, '');
-
-  return { domain, greedyDomain };
-}
-
-/**
  * Extract URLs from HTML content using modern DOMParser
  * More robust than regex-based approaches, handles malformed HTML gracefully
  * @param html - HTML string to extract URLs from
@@ -149,8 +86,10 @@ function extractUrlsFromHtml(html: string): string[] {
     const anchors = Array.from(doc.querySelectorAll('a'));
 
     // Extract href attributes, filter for valid HTTP(S) URLs
+    // Strip %5C (backslash) — a Markdown escaping artifact (\_) that Reddit
+    // leaks into HTML hrefs. The browser's a.href percent-encodes it to %5C.
     const urls = anchors
-      .map((a) => a.href)
+      .map((a) => a.href.replace(/%5[Cc]/g, ''))
       .filter((href) => href?.match(/^https?:\/\//));
 
     return urls;
@@ -178,6 +117,30 @@ async function inlineLinks(
 
   // Extract URLs using modern DOMParser instead of strip_tags + regex
   const links = extractUrlsFromHtml(textContent ?? '');
+
+  // Pre-resolve Reddit share links in a single batch before pLimit processing.
+  // This populates shareCache so individual URLs hit cache instantly during pLimit waves.
+  const shareLinks = links.filter(isRedditShareLink);
+  let resolvedShareLinks = new Map<string, string>();
+  if (shareLinks.length > 0) {
+    resolvedShareLinks = await resolveShareLinks(shareLinks);
+  }
+
+  // Batch pre-fetch ALL Reddit post data in 1-2 API calls instead of N individual calls.
+  // Collects IDs from resolved share links + standard reddit.com/redd.it URLs.
+  const redditPostIds: string[] = [...resolvedShareLinks.values()];
+  for (const link of links) {
+    if (isShareLink(link)) {
+      continue;
+    }
+    const postId = extractPostId(link);
+    if (postId) {
+      redditPostIds.push(postId);
+    }
+  }
+  if (redditPostIds.length > 0) {
+    await prefetchPostData(redditPostIds);
+  }
 
   const dupes: string[] = [];
 
@@ -238,9 +201,9 @@ async function inlineLinks(
 }
 
 function nonSSLFallback(
-  content: EmbedContent,
+  content: EmbedContent | null,
   entry: LinkData | CommentData
-): EmbedContent {
+): EmbedContent | null {
   const isSSL = window.location.protocol;
   if (isSSL === 'https:' && content && 'src' in content && content.src) {
     // Block dangerous protocols (javascript:, data:, vbscript:, etc.)
@@ -287,7 +250,7 @@ function nonSSLFallback(
 async function getContent(
   keys: DomainKeys,
   entry: LinkData | CommentData
-): Promise<EmbedContent> {
+): Promise<EmbedContent | null> {
   // is this a gallery or has media_metadata?
   if (isLinkData(entry) && entry.media_metadata) {
     try {
@@ -366,7 +329,7 @@ async function getContent(
 async function RenderContent(
   entry: LinkData | CommentData,
   kind: string
-): Promise<EmbedContent> {
+): Promise<EmbedContent | null> {
   // Create cache key from URL (or id for comments)
   const { id } = entry;
   const { url } = isLinkData(entry) ? entry : { url: undefined };
@@ -383,7 +346,7 @@ async function RenderContent(
     return cached;
   }
 
-  let result: EmbedContent = null;
+  let result: EmbedContent | null = null;
 
   try {
     if (kind === REDDIT_KIND.COMMENT) {

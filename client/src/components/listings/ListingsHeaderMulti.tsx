@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetMultiRedditInfoQuery } from '@/redux/api';
 import MultiDelete from './MultiDelete';
@@ -33,13 +32,6 @@ function ListingsHeaderMulti() {
     <span className="loading-placeholder">Loading Description</span>
   );
 
-  // Set the title
-  useEffect(() => {
-    if (currentMulti) {
-      document.title = `${currentMulti.name} subreddits curated by /u/${currentMulti.owner}`;
-    }
-  }, [currentMulti]);
-
   if (!currentMulti) {
     return (
       <>
@@ -57,6 +49,9 @@ function ListingsHeaderMulti() {
 
   return (
     <>
+      <title>
+        {currentMulti.name} subreddits curated by /u/{currentMulti.owner}
+      </title>
       <div className="d-flex">
         <div className="me-auto title-contrainer">
           <h5 className="m-0 p-0 w-100">/m/{target}</h5>

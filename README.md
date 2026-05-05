@@ -11,8 +11,8 @@ reacddit is a monorepo (npm workspaces) containing an OAuth2 API (for Reddit aut
 ## Tech Stack
 
 - **Frontend**: React 19, Redux Toolkit, React Router 7, TypeScript
-- **Build System**: Vite 7 with SWC for fast builds and hot module replacement
-- **Backend**: Koa.js OAuth2 server (TypeScript) - [API docs](api/README.md)
+- **Build System**: Vite 8 with Rolldown bundler for fast builds and hot module replacement
+- **Backend**: Koa.js OAuth2 server with rate limiting (TypeScript) - [API docs](api/README.md)
 - **Deployment**: AWS Lambda with SAM/CloudFormation - [Deployment guide](DEPLOYMENT.md)
 - **PWA**: Full Progressive Web App support with Vite PWA plugin
 
@@ -40,8 +40,16 @@ reacddit is a monorepo (npm workspaces) containing an OAuth2 API (for Reddit aut
 - Plugin-based architecture supporting custom embed handlers
 - iFrame, video, and image embed support
 
+### Security
+- AES-256-GCM encrypted sessions with HKDF key derivation
+- Per-endpoint rate limiting on all API routes
+- SSRF protection on server-side requests
+- HTML sanitization (DOMPurify) and URL validation on all rendered content
+- Security headers: HSTS, CSP, X-Frame-Options, X-Content-Type-Options
+- Request hardening: body size limits, path normalization, hop-by-hop header stripping
+
 ### Privacy
-- Client-side processing: All data is handled in the browser except for OAuth2 authentication
+- Client-side processing: All data is handled in the browser except for OAuth2 authentication and share link resolution
 - No server-side logging or storage of Reddit account data or browser information
 
 ## Development
@@ -236,7 +244,8 @@ The project has undergone active modernization:
 1. **Completed**: Full TypeScript migration for both client and API
 2. **Completed**: Migrated from Webpack to Vite for improved build performance
 3. **Completed**: Migrated to RTK Query for efficient API data fetching and caching
-4. **Future**: Add content creation capabilities (posting, commenting)
+4. **Completed**: Comprehensive security audit and hardening (v1.3.0)
+5. **Future**: Add content creation capabilities (posting, commenting)
 
 ## Inspiration
 

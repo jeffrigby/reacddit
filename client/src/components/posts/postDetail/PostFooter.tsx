@@ -1,11 +1,11 @@
 import type { MouseEvent } from 'react';
-import { memo, useState, useRef, useEffect } from 'react';
+import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import copy from 'copy-to-clipboard';
 import { usePostContext } from '@/contexts';
+import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import type { LinkData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import PostMeta from './PostMeta';
@@ -13,7 +13,7 @@ import PostDebug from './PostDebug';
 
 interface PostFooterProps {
   debug: boolean;
-  renderedContent?: EmbedContent;
+  renderedContent?: EmbedContent | null;
   setShowVisToggle: (show: boolean) => void;
   showVisToggle: boolean;
 }
@@ -26,45 +26,38 @@ function PostFooter({
 }: PostFooterProps): React.JSX.Element | null {
   const postContext = usePostContext();
   const [showDebug, setShowDebug] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, error: copyError, copy } = useCopyToClipboard(500);
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
-  const copyTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-
-  useEffect(() => {
-    return () => {
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const copyID = (comp: MouseEvent<HTMLButtonElement>): void => {
     const id = comp.currentTarget.textContent || '';
-    const success = copy(id);
-
-    if (success) {
-      setCopied(true);
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-      }
-      copyTimeoutRef.current = setTimeout(() => {
-        setCopied(false);
-      }, 500);
-    } else {
-      console.error('Failed to copy to clipboard');
-    }
+    copy(id);
   };
+
+  const status: 'error' | 'copied' | 'idle' = copyError
+    ? 'error'
+    : copied
+      ? 'copied'
+      : 'idle';
+  const view = {
+    idle: { label: data.name, title: 'Click to copy' },
+    copied: { label: 'Copied', title: 'Click to copy' },
+    error: {
+      label: 'Copy failed',
+      title: `Copy failed: ${copyError?.message ?? ''}`,
+    },
+  }[status];
 
   const debugLinks = (
     <>
       <Button
         className="shadow-none m-0 p-0 me-1"
-        title="Click to copy"
+        title={view.title}
         variant="link"
         onClick={copyID}
       >
-        {copied ? 'Copied' : data.name}
+        {view.label}
       </Button>
       <Button
         aria-label={showDebug ? 'Hide debug' : 'Show debug'}

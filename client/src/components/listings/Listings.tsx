@@ -82,15 +82,6 @@ function Listings({ match }: ListingsProps) {
     multi: filters.multi,
   });
 
-  // Update document title for comments/duplicates view
-  useEffect(() => {
-    if (data?.originalPost) {
-      const origTitle = data.originalPost.data.title;
-      const origSub = data.originalPost.data.subreddit;
-      document.title = `${origTitle} : ${origSub}`;
-    }
-  }, [data?.originalPost]);
-
   // Update filter and status in slice when match params or status change
   useEffect(() => {
     scrollToPosition(0, 0);
@@ -161,16 +152,21 @@ function Listings({ match }: ListingsProps) {
   );
 
   return (
-    <ListingsContext.Provider value={listingsContextValue}>
-      <ListingsContextLastExpanded.Provider value={lastExpandedContext}>
+    <ListingsContext value={listingsContextValue}>
+      <ListingsContextLastExpanded value={lastExpandedContext}>
+        {data?.originalPost && (
+          <title>
+            {data.originalPost.data.title} : {data.originalPost.data.subreddit}
+          </title>
+        )}
         <div className="list-group" id="entries">
           <ListingsHeader />
           <Posts key={locationKey} />
           <ListingsLogic saved={data?.saved ?? 0} />
         </div>
         <PostsDebug />
-      </ListingsContextLastExpanded.Provider>
-    </ListingsContext.Provider>
+      </ListingsContextLastExpanded>
+    </ListingsContext>
   );
 }
 

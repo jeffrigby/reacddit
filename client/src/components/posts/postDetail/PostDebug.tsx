@@ -7,7 +7,7 @@ import type { LinkData, CommentData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 
 interface PostDebugProps {
-  renderedContent?: EmbedContent;
+  renderedContent?: EmbedContent | null;
 }
 
 function PostDebug({

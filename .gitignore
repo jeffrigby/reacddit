@@ -63,6 +63,9 @@ SECURITY-AUDIT-*.md
 trust-policy.json
 deployment-permissions-policy.json
 
+# Playwright test output
+/test-results/
+
 # Vite dev artifacts
 /client/dev-dist/
 /client/agentDocs

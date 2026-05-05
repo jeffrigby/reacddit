@@ -9,6 +9,7 @@ npm start              # Vite dev server with HMR
 npm run build          # Production build
 npm run preview        # Preview production build
 npm run lint           # Prettier + ESLint (CRITICAL: zero errors required)
+npm run test:component # Component tests (vitest in browser mode + Playwright)
 ```
 
 ## Code Style
@@ -23,6 +24,11 @@ npm run lint           # Prettier + ESLint (CRITICAL: zero errors required)
 **Import Order:** npm packages → local modules → CSS/assets
 
 **Naming:** `camelCase` (variables/functions), `PascalCase` (components)
+
+**Path Aliases (tsconfig):**
+- `@/*` → `src/*`
+- `@/redux/*`, `@/types/*`, `@/components/*`, `@/styles/*`, `@/test/*`
+- Prefer aliases over relative imports across feature boundaries
 
 ## TypeScript Standards
 
@@ -68,6 +74,19 @@ npm run lint           # Prettier + ESLint (CRITICAL: zero errors required)
 - RTK Query auto request deduplication
 - Debounce search inputs
 - Lazy-load routes/components
+
+**Embed System:**
+- Plugin-based: `src/components/posts/embeds/domains/` (one file per domain)
+- Entry point: `src/components/posts/embeds/index.ts`
+- Reddit cross-posts: `domains/redditcom.ts` resolves linked posts via OAuth API, delegates rendering to the appropriate domain handler
+- Share links (`/r/sub/s/code`): batched via `POST /api/resolve-share` with client-side LRU cache
+- Add new embeds: Create `domains/[domain].ts` with default export async render function
+
+**Security:**
+- HTML sanitization via DOMPurify: `src/utils/sanitize.ts` (`sanitizeHTML`)
+- URL validation: `isSafeUrl()` and `sanitizeHref()` in `src/utils/sanitize.ts`
+- Always use `sanitizeHTML()` when rendering user-provided HTML (e.g., Reddit selftext_html)
+- Always use `sanitizeHref()` for dynamic href attributes
 
 ## Error Handling
 

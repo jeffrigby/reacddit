@@ -1,9 +1,9 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
+import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
-export default [
+export default tseslint.config(
   {
     ignores: ['**/dist/**', '**/node_modules/**', '**/.ssl/**'],
   },
@@ -21,22 +21,18 @@ export default [
   },
   {
     files: ['**/*.ts'],
+    extends: [...tseslint.configs.recommended],
     languageOptions: {
       globals: {
         ...globals.node,
         process: 'readonly',
       },
-      parser: tsparser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
       },
     },
-    plugins: {
-      '@typescript-eslint': tseslint,
-    },
     rules: {
-      ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -44,4 +40,5 @@ export default [
       ],
     },
   },
-];
+  eslintConfigPrettier
+);

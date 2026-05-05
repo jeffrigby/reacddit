@@ -23,7 +23,7 @@ export function usePostContext(): PostContextData {
   const context = useContext(PostsContextData);
   if (!context) {
     throw new Error(
-      'usePostContext must be used within a PostsContextData.Provider'
+      'usePostContext must be used within a PostsContextData provider'
     );
   }
   return context;

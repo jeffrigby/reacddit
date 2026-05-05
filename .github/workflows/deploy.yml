@@ -58,9 +58,8 @@ jobs:
         working-directory: ./api
         run: npm run type-check
 
-      - name: Lint client
-        working-directory: ./client
-        run: npm run lint
+      - name: Lint all workspaces
+        run: npm run lint-all:check
 
       # ============================================
       # 3. AWS AUTHENTICATION (OIDC)

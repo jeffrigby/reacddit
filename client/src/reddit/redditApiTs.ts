@@ -8,6 +8,7 @@ import {
   type MeResponse,
   type TokenData,
   type TokenApiResponse,
+  type TokenFetchError,
   type TokenStorageResult,
   type SubredditAboutResponse,
   type SubredditRulesResponse,
@@ -26,6 +27,7 @@ import {
   type SubredditsListingParams,
   type SubredditsListingResponse,
 } from '@/types/redditApi';
+import { getAxiosErrorStatus } from '@/utils/axiosError';
 
 // Utility function to clean null/empty values from params
 export function setParams(
@@ -57,7 +59,10 @@ function isTokenData(data: unknown): data is TokenData {
   if (typeof obj.expires !== 'number' || !Number.isFinite(obj.expires)) {
     return false;
   }
-  if (typeof obj.auth !== 'boolean') {
+  // `auth` is optional for backwards compatibility with legacy cookies
+  // issued before the field existed. When absent or non-boolean, callers
+  // must treat the token as anonymous (auth === false).
+  if (obj.auth !== undefined && typeof obj.auth !== 'boolean') {
     return false;
   }
 
@@ -101,14 +106,25 @@ export function getTokenStorage(): TokenStorageResult {
     const token = expires >= currentTimestamp ? accessToken : 'expired';
 
     return { token, cookieTokenParsed: parsedToken };
-  } catch {
-    // If parsing fails, treat as no token
+  } catch (error) {
+    console.error('Failed to parse token cookie:', error);
     return { token: null, cookieTokenParsed: {} };
   }
 }
 
 /**
  * Get the token from cookie if possible, if not get it from the server.
+ *
+ * On `/api/bearer` failure, returns `{ token: null, error: {...} }`. The
+ * `error` field distinguishes a transient API outage from an intentional
+ * anonymous/logout state (where `error` is absent). Consumers can render a
+ * "retry" UI when `error` is present rather than the anonymous experience.
+ *
+ * Note: the cookie is intentionally NOT cleared on transient errors. Old
+ * behavior (always clearing on failure) caused users to lose their session
+ * during brief network blips. Cookie clearing now happens only via explicit
+ * logout flows.
+ *
  * @param reset - Always get it from the server.
  */
 export async function getToken(reset = false): Promise<TokenApiResponse> {
@@ -124,11 +140,17 @@ export async function getToken(reset = false): Promise<TokenApiResponse> {
         token: response.data.accessToken,
         cookieTokenParsed,
       };
-    } catch {
-      // Clear storage on token fetch failure
-      localStorage.clear();
-      sessionStorage.clear();
-      return { token: null, cookieTokenParsed };
+    } catch (err) {
+      console.error('Failed to fetch bearer token:', err);
+      const error: TokenFetchError = {
+        message: err instanceof Error ? err.message : String(err),
+        status: getAxiosErrorStatus(err),
+      };
+      return {
+        token: null,
+        cookieTokenParsed,
+        error,
+      };
     }
   }
 
@@ -222,10 +244,7 @@ export async function subredditAbout(
     raw_json: 1 as const,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   let url = `/r/${subreddit}/about`;
   if (type && ['edit', 'rules', 'traffic'].includes(type)) {
@@ -263,10 +282,7 @@ export async function getListingSearch(
     sort: 'relevance',
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url = target ? `r/${target}/search` : 'search';
   const response = await redditAPI.get(url, { params });
@@ -308,10 +324,7 @@ export async function getListingSearchMulti(
     is_multi: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url =
     user === 'me'
@@ -350,10 +363,7 @@ export async function getListingSubreddit(
     raw_json: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url = subreddit ? `/r/${subreddit}/${sort}` : sort;
   const response = await redditAPI.get(url, { params });
@@ -390,10 +400,7 @@ export async function getListingMulti(
     raw_json: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url =
     user === 'me' ? `me/m/${name}/${sort}` : `user/${user}/m/${name}/${sort}`;
@@ -432,10 +439,7 @@ export async function getListingUser(
     raw_json: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url = `user/${user}/${type}?sort=${sort}`;
   const response = await redditAPI.get(url, { params });
@@ -471,10 +475,7 @@ export async function getListingDuplicates(
     article_id: article,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const url = `duplicates/${article}`;
   const response = await redditAPI.get(url, { params });
@@ -539,10 +540,7 @@ export async function subreddits(
     raw_json: 1,
   };
 
-  const params = setParams(
-    defaults as unknown as Record<string, unknown>,
-    options as Record<string, unknown>
-  );
+  const params = setParams(defaults, options);
 
   const mine = where.match(/subscriber|contributer|moderator|streams/);
   const url =

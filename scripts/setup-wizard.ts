@@ -634,8 +634,6 @@ async function generateConfigFiles(config: WizardConfig): Promise<void> {
     TOKEN_EXPIRY_PADDING_SECS: '300',
     PORT: apiPort.toString(),
     DEBUG: '0',
-    ENCRYPTION_ALGORITHM: 'aes-256-cbc',
-    IV_LENGTH: '16',
   };
 
   const clientEnv: Record<string, string> = {

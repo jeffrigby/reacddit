@@ -1,9 +1,15 @@
-import { getDomain } from 'tldts';
 import { LRUCache } from 'lru-cache';
-import type { LinkData, CommentData } from '@/types/redditApi';
+import PQueue from 'p-queue';
+import type {
+  LinkData,
+  CommentData,
+  Listing,
+  RedditThing,
+} from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import { redditAPI } from '@/reddit/redditApiTs';
-import Embeds from '@/components/posts/embeds/embeds';
+import { getKeys, tryDomainHandlers } from '@/components/posts/embeds/embeds';
+import { getAxiosErrorStatus } from '@/utils/axiosError';
 
 // Regex patterns for extracting post IDs
 const REDDIT_POST_REGEX = /\/r\/[^/]+\/comments\/([a-z0-9]+)/i;
@@ -12,6 +18,73 @@ const SHORT_LINK_REGEX = /redd\.it\/([a-z0-9]+)/i;
 // Marker to prevent infinite recursion
 const REDDIT_EMBED_MARKER = '__reddit_embed_processed__';
 
+// Regex for matching Reddit share links (mirrors server-side SHARE_LINK_REGEX)
+const SHARE_LINK_PATTERN =
+  /^https?:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
+
+// Max URLs per batch request (must match server MAX_BATCH_SIZE)
+const MAX_BATCH_SIZE = 50;
+
+// Max IDs per Reddit /api/info request
+const REDDIT_API_INFO_LIMIT = 100;
+
+/**
+ * Split an array into chunks of a given size
+ */
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
+interface PostData {
+  url: string;
+  title: string;
+}
+
+/**
+ * Shape of the response from POST /api/resolve-share.
+ * Each input URL maps to either a resolved postId or an error string.
+ */
+interface ResolveShareResponse {
+  results: Record<string, { postId?: string; error?: string }>;
+}
+
+function logShareError(
+  operation: string,
+  message: string,
+  ctx: Record<string, unknown>,
+  error: unknown
+): void {
+  console.error(`redditcom.${operation}: ${message}`, {
+    ...ctx,
+    status: getAxiosErrorStatus(error),
+    error,
+  });
+}
+
+function firstChildData<T extends RedditThing['data']>(
+  listing: Listing<T> | undefined
+): Partial<T> | undefined {
+  return listing?.data?.children?.[0]?.data;
+}
+
+// Cache for post data to avoid redundant /api/info calls
+const postDataCache = new LRUCache<string, PostData>({
+  max: 500,
+  ttl: 1000 * 60 * 15, // 15 min
+});
+
+// Rate-limited queue for Reddit OAuth API calls (shared across all posts on screen).
+// Reddit OAuth limit is ~100 req/min; with batching this is mostly a safety net.
+const redditApiQueue = new PQueue({
+  concurrency: 10,
+  interval: 1000,
+  intervalCap: 10,
+});
+
 // Cache for share link → post ID resolutions
 // Prevents re-resolving the same share links across browsing session
 // Only caches successful resolutions; failures will be retried
@@ -19,6 +92,9 @@ const shareCache = new LRUCache<string, string>({
   max: 200,
   ttl: 1000 * 60 * 30, // 30 minute TTL (share links are stable)
 });
+
+// In-flight bulk resolutions: allows resolveShareLink to await ongoing resolveShareLinks calls
+const inFlightResolutions = new Map<string, Promise<string | null>>();
 
 // Batch resolver: collects URLs during a render cycle, resolves in one API call
 type ResolveCallback = (postId: string | null) => void;
@@ -43,22 +119,31 @@ async function executeBatch(): Promise<void> {
     batch.forEach((callbacks) => callbacks.forEach((cb) => cb(postId)));
   };
 
+  const urls = Array.from(batch.keys());
+
   try {
     const response = await fetch('/api/resolve-share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls: Array.from(batch.keys()) }),
+      body: JSON.stringify({ urls }),
     });
 
     if (!response.ok) {
-      console.error(`Share link batch resolution failed: ${response.status}`);
+      console.error(
+        'redditcom.executeBatch: HTTP error from /api/resolve-share',
+        {
+          operation: 'executeBatch',
+          status: response.status,
+          statusText: response.statusText,
+          urlCount: urls.length,
+          urls,
+        }
+      );
       resolveAll(null);
       return;
     }
 
-    const data = (await response.json()) as {
-      results: Record<string, { postId?: string; error?: string }>;
-    };
+    const data = (await response.json()) as ResolveShareResponse;
 
     // Distribute results to all waiting callers
     batch.forEach((callbacks, url) => {
@@ -69,7 +154,12 @@ async function executeBatch(): Promise<void> {
       callbacks.forEach((cb) => cb(postId));
     });
   } catch (error) {
-    console.error('Share link batch resolution error:', error);
+    logShareError(
+      'executeBatch',
+      'failed to resolve share links',
+      { operation: 'executeBatch', urlCount: urls.length, urls },
+      error
+    );
     resolveAll(null);
   }
 }
@@ -77,7 +167,7 @@ async function executeBatch(): Promise<void> {
 /**
  * Extract post ID from Reddit URL
  */
-function extractPostId(url: string): string | null {
+export function extractPostId(url: string): string | null {
   // Try standard reddit.com URL
   const standardMatch = url.match(REDDIT_POST_REGEX);
   if (standardMatch) {
@@ -96,8 +186,103 @@ function extractPostId(url: string): string | null {
 /**
  * Check if URL is a share link (cannot be resolved client-side due to CORS)
  */
-function isShareLink(url: string): boolean {
+export function isShareLink(url: string): boolean {
   return /\/r\/[^/]+\/s\/[a-zA-Z0-9]+/.test(url);
+}
+
+/**
+ * Check if URL is a Reddit share link using the full pattern.
+ * More specific than isShareLink — used for pre-scanning raw URLs before domain filtering.
+ */
+export function isRedditShareLink(url: string): boolean {
+  return SHARE_LINK_PATTERN.test(url);
+}
+
+/**
+ * Bulk-resolve Reddit share links in a single batch API call.
+ * Results are stored in shareCache so subsequent resolveShareLink() calls hit cache.
+ * Fails silently — individual URLs will retry via resolveShareLink fallback.
+ */
+export async function resolveShareLinks(
+  urls: string[]
+): Promise<Map<string, string>> {
+  // Filter out already-cached URLs
+  const uncached = urls.filter((url) => shareCache.get(url) === undefined);
+
+  if (uncached.length > 0) {
+    const chunks = chunkArray(uncached, MAX_BATCH_SIZE);
+
+    // Process chunks sequentially to avoid overwhelming the server
+    for (const chunk of chunks) {
+      // Create a shared promise for each URL in this chunk so resolveShareLink can await it
+      let resolveChunkPromise: (value: void) => void = () => {};
+      const chunkPromise = new Promise<void>((r) => {
+        resolveChunkPromise = r;
+      });
+
+      // Register in-flight promises for each URL
+      for (const url of chunk) {
+        const urlPromise = chunkPromise.then(() => shareCache.get(url) ?? null);
+        inFlightResolutions.set(url, urlPromise);
+      }
+
+      try {
+        const response = await fetch('/api/resolve-share', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls: chunk }),
+        });
+
+        if (response.ok) {
+          const data = (await response.json()) as ResolveShareResponse;
+
+          for (const url of chunk) {
+            const postId = data.results[url]?.postId;
+            if (postId) {
+              shareCache.set(url, postId);
+            }
+          }
+        } else {
+          console.warn(
+            'redditcom.resolveShareLinks: HTTP error from /api/resolve-share',
+            {
+              operation: 'resolveShareLinks',
+              status: response.status,
+              statusText: response.statusText,
+              chunkSize: chunk.length,
+              urls: chunk,
+            }
+          );
+        }
+      } catch (error) {
+        logShareError(
+          'resolveShareLinks',
+          'failed to resolve share-link chunk',
+          {
+            operation: 'resolveShareLinks',
+            chunkSize: chunk.length,
+            urls: chunk,
+          },
+          error
+        );
+      } finally {
+        resolveChunkPromise();
+        for (const url of chunk) {
+          inFlightResolutions.delete(url);
+        }
+      }
+    }
+  }
+
+  // Build result map from cache for all input URLs
+  const result = new Map<string, string>();
+  for (const url of urls) {
+    const postId = shareCache.get(url);
+    if (postId) {
+      result.set(url, postId);
+    }
+  }
+  return result;
 }
 
 /**
@@ -108,6 +293,12 @@ function resolveShareLink(url: string): Promise<string | null> {
   const cached = shareCache.get(url);
   if (cached !== undefined) {
     return Promise.resolve(cached);
+  }
+
+  // If this URL is being resolved by a bulk resolveShareLinks call, await that
+  const inFlight = inFlightResolutions.get(url);
+  if (inFlight) {
+    return inFlight;
   }
 
   return new Promise((resolve) => {
@@ -122,70 +313,120 @@ function resolveShareLink(url: string): Promise<string | null> {
     // Schedule batch execution on next microtask
     if (!batchScheduled) {
       batchScheduled = true;
-      queueMicrotask(executeBatch);
+      queueMicrotask(() => {
+        executeBatch().catch(console.error);
+      });
     }
   });
 }
 
 /**
- * Get domain key for handler lookup (e.g., 'youtube.com' → 'youtubecom')
+ * Parse a single child's `data` field from a Reddit /api/info Listing<LinkData>
+ * response into a minimal PostData. Returns null when the URL is missing.
  */
-function getDomainKey(url: string): string | null {
-  const domain = getDomain(url, { detectIp: false });
-  if (!domain) {
+function parsePostChild(data: Partial<LinkData>): PostData | null {
+  if (!data.url) {
     return null;
   }
-  return domain.replace(/\./g, '');
+  return { url: data.url, title: data.title ?? '' };
 }
 
 /**
- * Fetch post data using authenticated Reddit API
+ * Fetch post data using authenticated Reddit API.
+ * Checks postDataCache first; queues through redditApiQueue for rate limiting.
  */
-async function fetchPostData(
-  postId: string
-): Promise<{ url: string; title: string; preview?: unknown } | null> {
-  try {
-    const response = await redditAPI.get('/api/info', {
-      params: { id: `t3_${postId}`, raw_json: 1 },
-    });
+async function fetchPostData(postId: string): Promise<PostData | null> {
+  const cached = postDataCache.get(postId);
+  if (cached) {
+    return cached;
+  }
 
-    const post = response.data?.data?.children?.[0]?.data as
-      | { url?: string; title?: string; preview?: unknown }
-      | undefined;
-
-    if (!post?.url) {
-      return null;
+  return redditApiQueue.add(async () => {
+    // Double-check cache — may have been populated while waiting in queue
+    const rechecked = postDataCache.get(postId);
+    if (rechecked) {
+      return rechecked;
     }
 
-    return {
-      url: post.url,
-      title: post.title ?? '',
-      preview: post.preview,
-    };
-  } catch (error) {
-    console.error(`Failed to fetch post data for ${postId}:`, error);
-    return null;
-  }
+    const url = `/api/info?id=t3_${postId}`;
+
+    try {
+      const response = await redditAPI.get<Listing<LinkData>>('/api/info', {
+        params: { id: `t3_${postId}`, raw_json: 1 },
+      });
+
+      const child = firstChildData(response.data);
+
+      const postData = child ? parsePostChild(child) : null;
+      if (!postData) {
+        return null;
+      }
+
+      postDataCache.set(postId, postData);
+      return postData;
+    } catch (error) {
+      logShareError(
+        'fetchPostData',
+        'failed to fetch post',
+        { operation: 'fetchPostData', postId, url },
+        error
+      );
+      return null;
+    }
+  });
 }
 
 /**
- * Try to render content using a domain handler
+ * Batch pre-fetch post data for multiple Reddit post IDs.
+ * Chunks into groups of 100 (Reddit API limit) and queues through redditApiQueue.
+ * Fails silently — individual fetchPostData calls retry as fallback.
  */
-async function tryDomainHandler(
-  domainKey: string,
-  entry: LinkData | CommentData
-): Promise<EmbedContent> {
-  if (typeof Embeds[domainKey] !== 'function') {
-    return null;
+export async function prefetchPostData(postIds: string[]): Promise<void> {
+  // Filter out already-cached and deduplicate
+  const unique = [...new Set(postIds)].filter((id) => !postDataCache.has(id));
+  if (unique.length === 0) {
+    return;
   }
 
-  try {
-    const content = await Embeds[domainKey](entry);
-    return content ? { ...content, renderFunction: domainKey } : null;
-  } catch (error) {
-    console.error(`Domain handler "${domainKey}" error:`, error);
-    return null;
-  }
+  const chunks = chunkArray(unique, REDDIT_API_INFO_LIMIT);
+
+  const fetchChunk = async (chunk: string[]): Promise<void> => {
+    const ids = chunk.map((id) => `t3_${id}`).join(',');
+    const url = `/api/info?id=${ids}`;
+    try {
+      const response = await redditAPI.get<Listing<LinkData>>('/api/info', {
+        params: { id: ids, raw_json: 1 },
+      });
+
+      const children = response.data?.data?.children;
+
+      if (children) {
+        for (const child of children) {
+          const data = child.data as Partial<LinkData>;
+          const postData = parsePostChild(data);
+          if (data.id && postData) {
+            postDataCache.set(data.id, postData);
+          }
+        }
+      }
+    } catch (error) {
+      logShareError(
+        'prefetchPostData',
+        'failed to prefetch chunk',
+        {
+          operation: 'prefetchPostData',
+          chunkSize: chunk.length,
+          postIds: chunk,
+          url,
+        },
+        error
+      );
+    }
+  };
+
+  await Promise.all(
+    chunks.map((chunk) => redditApiQueue.add(() => fetchChunk(chunk)))
+  );
 }
 
 /**
@@ -197,11 +438,11 @@ async function tryDomainHandler(
  * Supports:
  * - Standard URLs: reddit.com/r/sub/comments/abc123/...
  * - Short links: redd.it/abc123
- *
- * Does NOT support (CORS blocks redirects):
- * - Share links: reddit.com/r/sub/s/xyz
+ * - Share links: reddit.com/r/sub/s/xyz (resolved server-side via /api/resolve-share)
  */
-async function render(entry: LinkData | CommentData): Promise<EmbedContent> {
+async function render(
+  entry: LinkData | CommentData
+): Promise<EmbedContent | null> {
   // Get URL from entry
   const url = 'url' in entry ? entry.url : undefined;
 
@@ -242,11 +483,11 @@ async function render(entry: LinkData | CommentData): Promise<EmbedContent> {
     return null;
   }
 
-  // Get domain handler key for the linked URL
-  const domainKey = getDomainKey(linkedUrl);
+  // Get domain handler keys for the linked URL
+  const keys = getKeys(linkedUrl);
 
   // Skip if no handler or if linked URL is also a Reddit post (prevent recursion)
-  if (!domainKey || domainKey === 'redditcom') {
+  if (!keys || keys.domain === 'redditcom') {
     return null;
   }
 
@@ -257,7 +498,7 @@ async function render(entry: LinkData | CommentData): Promise<EmbedContent> {
     [REDDIT_EMBED_MARKER]: true,
   } as unknown as LinkData | CommentData;
 
-  return tryDomainHandler(domainKey, syntheticEntry);
+  return tryDomainHandlers(keys, syntheticEntry);
 }
 
 export default render;

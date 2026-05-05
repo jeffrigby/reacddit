@@ -9,9 +9,7 @@ type ThemeType = 'dark' | 'light';
 
 function ToggleTheme() {
   const dispatch = useAppDispatch();
-  const siteSettingsTheme = useAppSelector(
-    (state) => state.siteSettings.theme as ThemeType | undefined
-  );
+  const siteSettingsTheme = useAppSelector((state) => state.siteSettings.theme);
 
   useEffect(() => {
     if (siteSettingsTheme) {

@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import chalk from 'chalk';
 
 /**
  * Application Configuration
@@ -42,7 +42,7 @@ function isNonNegativeInt(value: string | undefined): boolean {
  */
 function validateEnv(): void {
   // Skip validation in test mode - tests will mock env vars
-  if (process.env["VITEST"] === "true" || process.env["NODE_ENV"] === "test") {
+  if (process.env['VITEST'] === 'true' || process.env['NODE_ENV'] === 'test') {
     return;
   }
 
@@ -60,35 +60,35 @@ function validateEnv(): void {
   const checks = [
     {
       condition: !SALT || SALT.length !== 32,
-      message: "The SALT must be exactly 32 characters.",
+      message: 'The SALT must be exactly 32 characters.',
     },
     {
       condition: SALT && SALT.length === 32 && new Set(SALT).size === 1,
-      message: "The SALT must not be all the same character.",
+      message: 'The SALT must not be all the same character.',
     },
     {
       condition:
         !REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET || !REDDIT_CALLBACK_URI,
       message:
-        "You must enter the REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_CALLBACK_URI from https://www.reddit.com/prefs/apps",
+        'You must enter the REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, and REDDIT_CALLBACK_URI from https://www.reddit.com/prefs/apps',
     },
     {
       condition: PORT && !isPositiveInt(PORT),
-      message: "PORT must be a valid positive integer.",
+      message: 'PORT must be a valid positive integer.',
     },
     {
       condition: !isPositiveInt(SESSION_LENGTH_SECS),
-      message: "SESSION_LENGTH_SECS must be a valid positive integer.",
+      message: 'SESSION_LENGTH_SECS must be a valid positive integer.',
     },
     {
       condition: !isNonNegativeInt(TOKEN_EXPIRY_PADDING_SECS),
       message:
-        "TOKEN_EXPIRY_PADDING_SECS must be a valid non-negative integer.",
+        'TOKEN_EXPIRY_PADDING_SECS must be a valid non-negative integer.',
     },
     {
       condition: !CLIENT_PATH,
       message:
-        "You must set your CLIENT_PATH. This is the URL to the client app (used for redirects and CORS).",
+        'You must set your CLIENT_PATH. This is the URL to the client app (used for redirects and CORS).',
     },
   ];
 
@@ -104,32 +104,32 @@ function validateEnv(): void {
   if (SALT === TEST_DEFAULTS.SALT) {
     console.log(
       red(
-        "WARNING: SALT matches the test default. Generate a unique SALT for production.",
-      ),
+        'WARNING: SALT matches the test default. Generate a unique SALT for production.'
+      )
     );
   }
 }
 
 /** Check if running in test mode */
 function isTestMode(): boolean {
-  return process.env["VITEST"] === "true" || process.env["NODE_ENV"] === "test";
+  return process.env['VITEST'] === 'true' || process.env['NODE_ENV'] === 'test';
 }
 
 /** Test mode defaults for environment variables */
 const TEST_DEFAULTS = {
-  REDDIT_CLIENT_ID: "test-client-id",
-  REDDIT_CLIENT_SECRET: "test-secret",
-  REDDIT_CALLBACK_URI: "http://localhost:3001/api/callback",
-  CLIENT_PATH: "http://localhost:3000",
-  SALT: "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM",
-  SESSION_LENGTH_SECS: "604800",
-  TOKEN_EXPIRY_PADDING_SECS: "300",
+  REDDIT_CLIENT_ID: 'test-client-id',
+  REDDIT_CLIENT_SECRET: 'test-secret',
+  REDDIT_CALLBACK_URI: 'http://localhost:3001/api/callback',
+  CLIENT_PATH: 'http://localhost:3000',
+  SALT: 'GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM',
+  SESSION_LENGTH_SECS: '604800',
+  TOKEN_EXPIRY_PADDING_SECS: '300',
 } as const;
 
 /**
  * Get environment variable with optional test mode fallback
  */
-function getEnvVar(key: keyof typeof TEST_DEFAULTS, fallback = ""): string {
+function getEnvVar(key: keyof typeof TEST_DEFAULTS, fallback = ''): string {
   return process.env[key] || (isTestMode() ? TEST_DEFAULTS[key] : fallback);
 }
 
@@ -142,19 +142,19 @@ function loadConfig(): AppConfig {
   validateEnv();
 
   return {
-    REDDIT_CLIENT_ID: getEnvVar("REDDIT_CLIENT_ID"),
-    REDDIT_CLIENT_SECRET: getEnvVar("REDDIT_CLIENT_SECRET"),
-    REDDIT_CALLBACK_URI: getEnvVar("REDDIT_CALLBACK_URI"),
+    REDDIT_CLIENT_ID: getEnvVar('REDDIT_CLIENT_ID'),
+    REDDIT_CLIENT_SECRET: getEnvVar('REDDIT_CLIENT_SECRET'),
+    REDDIT_CALLBACK_URI: getEnvVar('REDDIT_CALLBACK_URI'),
     REDDIT_SCOPE:
-      process.env["REDDIT_SCOPE"] ||
-      "identity,mysubreddits,vote,subscribe,read,history,save",
-    CLIENT_PATH: getEnvVar("CLIENT_PATH"),
-    SALT: getEnvVar("SALT"),
-    SESSION_LENGTH_SECS: parseInt(getEnvVar("SESSION_LENGTH_SECS", "0")),
+      process.env['REDDIT_SCOPE'] ||
+      'identity,mysubreddits,vote,subscribe,read,history,save',
+    CLIENT_PATH: getEnvVar('CLIENT_PATH'),
+    SALT: getEnvVar('SALT'),
+    SESSION_LENGTH_SECS: parseInt(getEnvVar('SESSION_LENGTH_SECS', '0')),
     TOKEN_EXPIRY_PADDING_SECS: parseInt(
-      getEnvVar("TOKEN_EXPIRY_PADDING_SECS", "0"),
+      getEnvVar('TOKEN_EXPIRY_PADDING_SECS', '0')
     ),
-    PORT: parseInt(process.env["PORT"] || "3001"),
+    PORT: parseInt(process.env['PORT'] || '3001'),
   };
 }
 
