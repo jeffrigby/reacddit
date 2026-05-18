@@ -1,11 +1,11 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import {
   memo,
+  use,
   useState,
   useEffect,
   useRef,
   useCallback,
-  useContext,
   useMemo,
 } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router';
@@ -132,9 +132,10 @@ function Post({
     selectPostActionable(state, postName, idx, location.key)
   );
 
-  const [lastExpanded, setLastExpanded] = useContext(
-    ListingsContextLastExpanded
-  ) as [string, (value: string) => void];
+  const [lastExpanded, setLastExpanded] = use(ListingsContextLastExpanded) as [
+    string,
+    (value: string) => void,
+  ];
 
   // Get shared IntersectionObservers from context
   const { observeForLoading, observeForVisibility, observeForMediaControl } =
@@ -222,7 +223,7 @@ function Post({
     duplicate,
   ]);
 
-  const [expand, setExpand] = useState(initView());
+  const [expand, setExpand] = useState(initView);
 
   const prevInitViewRef = useRef(initView);
   if (prevInitViewRef.current !== initView) {

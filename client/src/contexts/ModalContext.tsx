@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useMemo,
-  type ReactNode,
-} from 'react';
+import { createContext, use, useState, useMemo, type ReactNode } from 'react';
 
 interface ModalContextType {
   showHotkeys: boolean;
@@ -42,7 +36,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
  * @throws Error if used outside ModalProvider
  */
 export function useModals() {
-  const context = useContext(ModalContext);
+  const context = use(ModalContext);
   if (context === null) {
     throw new Error('useModals must be used within ModalProvider');
   }

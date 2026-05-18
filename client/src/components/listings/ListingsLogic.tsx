@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useContext, useMemo } from 'react';
+import { useEffect, useRef, useCallback, use, useMemo } from 'react';
 import { useLocation } from 'react-router';
 import isEqual from 'lodash/isEqual';
 import throttle from 'lodash/throttle';
@@ -46,7 +46,7 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   const prevView = useRef(settings.view);
   const scrollResize = useRef(true);
 
-  const contextValue = useContext(ListingsContextLastExpanded);
+  const contextValue = use(ListingsContextLastExpanded);
   const [lastExpanded, setLastExpanded] = Array.isArray(contextValue)
     ? (contextValue as [string, (value: string) => void])
     : (['', () => {}] as [string, (value: string) => void]);

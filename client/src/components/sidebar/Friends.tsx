@@ -24,7 +24,7 @@ const MENU_ID = 'friends';
 
 // Custom hook for friends logic
 function useFriends() {
-  const [showFriends, setShowFriends] = useState(getMenuStatus(MENU_ID));
+  const [showFriends, setShowFriends] = useState(() => getMenuStatus(MENU_ID));
   const lastUpdated = useAppSelector(selectLastUpdatedTracking);
   const redditBearer = useAppSelector((state) => state.redditBearer);
 

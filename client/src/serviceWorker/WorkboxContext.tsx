@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { createContext, useContext } from 'react';
+import { createContext, use } from 'react';
 import type { Workbox } from 'workbox-window';
 
 const WorkboxContext = createContext<Workbox | null>(null);
@@ -14,5 +14,5 @@ export function WorkboxProvider({ workbox, children }: WorkboxProviderProps) {
 }
 
 export function useWorkbox(): Workbox | null {
-  return useContext(WorkboxContext);
+  return use(WorkboxContext);
 }

@@ -21,7 +21,9 @@ import NavigationItem from './NavigationItem';
 import SyncStatus from './SyncStatus';
 
 function NavigationSubReddits() {
-  const [showMenu, setShowMenu] = useState(getMenuStatus('subreddits', true));
+  const [showMenu, setShowMenu] = useState(() =>
+    getMenuStatus('subreddits', true)
+  );
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const filter = useAppSelector(selectSubredditFilter);
   const dispatch = useAppDispatch();
@@ -30,6 +32,7 @@ function NavigationSubReddits() {
   const earliestExpiration = useAppSelector(selectEarliestExpiration);
   const earliestExpirationRef = useRef(earliestExpiration);
   const prevWhereRef = useRef<string | null>(null);
+  // eslint-disable-next-line @eslint-react/purity -- ref initializer runs once at mount
   const lastRefreshTimeRef = useRef(Date.now());
   const initialPollFiredRef = useRef(false);
 

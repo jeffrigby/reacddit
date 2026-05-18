@@ -29,7 +29,7 @@ function NavigationAccount(): ReactElement | null {
   const me = useAppSelector((state) => state.redditMe?.me);
   const navigate = useNavigate();
 
-  const [showNavAccountMenu, toggleShowNavAccountMenu] = useState<boolean>(
+  const [showNavAccountMenu, setShowNavAccountMenu] = useState<boolean>(() =>
     getMenuStatus(menuID, true)
   );
 
@@ -72,11 +72,11 @@ function NavigationAccount(): ReactElement | null {
     document.addEventListener('keydown', hotkeys);
     return () => document.removeEventListener('keydown', hotkeys);
     // Only depend on me?.name, not full me object to avoid unnecessary reruns
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
   }, [me?.name, navigate]);
 
   function toggleShowMenu(): void {
-    toggleShowNavAccountMenu(!showNavAccountMenu);
+    setShowNavAccountMenu(!showNavAccountMenu);
     setMenuStatus(menuID, !showNavAccountMenu);
   }
 

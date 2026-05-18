@@ -38,7 +38,7 @@
     "serverless-http": "^4.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.10.0",
+    "@eslint/js": "^10.0.1",
     "@types/aws-lambda": "^8.10.159",
     "@types/koa": "^3.0.1",
     "@types/koa-logger": "^3.1.5",

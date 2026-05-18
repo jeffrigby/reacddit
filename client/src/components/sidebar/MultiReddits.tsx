@@ -18,7 +18,7 @@ import MultiRedditsAdd from './MultiRedditsAdd';
 const MENU_ID = 'multis';
 
 function MultiReddits(): ReactElement | null {
-  const [showMenu, setShowMenu] = useState<boolean>(
+  const [showMenu, setShowMenu] = useState<boolean>(() =>
     getMenuStatus(MENU_ID, true)
   );
   const [showAdd, setShowAdd] = useState<boolean>(false);

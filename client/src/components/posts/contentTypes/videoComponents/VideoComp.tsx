@@ -120,7 +120,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   const [canPlay, setCanPlay] = useState(false);
   const [manualStop, setManualStop] = useState(false);
   const [canPlayThrough, setCanPlayThrough] = useState(false);
-  const [showLoadError, setLoadError] = useState(false);
+  const [showLoadError, setShowLoadError] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [buffer, setBuffer] = useState<BufferData>({
@@ -168,7 +168,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
     }
 
     const canPlayTimeout = setTimeout(() => {
-      setLoadError(true);
+      setShowLoadError(true);
     }, 5000);
     return () => {
       clearTimeout(canPlayTimeout);
@@ -190,7 +190,7 @@ function VideoComp({ link = '', content }: VideoCompProps) {
       }, 500),
     // Only create once - buffer.status is checked inside but we don't want to
     // recreate the throttled function when it changes, as that defeats throttling
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
     []
   );
 

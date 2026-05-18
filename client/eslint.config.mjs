@@ -1,4 +1,4 @@
-import react from 'eslint-plugin-react';
+import eslintReact from '@eslint-react/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11Y from 'eslint-plugin-jsx-a11y';
 import importPlugin from 'eslint-plugin-import-x';
@@ -14,16 +14,11 @@ export default tseslint.config(
   // Base JavaScript configuration
   {
     files: ['**/*.{js,jsx}'],
+    extends: [eslintReact.configs.recommended],
     plugins: {
-      react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11Y,
       'import-x': importPlugin,
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
     },
     languageOptions: {
       globals: {
@@ -55,7 +50,6 @@ export default tseslint.config(
           destructuredArrayIgnorePattern: '^_',
         },
       ],
-      'react/jsx-uses-vars': 'error',
       'no-unused-expressions': [
         'error',
         {
@@ -65,30 +59,8 @@ export default tseslint.config(
       ],
       'import-x/no-cycle': ['error', { maxDepth: 1 }],
       'no-unreachable': 'warn',
-      'react/forbid-prop-types': 'off',
-      'react/require-default-props': 'off',
-      'react/jsx-filename-extension': 'off',
-      'react/jsx-sort-props': [
-        'warn',
-        {
-          callbacksLast: true,
-          shorthandFirst: true,
-        },
-      ],
-      'react/jsx-no-constructed-context-values': 'warn',
-      'react/no-array-index-key': 'warn',
-      'react/function-component-definition': [
-        'warn',
-        {
-          namedComponents: 'function-declaration',
-          unnamedComponents: 'arrow-function',
-        },
-      ],
-      'react/destructuring-assignment': ['warn', 'always'],
-      'react/jsx-curly-brace-presence': [
-        'warn',
-        { props: 'never', children: 'never' },
-      ],
+      '@eslint-react/no-unstable-context-value': 'warn',
+      '@eslint-react/no-array-index-key': 'warn',
       'jsx-a11y/click-events-have-key-events': 'warn',
       'jsx-a11y/no-static-element-interactions': 'warn',
       'jsx-a11y/role-has-required-aria-props': 'warn',
@@ -117,9 +89,9 @@ export default tseslint.config(
   // TypeScript configuration
   {
     files: ['**/*.{ts,tsx}'],
+    extends: [eslintReact.configs['recommended-typescript']],
     plugins: {
       '@typescript-eslint': tseslint.plugin,
-      react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11Y,
       'import-x': importPlugin,
@@ -141,9 +113,6 @@ export default tseslint.config(
       },
     },
     settings: {
-      react: {
-        version: 'detect',
-      },
       'import-x/resolver': {
         typescript: {
           alwaysTryTypes: true,
@@ -170,30 +139,8 @@ export default tseslint.config(
       ],
       'import-x/no-cycle': ['error', { maxDepth: 1 }],
       'no-unreachable': 'warn',
-      'react/forbid-prop-types': 'off',
-      'react/require-default-props': 'off',
-      'react/jsx-filename-extension': ['warn', { extensions: ['.tsx'] }],
-      'react/jsx-sort-props': [
-        'warn',
-        {
-          callbacksLast: true,
-          shorthandFirst: true,
-        },
-      ],
-      'react/jsx-no-constructed-context-values': 'warn',
-      'react/no-array-index-key': 'warn',
-      'react/function-component-definition': [
-        'warn',
-        {
-          namedComponents: 'function-declaration',
-          unnamedComponents: 'arrow-function',
-        },
-      ],
-      'react/destructuring-assignment': ['warn', 'always'],
-      'react/jsx-curly-brace-presence': [
-        'warn',
-        { props: 'never', children: 'never' },
-      ],
+      '@eslint-react/no-unstable-context-value': 'warn',
+      '@eslint-react/no-array-index-key': 'warn',
       'jsx-a11y/click-events-have-key-events': 'warn',
       'jsx-a11y/no-static-element-interactions': 'warn',
       'jsx-a11y/role-has-required-aria-props': 'warn',
@@ -228,7 +175,6 @@ export default tseslint.config(
           destructuredArrayIgnorePattern: '^_',
         },
       ],
-      'react/jsx-uses-vars': 'error',
       '@typescript-eslint/no-use-before-define': 'error',
       '@typescript-eslint/no-redeclare': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
@@ -243,6 +189,31 @@ export default tseslint.config(
           disallowTypeAnnotations: false,
         },
       ],
+    },
+  },
+
+  // These files render content already sanitized via DOMPurify (see @/utils/sanitize).
+  {
+    files: [
+      'src/components/posts/contentTypes/RawHTML.tsx',
+      'src/components/posts/contentTypes/Self.tsx',
+    ],
+    rules: {
+      '@eslint-react/dom-no-dangerously-set-innerhtml': 'off',
+    },
+  },
+
+  // Rules from @eslint-react's recommended preset that require dedicated cleanup
+  // passes. Re-enable each one as part of focused refactors:
+  //   - naming-convention-ref-name: rename existing refs to use the `Ref` suffix
+  //   - naming-convention-context-name: rename contexts to end in `Context`
+  //   - set-state-in-effect: refactor effect-driven state updates to derived
+  //     state, event handlers, or refs where appropriate
+  {
+    rules: {
+      '@eslint-react/naming-convention-ref-name': 'off',
+      '@eslint-react/naming-convention-context-name': 'off',
+      '@eslint-react/set-state-in-effect': 'off',
     },
   },
 
