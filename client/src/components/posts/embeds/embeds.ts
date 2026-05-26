@@ -1,4 +1,4 @@
-import { getPublicSuffix, getDomain } from 'tldts';
+import { getDomain, getDomainWithoutSuffix } from 'tldts';
 import type { LinkData, CommentData } from '@/types/redditApi';
 import type {
   EmbedsRegistry,
@@ -50,7 +50,6 @@ export function getKeys(url: string): DomainKeys | null {
 
   // Extract domain using tldts library
   const parsedDomain = getDomain(url, { detectIp: false });
-  const suffix = getPublicSuffix(url, { detectIp: false });
 
   if (!parsedDomain) {
     return null;
@@ -59,10 +58,12 @@ export function getKeys(url: string): DomainKeys | null {
   // Create handler-friendly names (e.g., 'youtube.com' → 'youtubecom')
   const domain = parsedDomain.replace(ALPHANUMERIC_ONLY, '');
 
-  // Create greedy domain by removing TLD (e.g., 'youtube.com' → 'youtube')
-  const greedyDomain = parsedDomain
-    .replace(suffix ?? '', '')
-    .replace(ALPHANUMERIC_ONLY, '');
+  // Create greedy domain by removing the public suffix (e.g., 'youtube.com' → 'youtube').
+  // Use tldts's getDomainWithoutSuffix so multi-occurrence suffixes are handled
+  // correctly (e.g., 'comcast.com' → 'comcast', not 'cast'); fall back to the
+  // full registrable domain if tldts cannot strip the suffix.
+  const sld = getDomainWithoutSuffix(url, { detectIp: false }) ?? parsedDomain;
+  const greedyDomain = sld.replace(ALPHANUMERIC_ONLY, '');
 
   return { domain, greedyDomain };
 }

@@ -59,12 +59,17 @@ export const fetchBearer = createAsyncThunk<
     try {
       // This is the second call to getToken() - see note above about double fetch
       const tokenResult = await getToken(false);
-      const { token, cookieTokenParsed, error: tokenError } = tokenResult;
+      const { token, cookieTokenParsed } = tokenResult;
 
-      if (tokenError) {
-        return rejectWithValue(tokenError.message);
-      }
-
+      // A transient /api/bearer failure (token null, error logged inside
+      // getToken) must NOT brick the app. The failure was logged there for
+      // observability. As long as the existing token cookie still provides a
+      // loginURL we degrade to the normal anonymous/auth experience with an
+      // empty bearer; the 1s poll will pick up a real token once the API
+      // recovers. getLoginUrl() throws only when there is no usable session at
+      // all — that genuinely fatal case falls through to the catch below and
+      // is rejected, but the condition guard no longer latches on 'error', so
+      // it stays recoverable via the poll / a manual retry.
       const auth = cookieTokenParsed.auth ?? false;
       const loginURL = getLoginUrl();
 
@@ -90,11 +95,12 @@ export const fetchBearer = createAsyncThunk<
       const state = getState();
       const currentBearer = state.redditBearer;
 
-      // Don't run if already loading or in error state
-      if (
-        currentBearer.status === 'loading' ||
-        currentBearer.status === 'error'
-      ) {
+      // Only skip while a fetch is already in flight. We intentionally do NOT
+      // skip on the 'error' status: doing so permanently blocked every future
+      // dispatch after a single transient /api/bearer failure, bricking the
+      // app with no recovery. Allowing re-dispatch lets the poll / a manual
+      // retry clear the error and re-attempt.
+      if (currentBearer.status === 'loading') {
         return false;
       }
 

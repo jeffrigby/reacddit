@@ -1,7 +1,7 @@
 import { memo, StrictMode, useState, useEffect, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { store } from '@/redux/configureStore';
-import { fetchBearer } from '@/redux/slices/redditBearerSlice';
+import { fetchBearer, bearerCleared } from '@/redux/slices/redditBearerSlice';
 import { fetchMe } from '@/redux/slices/redditMeSlice';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus, scrollToPosition } from '@/common';
@@ -15,7 +15,6 @@ import '../../styles/layout.scss';
 
 function App() {
   const [error, setError] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const dispatch = useAppDispatch();
@@ -55,9 +54,13 @@ function App() {
   );
 
   const getToken = useCallback(async () => {
-    const bearerResult = await dispatch(fetchBearer());
+    // Force the fetch so a previous 'error' state cannot block this attempt
+    // (the slice condition guard no longer latches on 'error', but forcing
+    // makes recovery deterministic on mount and on manual retry).
+    const bearerResult = await dispatch(fetchBearer(true));
     if (fetchBearer.fulfilled.match(bearerResult)) {
-      setToken(bearerResult.payload.bearer);
+      setError(false);
+      setMessage(null);
       // Fetch user profile after bearer token is ready
       await dispatch(fetchMe());
       setLoading(false);
@@ -68,6 +71,14 @@ function App() {
       );
     }
   }, [dispatch]);
+
+  // Recover from a fatal token failure: reset the bearer slice back to its
+  // initial state, restore the loading screen, and re-attempt the fetch.
+  const retryToken = useCallback(() => {
+    dispatch(bearerCleared());
+    setLoading(true);
+    getToken();
+  }, [dispatch, getToken]);
 
   // Set Hot Keys
   useEffect(() => {
@@ -81,8 +92,15 @@ function App() {
     getToken();
   }, [getToken]);
 
+  // Poll for token refresh once an auth/anon session has been established.
+  // Gate on the bearer status rather than a truthy token string: after a
+  // transient /api/bearer failure we may have degraded to a session with an
+  // empty bearer, and the poll is exactly what lets it pick up a real token
+  // once the API recovers.
+  const authEstablished =
+    redditBearer.status === 'auth' || redditBearer.status === 'anon';
   useEffect(() => {
-    const tokenQuery = token
+    const tokenQuery = authEstablished
       ? setInterval(() => dispatch(fetchBearer()), 1000)
       : null;
     return () => {
@@ -90,7 +108,7 @@ function App() {
         clearInterval(tokenQuery);
       }
     };
-  }, [dispatch, token]);
+  }, [dispatch, authEstablished]);
 
   if (redditMe.status === 'failed') {
     const errorString = redditMe.error ? String(redditMe.error) : '';
@@ -201,7 +219,14 @@ function App() {
   if (error) {
     return (
       <div className="alert alert-danger m-2" role="alert">
-        {message}
+        <p>{message}</p>
+        <button
+          className="btn btn-primary btn-sm"
+          type="button"
+          onClick={retryToken}
+        >
+          Retry
+        </button>
       </div>
     );
   }

@@ -19,7 +19,14 @@ function PostsRender({
   return useMemo(() => {
     const links = new Set<string>();
 
-    return Object.values(posts).map((post, idx) => {
+    // Reddit appends a trailing `{ kind: 'more' }` Thing to truncated
+    // top-level comment listings. The prop type doesn't model it, so widen
+    // `kind` to compare and filter it out before rendering as a <Post>.
+    const filteredPosts = Object.values(posts).filter(
+      (post) => (post.kind as string) !== 'more'
+    );
+
+    return filteredPosts.map((post, idx) => {
       const {
         kind,
         data: { name, id },

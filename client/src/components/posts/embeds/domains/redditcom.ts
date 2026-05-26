@@ -18,9 +18,12 @@ const SHORT_LINK_REGEX = /redd\.it\/([a-z0-9]+)/i;
 // Marker to prevent infinite recursion
 const REDDIT_EMBED_MARKER = '__reddit_embed_processed__';
 
-// Regex for matching Reddit share links (mirrors server-side SHARE_LINK_REGEX)
-const SHARE_LINK_PATTERN =
-  /^https?:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
+// Canonical Reddit share-link pattern. MUST stay in sync with the server's
+// SHARE_LINK_REGEX in api/src/app.ts (HTTPS-only, anchored, reddit.com host).
+// Links that don't match this exactly are rejected by the resolver server, so
+// the client must use the identical pattern to decide what to batch/resolve.
+export const SHARE_LINK_PATTERN =
+  /^https:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
 
 // Max URLs per batch request (must match server MAX_BATCH_SIZE)
 const MAX_BATCH_SIZE = 50;
@@ -184,19 +187,25 @@ export function extractPostId(url: string): string | null {
 }
 
 /**
- * Check if URL is a share link (cannot be resolved client-side due to CORS)
+ * Check if a URL is a Reddit share link (/r/<sub>/s/<code>).
+ *
+ * Share links cannot be resolved client-side (CORS) and are resolved by the
+ * server via POST /api/resolve-share. This uses the canonical SHARE_LINK_PATTERN
+ * so the client agrees exactly with what the server will accept — divergent
+ * links would otherwise be sent individually and then rejected by the server.
  */
 export function isShareLink(url: string): boolean {
-  return /\/r\/[^/]+\/s\/[a-zA-Z0-9]+/.test(url);
+  return SHARE_LINK_PATTERN.test(url);
 }
 
 /**
- * Check if URL is a Reddit share link using the full pattern.
- * More specific than isShareLink — used for pre-scanning raw URLs before domain filtering.
+ * Check if a URL is a Reddit share link.
+ *
+ * Alias of {@link isShareLink} — both use the canonical SHARE_LINK_PATTERN.
+ * Kept as a distinct export for the pre-scan call site in the embeds index,
+ * which filters raw URLs before domain handling.
  */
-export function isRedditShareLink(url: string): boolean {
-  return SHARE_LINK_PATTERN.test(url);
-}
+export const isRedditShareLink = isShareLink;
 
 /**
  * Bulk-resolve Reddit share links in a single batch API call.
@@ -214,18 +223,32 @@ export async function resolveShareLinks(
 
     // Process chunks sequentially to avoid overwhelming the server
     for (const chunk of chunks) {
-      // Create a shared promise for each URL in this chunk so resolveShareLink can await it
-      let resolveChunkPromise: (value: void) => void = () => {};
-      const chunkPromise = new Promise<void>((r) => {
-        resolveChunkPromise = r;
+      // Shared per-chunk promise that resolveShareLink awaiters hang off of.
+      // It settles with `true` when the chunk request succeeds (HTTP 2xx) and
+      // rejects when it fails (network error / non-2xx). On failure, awaiters
+      // reject so they can retry on a later render instead of being pinned to
+      // null; shareCache is left untouched so the URL remains a cache miss.
+      let settleChunk: (succeeded: boolean) => void = () => {};
+      let failChunk: (reason: Error) => void = () => {};
+      const chunkSettled = new Promise<boolean>((resolve, reject) => {
+        settleChunk = resolve;
+        failChunk = reject;
       });
+      // Swallow rejections on the shared promise itself so that URLs whose
+      // in-flight promise is never awaited don't surface as unhandled rejections.
+      chunkSettled.catch(() => {});
 
-      // Register in-flight promises for each URL
+      // Register in-flight promises for each URL. On chunk success, resolve to
+      // the cached postId (or null if the server returned no result for this
+      // URL); on chunk failure, propagate the rejection so the awaiter retries.
       for (const url of chunk) {
-        const urlPromise = chunkPromise.then(() => shareCache.get(url) ?? null);
+        const urlPromise = chunkSettled.then(() => shareCache.get(url) ?? null);
+        // Prevent unhandled rejections on stored promises that are never awaited.
+        urlPromise.catch(() => {});
         inFlightResolutions.set(url, urlPromise);
       }
 
+      let chunkError: Error | null = null;
       try {
         const response = await fetch('/api/resolve-share', {
           method: 'POST',
@@ -243,6 +266,9 @@ export async function resolveShareLinks(
             }
           }
         } else {
+          chunkError = new Error(
+            `resolve-share failed: ${response.status} ${response.statusText}`
+          );
           console.warn(
             'redditcom.resolveShareLinks: HTTP error from /api/resolve-share',
             {
@@ -255,6 +281,7 @@ export async function resolveShareLinks(
           );
         }
       } catch (error) {
+        chunkError = error instanceof Error ? error : new Error(String(error));
         logShareError(
           'resolveShareLinks',
           'failed to resolve share-link chunk',
@@ -266,9 +293,16 @@ export async function resolveShareLinks(
           error
         );
       } finally {
-        resolveChunkPromise();
+        // Remove in-flight entries first so any retry after this point starts
+        // a fresh resolution rather than reusing a settled (possibly rejected)
+        // promise.
         for (const url of chunk) {
           inFlightResolutions.delete(url);
+        }
+        if (chunkError) {
+          failChunk(chunkError);
+        } else {
+          settleChunk(true);
         }
       }
     }
@@ -459,8 +493,15 @@ async function render(
   let postId: string | null = null;
 
   if (isShareLink(url)) {
-    // Share links require server-side resolution due to CORS
-    postId = await resolveShareLink(url);
+    // Share links require server-side resolution due to CORS.
+    // A rejected resolution means the batch/individual request failed; return
+    // null for THIS render so the embed simply doesn't appear, while leaving
+    // the URL uncached so a later render can retry the resolution.
+    try {
+      postId = await resolveShareLink(url);
+    } catch {
+      return null;
+    }
   } else {
     postId = extractPostId(url);
   }

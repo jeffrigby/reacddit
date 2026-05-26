@@ -2,6 +2,7 @@ import http from 'http';
 import http2 from 'http2';
 import net from 'net';
 import zlib from 'zlib';
+import { pipeline } from 'node:stream';
 import { execSync } from 'child_process';
 import { config as loadEnv } from 'dotenv';
 import { join, dirname } from 'path';
@@ -353,16 +354,38 @@ function proxyRequest(
 
       res.writeHead(statusCode, headers);
 
-      // Compress and pipe
-      if (compressionType === 'br') {
-        proxyRes.pipe(zlib.createBrotliCompress()).pipe(res);
-      } else {
-        proxyRes.pipe(zlib.createGzip()).pipe(res);
-      }
+      // pipeline() (not .pipe()) so an early client disconnect or a
+      // transform/destination error tears down the whole chain — including
+      // proxyRes and its pooled keep-alive upstream socket — instead of
+      // leaking it.
+      const transform =
+        compressionType === 'br'
+          ? zlib.createBrotliCompress()
+          : zlib.createGzip();
+      pipeline(proxyRes, transform, res, (err) => {
+        // Aborted/premature-close on client disconnect is expected; only
+        // log genuine errors. proxyRes is destroyed by pipeline on failure.
+        if (err && err.code !== 'ERR_STREAM_PREMATURE_CLOSE') {
+          console.error(
+            `❌ Proxy stream error for ${requestMethod} ${requestUrl} → localhost:${targetPort}:`,
+            err.message
+          );
+        }
+        if (!proxyRes.destroyed) proxyRes.destroy();
+      });
     } else {
-      // No compression, direct pipe (existing behavior)
+      // No compression. pipeline() still propagates errors/early-close and
+      // destroys proxyRes so the pooled upstream socket is reclaimed.
       res.writeHead(statusCode, headers);
-      proxyRes.pipe(res);
+      pipeline(proxyRes, res, (err) => {
+        if (err && err.code !== 'ERR_STREAM_PREMATURE_CLOSE') {
+          console.error(
+            `❌ Proxy stream error for ${requestMethod} ${requestUrl} → localhost:${targetPort}:`,
+            err.message
+          );
+        }
+        if (!proxyRes.destroyed) proxyRes.destroy();
+      });
     }
   });
 
@@ -430,7 +453,38 @@ function handleWebSocketUpgrade(
     },
   });
 
+  // Tracks whether the upgrade handshake has completed. Used to scope
+  // pre-upgrade teardown so it never touches an established (possibly
+  // long-idle) WebSocket connection.
+  let upgraded = false;
+
+  // Bound only the pre-upgrade handshake window. Once upgraded, this is
+  // cleared so legitimately idle long-lived WS connections (e.g. HMR sockets
+  // that go quiet for long stretches) are NOT killed by an idle timeout.
+  proxyReq.setTimeout(30 * 1000, () => {
+    if (upgraded) return;
+    console.error(
+      `⏱️  WebSocket upgrade handshake timed out for ${req.url} → localhost:${targetPort}`
+    );
+    proxyReq.destroy();
+    if (!socket.destroyed) socket.destroy();
+  });
+
+  // If the client disconnects (or errors) before the upgrade completes, tear
+  // down the pending upstream request so it doesn't stall/leak.
+  socket.on('close', () => {
+    if (!upgraded && !proxyReq.destroyed) proxyReq.destroy();
+  });
+  socket.on('error', () => {
+    if (!upgraded && !proxyReq.destroyed) proxyReq.destroy();
+  });
+
   proxyReq.on('upgrade', (proxyRes, proxySocket, proxyHead) => {
+    upgraded = true;
+    // Clear the pre-upgrade handshake timeout; the established connection is
+    // allowed to stay idle indefinitely (HMR keep-alive).
+    proxyReq.setTimeout(0);
+
     // Filter out headers with CRLF characters to prevent header injection
     const sanitizedHeaders = Object.entries(proxyRes.headers)
       .filter(([key, value]) => {

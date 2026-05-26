@@ -47,63 +47,74 @@ export function IntersectionObserverProvider({
     new Map()
   );
 
-  // Observers are constructed once via `??=`; the lint rule can't see the
-  // null-guard, so each constructor call is disabled inline.
+  // Observers are created lazily on first observe (from a consumer's committed
+  // effect), never during render. This keeps render pure and prevents a
+  // discarded render (concurrent/Suspense/StrictMode) from leaving an orphan
+  // observer the unmount cleanup never disconnects.
   const loadObserverRef = useRef<IntersectionObserver | null>(null);
-  // eslint-disable-next-line @eslint-react/purity
-  loadObserverRef.current ??= new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const callback = loadCallbacksRef.current.get(entry.target);
-        if (callback) {
-          callback(entry.isIntersecting);
-        }
-      });
-    },
-    {
-      root: null,
-      rootMargin: '500px 0px 2000px 0px',
-      threshold: 0,
-    }
-  );
+  const getOrCreateLoadObserver = useCallback((): IntersectionObserver => {
+    loadObserverRef.current ??= new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const callback = loadCallbacksRef.current.get(entry.target);
+          if (callback) {
+            callback(entry.isIntersecting);
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '500px 0px 2000px 0px',
+        threshold: 0,
+      }
+    );
+    return loadObserverRef.current;
+  }, []);
 
   const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
-  // eslint-disable-next-line @eslint-react/purity
-  visibilityObserverRef.current ??= new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const callback = visibilityCallbacksRef.current.get(entry.target);
-        if (callback) {
-          callback(entry.isIntersecting);
-        }
-      });
-    },
-    { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
-  );
+  const getOrCreateVisibilityObserver =
+    useCallback((): IntersectionObserver => {
+      visibilityObserverRef.current ??= new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const callback = visibilityCallbacksRef.current.get(entry.target);
+            if (callback) {
+              callback(entry.isIntersecting);
+            }
+          });
+        },
+        { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
+      );
+      return visibilityObserverRef.current;
+    }, []);
 
   // Media control observer - checks if element is FULLY off-screen (both top and bottom edges)
   const mediaControlObserverRef = useRef<IntersectionObserver | null>(null);
-  // eslint-disable-next-line @eslint-react/purity
-  mediaControlObserverRef.current ??= new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const callback = mediaControlCallbacksRef.current.get(entry.target);
-        if (callback) {
-          const rect = entry.boundingClientRect;
-          const viewportHeight = window.innerHeight;
+  const getOrCreateMediaControlObserver =
+    useCallback((): IntersectionObserver => {
+      mediaControlObserverRef.current ??= new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const callback = mediaControlCallbacksRef.current.get(entry.target);
+            if (callback) {
+              const rect = entry.boundingClientRect;
+              const viewportHeight = window.innerHeight;
 
-          // Element is fully off-screen if:
-          // - Bottom edge is above viewport (scrolled past)
-          // - Top edge is below viewport (not yet scrolled to)
-          const isFullyOffScreen = rect.bottom < 0 || rect.top > viewportHeight;
+              // Element is fully off-screen if:
+              // - Bottom edge is above viewport (scrolled past)
+              // - Top edge is below viewport (not yet scrolled to)
+              const isFullyOffScreen =
+                rect.bottom < 0 || rect.top > viewportHeight;
 
-          // Callback receives true when FULLY off-screen, false when any part is visible
-          callback(isFullyOffScreen);
-        }
-      });
-    },
-    { threshold: 0 }
-  );
+              // Callback receives true when FULLY off-screen, false when any part is visible
+              callback(isFullyOffScreen);
+            }
+          });
+        },
+        { threshold: 0 }
+      );
+      return mediaControlObserverRef.current;
+    }, []);
 
   // Clean up observers on unmount
   useEffect(() => {
@@ -147,7 +158,7 @@ export function IntersectionObserverProvider({
   const observeForLoading = useCallback(
     (element: Element, callback: ObserverCallback): (() => void) => {
       loadCallbacksRef.current.set(element, callback);
-      loadObserverRef.current?.observe(element);
+      getOrCreateLoadObserver().observe(element);
 
       // Check if element is already intersecting and call callback immediately
       // IntersectionObserver only fires on state changes, so we need to manually
@@ -170,26 +181,26 @@ export function IntersectionObserverProvider({
         loadObserverRef.current?.unobserve(element);
       };
     },
-    []
+    [getOrCreateLoadObserver]
   );
 
   const observeForVisibility = useCallback(
     (element: Element, callback: ObserverCallback): (() => void) => {
       visibilityCallbacksRef.current.set(element, callback);
-      visibilityObserverRef.current?.observe(element);
+      getOrCreateVisibilityObserver().observe(element);
 
       return () => {
         visibilityCallbacksRef.current.delete(element);
         visibilityObserverRef.current?.unobserve(element);
       };
     },
-    []
+    [getOrCreateVisibilityObserver]
   );
 
   const observeForMediaControl = useCallback(
     (element: Element, callback: ObserverCallback): (() => void) => {
       mediaControlCallbacksRef.current.set(element, callback);
-      mediaControlObserverRef.current?.observe(element);
+      getOrCreateMediaControlObserver().observe(element);
 
       // Check initial state - if element is already fully off-screen, call callback immediately
       const rect = element.getBoundingClientRect();
@@ -205,7 +216,7 @@ export function IntersectionObserverProvider({
         mediaControlObserverRef.current?.unobserve(element);
       };
     },
-    []
+    [getOrCreateMediaControlObserver]
   );
 
   const value = useMemo(

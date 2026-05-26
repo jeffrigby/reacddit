@@ -30,36 +30,46 @@ export function useCopyToClipboard(resetMs: number): UseCopyToClipboardResult {
   );
 
   const copy = useCallback(
-    (text: string): Promise<boolean> =>
-      navigator.clipboard.writeText(text).then(
-        () => {
-          setCopied(true);
-          setError(null);
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-          timeoutRef.current = setTimeout(() => {
-            setCopied(false);
-          }, resetMs);
-          return true;
-        },
-        (err: unknown) => {
-          const normalized =
-            err instanceof Error
-              ? err
-              : new Error('Failed to copy to clipboard');
-          console.error('Failed to copy to clipboard', err);
-          setCopied(false);
-          setError(normalized);
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-          timeoutRef.current = setTimeout(() => {
-            setError(null);
-          }, resetMs);
-          return false;
+    (text: string): Promise<boolean> => {
+      const onSuccess = (): boolean => {
+        setCopied(true);
+        setError(null);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
         }
-      ),
+        timeoutRef.current = setTimeout(() => {
+          setCopied(false);
+        }, resetMs);
+        return true;
+      };
+
+      const onFailure = (err: unknown): boolean => {
+        const normalized =
+          err instanceof Error ? err : new Error('Failed to copy to clipboard');
+        console.error('Failed to copy to clipboard', err);
+        setCopied(false);
+        setError(normalized);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => {
+          setError(null);
+        }, resetMs);
+        return false;
+      };
+
+      // Wrap in Promise.resolve().then(...) so a missing `navigator.clipboard`
+      // (insecure context, sandboxed iframe, old webview) is surfaced through
+      // the rejection path instead of throwing synchronously to the caller.
+      return Promise.resolve()
+        .then(() => {
+          if (!navigator.clipboard?.writeText) {
+            throw new Error('Clipboard API is unavailable');
+          }
+          return navigator.clipboard.writeText(text);
+        })
+        .then(onSuccess, onFailure);
+    },
     [resetMs]
   );
 

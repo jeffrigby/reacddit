@@ -19,6 +19,33 @@ export function sanitizeHTML(html: string): string {
 }
 
 /**
+ * Sanitize HTML for embedded media (oEmbed/embedly iframes from Reddit).
+ *
+ * Unlike sanitizeHTML, this preserves the <iframe> element and a tight
+ * allowlist of presentational attributes so the iframe's src/allow can be
+ * extracted safely. DOMPurify still strips scripts, event handlers, and
+ * dangerous URI schemes; callers MUST additionally validate any extracted
+ * src with isSafeUrl before use.
+ */
+export function sanitizeEmbedHTML(html: string): string {
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true },
+    ADD_TAGS: ['iframe'],
+    ADD_ATTR: [
+      'src',
+      'allow',
+      'allowfullscreen',
+      'frameborder',
+      'width',
+      'height',
+      'scrolling',
+      'title',
+      'style',
+    ],
+  });
+}
+
+/**
  * Check if a URL uses a safe protocol.
  * @param url - URL string to validate
  * @param httpsOnly - If true, only allow https:. If false, allow https: and http:.

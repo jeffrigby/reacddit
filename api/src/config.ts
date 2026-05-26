@@ -19,21 +19,38 @@ interface AppConfig {
 const red = chalk.red;
 
 /**
+ * Strictly parses a string as an integer.
+ *
+ * Single source of truth for integer parsing used by both validation and
+ * config loading. Trims surrounding whitespace and only accepts strings that
+ * are entirely an optional sign followed by digits, so whitespace-only,
+ * empty, or otherwise non-integer values are rejected (returning null) rather
+ * than coercing to 0 or NaN.
+ *
+ * @returns The parsed integer, or null if the value is not a valid integer
+ */
+function parseIntStrict(value: string | undefined): number | null {
+  if (value === undefined) return null;
+  const trimmed = value.trim();
+  if (!/^-?\d+$/.test(trimmed)) return null;
+  const num = Number.parseInt(trimmed, 10);
+  return Number.isInteger(num) ? num : null;
+}
+
+/**
  * Check if a string represents a valid positive integer
  */
 function isPositiveInt(value: string | undefined): boolean {
-  if (!value) return false;
-  const num = Number(value);
-  return Number.isInteger(num) && num > 0;
+  const num = parseIntStrict(value);
+  return num !== null && num > 0;
 }
 
 /**
  * Check if a string represents a valid non-negative integer
  */
 function isNonNegativeInt(value: string | undefined): boolean {
-  if (!value) return false;
-  const num = Number(value);
-  return Number.isInteger(num) && num >= 0;
+  const num = parseIntStrict(value);
+  return num !== null && num >= 0;
 }
 
 /**
@@ -150,11 +167,14 @@ function loadConfig(): AppConfig {
       'identity,mysubreddits,vote,subscribe,read,history,save',
     CLIENT_PATH: getEnvVar('CLIENT_PATH'),
     SALT: getEnvVar('SALT'),
-    SESSION_LENGTH_SECS: parseInt(getEnvVar('SESSION_LENGTH_SECS', '0')),
-    TOKEN_EXPIRY_PADDING_SECS: parseInt(
-      getEnvVar('TOKEN_EXPIRY_PADDING_SECS', '0')
-    ),
-    PORT: parseInt(process.env['PORT'] || '3001'),
+    // parseIntStrict mirrors validateEnv's checks: validation has already
+    // rejected non-integer values, so the ?? fallback only applies to the
+    // missing-var defaults ('0' / '3001').
+    SESSION_LENGTH_SECS:
+      parseIntStrict(getEnvVar('SESSION_LENGTH_SECS', '0')) ?? 0,
+    TOKEN_EXPIRY_PADDING_SECS:
+      parseIntStrict(getEnvVar('TOKEN_EXPIRY_PADDING_SECS', '0')) ?? 0,
+    PORT: parseIntStrict(process.env['PORT'] || '3001') ?? 3001,
   };
 }
 
