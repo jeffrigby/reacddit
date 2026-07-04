@@ -1,6 +1,6 @@
 import queryString from 'query-string';
 import { formatDistanceToNow } from 'date-fns';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import type { SubredditData } from '@/types/redditApi';
 import type { RootState } from '@/types/redux';
 import { trimSlashes } from '@/common';

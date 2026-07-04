@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
 import {

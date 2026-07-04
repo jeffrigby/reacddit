@@ -387,12 +387,7 @@ export interface LinkData {
   preview?: Preview;
   media_only?: boolean;
   post_hint?:
-    | 'self'
-    | 'link'
-    | 'image'
-    | 'hosted:video'
-    | 'rich:video'
-    | 'gallery';
+    'self' | 'link' | 'image' | 'hosted:video' | 'rich:video' | 'gallery';
 
   // Gallery posts
   is_gallery?: boolean;
@@ -1071,13 +1066,7 @@ export interface UserPreferences {
   compress?: boolean;
   country_code?: string;
   default_comment_sort?:
-    | 'confidence'
-    | 'top'
-    | 'new'
-    | 'controversial'
-    | 'old'
-    | 'qa'
-    | 'live';
+    'confidence' | 'top' | 'new' | 'controversial' | 'old' | 'qa' | 'live';
   default_theme_sr?: string | null;
   domain_details?: boolean;
   email_chat_request?: boolean;

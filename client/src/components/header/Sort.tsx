@@ -1,8 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import queryString from 'query-string';
-import type { To } from 'react-router-dom';
-import { NavLink } from 'react-router-dom';
-import { useNavigate, useLocation } from 'react-router';
+import type { To } from 'react-router';
+import { NavLink, useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
 import { Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

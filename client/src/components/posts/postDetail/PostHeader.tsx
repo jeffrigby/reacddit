@@ -1,7 +1,6 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo } from 'react';
-import { Link } from 'react-router-dom';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faThumbtack,

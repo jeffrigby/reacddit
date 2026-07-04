@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
 import {

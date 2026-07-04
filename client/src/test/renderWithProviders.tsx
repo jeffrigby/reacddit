@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Provider } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import type { RootState } from '@/redux/configureStore';
 import { ModalProvider } from '@/contexts/ModalContext';
 import { WorkboxProvider } from '@/serviceWorker/WorkboxContext';

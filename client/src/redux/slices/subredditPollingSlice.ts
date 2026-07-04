@@ -195,8 +195,7 @@ export const fetchSubredditsLastUpdated = createAsyncThunk<
     for (const [key, value] of Object.entries(queries)) {
       if (key.startsWith('getSubreddits(')) {
         subreddits = value?.data as
-          | EntityState<SubredditData, string>
-          | undefined;
+          EntityState<SubredditData, string> | undefined;
         break;
       }
     }
