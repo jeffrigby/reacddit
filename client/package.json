@@ -38,7 +38,6 @@
     "lru-cache": "^11.2.2",
     "p-limit": "^7.1.1",
     "p-queue": "^9.1.0",
-    "query-string": "^9.0.0",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.10",
     "react-device-detect": "^2.0.0",

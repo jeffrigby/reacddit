@@ -1,6 +1,5 @@
-import queryString from 'query-string';
 import { formatDistanceToNow } from 'date-fns';
-import { useLocation } from 'react-router';
+import { useSearchParams } from 'react-router';
 import type { SubredditData } from '@/types/redditApi';
 import type { RootState } from '@/types/redux';
 import { trimSlashes } from '@/common';
@@ -17,7 +16,7 @@ interface NavigationItemProps {
 function NavigationItem({ item, trigger }: NavigationItemProps) {
   const sort = useAppSelector((state) => state.listings.currentFilter.sort);
   const me = useAppSelector((state) => state.redditMe?.me);
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   // Select only this item's lastPost value — the returned number is compared
   // via strict === equality, so re-renders only occur when this specific
@@ -27,11 +26,8 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
       state.subredditPolling.lastUpdatedTracking[item.name]?.lastPost ?? 0
   );
 
-  const query = queryString.parse(location.search);
-  const { t } = query;
-  const timeFilter = Array.isArray(t)
-    ? t.filter((item): item is string => item !== null)
-    : (t ?? undefined);
+  const tValues = searchParams.getAll('t');
+  const timeFilter = tValues.length > 1 ? tValues : tValues[0];
   const sortPath = buildSortPath(sort, timeFilter);
 
   const href =

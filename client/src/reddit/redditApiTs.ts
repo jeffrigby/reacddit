@@ -3,7 +3,6 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import cookies from 'js-cookie';
-import queryString from 'query-string';
 import {
   type MeResponse,
   type TokenData,
@@ -42,6 +41,18 @@ export function setParams(
       ([, value]) => value !== null && value !== undefined && value !== ''
     )
   );
+}
+
+// Serialize params to an application/x-www-form-urlencoded string,
+// skipping null/undefined values
+export function toQueryString(params: Record<string, unknown>): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== null && value !== undefined) {
+      searchParams.set(key, String(value));
+    }
+  }
+  return searchParams.toString();
 }
 
 const REDDIT_OAUTH_ORIGIN = 'https://www.reddit.com';
@@ -286,7 +297,7 @@ export async function getListingSearch(
 
   const url = target ? `r/${target}/search` : 'search';
   const response = await redditAPI.get(url, { params });
-  const query = queryString.stringify(params);
+  const query = toQueryString(params);
 
   return {
     ...response.data,
@@ -332,7 +343,7 @@ export async function getListingSearchMulti(
       : `/user/${user}/m/${target}/search`;
 
   const response = await redditAPI.get(url, { params });
-  const query = queryString.stringify(params);
+  const query = toQueryString(params);
 
   return {
     ...response.data,
@@ -367,7 +378,7 @@ export async function getListingSubreddit(
 
   const url = subreddit ? `/r/${subreddit}/${sort}` : sort;
   const response = await redditAPI.get(url, { params });
-  const query = queryString.stringify(params);
+  const query = toQueryString(params);
 
   return {
     ...response.data,
@@ -406,7 +417,7 @@ export async function getListingMulti(
     user === 'me' ? `me/m/${name}/${sort}` : `user/${user}/m/${name}/${sort}`;
 
   const response = await redditAPI.get(url, { params });
-  const query = queryString.stringify(params);
+  const query = toQueryString(params);
 
   return {
     ...response.data,
@@ -443,7 +454,7 @@ export async function getListingUser(
 
   const url = `user/${user}/${type}?sort=${sort}`;
   const response = await redditAPI.get(url, { params });
-  const query = queryString.stringify(params);
+  const query = toQueryString(params);
 
   return {
     ...response.data,
@@ -479,7 +490,7 @@ export async function getListingDuplicates(
 
   const url = `duplicates/${article}`;
   const response = await redditAPI.get(url, { params });
-  const query = queryString.stringify(params);
+  const query = toQueryString(params);
 
   const result = response.data as [Listing<LinkData>, Listing<LinkData>] & {
     requestUrl: string;
@@ -512,7 +523,7 @@ export async function getComments(
 
   const url = `r/${target}/comments/${postName}/`;
   const response = await redditAPI.get(url, { params });
-  const query = queryString.stringify(params);
+  const query = toQueryString(params);
 
   const result = response.data as CommentsResponse & { requestUrl: string };
   result.requestUrl = `${url}?${query}`;

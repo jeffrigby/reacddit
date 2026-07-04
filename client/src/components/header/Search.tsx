@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { isMobile } from 'react-device-detect';
-import queryString from 'query-string';
 import { Form, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
@@ -26,9 +25,7 @@ function Search() {
   const searchInputParent = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const qs = queryString.parse(location.search);
-    const query = qs.q ?? '';
-    setSearch(query as string);
+    setSearch(new URLSearchParams(location.search).get('q') ?? '');
   }, [location.search]);
 
   useEffect(() => {
@@ -124,26 +121,28 @@ function Search() {
   };
 
   const getCurrentSearchSort = (): { sort: string; t: string | null } => {
-    const currentSearch = queryString.parse(location.search);
+    const currentSearch = new URLSearchParams(location.search);
     const qs: { sort: string; t: string | null } = {
       sort: 'relevance',
       t: null,
     };
 
-    if (currentSearch.sort !== undefined) {
-      const sort = currentSearch.sort as string;
+    const sort = currentSearch.get('sort');
+    if (sort !== null) {
       qs.sort = sort.match(/^(relevance|new|top)$/) ? sort : 'relevance';
-      qs.t = (currentSearch.t as string) || null;
+      qs.t = currentSearch.get('t') || null;
     }
 
     return qs;
   };
 
   const getMainSearchURL = (q: string) => {
-    const currentSearch = getCurrentSearchSort();
-    const qs = { ...currentSearch, q };
-    const qsString = queryString.stringify(qs);
-    return `/search?${qsString}`;
+    const { sort, t } = getCurrentSearchSort();
+    const qs = new URLSearchParams({ sort, q });
+    if (t) {
+      qs.set('t', t);
+    }
+    return `/search?${qs.toString()}`;
   };
 
   const getTargetUrl = () => {

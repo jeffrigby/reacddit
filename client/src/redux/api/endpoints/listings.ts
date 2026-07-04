@@ -9,7 +9,6 @@
  */
 
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import queryString from 'query-string';
 import type { ListingsFilter } from '@/types/listings';
 import type {
   Thing,
@@ -225,8 +224,8 @@ export const listingsApi = redditApi.injectEndpoints({
 
         try {
           // Parse query string params from location
-          const qs = queryString.parse(location.search);
-          const params: Record<string, unknown> = { ...qs };
+          const qs = new URLSearchParams(location.search);
+          const params: Record<string, unknown> = Object.fromEntries(qs);
 
           // Set pagination params
           if (pagination?.after) {

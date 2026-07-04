@@ -1,8 +1,7 @@
 import { memo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { Button } from 'react-bootstrap';
-import { useLocation } from 'react-router';
-import queryString from 'query-string';
+import { useSearchParams } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown, faCaretLeft } from '@fortawesome/free-solid-svg-icons';
 import type { LabeledMultiData, Thing } from '@/types/redditApi';
@@ -16,25 +15,19 @@ interface MultiRedditsItemProps {
   item: Thing<LabeledMultiData>;
 }
 
-interface QueryParams {
-  t?: string;
-  [key: string]: string | string[] | undefined;
-}
-
 function MultiRedditsItem({ item }: MultiRedditsItemProps): ReactElement {
   const { path } = item.data;
   const [showSubs, setShowSubs] = useState<boolean>(() => getMenuStatus(path));
 
   const sort = useAppSelector((state) => state.listings.currentFilter.sort);
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   function hideShowSubs(): void {
     setMenuStatus(path, !showSubs);
     setShowSubs(!showSubs);
   }
 
-  const search = queryString.parse(location.search) as QueryParams;
-  const sortPath = buildSortPath(sort, search.t);
+  const sortPath = buildSortPath(sort, searchParams.get('t') ?? undefined);
   const navTo = `/me/m/${item.data.name}/${sortPath}`;
 
   const arrowIcon = showSubs ? faCaretDown : faCaretLeft;

@@ -9,7 +9,6 @@ import {
   faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useParams } from 'react-router';
-import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
 import { useGetMeQuery } from '@/redux/api';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
@@ -102,10 +101,10 @@ function PostsDebug(): React.JSX.Element | null {
   const postsCount = Object.keys(children ?? {}).length;
   const postIds = Object.keys(children ?? {});
 
-  const qs = queryString.parse(location.search);
+  const qs = new URLSearchParams(location.search);
 
   const listingFilterString = JSON.stringify(
-    { ...listingsFilter, t: qs.t },
+    { ...listingsFilter, t: qs.get('t') ?? undefined },
     null,
     2
   );

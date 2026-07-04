@@ -8,9 +8,8 @@
  * - Short cache (60 seconds) for frequently-changing search results
  */
 
-import queryString from 'query-string';
 import type { SearchSubredditsResponse } from '@/types/redditApi';
-import { setParams } from '@/reddit/redditApiTs';
+import { setParams, toQueryString } from '@/reddit/redditApiTs';
 import { redditApi } from '@/redux/api/redditApi';
 
 interface SearchSubredditsArgs {
@@ -47,7 +46,7 @@ export const searchApi = redditApi.injectEndpoints({
         return {
           url: '/api/search_subreddits',
           method: 'POST',
-          data: queryString.stringify(params),
+          data: toQueryString(params),
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },

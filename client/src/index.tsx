@@ -3,7 +3,6 @@ import { Provider } from 'react-redux';
 import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
 import { BrowserRouter } from 'react-router';
-import queryString from 'query-string';
 import { Workbox } from 'workbox-window';
 import { initializeStore } from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
@@ -15,21 +14,17 @@ import reportWebVitals from './reportWebVitals';
 
 const { hash, search } = window.location;
 
-const parsed = queryString.parse(search) as {
-  logout?: string;
-  login?: string;
-  cb?: string;
-};
+const parsed = new URLSearchParams(search);
 
 scrollToPosition(0, 0);
 
-if (parsed.logout !== undefined) {
+if (parsed.has('logout')) {
   localStorage.clear();
   sessionStorage.clear();
   window.location.href = '/';
 }
 
-if (parsed.login !== undefined) {
+if (parsed.has('login')) {
   localStorage.removeItem('state');
   window.location.href = '/';
 }
@@ -70,7 +65,7 @@ if (parsed.login !== undefined || parsed.logout !== undefined) {
 } else {
   const cookieToken = cookies.get('token');
 
-  if (parsed.cb !== undefined || cookieToken === undefined) {
+  if (parsed.has('cb') || cookieToken === undefined) {
     localStorage.clear();
     sessionStorage.clear();
   }

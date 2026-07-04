@@ -1,5 +1,4 @@
 import { useCallback, useEffect } from 'react';
-import queryString from 'query-string';
 import type { To } from 'react-router';
 import { NavLink, useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
@@ -103,9 +102,9 @@ function Sort() {
   const genLink = useCallback(
     (sort: string, t?: string): To => {
       const { listType, target, userType } = listingsFilter;
-      const qs = queryString.parse(search);
+      const qs = new URLSearchParams(search);
       if (t) {
-        qs.t = t;
+        qs.set('t', t);
       }
 
       const to: { pathname: string; search: string } = {
@@ -123,24 +122,23 @@ function Sort() {
             : `/me/m/${target}/${sort}`;
           break;
         case 's':
-          qs.sort = sort;
+          qs.set('sort', sort);
           to.pathname =
             target && target !== 'mine' ? `/r/${target}/search` : '/search';
           break;
         case 'comments':
         case 'u':
-          qs.sort = sort;
+          qs.set('sort', sort);
           break;
         default:
           break;
       }
 
-      if (!isEmpty(qs)) {
+      if (qs.size > 0) {
         if (!sort.match(/^(top|controversial|relevance)$/)) {
-          delete qs.t;
+          qs.delete('t');
         }
-        const searchRendered = queryString.stringify(qs);
-        to.search = `?${searchRendered}`;
+        to.search = `?${qs.toString()}`;
       }
 
       return to;
@@ -208,7 +206,7 @@ function Sort() {
   const renderTimeSubLinks = (sort: string) => {
     const { listType, target } = listingsFilter;
 
-    const qs = queryString.parse(search);
+    const qs = new URLSearchParams(search);
 
     if (
       !sort.match(/^(top|controversial|relevance)$/) ||
@@ -223,7 +221,7 @@ function Sort() {
     Object.entries(timeCats).forEach(([t, linkString]) => {
       const url = genLink(sort, t);
       const linkKey = `time${sort}${t}`;
-      const currentSortQs = (qs.t as string) || 'day';
+      const currentSortQs = qs.get('t') || 'day';
       const active = () => listingsFilter.sort === sort && currentSortQs === t;
 
       const sortActive = active() ? 'sort-active' : '';
@@ -248,7 +246,7 @@ function Sort() {
     sort: string | undefined,
     sortName: string
   ) => {
-    const qs = queryString.parse(search);
+    const qs = new URLSearchParams(search);
 
     let active = false;
 
@@ -260,7 +258,7 @@ function Sort() {
       case 'u':
       case 's':
       case 'comments':
-        active = qs.sort === sortName;
+        active = qs.get('sort') === sortName;
         break;
       default:
         break;
@@ -332,11 +330,9 @@ function Sort() {
     case 'm':
       currentSort = sort ?? 'hot';
       break;
-    case 's': {
-      const searchParsed = queryString.parse(search);
-      currentSort = (searchParsed.sort as string) ?? 'relevance';
+    case 's':
+      currentSort = new URLSearchParams(search).get('sort') ?? 'relevance';
       break;
-    }
     case 'comments':
       currentSort = sort ?? 'best';
       break;

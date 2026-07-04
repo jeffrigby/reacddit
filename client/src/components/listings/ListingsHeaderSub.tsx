@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router';
-import queryString from 'query-string';
 import { useAppSelector } from '@/redux/hooks';
 import {
   useGetSubredditsQuery,
@@ -114,12 +113,12 @@ function ListingsHeaderSub() {
       title = `/m/${target}`;
       break;
     case 's': {
-      const qs = queryString.parse(window.location.search);
+      const q = new URLSearchParams(window.location.search).get('q') ?? '';
       searchEverywhere =
         target !== 'mine' ? (
-          <NavLink to={`/search?q=${qs.q}`}>Search Everywhere</NavLink>
+          <NavLink to={`/search?q=${q}`}>Search Everywhere</NavLink>
         ) : undefined;
-      title = `Search results for '${qs.q}'`;
+      title = `Search results for '${q}'`;
       if (multi) {
         title += ` in /m/${target}`;
       } else if (target !== 'mine') {

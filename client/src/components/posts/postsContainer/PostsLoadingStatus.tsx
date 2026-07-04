@@ -1,7 +1,6 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { useLocation } from 'react-router';
-import queryString from 'query-string';
+import { useSearchParams } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSpinner,
@@ -114,14 +113,14 @@ function getStatusInfo(
 function PostsLoadingStatus(): ReactElement | null {
   // Get data and status from RTK Query via context
   const { data, status } = useListingsContext();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const filter = useAppSelector(selectCurrentFilter);
 
   // Parse search query from URL
-  const searchQuery = useMemo(() => {
-    const qs = queryString.parse(location.search);
-    return (qs.q as string) ?? '';
-  }, [location.search]);
+  const searchQuery = useMemo(
+    () => searchParams.get('q') ?? '',
+    [searchParams]
+  );
 
   // Determine if this is a global search (listType 's' and no target)
   const isGlobalSearch = useMemo(

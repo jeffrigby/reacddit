@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import type { ReactElement, MouseEvent } from 'react';
 import { useNavigate } from 'react-router';
-import queryString from 'query-string';
 import { isMobile } from 'react-device-detect';
 import {
   faHome,
@@ -55,7 +54,7 @@ function NavigationPrimaryLinks(): ReactElement {
         return false;
       }
 
-      const qs = queryString.parse(query ?? '');
+      const qs = new URLSearchParams(query ?? '');
 
       const keys = Object.keys(subredditEntities);
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
@@ -66,8 +65,8 @@ function NavigationPrimaryLinks(): ReactElement {
       }
 
       const sortTopQS =
-        (sort === 'top' || sort === 'controversial') && qs.t
-          ? `?t=${qs.t}`
+        (sort === 'top' || sort === 'controversial') && qs.get('t')
+          ? `?t=${qs.get('t')}`
           : '';
 
       const newSort = sort && sort !== 'relevance' ? sort : 'hot';
