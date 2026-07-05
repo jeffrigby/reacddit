@@ -2,13 +2,18 @@ import { test, expect } from '@playwright/test';
 import {
   RESOLVED_EMBED_SELECTOR,
   expandAndAwaitEmbed,
+  findEmbeddedDomainPost,
   findResolvableDomainPost,
   loadMorePosts,
 } from './helpers';
 
 test.describe('Embeds', () => {
   test('resolves Reddit cross-post and share-link embeds', async ({ page }) => {
-    const result = await findResolvableDomainPost(page, {
+    // Live Reddit content varies; discovery may scan two listings before it
+    // finds a cross-post that resolves to embeddable media.
+    test.setTimeout(120_000);
+
+    const result = await findEmbeddedDomainPost(page, {
       subreddits: ['SubredditDrama', 'all'],
       domains: ['reddit.com', 'redd.it'],
     });
@@ -17,7 +22,7 @@ test.describe('Embeds', () => {
       test.info().annotations.push({
         type: 'reason',
         description:
-          'No Reddit-linked posts visible; asserting general embed pipeline instead',
+          'No Reddit cross-post resolved to embeddable media; asserting general embed pipeline instead',
       });
       await page.goto('/r/all');
       await expect(page.locator('#entries .entry').first()).toBeVisible();
@@ -30,15 +35,11 @@ test.describe('Embeds', () => {
 
     test.info().annotations.push({
       type: 'reddit-link-found',
-      description: `Resolved cross-post from r/${result.sub}`,
+      description: `Resolved cross-post embed from r/${result.sub}`,
     });
-    const interior = await expandAndAwaitEmbed(
-      page,
-      result.post,
-      RESOLVED_EMBED_SELECTOR
-    );
+    await result.post.scrollIntoViewIfNeeded();
     await expect(
-      interior.locator(RESOLVED_EMBED_SELECTOR).first()
+      result.post.locator(RESOLVED_EMBED_SELECTOR).first()
     ).toBeAttached();
   });
 

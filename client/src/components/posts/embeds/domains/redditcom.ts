@@ -6,14 +6,28 @@ import type {
   Listing,
   RedditThing,
 } from '@/types/redditApi';
-import type { EmbedContent } from '@/components/posts/embeds/types';
+import type {
+  EmbedContent,
+  ImageEmbedContent,
+} from '@/components/posts/embeds/types';
 import { redditAPI } from '@/reddit/redditApiTs';
 import { getKeys, tryDomainHandlers } from '@/components/posts/embeds/embeds';
 import { getAxiosErrorStatus } from '@/utils/axiosError';
+import { isSafeUrl } from '@/utils/sanitize';
 
 // Regex patterns for extracting post IDs
 const REDDIT_POST_REGEX = /\/r\/[^/]+\/comments\/([a-z0-9]+)/i;
-const SHORT_LINK_REGEX = /redd\.it\/([a-z0-9]+)/i;
+// Bare redd.it short link. Anchored to a host boundary (`//` or start-of-string,
+// with an optional `www.`) so it ONLY matches the bare redd.it host and NEVER a
+// media subdomain such as i.redd.it, v.redd.it or preview.redd.it — whose paths
+// are image/video FILENAMES, not post IDs. Matches: https://redd.it/<id>,
+// //redd.it/<id>, www.redd.it/<id>. Rejects: https://i.redd.it/<file>.jpeg.
+const SHORT_LINK_REGEX = /(?:^|\/\/)(?:www\.)?redd\.it\/([a-z0-9]+)/i;
+
+// Reddit media hosts that serve direct, embeddable image files.
+const REDDIT_IMAGE_HOSTS = new Set(['i.redd.it', 'preview.redd.it']);
+// Image extensions we can render directly from a Reddit media host.
+const REDDIT_IMAGE_EXTENSION_REGEX = /\.(jpg|jpeg|png|gif|webp)$/i;
 
 // Marker to prevent infinite recursion
 const REDDIT_EMBED_MARKER = '__reddit_embed_processed__';
@@ -79,6 +93,13 @@ const postDataCache = new LRUCache<string, PostData>({
   max: 500,
   ttl: 1000 * 60 * 15, // 15 min
 });
+
+// In-flight post-data fetches keyed by postId. Multiple concurrent render()
+// calls for the same post (very common when many cross-posts point at one
+// thread) share a single /api/info request instead of each enqueueing a
+// duplicate. Entries are deleted when the request settles — on both success
+// and failure — so a failed fetch never poisons a later retry.
+const inFlightPostData = new Map<string, Promise<PostData | null>>();
 
 // Rate-limited queue for Reddit OAuth API calls (shared across all posts on screen).
 // Reddit OAuth limit is ~100 req/min; with batching this is mostly a safety net.
@@ -375,7 +396,13 @@ async function fetchPostData(postId: string): Promise<PostData | null> {
     return cached;
   }
 
-  return redditApiQueue.add(async () => {
+  // Coalesce concurrent callers onto a single in-flight request.
+  const inFlight = inFlightPostData.get(postId);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const request = redditApiQueue.add(async (): Promise<PostData | null> => {
     // Double-check cache — may have been populated while waiting in queue
     const rechecked = postDataCache.get(postId);
     if (rechecked) {
@@ -408,6 +435,16 @@ async function fetchPostData(postId: string): Promise<PostData | null> {
       return null;
     }
   });
+
+  // Clear the in-flight entry once settled (success or failure) so future
+  // callers either hit the cache or start a fresh request. `tracked` is the
+  // promise both stored and returned, so every coalesced caller resolves with
+  // the same result.
+  const tracked = request.finally(() => {
+    inFlightPostData.delete(postId);
+  });
+  inFlightPostData.set(postId, tracked);
+  return tracked;
 }
 
 /**
@@ -461,6 +498,53 @@ export async function prefetchPostData(postIds: string[]): Promise<void> {
   await Promise.all(
     chunks.map((chunk) => redditApiQueue.add(() => fetchChunk(chunk)))
   );
+}
+
+/**
+ * Build an image EmbedContent for a direct Reddit-hosted image URL.
+ *
+ * When a cross-post's linked URL is a direct Reddit media image
+ * (i.redd.it / preview.redd.it with an image extension), it is directly
+ * embeddable and must be rendered here. getKeys() maps such URLs back to the
+ * 'redd' handler — an alias of this very file — which short-circuits on
+ * REDDIT_EMBED_MARKER and would silently drop the image. Returns null for any
+ * URL that is not a safe, direct Reddit-hosted image (e.g. v.redd.it videos,
+ * which lack DASH/media info in PostData and are not embedded here).
+ */
+function buildRedditImageContent(
+  url: string,
+  title: string
+): ImageEmbedContent | null {
+  // Enforce the project's URL safety policy before embedding.
+  if (!isSafeUrl(url)) {
+    return null;
+  }
+
+  let host: string;
+  let pathname: string;
+  try {
+    const parsed = new URL(url);
+    host = parsed.hostname.toLowerCase();
+    pathname = parsed.pathname;
+  } catch {
+    return null;
+  }
+
+  if (!REDDIT_IMAGE_HOSTS.has(host)) {
+    return null;
+  }
+
+  if (!REDDIT_IMAGE_EXTENSION_REGEX.test(pathname)) {
+    return null;
+  }
+
+  // Dimensions are unknown here (PostData carries only url + title); ImageComp
+  // derives the aspect ratio from the loaded image when width/height are absent.
+  return {
+    type: 'image',
+    src: url,
+    title,
+  };
 }
 
 /**
@@ -524,11 +608,30 @@ async function render(
     return null;
   }
 
+  // Direct Reddit-hosted image (i.redd.it / preview.redd.it): render it now.
+  // This MUST run before the recursion guard below — getKeys() maps these URLs
+  // to the 'redd' handler (an alias of this file) which would null them out via
+  // REDDIT_EMBED_MARKER, silently dropping a perfectly embeddable image.
+  const redditImage = buildRedditImageContent(linkedUrl, postData.title);
+  if (redditImage) {
+    return redditImage;
+  }
+
   // Get domain handler keys for the linked URL
   const keys = getKeys(linkedUrl);
 
-  // Skip if no handler or if linked URL is also a Reddit post (prevent recursion)
-  if (!keys || keys.domain === 'redditcom') {
+  // Skip if no handler, or if the linked URL maps back to the reddit family of
+  // handlers (reddit.com → redditcom/reddit; redd.it & its media subdomains →
+  // reddit/redd). Those all route back through this file and would either
+  // recurse or short-circuit on REDDIT_EMBED_MARKER, so stop here. Directly
+  // embeddable Reddit images already returned above.
+  if (
+    !keys ||
+    keys.domain === 'redditcom' ||
+    keys.greedyDomain === 'reddit' ||
+    keys.domain === 'reddit' ||
+    keys.greedyDomain === 'redd'
+  ) {
     return null;
   }
 

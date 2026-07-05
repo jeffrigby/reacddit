@@ -7,11 +7,18 @@ import type {
   DomainKeys,
 } from './types';
 
-// Use Vite's import.meta.glob for dynamic module loading
-const embedModules = import.meta.glob('./domains/*.ts', { eager: true });
-const customEmbedModules = import.meta.glob('./domains_custom/*.ts', {
-  eager: true,
-});
+// Use Vite's import.meta.glob for dynamic module loading.
+// Explicitly exclude test files so co-located specs (e.g. domains/__tests__/*.test.ts)
+// are never pulled into the app bundle — doing so would drag vitest into the runtime
+// module graph and crash app boot in dev and production.
+const embedModules = import.meta.glob(
+  ['./domains/*.ts', '!./domains/**/*.test.ts'],
+  { eager: true }
+);
+const customEmbedModules = import.meta.glob(
+  ['./domains_custom/*.ts', '!./domains_custom/**/*.test.ts'],
+  { eager: true }
+);
 
 const Embeds: EmbedsRegistry = {};
 

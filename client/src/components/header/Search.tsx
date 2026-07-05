@@ -130,7 +130,7 @@ function Search() {
     const sort = currentSearch.get('sort');
     if (sort !== null) {
       qs.sort = sort.match(/^(relevance|new|top)$/) ? sort : 'relevance';
-      qs.t = currentSearch.get('t') || null;
+      qs.t = currentSearch.get('t') ?? null;
     }
 
     return qs;

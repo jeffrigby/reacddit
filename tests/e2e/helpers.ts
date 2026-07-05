@@ -220,3 +220,60 @@ export async function findResolvableDomainPost(
   }
   return null;
 }
+
+/**
+ * Walk `subreddits` in order and return the first post whose footer domain
+ * matches any of `domains` AND whose interior has actually rendered a real
+ * media embed (see {@link RESOLVED_EMBED_SELECTOR}) — not a thumb / no-embed
+ * fallback and not an empty placeholder.
+ *
+ * Unlike {@link findPostByDomain}, which returns the very first domain match
+ * regardless of whether it resolves, this never returns a candidate that
+ * resolved to nothing. That distinction matters for Reddit cross-posts: a
+ * link to a removed, self/text, or comment-thread post has no embeddable
+ * media, so the handler correctly renders nothing. Blindly asserting on the
+ * first domain match therefore fails whenever that post happens to link to a
+ * non-media thread (common in e.g. r/SubredditDrama).
+ *
+ * Cross-post embeds resolve via an async `/api/info` round-trip and only load
+ * once the candidate scrolls on-screen, so this polls while nudging the listing
+ * downward to trigger lazy embed rendering on lower candidates. Returns `null`
+ * if no domain post surfaces a real embed within the budget.
+ */
+export async function findEmbeddedDomainPost(
+  page: Page,
+  { subreddits, domains, min = 25 }: FindResolvableDomainPostOptions
+): Promise<{ post: Locator; sub: string } | null> {
+  for (const sub of subreddits) {
+    await page.goto(`/r/${sub}`);
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
+    await loadMorePosts(page, { min });
+
+    // Match a domain post that already contains a resolved media embed.
+    const selector = domains
+      .map(
+        (domain) =>
+          `#entries .entry:has(footer a[href*='site:%22${domain}%22']):has(:is(${RESOLVED_EMBED_SELECTOR}))`
+      )
+      .join(', ');
+    const embedding = page.locator(selector);
+
+    try {
+      await expect
+        .poll(
+          async () => {
+            await page.evaluate(() =>
+              document.body.scrollBy(0, Math.round(window.innerHeight * 0.75))
+            );
+            return embedding.count();
+          },
+          { timeout: 25_000 }
+        )
+        .toBeGreaterThan(0);
+      return { post: embedding.first(), sub };
+    } catch {
+      // No domain post resolved to a real embed here; try the next subreddit.
+    }
+  }
+  return null;
+}

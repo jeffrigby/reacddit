@@ -221,7 +221,7 @@ function Sort() {
     Object.entries(timeCats).forEach(([t, linkString]) => {
       const url = genLink(sort, t);
       const linkKey = `time${sort}${t}`;
-      const currentSortQs = qs.get('t') || 'day';
+      const currentSortQs = qs.get('t') ?? 'day';
       const active = () => listingsFilter.sort === sort && currentSortQs === t;
 
       const sortActive = active() ? 'sort-active' : '';
