@@ -11,7 +11,6 @@
  * No more manual dispatch(fetchSubreddits({ reset: true }))!
  */
 
-import queryString from 'query-string';
 import { redditApi } from '@/redux/api/redditApi';
 
 interface SubscribeParams {
@@ -53,7 +52,7 @@ export const subredditsApi = redditApi.injectEndpoints({
         return {
           url: '/api/subscribe',
           method: 'POST',
-          data: queryString.stringify(params),
+          data: new URLSearchParams(params).toString(),
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
@@ -76,10 +75,10 @@ export const subredditsApi = redditApi.injectEndpoints({
       query: ({ makeFavorite, srName }) => ({
         url: '/api/favorite',
         method: 'POST',
-        data: queryString.stringify({
+        data: new URLSearchParams({
           make_favorite: makeFavorite.toString(),
           sr_name: srName,
-        }),
+        }).toString(),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },

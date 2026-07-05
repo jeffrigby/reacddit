@@ -41,6 +41,7 @@ function Reload() {
     <div className="header-button">
       <Button
         aria-label="Load New Entries"
+        aria-pressed={stream}
         disabled={!isListingsPage || loading}
         size="sm"
         title="Load New Entries"

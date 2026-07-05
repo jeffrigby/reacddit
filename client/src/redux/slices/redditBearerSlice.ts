@@ -2,11 +2,7 @@
  * Modern Redux Toolkit slice for Reddit OAuth Bearer Token
  * Following Redux Toolkit 2.0+ best practices
  */
-import {
-  createSlice,
-  createAsyncThunk,
-  createSelector,
-} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/types/redux';
 import { getToken, getLoginUrl } from '@/reddit/redditApiTs';
@@ -62,8 +58,19 @@ export const fetchBearer = createAsyncThunk<
     // Note: force parameter is used by condition function below, not here
     try {
       // This is the second call to getToken() - see note above about double fetch
-      const { token, cookieTokenParsed } = await getToken(false);
-      const { auth } = cookieTokenParsed;
+      const tokenResult = await getToken(false);
+      const { token, cookieTokenParsed } = tokenResult;
+
+      // A transient /api/bearer failure (token null, error logged inside
+      // getToken) must NOT brick the app. The failure was logged there for
+      // observability. As long as the existing token cookie still provides a
+      // loginURL we degrade to the normal anonymous/auth experience with an
+      // empty bearer; the 1s poll will pick up a real token once the API
+      // recovers. getLoginUrl() throws only when there is no usable session at
+      // all — that genuinely fatal case falls through to the catch below and
+      // is rejected, but the condition guard no longer latches on 'error', so
+      // it stays recoverable via the poll / a manual retry.
+      const auth = cookieTokenParsed.auth ?? false;
       const loginURL = getLoginUrl();
 
       return {
@@ -88,11 +95,12 @@ export const fetchBearer = createAsyncThunk<
       const state = getState();
       const currentBearer = state.redditBearer;
 
-      // Don't run if already loading or in error state
-      if (
-        currentBearer.status === 'loading' ||
-        currentBearer.status === 'error'
-      ) {
+      // Only skip while a fetch is already in flight. We intentionally do NOT
+      // skip on the 'error' status: doing so permanently blocked every future
+      // dispatch after a single transient /api/bearer failure, bricking the
+      // app with no recovery. Allowing re-dispatch lets the poll / a manual
+      // retry clear the error and re-attempt.
+      if (currentBearer.status === 'loading') {
         return false;
       }
 
@@ -101,7 +109,7 @@ export const fetchBearer = createAsyncThunk<
       // See PERFORMANCE NOTE above for why this double fetch is acceptable
       try {
         const { token, cookieTokenParsed } = await getToken(false);
-        const { auth } = cookieTokenParsed;
+        const auth = cookieTokenParsed.auth ?? false;
         const loginURL = getLoginUrl();
         const newStatus = auth ? 'auth' : 'anon';
 
@@ -127,6 +135,16 @@ const bearerSlice = createSlice({
       state.loginURL = null;
       state.error = null;
     },
+  },
+  selectors: {
+    selectBearerState: (state): BearerState => state,
+    selectBearer: (state): string | null => state.bearer,
+    selectBearerStatus: (state): BearerState['status'] => state.status,
+    selectLoginURL: (state): string | null => state.loginURL,
+    selectBearerError: (state): string | null => state.error,
+    selectIsAuth: (state): boolean => state.status === 'auth',
+    selectBearerLoading: (state): boolean =>
+      state.status === 'loading' || state.status === 'idle',
   },
   extraReducers: (builder) => {
     builder
@@ -164,27 +182,12 @@ export const { bearerCleared } = bearerSlice.actions;
 
 export default bearerSlice.reducer;
 
-export const selectBearerState = (state: RootState): BearerState =>
-  state.redditBearer;
-
-export const selectBearer = (state: RootState): string | null =>
-  state.redditBearer.bearer;
-
-export const selectBearerStatus = (state: RootState): BearerState['status'] =>
-  state.redditBearer.status;
-
-export const selectLoginURL = (state: RootState): string | null =>
-  state.redditBearer.loginURL;
-
-export const selectBearerError = (state: RootState): string | null =>
-  state.redditBearer.error;
-
-export const selectIsAuth = createSelector(
-  [selectBearerStatus],
-  (status) => status === 'auth'
-);
-
-export const selectBearerLoading = createSelector(
-  [selectBearerStatus],
-  (status) => status === 'loading' || status === 'idle'
-);
+export const {
+  selectBearerState,
+  selectBearer,
+  selectBearerStatus,
+  selectLoginURL,
+  selectBearerError,
+  selectIsAuth,
+  selectBearerLoading,
+} = bearerSlice.getSelectors((state: RootState) => state.redditBearer);

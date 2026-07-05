@@ -1,11 +1,11 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import {
   memo,
+  use,
   useState,
   useEffect,
   useRef,
   useCallback,
-  useContext,
   useMemo,
 } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router';
@@ -41,7 +41,7 @@ import PostHeader from './PostHeader';
 import PostFooter from './PostFooter';
 
 interface UseRenderedContentReturn {
-  renderedContent: EmbedContent;
+  renderedContent: EmbedContent | null;
 }
 
 function useRenderedContent(
@@ -49,7 +49,9 @@ function useRenderedContent(
   kind: string,
   shouldLoad: boolean
 ): UseRenderedContentReturn {
-  const [renderedContent, setRenderedContent] = useState<EmbedContent>(null);
+  const [renderedContent, setRenderedContent] = useState<EmbedContent | null>(
+    null
+  );
   const isRendered = useRef(false);
 
   useEffect(() => {
@@ -130,9 +132,10 @@ function Post({
     selectPostActionable(state, postName, idx, location.key)
   );
 
-  const [lastExpanded, setLastExpanded] = useContext(
-    ListingsContextLastExpanded
-  ) as [string, (value: string) => void];
+  const [lastExpanded, setLastExpanded] = use(ListingsContextLastExpanded) as [
+    string,
+    (value: string) => void,
+  ];
 
   // Get shared IntersectionObservers from context
   const { observeForLoading, observeForVisibility, observeForMediaControl } =
@@ -220,15 +223,19 @@ function Post({
     duplicate,
   ]);
 
-  const [expand, setExpand] = useState(initView());
+  const [expand, setExpand] = useState(initView);
+
+  const prevInitViewRef = useRef(initView);
+  if (prevInitViewRef.current !== initView) {
+    prevInitViewRef.current = initView;
+    const newView = initView();
+    if (newView !== expand) {
+      setExpand(newView);
+    }
+  }
 
   useEffect(() => {
-    const view = initView();
-    setExpand(view);
-  }, [initView]);
-
-  useEffect(() => {
-    let reposInt: NodeJS.Timeout | undefined;
+    let reposInt: ReturnType<typeof setTimeout> | undefined;
     if (siteSettings.view === 'condensed' && lastExpanded) {
       if (expand && data.name !== lastExpanded) {
         setExpand(false);
@@ -400,9 +407,10 @@ function Post({
   );
 
   return (
-    <PostsContextData.Provider value={postContext}>
-      <PostsContextActionable.Provider value={actionable}>
+    <PostsContextData value={postContext}>
+      <PostsContextActionable value={actionable}>
         <div
+          aria-current={focused || undefined}
           className={classArray}
           id={data.name}
           key={data.name}
@@ -442,8 +450,8 @@ function Post({
             </div>
           </div>
         </div>
-      </PostsContextActionable.Provider>
-    </PostsContextData.Provider>
+      </PostsContextActionable>
+    </PostsContextData>
   );
 }
 

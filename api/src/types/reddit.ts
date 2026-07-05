@@ -33,7 +33,7 @@ export interface BearerTokenResponse {
   accessToken: string;
   expires: number;
   auth: boolean;
-  type: "new" | "cached" | "refresh" | "newanon";
+  type: 'new' | 'cached' | 'refresh' | 'newanon';
   loginUrl: string;
 }
 

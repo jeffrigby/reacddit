@@ -32,8 +32,7 @@ function ListingsRoute({
   useEffect(() => {
     // Track the current path in history
     dispatch(historyPathAdded(location.pathname));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname]);
+  }, [dispatch, location.pathname]);
 
   const overrideMatch: Record<string, string | boolean | undefined> = {
     ...match,

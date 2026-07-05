@@ -1,6 +1,6 @@
 import {
   memo,
-  useContext,
+  use,
   useEffect,
   useState,
   useCallback,
@@ -63,7 +63,7 @@ function PostVote() {
   const postContext = usePostContext();
   const { post } = postContext;
   const data = post.data as LinkData;
-  const actionable = useContext(PostsContextActionable) as boolean;
+  const actionable = use(PostsContextActionable) as boolean;
 
   const [voteState, setVoteState] = useState<VoteState>({
     ups: data.ups,
@@ -82,6 +82,7 @@ function PostVote() {
   // RTK Query mutation hook
   const [voteOnPost] = useVoteMutation();
 
+  // eslint-disable-next-line @eslint-react/purity -- approximate 6-month check; render-time read is fine
   const expired = Date.now() / 1000 - data.created_utc;
   const sixmonthSeconds = 182.5 * 86400;
   const disabled = bearer.status !== 'auth' || expired > sixmonthSeconds;
@@ -160,6 +161,7 @@ function PostVote() {
   return (
     <div className="vote">
       <Button
+        aria-pressed={optimisticVoteState.likes === true}
         className="shadow-none"
         disabled={disabled}
         size="sm"
@@ -173,6 +175,7 @@ function PostVote() {
       <span>{optimisticVoteState.ups.toLocaleString()}</span>
       <Button
         aria-label="Vote Down"
+        aria-pressed={optimisticVoteState.likes === false}
         className="shadow-none"
         disabled={disabled}
         size="sm"

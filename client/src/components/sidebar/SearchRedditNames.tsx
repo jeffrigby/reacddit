@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
-import queryString from 'query-string';
+import { useSearchParams } from 'react-router';
 import { useAppSelector } from '@/redux/hooks';
 import {
   useGetSubredditsQuery,
@@ -23,7 +22,7 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const sort = useAppSelector((state) => state.listings.currentFilter.sort);
   const auth = redditBearer.status === 'auth';
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
 
@@ -61,9 +60,7 @@ function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
     (value) => value && !lowerCaseSubreddits.includes(value.toLowerCase())
   );
 
-  const query = queryString.parse(location.search);
-  const { t } = query;
-  const sortPath = buildSortPath(sort, typeof t === 'string' ? t : undefined);
+  const sortPath = buildSortPath(sort, searchParams.get('t') ?? undefined);
 
   let navItems: React.ReactElement[] = [];
   if (filteredSubs.length > 0) {

@@ -38,7 +38,7 @@ export type RootState = ReturnType<typeof rootReducer>;
  * - Development-mode checks for mutations and serializability
  * - RTK Query middleware for caching and request management
  */
-function makeStore(initialState?: Partial<RootState>) {
+export function makeStore(initialState?: Partial<RootState>) {
   return configureStore({
     reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>

@@ -34,7 +34,8 @@
     "allowUnreachableCode": false,
 
     /* Completeness */
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": ["scripts/**/*"],
   "exclude": ["node_modules", "dist", ".aws-sam", "api", "client", "proxy"]

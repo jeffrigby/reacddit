@@ -16,15 +16,15 @@
     "noEmit": false,
     "jsx": "react-jsx",
     "outDir": "./dist",
-    "baseUrl": "src",
+    "types": ["vite/client"],
     "paths": {
-      "@/*": ["*"],
-      "@/types/*": ["types/*"],
-      "@/redux/*": ["redux/*"],
-      "@/components/*": ["components/*"],
-      "@/styles/*": ["styles/*"],
-      "@/common": ["common.js"],
-      "@/test/*": ["test/*"]
+      "@/*": ["./src/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/redux/*": ["./src/redux/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/styles/*": ["./src/styles/*"],
+      "@/common": ["./src/common.js"],
+      "@/test/*": ["./src/test/*"]
     }
   },
   "include": ["src/**/*"],

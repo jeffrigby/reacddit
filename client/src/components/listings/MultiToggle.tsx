@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { Form, Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
@@ -16,8 +15,6 @@ interface MultiToggleProps {
 }
 
 function MultiToggle({ srName, about }: MultiToggleProps) {
-  const multiRef = useRef<HTMLDivElement>(null);
-
   const redditBearer = useAppSelector((state) => state.redditBearer);
 
   // RTK Query hooks
@@ -27,23 +24,6 @@ function MultiToggle({ srName, about }: MultiToggleProps) {
   );
   const [addSubreddit] = useAddSubredditToMultiMutation();
   const [removeSubreddit] = useRemoveSubredditFromMultiMutation();
-
-  useEffect(() => {
-    const disableClose = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (!target.classList.contains('multi-toggle-input')) {
-        e.stopPropagation();
-      }
-    };
-
-    const multiMenu = multiRef.current;
-    if (multiMenu) {
-      multiMenu.addEventListener('click', disableClose);
-      return () => {
-        multiMenu.removeEventListener('click', disableClose);
-      };
-    }
-  }, []);
 
   // Check if about is valid (not null, not empty object)
   const hasAboutData = about && 'name' in about;
@@ -100,7 +80,7 @@ function MultiToggle({ srName, about }: MultiToggleProps) {
   });
 
   return (
-    <Dropdown className="multi-menu header-button ms-2">
+    <Dropdown autoClose="outside" className="multi-menu header-button ms-2">
       <Dropdown.Toggle
         aria-label="Multis"
         className="form-control-sm"
@@ -110,9 +90,7 @@ function MultiToggle({ srName, about }: MultiToggleProps) {
       >
         Multis <FontAwesomeIcon icon={faCaretDown} />
       </Dropdown.Toggle>
-      <Dropdown.Menu align="end" ref={multiRef}>
-        {menuItems}
-      </Dropdown.Menu>
+      <Dropdown.Menu align="end">{menuItems}</Dropdown.Menu>
     </Dropdown>
   );
 }

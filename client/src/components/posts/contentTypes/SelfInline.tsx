@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faChevronLeft,
@@ -21,9 +21,7 @@ interface SelfInlineProps {
 
 function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
   const [inlineIdx, setInlineIdx] = useState(0);
-  const [resolvedContent, setResolvedContent] = useState<ResolvedContent[]>([]);
-
-  useEffect(() => {
+  const resolvedContent = useMemo(() => {
     const resolved: ResolvedContent[] = [];
     inline.forEach((value, key) => {
       if (value) {
@@ -33,12 +31,12 @@ function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
         });
       }
     });
-    setResolvedContent(resolved);
+    return resolved;
   }, [inline, inlineLinks]);
 
   const totalLinks = resolvedContent.length;
   if (!totalLinks) {
-    return '';
+    return null;
   }
 
   const prevEntry = () => {
@@ -50,10 +48,6 @@ function SelfInline({ inline, inlineLinks, name }: SelfInlineProps) {
     const nextIdx = inlineIdx === totalLinks - 1 ? 0 : inlineIdx + 1;
     setInlineIdx(nextIdx);
   };
-
-  if (resolvedContent.length === 0) {
-    return null;
-  }
 
   const inlineKey = `${name}-${inlineIdx}`;
   const inlineLink = resolvedContent[inlineIdx].link;

@@ -148,7 +148,6 @@ export interface RawHTMLEmbedContent extends BaseEmbedContent {
   html: string;
 }
 
-// Union type for all possible embed content
 export type EmbedContent =
   | ImageEmbedContent
   | VideoEmbedContent
@@ -159,8 +158,7 @@ export type EmbedContent =
   | SocialEmbedContent
   | ImgurAlbumEmbedContent
   | ThumbEmbedContent
-  | RawHTMLEmbedContent
-  | null;
+  | RawHTMLEmbedContent;
 
 /**
  * Handler function contract for domain-specific embed renderers
@@ -194,7 +192,7 @@ export type EmbedContent =
  */
 export type EmbedRenderFunction = (
   entry: LinkData | CommentData
-) => EmbedContent | Promise<EmbedContent>;
+) => EmbedContent | null | Promise<EmbedContent | null>;
 
 // Embeds registry type
 export type EmbedsRegistry = Record<string, EmbedRenderFunction>;
@@ -210,3 +208,5 @@ export interface InlineLinksResult {
   renderedLinks: string[];
   inline: EmbedContent[];
 }
+
+export type MaybeEmbedContent = EmbedContent | null;

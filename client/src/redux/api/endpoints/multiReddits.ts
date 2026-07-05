@@ -13,7 +13,6 @@
  * - 24-hour cache with tag-based invalidation on modifications
  */
 
-import queryString from 'query-string';
 import type {
   Thing,
   LabeledMultiData,
@@ -146,13 +145,13 @@ export const multiRedditsApi = redditApi.injectEndpoints({
       query: ({ name, description, visibility }) => ({
         url: '/api/multi',
         method: 'POST',
-        data: queryString.stringify({
+        data: new URLSearchParams({
           model: JSON.stringify({
             description_md: description,
             display_name: name,
             visibility,
           }),
-        }),
+        }).toString(),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },

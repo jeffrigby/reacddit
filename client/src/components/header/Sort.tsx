@@ -1,8 +1,6 @@
-import { useEffect } from 'react';
-import queryString from 'query-string';
-import type { To } from 'react-router-dom';
-import { NavLink } from 'react-router-dom';
-import { useNavigate, useLocation } from 'react-router';
+import { useCallback, useEffect } from 'react';
+import type { To } from 'react-router';
+import { NavLink, useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
 import { Dropdown } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -101,109 +99,114 @@ function Sort() {
     <FontAwesomeIcon fixedWidth icon={sortIcons[sort]} />
   );
 
-  const genLink = (sort: string, t?: string): To => {
-    const { listType, target, userType } = listingsFilter;
-    const qs = queryString.parse(search);
-    if (t) {
-      qs.t = t;
-    }
-
-    const to: { pathname: string; search: string } = {
-      pathname: '',
-      search: '',
-    };
-
-    switch (listType) {
-      case 'r':
-        to.pathname = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
-        break;
-      case 'm':
-        to.pathname = !me
-          ? `/user/${target}/m${userType}/${sort}`
-          : `/me/m/${target}/${sort}`;
-        break;
-      case 's':
-        qs.sort = sort;
-        to.pathname =
-          target && target !== 'mine' ? `/r/${target}/search` : '/search';
-        break;
-      case 'comments':
-      case 'u':
-        qs.sort = sort;
-        break;
-      default:
-        break;
-    }
-
-    if (!isEmpty(qs)) {
-      if (!sort.match(/^(top|controversial|relevance)$/)) {
-        delete qs.t;
+  const genLink = useCallback(
+    (sort: string, t?: string): To => {
+      const { listType, target, userType } = listingsFilter;
+      const qs = new URLSearchParams(search);
+      if (t) {
+        qs.set('t', t);
       }
-      const searchRendered = queryString.stringify(qs);
-      to.search = `?${searchRendered}`;
-    }
 
-    return to;
-  };
+      const to: { pathname: string; search: string } = {
+        pathname: '',
+        search: '',
+      };
 
-  const handleSortHotkey = (event: KeyboardEvent) => {
-    const { target, listType } = listingsFilter;
-    if (hotkeyStatus() && target !== 'friends') {
-      const pressedKey = event.key;
-      switch (pressedKey) {
-        case 'H': {
-          navigate(genLink('hot'));
+      switch (listType) {
+        case 'r':
+          to.pathname = target === 'mine' ? `/${sort}` : `/r/${target}/${sort}`;
           break;
-        }
-        case 'B': {
-          navigate(genLink('best'));
+        case 'm':
+          to.pathname = !me
+            ? `/user/${target}/m${userType}/${sort}`
+            : `/me/m/${target}/${sort}`;
           break;
-        }
-        case 'N': {
-          navigate(genLink('new'));
+        case 's':
+          qs.set('sort', sort);
+          to.pathname =
+            target && target !== 'mine' ? `/r/${target}/search` : '/search';
           break;
-        }
-        case 'C': {
-          navigate(genLink('controversial'));
+        case 'comments':
+        case 'u':
+          qs.set('sort', sort);
           break;
-        }
-        case 'R': {
-          navigate(genLink('rising'));
-          break;
-        }
-        case 'T': {
-          navigate(genLink('top'));
-          break;
-        }
-        case 'Q': {
-          if (listType === 'comments') {
-            navigate(genLink('qa'));
-          }
-          break;
-        }
-        case 'O': {
-          if (listType === 'comments') {
-            navigate(genLink('old'));
-          }
-          break;
-        }
         default:
           break;
       }
-    }
-  };
+
+      if (qs.size > 0) {
+        if (!sort.match(/^(top|controversial|relevance)$/)) {
+          qs.delete('t');
+        }
+        to.search = `?${qs.toString()}`;
+      }
+
+      return to;
+    },
+    [listingsFilter, me, search]
+  );
+
+  const handleSortHotkey = useCallback(
+    (event: KeyboardEvent) => {
+      const { target, listType } = listingsFilter;
+      if (hotkeyStatus() && target !== 'friends') {
+        const pressedKey = event.key;
+        switch (pressedKey) {
+          case 'H': {
+            navigate(genLink('hot'));
+            break;
+          }
+          case 'B': {
+            navigate(genLink('best'));
+            break;
+          }
+          case 'N': {
+            navigate(genLink('new'));
+            break;
+          }
+          case 'C': {
+            navigate(genLink('controversial'));
+            break;
+          }
+          case 'R': {
+            navigate(genLink('rising'));
+            break;
+          }
+          case 'T': {
+            navigate(genLink('top'));
+            break;
+          }
+          case 'Q': {
+            if (listType === 'comments') {
+              navigate(genLink('qa'));
+            }
+            break;
+          }
+          case 'O': {
+            if (listType === 'comments') {
+              navigate(genLink('old'));
+            }
+            break;
+          }
+          default:
+            break;
+        }
+      }
+    },
+    [genLink, listingsFilter, navigate]
+  );
 
   useEffect(() => {
     document.addEventListener('keydown', handleSortHotkey);
     return () => {
       document.removeEventListener('keydown', handleSortHotkey);
     };
-  });
+  }, [handleSortHotkey]);
 
   const renderTimeSubLinks = (sort: string) => {
     const { listType, target } = listingsFilter;
 
-    const qs = queryString.parse(search);
+    const qs = new URLSearchParams(search);
 
     if (
       !sort.match(/^(top|controversial|relevance)$/) ||
@@ -218,7 +221,7 @@ function Sort() {
     Object.entries(timeCats).forEach(([t, linkString]) => {
       const url = genLink(sort, t);
       const linkKey = `time${sort}${t}`;
-      const currentSortQs = (qs.t as string) || 'day';
+      const currentSortQs = qs.get('t') ?? 'day';
       const active = () => listingsFilter.sort === sort && currentSortQs === t;
 
       const sortActive = active() ? 'sort-active' : '';
@@ -243,7 +246,7 @@ function Sort() {
     sort: string | undefined,
     sortName: string
   ) => {
-    const qs = queryString.parse(search);
+    const qs = new URLSearchParams(search);
 
     let active = false;
 
@@ -255,7 +258,7 @@ function Sort() {
       case 'u':
       case 's':
       case 'comments':
-        active = qs.sort === sortName;
+        active = qs.get('sort') === sortName;
         break;
       default:
         break;
@@ -327,11 +330,9 @@ function Sort() {
     case 'm':
       currentSort = sort ?? 'hot';
       break;
-    case 's': {
-      const searchParsed = queryString.parse(search);
-      currentSort = (searchParsed.sort as string) ?? 'relevance';
+    case 's':
+      currentSort = new URLSearchParams(search).get('sort') ?? 'relevance';
       break;
-    }
     case 'comments':
       currentSort = sort ?? 'best';
       break;

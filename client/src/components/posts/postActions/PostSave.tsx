@@ -1,6 +1,6 @@
 import {
   memo,
-  useContext,
+  use,
   useEffect,
   useState,
   useCallback,
@@ -23,7 +23,7 @@ function PostSave() {
   const postContext = usePostContext();
   const { post } = postContext;
   const data = post.data as LinkData;
-  const actionable = useContext(PostsContextActionable) as boolean;
+  const actionable = use(PostsContextActionable) as boolean;
 
   const [savedState, setSavedState] = useState(data.saved);
   const [optimisticSaved, setOptimisticSaved] = useOptimistic(

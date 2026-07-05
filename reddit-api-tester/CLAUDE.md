@@ -2,6 +2,8 @@
 
 Comprehensive Reddit API testing tool to validate responses against TypeScript type definitions.
 
+**Standalone package** — NOT an npm workspace. Run `npm install` inside `reddit-api-tester/` separately. TypeScript pinned to 5.8.3 (rest of project uses 6.x).
+
 ## Purpose
 
 - Test Reddit API endpoints directly
@@ -85,7 +87,7 @@ DEBUG=true npm run test-api test -- --endpoints "/api/v1/me"
 
 ```bash
 npm run build    # Compile TypeScript
-npm test         # Run tests
+npm run dev      # Run CLI directly (tsx) — alias of test-api
 ```
 
 Uses Commander.js for CLI, Axios for HTTP requests, Node.js native modules only.

@@ -68,50 +68,6 @@ export function hotkeyStatus(): boolean {
   return !isTextArea && !isIframe && !isTextInput;
 }
 
-interface RedditEntry {
-  data: {
-    children: Array<{
-      data: {
-        name: string;
-        [key: string]: unknown;
-      };
-    }>;
-    [key: string]: unknown;
-  };
-}
-
-interface KeyedRedditEntry {
-  data: {
-    children: {
-      [name: string]: {
-        data: {
-          name: string;
-          [key: string]: unknown;
-        };
-      };
-    };
-    [key: string]: unknown;
-  };
-}
-
-export function keyEntryChildren(entries: RedditEntry): KeyedRedditEntry {
-  const newChildren = entries.data.children.reduce(
-    (acc, item) => ({
-      ...acc,
-      [item.data.name]: item,
-    }),
-    {} as KeyedRedditEntry['data']['children']
-  );
-
-  return {
-    ...entries,
-    data: {
-      ...entries.data,
-      children: newChildren,
-    },
-  } as KeyedRedditEntry;
-}
-
 export function isNumeric(value: unknown): value is number | string {
   if (typeof value === 'number') {
     return true;

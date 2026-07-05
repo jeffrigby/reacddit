@@ -13,7 +13,11 @@ function HTTPSError({ content }: HTTPSErrorProps) {
     <div className="self">
       <p>
         <FontAwesomeIcon icon={faExclamationCircle} /> Link is not HTTPS. Click{' '}
-        <a href={sanitizeHref(src)} rel="noreferrer" target="_blank">
+        <a
+          href={src ? sanitizeHref(src) : undefined}
+          rel="noreferrer"
+          target="_blank"
+        >
           here
         </a>{' '}
         to load the link in a new window.

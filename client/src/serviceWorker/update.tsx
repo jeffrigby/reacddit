@@ -79,8 +79,6 @@ function ServiceWorkerUpdate(): React.ReactNode {
     workbox.addEventListener('waiting', handleWaiting);
     workbox.addEventListener('controlling', handleControlling);
 
-    // Check if there's already a waiting SW (workbox already registered in index.tsx)
-    // We just check the existing registration, not register again
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then((registration) => {
         if (registration?.waiting) {

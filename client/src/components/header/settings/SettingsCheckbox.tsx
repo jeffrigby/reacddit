@@ -3,7 +3,9 @@ import type { SiteSettingsState } from '@/redux/slices/siteSettingsSlice';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 
 type BooleanSettingKey = {
-  [K in keyof SiteSettingsState]: SiteSettingsState[K] extends boolean
+  [K in keyof SiteSettingsState]-?: NonNullable<
+    SiteSettingsState[K]
+  > extends boolean
     ? K
     : never;
 }[keyof SiteSettingsState];
@@ -24,15 +26,13 @@ function SettingsCheckbox({
   onChange,
 }: SettingsCheckboxProps): React.JSX.Element {
   const checked = useAppSelector(
-    (state) =>
-      (state.siteSettings[settingKey as keyof SiteSettingsState] as boolean) ??
-      false
+    (state) => state.siteSettings[settingKey] ?? false
   );
   const dispatch = useAppDispatch();
 
   const handleChange = (): void => {
     const newValue = !checked;
-    dispatch(siteSettingsChanged({ [settingKey as string]: newValue }));
+    dispatch(siteSettingsChanged({ [settingKey]: newValue }));
     onChange?.(newValue);
   };
 

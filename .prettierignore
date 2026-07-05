@@ -1,0 +1,10 @@
+**/node_modules/
+**/dist/
+**/dev-dist/
+**/.aws-sam/
+**/.ssl/
+**/coverage/
+**/playwright-report/
+**/test-results/
+package-lock.json
+**/*.min.*

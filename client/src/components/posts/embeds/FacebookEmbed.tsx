@@ -90,7 +90,7 @@ function FacebookEmbed({ url }: FacebookEmbedProps): React.JSX.Element {
 
     // Load Facebook SDK if not already loaded
     if (!document.getElementById('facebook-jssdk')) {
-      // Initialize FB async callback
+      // Initialize FB async callback (only set once when SDK is first loaded)
       window.fbAsyncInit = function () {
         if (window.FB) {
           window.FB.XFBML.parse();

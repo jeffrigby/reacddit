@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, use } from 'react';
 import type { Context } from 'react';
 import type { LinkData, CommentData } from '@/types/redditApi';
 
@@ -20,10 +20,10 @@ export const PostsContextActionable: Context<boolean | null> = createContext<
 >(null);
 
 export function usePostContext(): PostContextData {
-  const context = useContext(PostsContextData);
+  const context = use(PostsContextData);
   if (!context) {
     throw new Error(
-      'usePostContext must be used within a PostsContextData.Provider'
+      'usePostContext must be used within a PostsContextData provider'
     );
   }
   return context;

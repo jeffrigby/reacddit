@@ -9,7 +9,6 @@
  * The mutations here handle the API call and can optionally invalidate related caches.
  */
 
-import queryString from 'query-string';
 import { redditApi } from '@/redux/api/redditApi';
 
 type VoteDirection = -1 | 0 | 1;
@@ -46,11 +45,11 @@ export const votesApi = redditApi.injectEndpoints({
       query: ({ id, dir }) => ({
         url: '/api/vote',
         method: 'POST',
-        data: queryString.stringify({
+        data: new URLSearchParams({
           id,
-          dir,
-          rank: 1, // Required by Reddit API
-        }),
+          dir: String(dir),
+          rank: '1', // Required by Reddit API
+        }).toString(),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -71,7 +70,9 @@ export const votesApi = redditApi.injectEndpoints({
       query: ({ id, category }) => ({
         url: '/api/save',
         method: 'POST',
-        data: queryString.stringify(category ? { id, category } : { id }),
+        data: new URLSearchParams(
+          category ? { id, category } : { id }
+        ).toString(),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -90,7 +91,7 @@ export const votesApi = redditApi.injectEndpoints({
       query: ({ id }) => ({
         url: '/api/unsave',
         method: 'POST',
-        data: queryString.stringify({ id }),
+        data: new URLSearchParams({ id }).toString(),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },

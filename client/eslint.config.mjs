@@ -1,32 +1,24 @@
-import react from 'eslint-plugin-react';
+import eslintReact from '@eslint-react/eslint-plugin';
 import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11Y from 'eslint-plugin-jsx-a11y';
-import prettier from 'eslint-plugin-prettier';
-import importPlugin from 'eslint-plugin-import';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
+import importPlugin from 'eslint-plugin-import-x';
+import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier';
 import globals from 'globals';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+export default tseslint.config(
+  {
+    ignores: ['**/dist/**', '**/node_modules/**', '**/dev-dist/**'],
+  },
 
-export default [
   // Base JavaScript configuration
   {
     files: ['**/*.{js,jsx}'],
+    extends: [eslintReact.configs.recommended],
     plugins: {
-      react,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11Y,
-      prettier,
-      import: importPlugin,
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
+      'import-x': importPlugin,
     },
     languageOptions: {
       globals: {
@@ -43,7 +35,6 @@ export default [
       },
     },
     rules: {
-      'prettier/prettier': 'warn',
       'no-param-reassign': [
         'error',
         {
@@ -59,7 +50,6 @@ export default [
           destructuredArrayIgnorePattern: '^_',
         },
       ],
-      'react/jsx-uses-vars': 'error',
       'no-unused-expressions': [
         'error',
         {
@@ -67,32 +57,10 @@ export default [
           allowTernary: false,
         },
       ],
-      'import/no-cycle': ['error', { maxDepth: 1 }],
+      'import-x/no-cycle': ['error', { maxDepth: 1 }],
       'no-unreachable': 'warn',
-      'react/forbid-prop-types': 'off',
-      'react/require-default-props': 'off',
-      'react/jsx-filename-extension': 'off',
-      'react/jsx-sort-props': [
-        'warn',
-        {
-          callbacksLast: true,
-          shorthandFirst: true,
-        },
-      ],
-      'react/jsx-no-constructed-context-values': 'warn',
-      'react/no-array-index-key': 'warn',
-      'react/function-component-definition': [
-        'warn',
-        {
-          namedComponents: 'function-declaration',
-          unnamedComponents: 'arrow-function',
-        },
-      ],
-      'react/destructuring-assignment': ['warn', 'always'],
-      'react/jsx-curly-brace-presence': [
-        'warn',
-        { props: 'never', children: 'never' },
-      ],
+      '@eslint-react/no-unstable-context-value': 'warn',
+      '@eslint-react/no-array-index-key': 'warn',
       'jsx-a11y/click-events-have-key-events': 'warn',
       'jsx-a11y/no-static-element-interactions': 'warn',
       'jsx-a11y/role-has-required-aria-props': 'warn',
@@ -104,7 +72,7 @@ export default [
       'prefer-const': 'warn',
       'no-var': 'error',
       eqeqeq: ['error', 'always', { null: 'ignore' }],
-      'import/order': [
+      'import-x/order': [
         'warn',
         {
           groups: [
@@ -121,24 +89,22 @@ export default [
   // TypeScript configuration
   {
     files: ['**/*.{ts,tsx}'],
+    extends: [eslintReact.configs['recommended-typescript']],
     plugins: {
-      '@typescript-eslint': typescriptEslint,
-      react,
+      '@typescript-eslint': tseslint.plugin,
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11Y,
-      prettier,
-      import: importPlugin,
+      'import-x': importPlugin,
     },
     languageOptions: {
-      parser: typescriptParser,
+      parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 2024,
         sourceType: 'module',
         ecmaFeatures: {
           jsx: true,
         },
-        project: './tsconfig.json',
-        tsconfigRootDir: __dirname,
+        projectService: true,
       },
       globals: {
         ...globals.browser,
@@ -147,18 +113,15 @@ export default [
       },
     },
     settings: {
-      react: {
-        version: 'detect',
-      },
-      'import/resolver': {
+      'import-x/resolver': {
         typescript: {
           alwaysTryTypes: true,
           project: './tsconfig.json',
         },
+        node: true,
       },
     },
     rules: {
-      'prettier/prettier': 'warn',
       'no-param-reassign': [
         'error',
         {
@@ -174,32 +137,10 @@ export default [
           allowTernary: false,
         },
       ],
-      'import/no-cycle': ['error', { maxDepth: 1 }],
+      'import-x/no-cycle': ['error', { maxDepth: 1 }],
       'no-unreachable': 'warn',
-      'react/forbid-prop-types': 'off',
-      'react/require-default-props': 'off',
-      'react/jsx-filename-extension': ['warn', { extensions: ['.tsx'] }],
-      'react/jsx-sort-props': [
-        'warn',
-        {
-          callbacksLast: true,
-          shorthandFirst: true,
-        },
-      ],
-      'react/jsx-no-constructed-context-values': 'warn',
-      'react/no-array-index-key': 'warn',
-      'react/function-component-definition': [
-        'warn',
-        {
-          namedComponents: 'function-declaration',
-          unnamedComponents: 'arrow-function',
-        },
-      ],
-      'react/destructuring-assignment': ['warn', 'always'],
-      'react/jsx-curly-brace-presence': [
-        'warn',
-        { props: 'never', children: 'never' },
-      ],
+      '@eslint-react/no-unstable-context-value': 'warn',
+      '@eslint-react/no-array-index-key': 'warn',
       'jsx-a11y/click-events-have-key-events': 'warn',
       'jsx-a11y/no-static-element-interactions': 'warn',
       'jsx-a11y/role-has-required-aria-props': 'warn',
@@ -209,7 +150,7 @@ export default [
       'prefer-const': 'warn',
       'no-var': 'error',
       eqeqeq: ['error', 'always', { null: 'ignore' }],
-      'import/order': [
+      'import-x/order': [
         'warn',
         {
           groups: [
@@ -234,7 +175,6 @@ export default [
           destructuredArrayIgnorePattern: '^_',
         },
       ],
-      'react/jsx-uses-vars': 'error',
       '@typescript-eslint/no-use-before-define': 'error',
       '@typescript-eslint/no-redeclare': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
@@ -251,4 +191,31 @@ export default [
       ],
     },
   },
-];
+
+  // These files render content already sanitized via DOMPurify (see @/utils/sanitize).
+  {
+    files: [
+      'src/components/posts/contentTypes/RawHTML.tsx',
+      'src/components/posts/contentTypes/Self.tsx',
+    ],
+    rules: {
+      '@eslint-react/dom-no-dangerously-set-innerhtml': 'off',
+    },
+  },
+
+  // Rules from @eslint-react's recommended preset that require dedicated cleanup
+  // passes. Re-enable each one as part of focused refactors:
+  //   - naming-convention-ref-name: rename existing refs to use the `Ref` suffix
+  //   - naming-convention-context-name: rename contexts to end in `Context`
+  //   - set-state-in-effect: refactor effect-driven state updates to derived
+  //     state, event handlers, or refs where appropriate
+  {
+    rules: {
+      '@eslint-react/naming-convention-ref-name': 'off',
+      '@eslint-react/naming-convention-context-name': 'off',
+      '@eslint-react/set-state-in-effect': 'off',
+    },
+  },
+
+  eslintConfigPrettier
+);

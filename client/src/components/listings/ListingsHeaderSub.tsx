@@ -1,6 +1,4 @@
-import { useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import queryString from 'query-string';
+import { NavLink } from 'react-router';
 import { useAppSelector } from '@/redux/hooks';
 import {
   useGetSubredditsQuery,
@@ -115,12 +113,14 @@ function ListingsHeaderSub() {
       title = `/m/${target}`;
       break;
     case 's': {
-      const qs = queryString.parse(window.location.search);
+      const q = new URLSearchParams(window.location.search).get('q') ?? '';
       searchEverywhere =
         target !== 'mine' ? (
-          <NavLink to={`/search?q=${qs.q}`}>Search Everywhere</NavLink>
+          <NavLink to={`/search?q=${encodeURIComponent(q)}`}>
+            Search Everywhere
+          </NavLink>
         ) : undefined;
-      title = `Search results for '${qs.q}'`;
+      title = `Search results for '${q}'`;
       if (multi) {
         title += ` in /m/${target}`;
       } else if (target !== 'mine') {
@@ -134,13 +134,6 @@ function ListingsHeaderSub() {
       title = '';
       break;
   }
-
-  // Set document title in useEffect
-  useEffect(() => {
-    if (pageTitle) {
-      document.title = pageTitle;
-    }
-  }, [pageTitle]);
 
   // Only show loading placeholder if we're expecting subscriber data
   const getRenderedSubInfo = (): React.ReactNode => {
@@ -160,6 +153,7 @@ function ListingsHeaderSub() {
 
   return (
     <>
+      {pageTitle && <title>{pageTitle}</title>}
       <div className="d-flex">
         <div className="me-auto title-contrainer">
           <h5 className="m-0 p-0 w-100">

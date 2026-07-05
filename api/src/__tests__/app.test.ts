@@ -5,32 +5,38 @@ import {
   beforeEach,
   afterEach,
   beforeAll,
+  afterAll,
   vi,
-} from "vitest";
-import request from "supertest";
-import type { AxiosInstance } from "axios";
-import axios from "axios";
+} from 'vitest';
+import request from 'supertest';
+import type { AxiosInstance } from 'axios';
+import axios from 'axios';
+import { globalHttpsAgent as ssrfSafeAgent } from 'request-filtering-agent';
 
 beforeAll(() => {
-  vi.stubEnv("REDDIT_CLIENT_ID", "test-client-id");
-  vi.stubEnv("REDDIT_CLIENT_SECRET", "test-client-secret");
-  vi.stubEnv("REDDIT_USER_AGENT", "test-user-agent");
-  vi.stubEnv("REDDIT_CALLBACK_URI", "http://localhost:3001/api/callback");
+  vi.stubEnv('REDDIT_CLIENT_ID', 'test-client-id');
+  vi.stubEnv('REDDIT_CLIENT_SECRET', 'test-client-secret');
+  vi.stubEnv('REDDIT_USER_AGENT', 'test-user-agent');
+  vi.stubEnv('REDDIT_CALLBACK_URI', 'http://localhost:3001/api/callback');
   vi.stubEnv(
-    "REDDIT_SCOPE",
-    "identity,mysubreddits,vote,subscribe,read,history,save",
+    'REDDIT_SCOPE',
+    'identity,mysubreddits,vote,subscribe,read,history,save'
   );
-  vi.stubEnv("CLIENT_PATH", "http://localhost:3000");
-  vi.stubEnv("SALT", "GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM");
-  vi.stubEnv("SESSION_LENGTH_SECS", "604800");
-  vi.stubEnv("TOKEN_EXPIRY_PADDING_SECS", "300");
-  vi.stubEnv("PORT", "3001");
-  vi.stubEnv("DEBUG", "0");
+  vi.stubEnv('CLIENT_PATH', 'http://localhost:3000');
+  vi.stubEnv('SALT', 'GITYZTBFHZEEV7G9YAF7HVMXIQ2VV9UM');
+  vi.stubEnv('SESSION_LENGTH_SECS', '604800');
+  vi.stubEnv('TOKEN_EXPIRY_PADDING_SECS', '300');
+  vi.stubEnv('PORT', '3001');
+  vi.stubEnv('DEBUG', '0');
+});
+
+afterAll(() => {
+  vi.unstubAllEnvs();
 });
 
 // Mock axios.head for share link resolver
-vi.mock("axios", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("axios")>();
+vi.mock('axios', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('axios')>();
   return {
     ...actual,
     default: {
@@ -40,7 +46,7 @@ vi.mock("axios", async (importOriginal) => {
   };
 });
 
-vi.mock("../util.js", () => {
+vi.mock('../util.js', () => {
   const mockAxiosInstance: Partial<AxiosInstance> = {
     post: vi.fn(),
     get: vi.fn(),
@@ -52,12 +58,12 @@ vi.mock("../util.js", () => {
       error instanceof Error ? error.message : String(error),
     checkEnvErrors: vi.fn(),
     encryptToken: vi.fn(() => ({
-      iv: "mock-iv",
-      authTag: "mock-auth-tag",
-      token: "mock-encrypted",
+      iv: 'mock-iv',
+      authTag: 'mock-auth-tag',
+      token: 'mock-encrypted',
     })),
-    decryptToken: vi.fn(() => ({ mock: "decrypted-token" })),
-    deriveSigningKey: vi.fn(() => "mock-signing-key"),
+    decryptToken: vi.fn(() => ({ mock: 'decrypted-token' })),
+    deriveSigningKey: vi.fn(() => 'mock-signing-key'),
     isTokenExpired: vi.fn((token) => {
       if (!token || !token.expires) return true;
       const now = Date.now() / 1000;
@@ -71,34 +77,35 @@ vi.mock("../util.js", () => {
   };
 });
 
-let sessionStore: Record<string, { state: string | null; token: unknown }> = {};
-vi.mock("koa-session", () => ({
+let sessionStore: Record<string, { state?: string; token?: unknown }> = {};
+vi.mock('koa-session', () => ({
   default:
     () =>
     (
       ctx: {
         headers: Record<string, string>;
-        session: { state: string | null; token: unknown };
+        session: { state?: string; token?: unknown };
       },
-      next: () => Promise<void>,
+      next: () => Promise<void>
     ) => {
-      const sessionId = ctx.headers["x-session-id"] || "test-session";
+      const sessionId = ctx.headers['x-session-id'] || 'test-session';
       if (!sessionStore[sessionId]) {
-        sessionStore[sessionId] = { state: null, token: null };
+        sessionStore[sessionId] = {};
       }
       ctx.session = sessionStore[sessionId]!;
       return next();
     },
 }));
 
-import app, { _resetRateLimiters } from "../app.js";
-import { axiosInstance } from "../util.js";
+import app, { _resetRateLimiters, _resetShareCache } from '../app.js';
+import { axiosInstance } from '../util.js';
 
-describe("API Endpoints", () => {
+describe('API Endpoints', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStore = {}; // Reset session store
     _resetRateLimiters(); // Reset rate limit counters
+    _resetShareCache(); // Reset share link cache
     (axiosInstance.post as ReturnType<typeof vi.fn>).mockReset();
     (axiosInstance.get as ReturnType<typeof vi.fn>).mockReset();
   });
@@ -107,13 +114,13 @@ describe("API Endpoints", () => {
     vi.restoreAllMocks();
   });
 
-  describe("GET /api/bearer", () => {
-    it("should return a bearer token with valid credentials", async () => {
+  describe('GET /api/bearer', () => {
+    it('should return a bearer token with valid credentials', async () => {
       const mockRedditResponse = {
-        access_token: "test-access-token",
-        token_type: "bearer",
+        access_token: 'test-access-token',
+        token_type: 'bearer',
         expires_in: 3600,
-        scope: "*",
+        scope: '*',
       };
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -121,19 +128,19 @@ describe("API Endpoints", () => {
       });
 
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(200);
 
-      expect(response.body).toHaveProperty("accessToken");
-      expect(response.body).toHaveProperty("expires");
-      expect(response.body).toHaveProperty("loginUrl");
-      expect(typeof response.body.accessToken).toBe("string");
-      expect(typeof response.body.expires).toBe("number");
-      expect(typeof response.body.loginUrl).toBe("string");
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('expires');
+      expect(response.body).toHaveProperty('loginUrl');
+      expect(typeof response.body.accessToken).toBe('string');
+      expect(typeof response.body.expires).toBe('number');
+      expect(typeof response.body.loginUrl).toBe('string');
     });
 
-    it("should handle Reddit API errors gracefully", async () => {
-      const mockAxiosError = new Error("Reddit API error");
+    it('should handle Reddit API errors gracefully', async () => {
+      const mockAxiosError = new Error('Reddit API error');
       (
         mockAxiosError as Error & {
           response?: {
@@ -144,16 +151,16 @@ describe("API Endpoints", () => {
         }
       ).response = {
         status: 401,
-        statusText: "Unauthorized",
-        data: { error: "invalid_client" },
+        statusText: 'Unauthorized',
+        data: { error: 'invalid_client' },
       };
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        mockAxiosError,
+        mockAxiosError
       );
 
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(500);
 
       // The app doesn't return structured error responses for this case,
@@ -161,9 +168,9 @@ describe("API Endpoints", () => {
       expect(response.body).toEqual({});
     });
 
-    it("should include CORS headers (even if undefined due to env vars)", async () => {
+    it('should include CORS headers (even if undefined due to env vars)', async () => {
       const mockRedditResponse = {
-        access_token: "test-token",
+        access_token: 'test-token',
         expires_in: 3600,
       };
 
@@ -172,46 +179,46 @@ describe("API Endpoints", () => {
       });
 
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(200);
 
       // The CORS headers are set, even if the value is undefined due to env var issues
-      expect(response.headers).toHaveProperty("access-control-allow-origin");
-      expect(response.headers).toHaveProperty("access-control-allow-methods");
+      expect(response.headers).toHaveProperty('access-control-allow-origin');
+      expect(response.headers).toHaveProperty('access-control-allow-methods');
     });
   });
 
-  describe("Authentication Flow", () => {
-    it("should redirect to Reddit authorization URL on /api/login", async () => {
+  describe('Authentication Flow', () => {
+    it('should redirect to Reddit authorization URL on /api/login', async () => {
       const response = await request(app.callback())
-        .get("/api/login")
-        .set("x-session-id", "test-session-1")
+        .get('/api/login')
+        .set('x-session-id', 'test-session-1')
         .expect(302);
 
-      expect(response.headers["location"]).toContain(
-        "reddit.com/api/v1/authorize",
+      expect(response.headers['location']).toContain(
+        'reddit.com/api/v1/authorize'
       );
       // The client_id will be undefined due to env var issues, but the URL structure is correct
-      expect(response.headers["location"]).toContain("client_id=");
-      expect(response.headers["location"]).toContain("redirect_uri=");
+      expect(response.headers['location']).toContain('client_id=');
+      expect(response.headers['location']).toContain('redirect_uri=');
     });
 
-    it("should handle callback with valid code and state", async () => {
-      const sessionId = "test-session-callback";
+    it('should handle callback with valid code and state', async () => {
+      const sessionId = 'test-session-callback';
       const loginResponse = await request(app.callback())
-        .get("/api/login")
-        .set("x-session-id", sessionId);
+        .get('/api/login')
+        .set('x-session-id', sessionId);
 
-      const locationHeader = loginResponse.headers["location"] as string;
+      const locationHeader = loginResponse.headers['location'] as string;
       const stateMatch = locationHeader.match(/state=([^&]+)/);
-      const state = stateMatch ? stateMatch[1] : "test-state";
+      const state = stateMatch ? stateMatch[1] : 'test-state';
 
       const mockTokenResponse = {
-        access_token: "test-access-token",
-        refresh_token: "test-refresh-token",
+        access_token: 'test-access-token',
+        refresh_token: 'test-refresh-token',
         expires_in: 3600,
-        token_type: "bearer",
-        scope: "identity",
+        token_type: 'bearer',
+        scope: 'identity',
       };
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -220,50 +227,49 @@ describe("API Endpoints", () => {
 
       const response = await request(app.callback())
         .get(`/api/callback?code=test-code&state=${state}`)
-        .set("x-session-id", sessionId)
+        .set('x-session-id', sessionId)
         .expect(302);
 
       // The CLIENT_PATH is undefined, so we just check for the login suffix
-      expect(response.headers["location"]).toContain("/?login");
+      expect(response.headers['location']).toContain('/?login');
     });
 
-    it("should handle callback errors", async () => {
+    it('should handle callback errors', async () => {
       const response = await request(app.callback())
-        .get("/api/callback?error=access_denied")
+        .get('/api/callback?error=access_denied')
         .expect(400);
 
-      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty('status', 'error');
       // When only error is provided without code/state, it triggers the missing params error
       // Error details are logged server-side only, not exposed to client
-      expect(response.body).toHaveProperty("message", "Authentication failed");
+      expect(response.body).toHaveProperty('message', 'Authentication failed');
     });
 
-    it("should handle missing state in callback", async () => {
+    it('should handle missing state in callback', async () => {
       const response = await request(app.callback())
-        .get("/api/callback?code=test-code")
+        .get('/api/callback?code=test-code')
         .expect(400);
 
-      expect(response.body).toHaveProperty("status", "error");
-      expect(response.body).toHaveProperty("message", "Authentication failed");
+      expect(response.body).toHaveProperty('status', 'error');
+      expect(response.body).toHaveProperty('message', 'Authentication failed');
     });
   });
 
-  describe("Logout", () => {
-    it("should handle logout when no token exists", async () => {
+  describe('Logout', () => {
+    it('should handle logout when no token exists', async () => {
       const response = await request(app.callback())
-        .get("/api/logout")
+        .get('/api/logout')
         .expect(302);
-      expect(response.headers["location"]).toContain("/?logout");
+      expect(response.headers['location']).toContain('/?logout');
     });
 
-    it("should successfully logout with valid token", async () => {
-      const sessionId = "test-session-logout";
+    it('should successfully logout with valid token', async () => {
+      const sessionId = 'test-session-logout';
 
       sessionStore[sessionId] = {
-        state: null,
         token: {
-          access_token: "test-access-token",
-          refresh_token: "test-refresh-token",
+          access_token: 'test-access-token',
+          refresh_token: 'test-refresh-token',
           expires: Date.now() / 1000 + 3600,
           auth: true,
         },
@@ -274,96 +280,95 @@ describe("API Endpoints", () => {
       });
 
       const response = await request(app.callback())
-        .get("/api/logout")
-        .set("x-session-id", sessionId)
+        .get('/api/logout')
+        .set('x-session-id', sessionId)
         .expect(302);
 
-      expect(response.headers["location"]).toContain("/?logout");
+      expect(response.headers['location']).toContain('/?logout');
     });
 
-    it("should handle logout even when token revocation fails", async () => {
-      const sessionId = "test-session-logout-fail";
+    it('should handle logout even when token revocation fails', async () => {
+      const sessionId = 'test-session-logout-fail';
 
       sessionStore[sessionId] = {
-        state: null,
         token: {
-          access_token: "test-access-token",
-          refresh_token: "test-refresh-token",
+          access_token: 'test-access-token',
+          refresh_token: 'test-refresh-token',
           expires: Date.now() / 1000 + 3600,
           auth: true,
         },
       };
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error("Revocation failed"),
+        new Error('Revocation failed')
       );
 
       const response = await request(app.callback())
-        .get("/api/logout")
-        .set("x-session-id", sessionId)
+        .get('/api/logout')
+        .set('x-session-id', sessionId)
         .expect(302);
 
       // Should still redirect even when revocation fails (graceful error handling)
-      expect(response.headers["location"]).toContain("/?logout");
+      expect(response.headers['location']).toContain('/?logout');
     });
   });
 
-  describe("Authentication Flow - Advanced", () => {
-    it("should handle callback with invalid state", async () => {
-      const sessionId = "test-session-invalid-state";
+  describe('Authentication Flow - Advanced', () => {
+    it('should handle callback with invalid state', async () => {
+      const sessionId = 'test-session-invalid-state';
 
-      sessionStore[sessionId] = { state: "valid-state-123", token: null };
+      sessionStore[sessionId] = { state: 'valid-state-123' };
 
       const response = await request(app.callback())
-        .get("/api/callback?code=test-code&state=invalid-state-456")
-        .set("x-session-id", sessionId)
+        .get('/api/callback?code=test-code&state=invalid-state-456')
+        .set('x-session-id', sessionId)
         .expect(403);
 
-      expect(response.body).toHaveProperty("status", "error");
-      expect(response.body).toHaveProperty("message", "Authentication failed");
+      expect(response.body).toHaveProperty('status', 'error');
+      expect(response.body).toHaveProperty('message', 'Authentication failed');
     });
 
-    it("should handle token exchange failure in callback", async () => {
-      const sessionId = "test-session-token-fail";
+    it('should handle token exchange failure in callback', async () => {
+      const sessionId = 'test-session-token-fail';
       const loginResponse = await request(app.callback())
-        .get("/api/login")
-        .set("x-session-id", sessionId);
+        .get('/api/login')
+        .set('x-session-id', sessionId);
 
-      const locationHeader = loginResponse.headers["location"] as string;
+      const locationHeader = loginResponse.headers['location'] as string;
       const stateMatch = locationHeader.match(/state=([^&]+)/);
-      const state = stateMatch ? stateMatch[1] : "test-state";
+      const state = stateMatch ? stateMatch[1] : 'test-state';
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error("Token exchange failed"),
+        new Error('Token exchange failed')
       );
 
       const response = await request(app.callback())
         .get(`/api/callback?code=test-code&state=${state}`)
-        .set("x-session-id", sessionId)
+        .set('x-session-id', sessionId)
         .expect(502);
 
-      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty('status', 'error');
     });
 
-    it("should handle callback with Reddit error parameter", async () => {
+    it('should handle callback with Reddit error parameter', async () => {
       const response = await request(app.callback())
         .get(
-          "/api/callback?error=access_denied&error_description=User%20denied%20access",
+          '/api/callback?error=access_denied&error_description=User%20denied%20access'
         )
         .expect(400);
 
-      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty('status', 'error');
       // The current implementation treats this as missing code/state, but it's still an error case
     });
   });
 
-  describe("Token Management", () => {
-    it("should handle expired tokens in bearer endpoint", async () => {
+  describe('Token Management', () => {
+    it('should handle expired tokens in bearer endpoint', async () => {
       const mockRedditResponse = {
-        access_token: "test-access-token",
-        token_type: "bearer",
+        access_token: 'test-access-token',
+        token_type: 'bearer',
         expires_in: -1, // Already expired
-        scope: "*",
+        scope: '*',
       };
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -371,20 +376,20 @@ describe("API Endpoints", () => {
       });
 
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(200);
 
-      expect(response.body).toHaveProperty("accessToken");
-      expect(response.body).toHaveProperty("expires");
+      expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('expires');
       expect(response.body.expires).toBeLessThan(Date.now() / 1000);
     });
 
-    it("should validate token structure in responses", async () => {
+    it('should validate token structure in responses', async () => {
       const mockRedditResponse = {
-        access_token: "test-access-token",
-        token_type: "bearer",
+        access_token: 'test-access-token',
+        token_type: 'bearer',
         expires_in: 3600,
-        scope: "*",
+        scope: '*',
       };
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -392,59 +397,59 @@ describe("API Endpoints", () => {
       });
 
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(200);
 
-      expect(response.body.accessToken).toBe("test-access-token");
-      expect(typeof response.body.expires).toBe("number");
-      expect(response.body.loginUrl).toContain("reddit.com/api/v1/authorize");
+      expect(response.body.accessToken).toBe('test-access-token');
+      expect(typeof response.body.expires).toBe('number');
+      expect(response.body.loginUrl).toContain('reddit.com/api/v1/authorize');
     });
   });
 
-  describe("HTTP Methods", () => {
-    it("should reject POST requests to GET-only endpoints", async () => {
-      await request(app.callback()).post("/api/bearer").expect(405);
+  describe('HTTP Methods', () => {
+    it('should reject POST requests to GET-only endpoints', async () => {
+      await request(app.callback()).post('/api/bearer').expect(405);
     });
 
-    it("should reject PUT requests to GET-only endpoints", async () => {
-      await request(app.callback()).put("/api/login").expect(405);
+    it('should reject PUT requests to GET-only endpoints', async () => {
+      await request(app.callback()).put('/api/login').expect(405);
     });
   });
 
-  describe("Request Validation", () => {
-    it("should handle malformed callback URLs", async () => {
+  describe('Request Validation', () => {
+    it('should handle malformed callback URLs', async () => {
       const response = await request(app.callback())
-        .get("/api/callback?code=&state=")
+        .get('/api/callback?code=&state=')
         .expect(400);
 
-      expect(response.body).toHaveProperty("status", "error");
-      expect(response.body).toHaveProperty("message", "Authentication failed");
+      expect(response.body).toHaveProperty('status', 'error');
+      expect(response.body).toHaveProperty('message', 'Authentication failed');
     });
 
-    it("should handle very long state parameters", async () => {
-      const longState = "a".repeat(1000);
+    it('should handle very long state parameters', async () => {
+      const longState = 'a'.repeat(1000);
       const response = await request(app.callback())
         .get(`/api/callback?code=test-code&state=${longState}`)
         .expect(403);
 
-      expect(response.body).toHaveProperty("status", "error");
+      expect(response.body).toHaveProperty('status', 'error');
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle 404 for unknown routes", async () => {
+  describe('Error Handling', () => {
+    it('should handle 404 for unknown routes', async () => {
       const response = await request(app.callback())
-        .get("/unknown-route")
+        .get('/unknown-route')
         .expect(404);
 
-      expect(response.text).toBe("Not Found");
+      expect(response.text).toBe('Not Found');
     });
   });
 
-  describe("Security", () => {
-    it("should include CORS headers (even if undefined due to env vars)", async () => {
+  describe('Security', () => {
+    it('should include CORS headers (even if undefined due to env vars)', async () => {
       const mockRedditResponse = {
-        access_token: "test-token",
+        access_token: 'test-token',
         expires_in: 3600,
       };
 
@@ -453,17 +458,17 @@ describe("API Endpoints", () => {
       });
 
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(200);
 
       // The CORS headers are set, even if the value is undefined due to env var issues
-      expect(response.headers).toHaveProperty("access-control-allow-origin");
-      expect(response.headers).toHaveProperty("access-control-allow-methods");
+      expect(response.headers).toHaveProperty('access-control-allow-origin');
+      expect(response.headers).toHaveProperty('access-control-allow-methods');
     });
 
-    it("should include security response headers", async () => {
+    it('should include security response headers', async () => {
       const mockRedditResponse = {
-        access_token: "test-token",
+        access_token: 'test-token',
         expires_in: 3600,
       };
 
@@ -472,46 +477,46 @@ describe("API Endpoints", () => {
       });
 
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(200);
 
-      expect(response.headers["x-content-type-options"]).toBe("nosniff");
-      expect(response.headers["x-frame-options"]).toBe("DENY");
-      expect(response.headers["strict-transport-security"]).toBe(
-        "max-age=31536000; includeSubDomains",
+      expect(response.headers['x-content-type-options']).toBe('nosniff');
+      expect(response.headers['x-frame-options']).toBe('DENY');
+      expect(response.headers['strict-transport-security']).toBe(
+        'max-age=31536000; includeSubDomains'
       );
-      expect(response.headers["cache-control"]).toBe("no-store");
-      expect(response.headers["x-xss-protection"]).toBe("0");
+      expect(response.headers['cache-control']).toBe('no-store');
+      expect(response.headers['x-xss-protection']).toBe('0');
     });
 
-    it("should pass SSRF-safe agent to share link resolver", async () => {
+    it('should pass SSRF-safe agent to share link resolver', async () => {
       (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         headers: {
-          location: "https://www.reddit.com/r/test/comments/abc123/post_title/",
+          location: 'https://www.reddit.com/r/test/comments/abc123/post_title/',
         },
       });
 
       await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
         .expect(200);
 
-      expect(axios.head).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          httpsAgent: expect.anything(),
-        }),
-      );
+      const headMock = axios.head as ReturnType<typeof vi.fn>;
+      expect(headMock).toHaveBeenCalledTimes(1);
+      const callOptions = headMock.mock.calls[0]?.[1] as {
+        httpsAgent?: unknown;
+      };
+      expect(callOptions?.httpsAgent).toBe(ssrfSafeAgent);
     });
   });
 
-  describe("Rate Limiting", () => {
-    it("should include rate limit headers on /api/bearer", async () => {
+  describe('Rate Limiting', () => {
+    it('should include rate limit headers on /api/bearer', async () => {
       const mockRedditResponse = {
-        access_token: "test-access-token",
-        token_type: "bearer",
+        access_token: 'test-access-token',
+        token_type: 'bearer',
         expires_in: 3600,
-        scope: "*",
+        scope: '*',
       };
 
       (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -519,38 +524,38 @@ describe("API Endpoints", () => {
       });
 
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(200);
 
-      expect(response.headers).toHaveProperty("ratelimit-limit");
-      expect(response.headers).toHaveProperty("ratelimit-remaining");
-      expect(response.headers).toHaveProperty("ratelimit-reset");
+      expect(response.headers).toHaveProperty('ratelimit-limit');
+      expect(response.headers).toHaveProperty('ratelimit-remaining');
+      expect(response.headers).toHaveProperty('ratelimit-reset');
     });
 
-    it("should include rate limit headers on /api/resolve-share", async () => {
+    it('should include rate limit headers on /api/resolve-share', async () => {
       (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         headers: {
           location:
-            "https://www.reddit.com/r/funny/comments/abc123/post_title/",
+            'https://www.reddit.com/r/funny/comments/abc123/post_title/',
         },
       });
 
       const response = await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: ["https://www.reddit.com/r/funny/s/XYZ123"] })
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/funny/s/XYZ123'] })
         .expect(200);
 
-      expect(response.headers).toHaveProperty("ratelimit-limit");
-      expect(response.headers).toHaveProperty("ratelimit-remaining");
-      expect(response.headers).toHaveProperty("ratelimit-reset");
+      expect(response.headers).toHaveProperty('ratelimit-limit');
+      expect(response.headers).toHaveProperty('ratelimit-remaining');
+      expect(response.headers).toHaveProperty('ratelimit-reset');
     });
 
-    it("should return 429 when bearer rate limit is exceeded", async () => {
+    it('should return 429 when bearer rate limit is exceeded', async () => {
       const mockRedditResponse = {
-        access_token: "test-access-token",
-        token_type: "bearer",
+        access_token: 'test-access-token',
+        token_type: 'bearer',
         expires_in: 3600,
-        scope: "*",
+        scope: '*',
       };
 
       // Bearer limit is 30 requests per minute
@@ -558,199 +563,233 @@ describe("API Endpoints", () => {
         (axiosInstance.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
           data: mockRedditResponse,
         });
-        await request(app.callback()).get("/api/bearer").expect(200);
+        await request(app.callback()).get('/api/bearer').expect(200);
       }
 
       // 31st request should be rate limited
       const response = await request(app.callback())
-        .get("/api/bearer")
+        .get('/api/bearer')
         .expect(429);
 
-      expect(response.headers).toHaveProperty("retry-after");
+      expect(response.headers).toHaveProperty('retry-after');
     });
+
+    it.each([
+      {
+        name: 'authRateLimit on /api/login',
+        method: 'get' as const,
+        path: '/api/login',
+        body: undefined,
+        max: 30,
+        successStatus: 302,
+      },
+      {
+        name: 'shareRateLimit on /api/resolve-share',
+        method: 'post' as const,
+        path: '/api/resolve-share',
+        body: { urls: ['https://evil.com/not-a-share-link'] },
+        max: 100,
+        successStatus: 200,
+      },
+    ])(
+      'should return 429 when $name is exceeded',
+      async ({ method, path, body, max, successStatus }) => {
+        for (let i = 0; i < max; i++) {
+          const req = request(app.callback())[method](path);
+          if (body) req.send(body);
+          await req.expect(successStatus);
+        }
+
+        const finalReq = request(app.callback())[method](path);
+        if (body) finalReq.send(body);
+        const response = await finalReq.expect(429);
+
+        expect(response.headers).toHaveProperty('retry-after');
+      }
+    );
   });
 
-  describe("POST /api/resolve-share", () => {
+  describe('POST /api/resolve-share', () => {
     beforeEach(() => {
       (axios.head as ReturnType<typeof vi.fn>).mockReset();
     });
 
-    it("should resolve a valid share link to post ID", async () => {
+    it('should resolve a valid share link to post ID', async () => {
       (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         headers: {
           location:
-            "https://www.reddit.com/r/funny/comments/abc123/some_post_title/",
+            'https://www.reddit.com/r/funny/comments/abc123/some_post_title/',
         },
       });
 
       const response = await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: ["https://www.reddit.com/r/funny/s/XYZ123"] })
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/funny/s/XYZ123'] })
         .expect(200);
 
       expect(response.body.results).toHaveProperty(
-        "https://www.reddit.com/r/funny/s/XYZ123",
+        'https://www.reddit.com/r/funny/s/XYZ123'
       );
       expect(
-        response.body.results["https://www.reddit.com/r/funny/s/XYZ123"],
-      ).toEqual({ postId: "abc123" });
+        response.body.results['https://www.reddit.com/r/funny/s/XYZ123']
+      ).toEqual({ postId: 'abc123' });
     });
 
-    it("should resolve multiple share links in one request", async () => {
+    it('should resolve multiple share links in one request', async () => {
       (axios.head as ReturnType<typeof vi.fn>)
         .mockResolvedValueOnce({
-          headers: { location: "https://reddit.com/r/sub1/comments/post1/" },
+          headers: { location: 'https://reddit.com/r/sub1/comments/post1/' },
         })
         .mockResolvedValueOnce({
-          headers: { location: "https://reddit.com/r/sub2/comments/post2/" },
+          headers: { location: 'https://reddit.com/r/sub2/comments/post2/' },
         });
 
       const response = await request(app.callback())
-        .post("/api/resolve-share")
+        .post('/api/resolve-share')
         .send({
           urls: [
-            "https://www.reddit.com/r/sub1/s/ABC",
-            "https://www.reddit.com/r/sub2/s/DEF",
+            'https://www.reddit.com/r/sub1/s/ABC',
+            'https://www.reddit.com/r/sub2/s/DEF',
           ],
         })
         .expect(200);
 
       expect(
-        response.body.results["https://www.reddit.com/r/sub1/s/ABC"],
-      ).toEqual({ postId: "post1" });
+        response.body.results['https://www.reddit.com/r/sub1/s/ABC']
+      ).toEqual({ postId: 'post1' });
       expect(
-        response.body.results["https://www.reddit.com/r/sub2/s/DEF"],
-      ).toEqual({ postId: "post2" });
+        response.body.results['https://www.reddit.com/r/sub2/s/DEF']
+      ).toEqual({ postId: 'post2' });
     });
 
-    it("should reject requests without urls array", async () => {
+    it('should reject requests without urls array', async () => {
       const response = await request(app.callback())
-        .post("/api/resolve-share")
+        .post('/api/resolve-share')
         .send({})
         .expect(400);
 
       expect(response.body).toEqual({
-        error: "Missing urls array in request body",
+        error: 'Missing urls array in request body',
       });
     });
 
-    it("should reject non-array urls", async () => {
+    it('should reject non-array urls', async () => {
       const response = await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: "not-an-array" })
+        .post('/api/resolve-share')
+        .send({ urls: 'not-an-array' })
         .expect(400);
 
       expect(response.body).toEqual({
-        error: "Missing urls array in request body",
+        error: 'Missing urls array in request body',
       });
     });
 
-    it("should reject non-string URLs in array", async () => {
+    it('should reject non-string URLs in array', async () => {
       const response = await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: [123, "https://www.reddit.com/r/test/s/ABC"] })
+        .post('/api/resolve-share')
+        .send({ urls: [123, 'https://www.reddit.com/r/test/s/ABC'] })
         .expect(400);
 
-      expect(response.body).toEqual({ error: "All URLs must be strings" });
+      expect(response.body).toEqual({ error: 'All URLs must be strings' });
     });
 
-    it("should reject batch sizes exceeding limit", async () => {
+    it('should reject batch sizes exceeding limit', async () => {
       const urls = Array.from(
-        { length: 21 },
-        (_, i) => `https://www.reddit.com/r/test/s/URL${i}`,
+        { length: 51 },
+        (_, i) => `https://www.reddit.com/r/test/s/URL${i}`
       );
 
       const response = await request(app.callback())
-        .post("/api/resolve-share")
+        .post('/api/resolve-share')
         .send({ urls })
         .expect(400);
 
       expect(response.body).toEqual({
-        error: "Maximum 20 URLs per request",
+        error: 'Maximum 50 URLs per request',
       });
     });
 
-    it("should reject invalid share link formats", async () => {
+    it('should reject invalid share link formats', async () => {
       const response = await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: ["https://evil.com/malicious"] })
+        .post('/api/resolve-share')
+        .send({ urls: ['https://evil.com/malicious'] })
         .expect(200);
 
-      expect(response.body.results["https://evil.com/malicious"]).toEqual({
-        error: "Invalid Reddit share link format",
+      expect(response.body.results['https://evil.com/malicious']).toEqual({
+        error: 'Invalid Reddit share link format',
       });
     });
 
-    it("should handle share links that do not redirect", async () => {
+    it('should handle share links that do not redirect', async () => {
       (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         headers: {},
       });
 
       const response = await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
         .expect(200);
 
       expect(
-        response.body.results["https://www.reddit.com/r/test/s/ABC"],
-      ).toEqual({ error: "Share link did not redirect" });
+        response.body.results['https://www.reddit.com/r/test/s/ABC']
+      ).toEqual({ error: 'Share link did not redirect' });
     });
 
-    it("should handle network errors gracefully", async () => {
+    it('should handle network errors gracefully', async () => {
       (axios.head as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error("Network error"),
+        new Error('Network error')
       );
 
       const response = await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
         .expect(200);
 
       expect(
-        response.body.results["https://www.reddit.com/r/test/s/ABC"],
-      ).toEqual({ error: "Failed to resolve share link" });
+        response.body.results['https://www.reddit.com/r/test/s/ABC']
+      ).toEqual({ error: 'Failed to resolve share link' });
     });
 
-    it("should handle redirects without post ID in URL", async () => {
+    it('should handle redirects without post ID in URL', async () => {
       (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        headers: { location: "https://www.reddit.com/r/test/" },
+        headers: { location: 'https://www.reddit.com/r/test/' },
       });
 
       const response = await request(app.callback())
-        .post("/api/resolve-share")
-        .send({ urls: ["https://www.reddit.com/r/test/s/ABC"] })
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
         .expect(200);
 
       expect(
-        response.body.results["https://www.reddit.com/r/test/s/ABC"],
-      ).toEqual({ error: "Could not extract post ID from redirect" });
+        response.body.results['https://www.reddit.com/r/test/s/ABC']
+      ).toEqual({ error: 'Could not extract post ID from redirect' });
     });
 
-    it("should reject empty urls array", async () => {
+    it('should reject empty urls array', async () => {
       const response = await request(app.callback())
-        .post("/api/resolve-share")
+        .post('/api/resolve-share')
         .send({ urls: [] })
         .expect(400);
 
       expect(response.body).toEqual({
-        error: "URLs array cannot be empty",
+        error: 'URLs array cannot be empty',
       });
     });
 
-    it("should deduplicate URLs in batch", async () => {
+    it('should deduplicate URLs in batch', async () => {
       (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         headers: {
           location:
-            "https://reddit.com/r/test/comments/abc123/some_post_title/",
+            'https://reddit.com/r/test/comments/abc123/some_post_title/',
         },
       });
 
       const response = await request(app.callback())
-        .post("/api/resolve-share")
+        .post('/api/resolve-share')
         .send({
           urls: [
-            "https://www.reddit.com/r/test/s/ABC",
-            "https://www.reddit.com/r/test/s/ABC",
+            'https://www.reddit.com/r/test/s/ABC',
+            'https://www.reddit.com/r/test/s/ABC',
           ],
         })
         .expect(200);
@@ -758,20 +797,80 @@ describe("API Endpoints", () => {
       // Should only make one HEAD request despite duplicate URLs
       expect(axios.head).toHaveBeenCalledTimes(1);
       expect(
-        response.body.results["https://www.reddit.com/r/test/s/ABC"],
-      ).toEqual({ postId: "abc123" });
+        response.body.results['https://www.reddit.com/r/test/s/ABC']
+      ).toEqual({ postId: 'abc123' });
     });
 
-    it("should handle CORS preflight requests", async () => {
+    it('should return cached results without making additional HEAD requests', async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location:
+            'https://reddit.com/r/test/comments/abc123/some_post_title/',
+        },
+      });
+
+      // First request resolves via HEAD
+      await request(app.callback())
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
+        .expect(200);
+
+      expect(axios.head).toHaveBeenCalledTimes(1);
+
+      // Second request should use cache — no additional HEAD request
       const response = await request(app.callback())
-        .options("/api/resolve-share")
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
+        .expect(200);
+
+      expect(axios.head).toHaveBeenCalledTimes(1);
+      expect(
+        response.body.results['https://www.reddit.com/r/test/s/ABC']
+      ).toEqual({ postId: 'abc123' });
+    });
+
+    it('should not cache error results', async () => {
+      (axios.head as ReturnType<typeof vi.fn>)
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce({
+          headers: {
+            location:
+              'https://reddit.com/r/test/comments/abc123/some_post_title/',
+          },
+        });
+
+      // First request fails
+      const first = await request(app.callback())
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
+        .expect(200);
+
+      expect(first.body.results['https://www.reddit.com/r/test/s/ABC']).toEqual(
+        { error: 'Failed to resolve share link' }
+      );
+
+      // Second request retries and succeeds
+      const second = await request(app.callback())
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/test/s/ABC'] })
+        .expect(200);
+
+      expect(
+        second.body.results['https://www.reddit.com/r/test/s/ABC']
+      ).toEqual({ postId: 'abc123' });
+      expect(axios.head).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle CORS preflight requests', async () => {
+      const response = await request(app.callback())
+        .options('/api/resolve-share')
         .expect(204);
 
-      expect(response.headers["access-control-allow-methods"]).toContain(
-        "POST",
+      expect(response.headers['access-control-allow-methods']).toContain(
+        'POST'
       );
-      expect(response.headers["access-control-allow-headers"]).toContain(
-        "Content-Type",
+      expect(response.headers['access-control-allow-headers']).toContain(
+        'Content-Type'
       );
     });
   });

@@ -19,8 +19,11 @@ function PostsRender({
   return useMemo(() => {
     const links = new Set<string>();
 
+    // Reddit appends a trailing `{ kind: 'more' }` Thing to truncated
+    // top-level comment listings. The prop type doesn't model it, so widen
+    // `kind` to compare and filter it out before rendering as a <Post>.
     const filteredPosts = Object.values(posts).filter(
-      (post) => post.kind !== 'more'
+      (post) => (post.kind as string) !== 'more'
     );
 
     return filteredPosts.map((post, idx) => {
@@ -31,7 +34,7 @@ function PostsRender({
 
       let duplicate = false;
       if (kind === 't3') {
-        const linkData = post.data as LinkData;
+        const linkData = post.data;
         if (!links.has(linkData.url)) {
           links.add(linkData.url);
         } else {

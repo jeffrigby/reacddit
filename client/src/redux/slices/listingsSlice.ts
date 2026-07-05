@@ -164,7 +164,7 @@ export const selectListingData = createSelector(
         before: null,
         after: null,
         children: {},
-        status: 'unloaded' as ListingsStatus,
+        status: 'unloaded',
         saved: 0,
         fetchType: 'init' as const,
       }
@@ -180,7 +180,7 @@ export const selectListingStatus = createSelector(
   (listingsByLocation, locationKey) => {
     const key = locationKey ?? 'front';
     const location = listingsByLocation[key];
-    return location?.status ?? ('unloaded' as ListingsStatus);
+    return location?.status ?? 'unloaded';
   }
 );
 

@@ -23,12 +23,13 @@ import NavigationGenericNavItem from './NavigationGenericNavItem';
 import 'react-tooltip/dist/react-tooltip.css';
 
 const menuID = 'navAccount';
+const tooltipID = 'nav-user-info';
 
 function NavigationAccount(): ReactElement | null {
   const me = useAppSelector((state) => state.redditMe?.me);
   const navigate = useNavigate();
 
-  const [showNavAccountMenu, toggleShowNavAccountMenu] = useState<boolean>(
+  const [showNavAccountMenu, setShowNavAccountMenu] = useState<boolean>(() =>
     getMenuStatus(menuID, true)
   );
 
@@ -71,11 +72,11 @@ function NavigationAccount(): ReactElement | null {
     document.addEventListener('keydown', hotkeys);
     return () => document.removeEventListener('keydown', hotkeys);
     // Only depend on me?.name, not full me object to avoid unnecessary reruns
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
   }, [me?.name, navigate]);
 
   function toggleShowMenu(): void {
-    toggleShowNavAccountMenu(!showNavAccountMenu);
+    setShowNavAccountMenu(!showNavAccountMenu);
     setMenuStatus(menuID, !showNavAccountMenu);
   }
 
@@ -87,15 +88,6 @@ function NavigationAccount(): ReactElement | null {
 
   const karmaTotal = (me.link_karma ?? 0) + (me.comment_karma ?? 0);
   const joinedDate = formatDistanceToNow((me.created_utc ?? 0) * 1000);
-  const accountInfo = `
-      ${karmaTotal.toLocaleString()} Karma
-      <br />
-      ${(me.link_karma ?? 0).toLocaleString()} Post Karma
-      <br />
-      ${(me.comment_karma ?? 0).toLocaleString()} Comment Karma
-      <br />
-      Joined ${joinedDate} ago
-  `;
 
   return (
     <>
@@ -106,11 +98,7 @@ function NavigationAccount(): ReactElement | null {
             {me.name}
           </span>
           <span>
-            <FontAwesomeIcon
-              data-tooltip-html={accountInfo}
-              icon={faInfoCircle}
-              id="nav-user-info"
-            />
+            <FontAwesomeIcon data-tooltip-id={tooltipID} icon={faInfoCircle} />
           </span>
           <span className="ms-auto">
             <NavigationGenericNavItem
@@ -154,7 +142,12 @@ function NavigationAccount(): ReactElement | null {
           </ul>
         )}
       </div>
-      <Tooltip anchorId="nav-user-info" place="bottom" />
+      <Tooltip id={tooltipID} place="bottom">
+        <div>{karmaTotal.toLocaleString()} Karma</div>
+        <div>{(me.link_karma ?? 0).toLocaleString()} Post Karma</div>
+        <div>{(me.comment_karma ?? 0).toLocaleString()} Comment Karma</div>
+        <div>Joined {joinedDate} ago</div>
+      </Tooltip>
     </>
   );
 }

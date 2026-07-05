@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, use } from 'react';
 import type { Context } from 'react';
 import type { UseListingsQueryResult } from '@/hooks/useListingsQuery';
 import type { ListingsData } from '@/redux/api/endpoints/listings';
@@ -28,7 +28,7 @@ export interface ListingsContextValue {
 export const ListingsContext = createContext<ListingsContextValue | null>(null);
 
 export function useListingsContext(): ListingsContextValue {
-  const context = useContext(ListingsContext);
+  const context = use(ListingsContext);
   if (!context) {
     throw new Error('useListingsContext must be used within ListingsProvider');
   }

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import {
   createContext,
-  useContext,
+  use,
   useRef,
   useEffect,
   useCallback,
@@ -47,9 +47,13 @@ export function IntersectionObserverProvider({
     new Map()
   );
 
-  // Create observers synchronously before first render to avoid race conditions
-  const loadObserverRef = useRef<IntersectionObserver>(
-    new IntersectionObserver(
+  // Observers are created lazily on first observe (from a consumer's committed
+  // effect), never during render. This keeps render pure and prevents a
+  // discarded render (concurrent/Suspense/StrictMode) from leaving an orphan
+  // observer the unmount cleanup never disconnects.
+  const loadObserverRef = useRef<IntersectionObserver | null>(null);
+  const getOrCreateLoadObserver = useCallback((): IntersectionObserver => {
+    loadObserverRef.current ??= new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           const callback = loadCallbacksRef.current.get(entry.target);
@@ -63,56 +67,59 @@ export function IntersectionObserverProvider({
         rootMargin: '500px 0px 2000px 0px',
         threshold: 0,
       }
-    )
-  );
+    );
+    return loadObserverRef.current;
+  }, []);
 
-  const visibilityObserverRef = useRef<IntersectionObserver>(
-    new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const callback = visibilityCallbacksRef.current.get(entry.target);
-          if (callback) {
-            callback(entry.isIntersecting);
-          }
-        });
-      },
-      { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
-    )
-  );
+  const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
+  const getOrCreateVisibilityObserver =
+    useCallback((): IntersectionObserver => {
+      visibilityObserverRef.current ??= new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const callback = visibilityCallbacksRef.current.get(entry.target);
+            if (callback) {
+              callback(entry.isIntersecting);
+            }
+          });
+        },
+        { threshold: 0, rootMargin: '-50px 0px 0px 0px' }
+      );
+      return visibilityObserverRef.current;
+    }, []);
 
   // Media control observer - checks if element is FULLY off-screen (both top and bottom edges)
-  const mediaControlObserverRef = useRef<IntersectionObserver>(
-    new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const callback = mediaControlCallbacksRef.current.get(entry.target);
-          if (callback) {
-            const rect = entry.boundingClientRect;
-            const viewportHeight = window.innerHeight;
+  const mediaControlObserverRef = useRef<IntersectionObserver | null>(null);
+  const getOrCreateMediaControlObserver =
+    useCallback((): IntersectionObserver => {
+      mediaControlObserverRef.current ??= new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const callback = mediaControlCallbacksRef.current.get(entry.target);
+            if (callback) {
+              const rect = entry.boundingClientRect;
+              const viewportHeight = window.innerHeight;
 
-            // Element is fully off-screen if:
-            // - Bottom edge is above viewport (scrolled past)
-            // - Top edge is below viewport (not yet scrolled to)
-            const isFullyOffScreen =
-              rect.bottom < 0 || rect.top > viewportHeight;
+              // Element is fully off-screen if:
+              // - Bottom edge is above viewport (scrolled past)
+              // - Top edge is below viewport (not yet scrolled to)
+              const isFullyOffScreen =
+                rect.bottom < 0 || rect.top > viewportHeight;
 
-            // Callback receives true when FULLY off-screen, false when any part is visible
-            callback(isFullyOffScreen);
-          }
-        });
-      },
-      { threshold: 0 }
-    )
-  );
+              // Callback receives true when FULLY off-screen, false when any part is visible
+              callback(isFullyOffScreen);
+            }
+          });
+        },
+        { threshold: 0 }
+      );
+      return mediaControlObserverRef.current;
+    }, []);
 
   // Clean up observers on unmount
   useEffect(() => {
-    const loadObserver = loadObserverRef.current;
-    const visibilityObserver = visibilityObserverRef.current;
-    const mediaControlObserver = mediaControlObserverRef.current;
-
     // Add scroll listener to manually check elements that should load
-    let scrollTimeout: NodeJS.Timeout;
+    let scrollTimeout: ReturnType<typeof setTimeout>;
     const handleScroll = () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
@@ -139,9 +146,9 @@ export function IntersectionObserverProvider({
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      loadObserver.disconnect();
-      visibilityObserver.disconnect();
-      mediaControlObserver.disconnect();
+      loadObserverRef.current?.disconnect();
+      visibilityObserverRef.current?.disconnect();
+      mediaControlObserverRef.current?.disconnect();
       document.body.removeEventListener('scroll', handleScroll);
       window.removeEventListener('scroll', handleScroll);
       clearTimeout(scrollTimeout);
@@ -151,7 +158,7 @@ export function IntersectionObserverProvider({
   const observeForLoading = useCallback(
     (element: Element, callback: ObserverCallback): (() => void) => {
       loadCallbacksRef.current.set(element, callback);
-      loadObserverRef.current.observe(element);
+      getOrCreateLoadObserver().observe(element);
 
       // Check if element is already intersecting and call callback immediately
       // IntersectionObserver only fires on state changes, so we need to manually
@@ -171,29 +178,29 @@ export function IntersectionObserverProvider({
 
       return () => {
         loadCallbacksRef.current.delete(element);
-        loadObserverRef.current.unobserve(element);
+        loadObserverRef.current?.unobserve(element);
       };
     },
-    []
+    [getOrCreateLoadObserver]
   );
 
   const observeForVisibility = useCallback(
     (element: Element, callback: ObserverCallback): (() => void) => {
       visibilityCallbacksRef.current.set(element, callback);
-      visibilityObserverRef.current.observe(element);
+      getOrCreateVisibilityObserver().observe(element);
 
       return () => {
         visibilityCallbacksRef.current.delete(element);
-        visibilityObserverRef.current.unobserve(element);
+        visibilityObserverRef.current?.unobserve(element);
       };
     },
-    []
+    [getOrCreateVisibilityObserver]
   );
 
   const observeForMediaControl = useCallback(
     (element: Element, callback: ObserverCallback): (() => void) => {
       mediaControlCallbacksRef.current.set(element, callback);
-      mediaControlObserverRef.current.observe(element);
+      getOrCreateMediaControlObserver().observe(element);
 
       // Check initial state - if element is already fully off-screen, call callback immediately
       const rect = element.getBoundingClientRect();
@@ -206,10 +213,10 @@ export function IntersectionObserverProvider({
 
       return () => {
         mediaControlCallbacksRef.current.delete(element);
-        mediaControlObserverRef.current.unobserve(element);
+        mediaControlObserverRef.current?.unobserve(element);
       };
     },
-    []
+    [getOrCreateMediaControlObserver]
   );
 
   const value = useMemo(
@@ -222,9 +229,9 @@ export function IntersectionObserverProvider({
   );
 
   return (
-    <IntersectionObserverContext.Provider value={value}>
+    <IntersectionObserverContext value={value}>
       {children}
-    </IntersectionObserverContext.Provider>
+    </IntersectionObserverContext>
   );
 }
 
@@ -233,7 +240,7 @@ export function IntersectionObserverProvider({
  * Must be used within IntersectionObserverProvider.
  */
 export function useIntersectionObservers(): IntersectionObserverContextValue {
-  const context = useContext(IntersectionObserverContext);
+  const context = use(IntersectionObserverContext);
   if (!context) {
     throw new Error(
       'useIntersectionObservers must be used within IntersectionObserverProvider'

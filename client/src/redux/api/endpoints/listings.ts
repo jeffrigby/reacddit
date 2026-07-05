@@ -8,14 +8,13 @@
  * - Separate caching for subreddit about data
  */
 
-import queryString from 'query-string';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import type { ListingsFilter } from '@/types/listings';
 import type {
   Thing,
   LinkData,
   SubredditData,
   Listing,
-  SubredditAboutResponse,
 } from '@/types/redditApi';
 import {
   getListingSubreddit,
@@ -225,8 +224,8 @@ export const listingsApi = redditApi.injectEndpoints({
 
         try {
           // Parse query string params from location
-          const qs = queryString.parse(location.search);
-          const params: Record<string, unknown> = { ...qs };
+          const qs = new URLSearchParams(location.search);
+          const params: Record<string, unknown> = Object.fromEntries(qs);
 
           // Set pagination params
           if (pagination?.after) {
@@ -262,14 +261,14 @@ export const listingsApi = redditApi.injectEndpoints({
 
           return { data };
         } catch (error) {
+          const message =
+            error instanceof Error ? error.message : 'Failed to fetch listings';
           return {
             error: {
               status: 'CUSTOM_ERROR',
-              data:
-                error instanceof Error
-                  ? error.message
-                  : 'Failed to fetch listings',
-            },
+              error: message,
+              data: message,
+            } satisfies FetchBaseQueryError,
           };
         }
       },
@@ -400,13 +399,26 @@ export const listingsApi = redditApi.injectEndpoints({
 
         try {
           const about = await subredditAbout(subreddit);
-          // Type guard: SubredditAboutResponse has 'kind' and 'data' properties
           if ('data' in about && 'kind' in about) {
-            return { data: (about as SubredditAboutResponse).data };
+            return { data: about.data };
           }
           return { data: {} };
-        } catch {
-          return { data: {} };
+        } catch (error) {
+          console.error(
+            `Failed to fetch subreddit about for r/${subreddit}`,
+            error
+          );
+          const message =
+            error instanceof Error
+              ? error.message
+              : 'Failed to fetch subreddit about';
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              error: message,
+              data: message,
+            } satisfies FetchBaseQueryError,
+          };
         }
       },
 

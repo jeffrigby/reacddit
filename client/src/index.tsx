@@ -2,8 +2,7 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import throttle from 'lodash/throttle';
 import cookies from 'js-cookie';
-import { BrowserRouter } from 'react-router-dom';
-import queryString from 'query-string';
+import { BrowserRouter } from 'react-router';
 import { Workbox } from 'workbox-window';
 import { initializeStore } from './redux/configureStore';
 import { loadState, saveState } from './redux/localStorage';
@@ -15,21 +14,17 @@ import reportWebVitals from './reportWebVitals';
 
 const { hash, search } = window.location;
 
-const parsed = queryString.parse(search) as {
-  logout?: string;
-  login?: string;
-  cb?: string;
-};
+const parsed = new URLSearchParams(search);
 
 scrollToPosition(0, 0);
 
-if (parsed.logout !== undefined) {
+if (parsed.has('logout')) {
   localStorage.clear();
   sessionStorage.clear();
   window.location.href = '/';
 }
 
-if (parsed.login !== undefined) {
+if (parsed.has('login')) {
   localStorage.removeItem('state');
   window.location.href = '/';
 }
@@ -40,14 +35,37 @@ if (!container) {
   throw new Error('Root element not found');
 }
 
-const root = createRoot(container);
+const root = createRoot(
+  container,
+  import.meta.env.PROD
+    ? {
+        onCaughtError(error, errorInfo) {
+          console.error('React caught error:', error, errorInfo.componentStack);
+        },
+        onUncaughtError(error, errorInfo) {
+          console.error(
+            'React uncaught error:',
+            error,
+            errorInfo.componentStack
+          );
+        },
+        onRecoverableError(error, errorInfo) {
+          console.error(
+            'React recoverable error:',
+            error,
+            errorInfo.componentStack
+          );
+        },
+      }
+    : undefined
+);
 
-if (parsed.login !== undefined || parsed.logout !== undefined) {
+if (parsed.has('login') || parsed.has('logout')) {
   root.render(<div className="app-loading" />);
 } else {
   const cookieToken = cookies.get('token');
 
-  if (parsed.cb !== undefined || cookieToken === undefined) {
+  if (parsed.has('cb') || cookieToken === undefined) {
     localStorage.clear();
     sessionStorage.clear();
   }
