@@ -19,6 +19,7 @@
     "profile": "PROFILE=true vite build",
     "lint": "prettier --write 'src/**/*.{js,jsx,ts,tsx}' && eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
     "lint:check": "prettier --check 'src/**/*.{js,jsx,ts,tsx}' && eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "type-check": "tsc --noEmit",
     "test:component": "vitest --browser"
   },
   "dependencies": {

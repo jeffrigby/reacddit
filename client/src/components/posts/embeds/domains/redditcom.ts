@@ -139,52 +139,59 @@ async function executeBatch(): Promise<void> {
     return;
   }
 
-  const resolveAll = (postId: string | null): void => {
-    batch.forEach((callbacks) => callbacks.forEach((cb) => cb(postId)));
-  };
-
-  const urls = Array.from(batch.keys());
-
-  try {
-    const response = await fetch('/api/resolve-share', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ urls }),
-    });
-
-    if (!response.ok) {
-      console.error(
-        'redditcom.executeBatch: HTTP error from /api/resolve-share',
-        {
-          operation: 'executeBatch',
-          status: response.status,
-          statusText: response.statusText,
-          urlCount: urls.length,
-          urls,
-        }
-      );
-      resolveAll(null);
-      return;
-    }
-
-    const data = (await response.json()) as ResolveShareResponse;
-
-    // Distribute results to all waiting callers
-    batch.forEach((callbacks, url) => {
-      const postId = data.results[url]?.postId ?? null;
+  // Distribute one chunk's results (or a failure, when data is null) to all
+  // waiting callers for the URLs in that chunk.
+  const resolveChunk = (
+    chunk: string[],
+    data: ResolveShareResponse | null
+  ): void => {
+    for (const url of chunk) {
+      const postId = data?.results[url]?.postId ?? null;
       if (postId) {
         shareCache.set(url, postId);
       }
-      callbacks.forEach((cb) => cb(postId));
-    });
-  } catch (error) {
-    logShareError(
-      'executeBatch',
-      'failed to resolve share links',
-      { operation: 'executeBatch', urlCount: urls.length, urls },
-      error
-    );
-    resolveAll(null);
+      batch.get(url)?.forEach((cb) => cb(postId));
+    }
+  };
+
+  // The server rejects requests with more than MAX_BATCH_SIZE URLs, so large
+  // batches must be split just like resolveShareLinks does.
+  const chunks = chunkArray(Array.from(batch.keys()), MAX_BATCH_SIZE);
+
+  for (const chunk of chunks) {
+    try {
+      const response = await fetch('/api/resolve-share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls: chunk }),
+      });
+
+      if (!response.ok) {
+        console.error(
+          'redditcom.executeBatch: HTTP error from /api/resolve-share',
+          {
+            operation: 'executeBatch',
+            status: response.status,
+            statusText: response.statusText,
+            urlCount: chunk.length,
+            urls: chunk,
+          }
+        );
+        resolveChunk(chunk, null);
+        continue;
+      }
+
+      const data = (await response.json()) as ResolveShareResponse;
+      resolveChunk(chunk, data);
+    } catch (error) {
+      logShareError(
+        'executeBatch',
+        'failed to resolve share links',
+        { operation: 'executeBatch', urlCount: chunk.length, urls: chunk },
+        error
+      );
+      resolveChunk(chunk, null);
+    }
   }
 }
 

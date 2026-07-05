@@ -58,6 +58,10 @@ jobs:
         working-directory: ./api
         run: npm run type-check
 
+      - name: Type-check client
+        working-directory: ./client
+        run: npm run type-check
+
       - name: Lint all workspaces
         run: npm run lint-all:check
 

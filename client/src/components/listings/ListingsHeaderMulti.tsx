@@ -49,9 +49,7 @@ function ListingsHeaderMulti() {
 
   return (
     <>
-      <title>
-        {currentMulti.name} subreddits curated by /u/{currentMulti.owner}
-      </title>
+      <title>{`${currentMulti.name} subreddits curated by /u/${currentMulti.owner}`}</title>
       <div className="d-flex">
         <div className="me-auto title-contrainer">
           <h5 className="m-0 p-0 w-100">/m/{target}</h5>

@@ -109,4 +109,4 @@ npm run build          # SAM build for Lambda deployment (requires Docker)
 
 - Run `npm run type-check` before committing
 - Zero TypeScript errors required
-- Follow same linting standards as root (ESLint v9 flat config)
+- Follow same linting standards as root (ESLint v10 flat config)

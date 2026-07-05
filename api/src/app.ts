@@ -483,7 +483,14 @@ function setSessionAndRespond(
   ctx: Koa.Context,
   type: BearerTokenResponse['type']
 ): void {
-  setSessAndCookie(token, ctx);
+  if (!setSessAndCookie(token, ctx)) {
+    // Don't hand out a token whose session never persisted — an authenticated
+    // user's refresh_token would be lost and the next poll would silently
+    // downgrade them to anonymous. Failing lets the client retry /api/bearer.
+    ctx.status = 500;
+    ctx.body = { status: 'error', message: 'Failed to persist session' };
+    return;
+  }
   ctx.body = getBearer(token, { type, loginUrl: getLoginUrl(ctx) });
 }
 

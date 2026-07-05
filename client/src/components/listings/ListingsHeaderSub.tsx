@@ -116,7 +116,9 @@ function ListingsHeaderSub() {
       const q = new URLSearchParams(window.location.search).get('q') ?? '';
       searchEverywhere =
         target !== 'mine' ? (
-          <NavLink to={`/search?q=${q}`}>Search Everywhere</NavLink>
+          <NavLink to={`/search?q=${encodeURIComponent(q)}`}>
+            Search Everywhere
+          </NavLink>
         ) : undefined;
       title = `Search results for '${q}'`;
       if (multi) {

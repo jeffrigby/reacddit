@@ -86,10 +86,12 @@ function extractUrlsFromHtml(html: string): string[] {
     const anchors = Array.from(doc.querySelectorAll('a'));
 
     // Extract href attributes, filter for valid HTTP(S) URLs
-    // Strip %5C (backslash) — a Markdown escaping artifact (\_) that Reddit
-    // leaks into HTML hrefs. The browser's a.href percent-encodes it to %5C.
+    // Unescape %5C_ (backslash-underscore) — a Markdown escaping artifact (\_)
+    // that Reddit leaks into HTML hrefs. The browser's a.href percent-encodes
+    // the backslash to %5C. Only the escape sequence is rewritten so URLs that
+    // legitimately contain %5C elsewhere are left intact.
     const urls = anchors
-      .map((a) => a.href.replace(/%5[Cc]/g, ''))
+      .map((a) => a.href.replace(/%5[Cc]_/g, '_'))
       .filter((href) => href?.match(/^https?:\/\//));
 
     return urls;
@@ -118,28 +120,36 @@ async function inlineLinks(
   // Extract URLs using modern DOMParser instead of strip_tags + regex
   const links = extractUrlsFromHtml(textContent ?? '');
 
-  // Pre-resolve Reddit share links in a single batch before pLimit processing.
-  // This populates shareCache so individual URLs hit cache instantly during pLimit waves.
-  const shareLinks = links.filter(isRedditShareLink);
-  let resolvedShareLinks = new Map<string, string>();
-  if (shareLinks.length > 0) {
-    resolvedShareLinks = await resolveShareLinks(shareLinks);
-  }
-
-  // Batch pre-fetch ALL Reddit post data in 1-2 API calls instead of N individual calls.
-  // Collects IDs from resolved share links + standard reddit.com/redd.it URLs.
-  const redditPostIds: string[] = [...resolvedShareLinks.values()];
+  // Batch pre-fetch Reddit post data instead of N individual calls. IDs from
+  // standard reddit.com/redd.it URLs are known synchronously, so their
+  // /api/info prefetch starts immediately and runs concurrently with the
+  // share-link resolution round trip below.
+  const directPostIds: string[] = [];
   for (const link of links) {
     if (isShareLink(link)) {
       continue;
     }
     const postId = extractPostId(link);
     if (postId) {
-      redditPostIds.push(postId);
+      directPostIds.push(postId);
     }
   }
-  if (redditPostIds.length > 0) {
-    await prefetchPostData(redditPostIds);
+  const directPrefetch =
+    directPostIds.length > 0 ? prefetchPostData(directPostIds) : null;
+
+  // Pre-resolve Reddit share links in a single batch before pLimit processing.
+  // This populates shareCache so individual URLs hit cache instantly during
+  // pLimit waves; the resolved post IDs are then prefetched too.
+  const shareLinks = links.filter(isRedditShareLink);
+  if (shareLinks.length > 0) {
+    const resolvedShareLinks = await resolveShareLinks(shareLinks);
+    const sharePostIds = [...resolvedShareLinks.values()];
+    if (sharePostIds.length > 0) {
+      await prefetchPostData(sharePostIds);
+    }
+  }
+  if (directPrefetch) {
+    await directPrefetch;
   }
 
   const dupes: string[] = [];

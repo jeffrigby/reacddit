@@ -60,7 +60,7 @@ const root = createRoot(
     : undefined
 );
 
-if (parsed.login !== undefined || parsed.logout !== undefined) {
+if (parsed.has('login') || parsed.has('logout')) {
   root.render(<div className="app-loading" />);
 } else {
   const cookieToken = cookies.get('token');

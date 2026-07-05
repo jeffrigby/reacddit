@@ -155,9 +155,7 @@ function Listings({ match }: ListingsProps) {
     <ListingsContext value={listingsContextValue}>
       <ListingsContextLastExpanded value={lastExpandedContext}>
         {data?.originalPost && (
-          <title>
-            {data.originalPost.data.title} : {data.originalPost.data.subreddit}
-          </title>
+          <title>{`${data.originalPost.data.title} : ${data.originalPost.data.subreddit}`}</title>
         )}
         <div className="list-group" id="entries">
           <ListingsHeader />

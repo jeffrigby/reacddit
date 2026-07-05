@@ -4,7 +4,7 @@ Reacddit is a Reddit client with enhanced media viewing and embedded content sup
 
 ## Tech Stack
 
-- **Client:** React 19, Redux Toolkit, React Router 7, TypeScript (ES2023), Vite 8
+- **Client:** React 19, Redux Toolkit, React Router 8, TypeScript (ES2023), Vite 8
 - **API:** Koa.js OAuth2 server (Reddit auth + share link resolver)
 - **Proxy:** Node.js HTTPS reverse proxy for local dev SSL
 - **Deployment:** AWS Lambda via SAM/CloudFormation
@@ -55,7 +55,7 @@ npm run test:coverage     # Run tests with coverage
 
 ## Code Quality (CRITICAL)
 
-- **ESLint v9 with flat config** - strict standards enforced
+- **ESLint v10 with flat config** - strict standards enforced
 - **Zero warnings/errors required** before committing
 - Run `npm run lint-all` after ANY code changes
 - Each workspace has tailored ESLint config (React for client, Node for api/proxy)
@@ -95,7 +95,7 @@ npm run test:coverage     # Run tests with coverage
 - Add new embeds: Create `domains/[domain].ts` with default export render function
 
 **Routing:**
-- React Router 7 with dynamic route generation
+- React Router 8 with dynamic route generation
 - Supports Reddit patterns: `/r/subreddit`, `/u/user`, `/m/multi`
 
 **HTTPS Proxy (`/proxy/`):**

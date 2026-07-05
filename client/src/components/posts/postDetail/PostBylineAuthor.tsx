@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
@@ -64,6 +64,15 @@ function PostBylineAuthor({
   // Use optimistic value if set, otherwise fall back to server state
   const displayFollowing = optimisticFollowing ?? isFollowed;
 
+  // Keep the optimistic value until the server state catches up — clearing it
+  // when the mutation resolves would revert the button to the stale cache
+  // value while the invalidation refetch is still in flight.
+  useEffect(() => {
+    if (optimisticFollowing !== null && optimisticFollowing === isFollowed) {
+      setOptimisticFollowing(null);
+    }
+  }, [optimisticFollowing, isFollowed]);
+
   const unfollowUser = async (name: string): Promise<void> => {
     setOptimisticFollowing(false);
     try {
@@ -72,7 +81,6 @@ function PostBylineAuthor({
         action: 'unsub',
         type: 'sr_name',
       }).unwrap();
-      setOptimisticFollowing(null); // Clear optimistic, use server state
     } catch (error) {
       console.error('Failed to unfollow user:', error);
       setOptimisticFollowing(null); // Revert to server state on error
@@ -87,7 +95,6 @@ function PostBylineAuthor({
         action: 'sub',
         type: 'sr_name',
       }).unwrap();
-      setOptimisticFollowing(null); // Clear optimistic, use server state
     } catch (error) {
       console.error('Failed to follow user:', error);
       setOptimisticFollowing(null); // Revert to server state on error

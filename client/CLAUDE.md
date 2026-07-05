@@ -16,7 +16,7 @@ npm run test:component # Component tests (vitest in browser mode + Playwright)
 
 **Formatting:** `semi: true`, `singleQuote: true`, `trailingComma: es5`
 
-**Linting (ESLint v9):**
+**Linting (ESLint v10):**
 - Run `npm run lint` after ALL changes
 - Zero warnings/errors required before committing
 - Flat config in `eslint.config.mjs`
