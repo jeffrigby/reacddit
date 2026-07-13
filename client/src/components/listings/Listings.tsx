@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLocation } from 'react-router';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
@@ -8,9 +15,13 @@ import {
 } from '@/redux/slices/listingsSlice';
 import { useListingsQuery } from '@/hooks/useListingsQuery';
 import { useGetSubredditAboutQuery } from '@/redux/api';
-import { ListingsContext, ListingsContextLastExpanded } from '@/contexts';
-import { hotkeyStatus } from '@/common';
-import { scrollToPosition } from '@/components/posts/PostsFunctions';
+import {
+  ListingsContext,
+  ListingsContextLastExpanded,
+  ListingsFilterContext,
+  useListingsActive,
+} from '@/contexts';
+import { getScrollContainer, hotkeyStatus, scrollToPosition } from '@/common';
 import Posts from '@/components/posts/postsContainer/Posts';
 import ListingsLogic from './ListingsLogic';
 import ListingsHeader from './ListingsHeader';
@@ -35,6 +46,7 @@ interface ListingsProps {
 function Listings({ match }: ListingsProps) {
   const location = useLocation();
   const dispatch = useAppDispatch();
+  const isActive = useListingsActive();
   const [lastExpanded, setLastExpanded] = useState('');
 
   const { listType, sort, target, user, userType, multi, postName, comment } =
@@ -73,7 +85,7 @@ function Listings({ match }: ListingsProps) {
 
   // Fetch listings with RTK Query
   const { data, status, loadMore, loadNew, refetch, canLoadMore } =
-    useListingsQuery(filters, location);
+    useListingsQuery(filters, location, { active: isActive });
 
   // Fetch subreddit about data (parallel query) - currently unused but may be needed for sidebar
   useGetSubredditAboutQuery({
@@ -82,12 +94,21 @@ function Listings({ match }: ListingsProps) {
     multi: filters.multi,
   });
 
-  // Update filter and status in slice when match params or status change
+  // Keep the global filter (Sort toolbar and other header singletons) in sync
+  // with the ACTIVE tree only; useLayoutEffect so the frame after an overlay
+  // closes never paints with the overlay's filter still applied.
+  useLayoutEffect(() => {
+    if (isActive) {
+      dispatch(filterChanged(filters));
+    }
+  }, [dispatch, filters, isActive]);
+
+  // Reset scroll only when this tree's own filters change (NOT on
+  // reactivation after the overlay closes - the preserved offset must stay).
   useEffect(() => {
     scrollToPosition(0, 0);
-    dispatch(filterChanged(filters));
     setLastExpanded('');
-  }, [dispatch, filters]);
+  }, [filters]);
 
   const locationKey = location.key || 'front';
 
@@ -121,7 +142,7 @@ function Listings({ match }: ListingsProps) {
               loadNew();
               break;
             case '/':
-              scrollToPosition(0, document.body.scrollHeight);
+              scrollToPosition(0, getScrollContainer().scrollHeight);
               break;
             default:
               break;
@@ -135,11 +156,14 @@ function Listings({ match }: ListingsProps) {
   );
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
     document.addEventListener('keydown', hotkeys);
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  }, [hotkeys]);
+  }, [hotkeys, isActive]);
 
   // Prepare context values
   const lastExpandedContext = useMemo(
@@ -153,17 +177,22 @@ function Listings({ match }: ListingsProps) {
 
   return (
     <ListingsContext value={listingsContextValue}>
-      <ListingsContextLastExpanded value={lastExpandedContext}>
-        {data?.originalPost && (
-          <title>{`${data.originalPost.data.title} : ${data.originalPost.data.subreddit}`}</title>
-        )}
-        <div className="list-group" id="entries">
-          <ListingsHeader />
-          <Posts key={locationKey} />
-          <ListingsLogic saved={data?.saved ?? 0} />
-        </div>
-        <PostsDebug />
-      </ListingsContextLastExpanded>
+      <ListingsFilterContext value={filters}>
+        <ListingsContextLastExpanded value={lastExpandedContext}>
+          {isActive && data?.originalPost && (
+            <title>{`${data.originalPost.data.title} : ${data.originalPost.data.subreddit}`}</title>
+          )}
+          <div
+            className="entries list-group"
+            id={isActive ? 'entries' : undefined}
+          >
+            <ListingsHeader />
+            <Posts key={locationKey} />
+            <ListingsLogic saved={data?.saved ?? 0} />
+          </div>
+          {isActive && <PostsDebug />}
+        </ListingsContextLastExpanded>
+      </ListingsFilterContext>
     </ListingsContext>
   );
 }

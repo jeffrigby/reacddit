@@ -13,10 +13,16 @@ import type { Location } from 'react-router';
 import { useGetListingsQuery } from '@/redux/api';
 import type { ListingsFilter } from '@/types/listings';
 import { useAppSelector } from '@/redux/hooks';
+import { getScrollContainer } from '@/common';
 
 export interface UseListingsQueryOptions {
   /** Limit for initial load (default: 25, or 100 for condensed view) */
   limit?: number;
+  /**
+   * Whether this listing tree is the active (visible) one (default: true).
+   * Suspended background trees must not stream-poll.
+   */
+  active?: boolean;
 }
 
 export interface UseListingsQueryResult {
@@ -54,6 +60,7 @@ export function useListingsQuery(
 ): UseListingsQueryResult {
   const stream = useAppSelector((state) => state.siteSettings.stream);
   const view = useAppSelector((state) => state.siteSettings.view);
+  const active = options.active ?? true;
 
   // Determine limit based on view mode
   const baseLimit = options.limit ?? (view === 'condensed' ? 100 : 25);
@@ -97,8 +104,13 @@ export function useListingsQuery(
   };
 
   const result = useGetListingsQuery(queryArgs, {
-    // Enable polling when streaming is active and at top of page
-    pollingInterval: stream && window.scrollY <= 10 ? 5000 : undefined,
+    // Enable polling when this tree is active, streaming is on, and the
+    // active scroll container is at the top (the body is an element scroller
+    // in this app, so window.scrollY is always 0 and would be meaningless).
+    pollingInterval:
+      active && stream && getScrollContainer().scrollTop <= 10
+        ? 5000
+        : undefined,
     skip: false,
   });
 

@@ -1,7 +1,9 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { Link } from 'react-router';
-import { useAppSelector } from '@/redux/hooks';
+import { Link, useLocation } from 'react-router';
+import { useListingsFilter, useIsOverlay } from '@/contexts';
+import { buildDetailNavState } from '@/utils/navigationState';
+import type { NavState } from '@/types/navigation';
 import type { Thing, LinkData, CommentData } from '@/types/redditApi';
 import Post from '@/components/posts/postDetail/Post';
 
@@ -14,7 +16,8 @@ interface PostsParentProps {
  */
 function renderCommentLinks(
   permalink: string,
-  comment: string
+  comment: string,
+  navState: NavState
 ): ReactElement | null {
   const parentCommentLink = `${permalink}${comment}/`;
   const search = {
@@ -23,11 +26,11 @@ function renderCommentLinks(
   };
   return (
     <div className="list-actions">
-      <Link state={{ showBack: true }} to={permalink}>
+      <Link state={navState} to={permalink}>
         View all comments
       </Link>{' '}
       <Link
-        state={{ showBack: true }}
+        state={navState}
         to={`${parentCommentLink}?${new URLSearchParams(search).toString()}`}
       >
         Show parent comments
@@ -40,9 +43,9 @@ function renderCommentLinks(
  * This is a component to render the parent post for comments and duplicates
  */
 function PostsParent({ post }: PostsParentProps): ReactElement | null {
-  const listingsFilter = useAppSelector(
-    (state) => state.listings.currentFilter
-  );
+  const listingsFilter = useListingsFilter();
+  const location = useLocation();
+  const inOverlay = useIsOverlay();
   const { listType, comment } = listingsFilter;
 
   // Memoize regex match to prevent re-execution on every render
@@ -74,8 +77,12 @@ function PostsParent({ post }: PostsParentProps): ReactElement | null {
       data: { permalink },
     } = post;
 
-    return renderCommentLinks(permalink, comment);
-  }, [post, comment, shouldRenderParent]);
+    return renderCommentLinks(
+      permalink,
+      comment,
+      buildDetailNavState(location, inOverlay)
+    );
+  }, [post, comment, shouldRenderParent, location, inOverlay]);
 
   if (!shouldRenderParent) {
     return null;

@@ -88,7 +88,6 @@ if (parsed.has('login') || parsed.has('logout')) {
         siteSettings: state.siteSettings,
         subredditPolling: state.subredditPolling,
         redditMe: state.redditMe,
-        history: state.history,
         redditApi: state.redditApi,
       });
     }, 1000)

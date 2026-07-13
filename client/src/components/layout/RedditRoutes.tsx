@@ -1,6 +1,12 @@
-import { Route, Routes } from 'react-router';
+import { Route, Routes, useLocation } from 'react-router';
 import NotFound404 from '@/NotFound404';
 import ListingsRoute from '@/components/listings/ListingsRoute';
+import {
+  ListingsActiveContext,
+  OverlayContext,
+  useOverlayRouting,
+} from '@/contexts';
+import PostDetailOverlay from './PostDetailOverlay';
 
 const redditSorts = ['hot', 'new', 'top', 'controversial', 'rising', 'best'];
 const userSorts = ['hot', 'new', 'top', 'controversial'];
@@ -129,8 +135,8 @@ function filterValidations(
     );
 }
 
-function RedditRoutes() {
-  const generatedRoutes = routes.flatMap((route) => {
+function buildRoutes(configs: RouteConfig[]): React.JSX.Element[] {
+  return configs.flatMap((route) => {
     const { paths, overrides, validations } = route;
     return paths.map((path) => {
       const filteredValidations = filterValidations(
@@ -151,12 +157,36 @@ function RedditRoutes() {
       );
     });
   });
+}
+
+const commentsRouteConfigs = routes.filter(
+  (route) => route.overrides.listType === 'comments'
+);
+
+function RedditRoutes(): React.JSX.Element {
+  const location = useLocation();
+  const { overlayOpen, background } = useOverlayRouting();
 
   return (
-    <Routes>
-      {generatedRoutes}
-      <Route element={<NotFound404 />} key="NotFound404" path="*" />
-    </Routes>
+    <>
+      <ListingsActiveContext value={!overlayOpen}>
+        <div inert={overlayOpen}>
+          <Routes location={background ?? location}>
+            {buildRoutes(routes)}
+            <Route element={<NotFound404 />} key="NotFound404" path="*" />
+          </Routes>
+        </div>
+      </ListingsActiveContext>
+      {overlayOpen && (
+        <PostDetailOverlay>
+          <ListingsActiveContext value={true}>
+            <OverlayContext value={true}>
+              <Routes>{buildRoutes(commentsRouteConfigs)}</Routes>
+            </OverlayContext>
+          </ListingsActiveContext>
+        </PostDetailOverlay>
+      )}
+    </>
   );
 }
 

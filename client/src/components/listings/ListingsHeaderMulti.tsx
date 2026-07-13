@@ -1,10 +1,12 @@
 import { useAppSelector } from '@/redux/hooks';
 import { useGetMultiRedditInfoQuery } from '@/redux/api';
+import { useListingsActive, useListingsFilter } from '@/contexts';
 import MultiDelete from './MultiDelete';
 
 function ListingsHeaderMulti() {
-  const filter = useAppSelector((state) => state.listings.currentFilter);
+  const filter = useListingsFilter();
   const me = useAppSelector((state) => state.redditMe);
+  const isActive = useListingsActive();
 
   const { target, user } = filter;
   const meName = me.me?.name;
@@ -49,7 +51,9 @@ function ListingsHeaderMulti() {
 
   return (
     <>
-      <title>{`${currentMulti.name} subreddits curated by /u/${currentMulti.owner}`}</title>
+      {isActive && (
+        <title>{`${currentMulti.name} subreddits curated by /u/${currentMulti.owner}`}</title>
+      )}
       <div className="d-flex">
         <div className="me-auto title-contrainer">
           <h5 className="m-0 p-0 w-100">/m/{target}</h5>

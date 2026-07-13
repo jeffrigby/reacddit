@@ -53,16 +53,19 @@ export function useScrollClickPrevention(): boolean {
       }
     };
 
-    // Listen to scroll events (passive for better performance)
-    window.addEventListener('scroll', throttledScroll, { passive: true });
-    document.body.addEventListener('scroll', throttledScroll, {
+    // One capture-phase document listener sees scrolls from ANY container
+    // (body scroller, post-detail overlay, nested scrollers) since scroll
+    // events don't bubble (passive for better performance)
+    document.addEventListener('scroll', throttledScroll, {
       passive: true,
+      capture: true,
     });
 
     // Cleanup
     return () => {
-      window.removeEventListener('scroll', throttledScroll);
-      document.body.removeEventListener('scroll', throttledScroll);
+      document.removeEventListener('scroll', throttledScroll, {
+        capture: true,
+      });
 
       if (scrollTimeoutRef.current !== null) {
         clearTimeout(scrollTimeoutRef.current);

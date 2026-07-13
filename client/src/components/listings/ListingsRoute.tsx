@@ -1,7 +1,4 @@
-import { useEffect } from 'react';
-import { useParams, useLocation } from 'react-router';
-import { useAppDispatch } from '@/redux/hooks';
-import { historyPathAdded } from '@/redux/slices/historySlice';
+import { useParams } from 'react-router';
 import NotFound404 from '@/NotFound404';
 import Listings from './Listings';
 
@@ -26,13 +23,6 @@ function ListingsRoute({
   validations = {},
 }: ListingsRouteProps) {
   const match = useParams();
-  const location = useLocation();
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    // Track the current path in history
-    dispatch(historyPathAdded(location.pathname));
-  }, [dispatch, location.pathname]);
 
   const overrideMatch: Record<string, string | boolean | undefined> = {
     ...match,

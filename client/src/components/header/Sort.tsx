@@ -18,6 +18,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useAppSelector } from '@/redux/hooks';
+import { useOverlayRouting } from '@/contexts';
 import { hotkeyStatus, isEmpty } from '@/common';
 
 interface SortCategories {
@@ -93,7 +94,13 @@ function Sort() {
   );
   const location = useLocation();
   const navigate = useNavigate();
+  const { overlayOpen } = useOverlayRouting();
   const { search } = location;
+
+  // Sort navigations must keep an OPEN overlay alive (the state carries its
+  // backgroundLocation), but must NOT forward stale state on a standalone
+  // page — history.state survives reloads and would resurrect the overlay.
+  const sortNavState: unknown = overlayOpen ? location.state : undefined;
 
   const getIcon = (sort: string) => (
     <FontAwesomeIcon fixedWidth icon={sortIcons[sort]} />
@@ -146,6 +153,8 @@ function Sort() {
     [listingsFilter, me, search]
   );
 
+  // Sort changes must carry the current navigation state through so changing
+  // sort inside the post-detail overlay keeps the overlay + background alive.
   const handleSortHotkey = useCallback(
     (event: KeyboardEvent) => {
       const { target, listType } = listingsFilter;
@@ -153,38 +162,38 @@ function Sort() {
         const pressedKey = event.key;
         switch (pressedKey) {
           case 'H': {
-            navigate(genLink('hot'));
+            navigate(genLink('hot'), { state: sortNavState });
             break;
           }
           case 'B': {
-            navigate(genLink('best'));
+            navigate(genLink('best'), { state: sortNavState });
             break;
           }
           case 'N': {
-            navigate(genLink('new'));
+            navigate(genLink('new'), { state: sortNavState });
             break;
           }
           case 'C': {
-            navigate(genLink('controversial'));
+            navigate(genLink('controversial'), { state: sortNavState });
             break;
           }
           case 'R': {
-            navigate(genLink('rising'));
+            navigate(genLink('rising'), { state: sortNavState });
             break;
           }
           case 'T': {
-            navigate(genLink('top'));
+            navigate(genLink('top'), { state: sortNavState });
             break;
           }
           case 'Q': {
             if (listType === 'comments') {
-              navigate(genLink('qa'));
+              navigate(genLink('qa'), { state: sortNavState });
             }
             break;
           }
           case 'O': {
             if (listType === 'comments') {
-              navigate(genLink('old'));
+              navigate(genLink('old'), { state: sortNavState });
             }
             break;
           }
@@ -193,7 +202,7 @@ function Sort() {
         }
       }
     },
-    [genLink, listingsFilter, navigate]
+    [genLink, listingsFilter, navigate, sortNavState]
   );
 
   useEffect(() => {
@@ -231,6 +240,7 @@ function Sort() {
           as={NavLink}
           className={sortActive}
           key={linkKey}
+          state={sortNavState}
           to={url}
         >
           <span className="sort-title ps-3 small">{linkString}</span>
@@ -303,6 +313,7 @@ function Sort() {
             <Dropdown.Item
               as={NavLink}
               className={`d-flex small ${active ? 'sort-active' : ''}`}
+              state={sortNavState}
               to={genLink(sortName)}
             >
               <div className="me-auto pe-2 sort-title">

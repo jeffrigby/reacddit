@@ -1,3 +1,5 @@
+import { getScrollViewport } from '@/common';
+
 /**
  * Check if an element is a top-level entry (not a nested comment).
  * On comments pages, this filters out threaded replies with the comment-child class.
@@ -11,32 +13,23 @@ function isTopLevelEntry(element: Element): boolean {
 }
 
 /**
- * Get the actual scrolling element
- * After Bootstrap 5 migration, body element has the scroll, not window
- * Note: Cannot use document.scrollingElement - Bootstrap 5 confuses it
+ * The listing container of the ACTIVE tree. Only the active tree renders
+ * id="entries", so DOM queries never resolve into a suspended background
+ * tree while the post-detail overlay is open.
  */
-function getScrollContainer(): Element {
-  // Check which element is actually scrollable
-  // Bootstrap 5 sets overflow on body, making it the scroll container
-  const body = document.body;
-  const html = document.documentElement;
-
-  // Return whichever element has scrollable content
-  if (body.scrollHeight > body.clientHeight) {
-    return body;
-  } else {
-    return html;
-  }
+export function getActiveEntriesContainer(): Element {
+  return document.getElementById('entries') ?? document.body;
 }
 
 /**
- * Scroll to a specific position
- * Use this instead of window.scrollTo() after Bootstrap 5 migration
+ * Find an entry element by its reddit fullname, scoped to the active tree.
+ * Entry ids are duplicated across trees while the overlay is open, so a
+ * global document.getElementById would resolve to the background copy.
  */
-export function scrollToPosition(x: number, y: number): void {
-  const scrollContainer = getScrollContainer();
-  scrollContainer.scrollLeft = x;
-  scrollContainer.scrollTop = y;
+export function findEntry(name: string): HTMLElement | null {
+  return getActiveEntriesContainer().querySelector<HTMLElement>(
+    `[id="${CSS.escape(name)}"]`
+  );
 }
 
 /**
@@ -49,7 +42,7 @@ export function nextEntry(focused: string | null): void {
     return;
   }
 
-  const current = document.getElementById(focused);
+  const current = findEntry(focused);
   if (current == null) {
     return;
   }
@@ -63,9 +56,9 @@ export function nextEntry(focused: string | null): void {
   if (next) {
     // Batch layout read in requestAnimationFrame to avoid forced reflow
     requestAnimationFrame(() => {
-      const scrollBy = next.getBoundingClientRect().top - 50;
-      const scrollContainer = getScrollContainer();
-      scrollContainer.scrollTop += scrollBy;
+      const { container, top } = getScrollViewport();
+      const scrollBy = next.getBoundingClientRect().top - top - 50;
+      container.scrollTop += scrollBy;
     });
   }
   // No more entries - do nothing (removed "jump to bottom" behavior)
@@ -80,7 +73,9 @@ export function nextEntryCollapsed(
 ): string | null {
   // Open up the first top-level entry
   if (!lastExpanded) {
-    const entries = Array.from(document.getElementsByClassName('entry'));
+    const entries = Array.from(
+      getActiveEntriesContainer().getElementsByClassName('entry')
+    );
     const first = entries.find((entry) => isTopLevelEntry(entry));
     if (first == null) {
       return null;
@@ -89,7 +84,7 @@ export function nextEntryCollapsed(
     return first.id;
   }
 
-  const current = document.getElementById(lastExpanded);
+  const current = findEntry(lastExpanded);
   if (current == null) {
     return null;
   }
@@ -118,7 +113,7 @@ export function prevEntry(focused: string | null): void {
     return;
   }
 
-  const current = document.getElementById(focused);
+  const current = findEntry(focused);
   if (current == null) {
     return;
   }
@@ -132,9 +127,9 @@ export function prevEntry(focused: string | null): void {
   if (prev) {
     // Batch layout read in requestAnimationFrame to avoid forced reflow
     requestAnimationFrame(() => {
-      const scrollBy = prev.getBoundingClientRect().top - 50;
-      const scrollContainer = getScrollContainer();
-      scrollContainer.scrollTop += scrollBy;
+      const { container, top } = getScrollViewport();
+      const scrollBy = prev.getBoundingClientRect().top - top - 50;
+      container.scrollTop += scrollBy;
     });
   }
   // No previous entry - do nothing
@@ -151,7 +146,7 @@ export function prevEntryCollapsed(
     return null;
   }
 
-  const current = document.getElementById(lastExpanded);
+  const current = findEntry(lastExpanded);
   if (current == null) {
     return null;
   }
@@ -177,13 +172,16 @@ interface ListingState {
 /**
  * Get the current listing state.
  * Only considers top-level entries (skips nested comments with comment-child class).
+ * All geometry is relative to the active scroll container's visible area so
+ * the math works both for the body scroller and the post-detail overlay.
  */
 export function getCurrentListingState(
   currentState: ListingState | Record<string, never>,
   viewMode: string,
   lastExpanded: string | null
 ): ListingState | Record<string, never> {
-  const postsCollection = document.getElementsByClassName('entry');
+  const postsCollection =
+    getActiveEntriesContainer().getElementsByClassName('entry');
   if (postsCollection.length === 0) {
     return {};
   }
@@ -201,11 +199,14 @@ export function getCurrentListingState(
     actionable = lastExpanded;
     focused = lastExpanded;
   } else {
+    const { top: viewTop, height: viewHeight } = getScrollViewport();
     posts.forEach((post) => {
-      const { top, bottom } = post.getBoundingClientRect();
+      const rect = post.getBoundingClientRect();
+      const top = rect.top - viewTop;
+      const bottom = rect.bottom - viewTop;
 
       // If it's not in the visible range skip it.
-      if (bottom >= -250 && top - window.innerHeight <= 500) {
+      if (bottom >= -250 && top - viewHeight <= 500) {
         if (!focused) {
           const focusTop = bottom - 55;
           if (focusTop > 0) {
@@ -217,7 +218,7 @@ export function getCurrentListingState(
           const offset = 22;
           const actionTop = top - offset;
           if (actionTop > 0) {
-            const inView = top - window.innerHeight <= -offset;
+            const inView = top - viewHeight <= -offset;
             actionable = inView ? post.id : prevPostId;
           }
         }
@@ -241,9 +242,10 @@ export function unfocusIFrame(): void {
 }
 
 export function autoPlayVideos(): void {
-  const videoCollection = document.querySelectorAll<HTMLVideoElement>(
-    'video:not(.manual-stop)'
-  );
+  const videoCollection =
+    getActiveEntriesContainer().querySelectorAll<HTMLVideoElement>(
+      'video:not(.manual-stop)'
+    );
   if (videoCollection.length !== 0) {
     const videos = Array.from(videoCollection);
     videos.forEach((video) => {

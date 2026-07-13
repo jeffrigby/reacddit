@@ -1,6 +1,8 @@
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComment } from '@fortawesome/free-regular-svg-icons';
+import { useIsOverlay } from '@/contexts';
+import { buildDetailNavState } from '@/utils/navigationState';
 
 function abbr(value: number): string {
   const suffixes = ['', 'K', 'M', 'B', 'T'];
@@ -26,9 +28,11 @@ function PostCommentLink({
   numComments,
   permalink,
 }: PostCommentLinkProps): React.JSX.Element {
+  const location = useLocation();
+  const inOverlay = useIsOverlay();
   const commentCount = abbr(numComments);
   return (
-    <Link state={{ showBack: true }} to={permalink}>
+    <Link state={buildDetailNavState(location, inOverlay)} to={permalink}>
       <FontAwesomeIcon icon={faComment} /> {commentCount}
     </Link>
   );

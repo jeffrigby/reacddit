@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router';
 import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -6,9 +7,10 @@ import {
   faAngleDoubleDown,
   faAngleDoubleUp,
 } from '@fortawesome/free-solid-svg-icons';
-import { usePostContext } from '@/contexts';
+import { usePostContext, useListingsFilter, useIsOverlay } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
 import { sanitizeHTML } from '@/utils/sanitize';
+import { buildDetailNavState, isCommentsPath } from '@/utils/navigationState';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import SelfInline from './SelfInline';
 import '../../../styles/self.scss';
@@ -27,14 +29,55 @@ interface SelfProps {
 
 const HTTP_URL_RE = /^https?:\/\//;
 const WHITESPACE_ONLY_RE = /^\s*$/;
+const REDDIT_HOST_RE =
+  /^https?:\/\/(?:www\.|old\.|new\.|np\.|sh\.)?reddit\.com\//i;
+
+/**
+ * If the href is a reddit post permalink (absolute reddit.com URL or a
+ * relative path) that matches the app's comments routes, return the
+ * app-relative path for SPA navigation. Anything else (including /s/ share
+ * links, user/subreddit links, external domains) returns null and stays an
+ * external link.
+ */
+function getInternalPostPath(href: string): string | null {
+  let url: URL;
+  try {
+    // Exclude protocol-relative hrefs ('//host/...') — they point at another
+    // host, not a reddit-relative path.
+    if (href.startsWith('/') && !href.startsWith('//')) {
+      url = new URL(href, 'https://www.reddit.com');
+    } else if (REDDIT_HOST_RE.test(href)) {
+      url = new URL(href);
+    } else {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  if (!isCommentsPath(url.pathname)) {
+    return null;
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
+}
 
 const cleanLinks = (html: string): string => {
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
-  // Set target and rel on all anchor tags; shorten long URL text
+  // Rewrite reddit post permalinks to internal SPA links; set target and rel
+  // on all other anchor tags; shorten long URL text
   doc.querySelectorAll('a').forEach((anchor) => {
-    anchor.setAttribute('target', '_blank');
-    anchor.setAttribute('rel', 'noopener noreferrer');
+    const internalPath = getInternalPostPath(anchor.getAttribute('href') ?? '');
+    if (internalPath) {
+      anchor.setAttribute('href', internalPath);
+      anchor.removeAttribute('target');
+      anchor.removeAttribute('rel');
+      anchor.setAttribute('data-internal-link', '');
+    } else {
+      anchor.setAttribute('target', '_blank');
+      anchor.setAttribute('rel', 'noopener noreferrer');
+    }
     const text = anchor.textContent ?? '';
     if (HTTP_URL_RE.test(text) && text.length >= 20) {
       const shortened = `${text.replace(HTTP_URL_RE, '').substring(0, 25)}...`;
@@ -59,10 +102,11 @@ function Self({ name, content }: SelfProps) {
   const postContext = usePostContext();
   const { post } = postContext;
 
-  const listType = useAppSelector(
-    (state) => state.listings.currentFilter.listType
-  );
+  const { listType } = useListingsFilter();
   const debug = useAppSelector((state) => state.siteSettings.debug);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const inOverlay = useIsOverlay();
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(content?.expand ?? false);
@@ -113,6 +157,47 @@ function Self({ name, content }: SelfProps) {
       });
     };
   }, [content.html, checkOverflow]);
+
+  // Delegated click handler: SPA-navigate rewritten reddit post permalinks.
+  // Modifier-clicks and non-primary buttons fall through to default behavior.
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container) {
+      return;
+    }
+
+    const handleClick = (event: MouseEvent): void => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+      const anchor = target.closest('a[data-internal-link]');
+      if (!anchor || !container.contains(anchor)) {
+        return;
+      }
+      const href = anchor.getAttribute('href');
+      if (!href) {
+        return;
+      }
+      event.preventDefault();
+      navigate(href, { state: buildDetailNavState(location, inOverlay) });
+    };
+
+    container.addEventListener('click', handleClick);
+    return () => {
+      container.removeEventListener('click', handleClick);
+    };
+  }, [navigate, location, inOverlay]);
 
   const toggleExpansion = useCallback(() => {
     if (content.expand) {

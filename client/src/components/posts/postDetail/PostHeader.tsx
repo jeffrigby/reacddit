@@ -1,6 +1,6 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo } from 'react';
-import { Link, useParams } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faThumbtack,
@@ -11,10 +11,10 @@ import { faCopy } from '@fortawesome/free-regular-svg-icons';
 import { faReddit } from '@fortawesome/free-brands-svg-icons';
 import PostVote from '@/components/posts/postActions/PostVote';
 import PostSave from '@/components/posts/postActions/PostSave';
-import { usePostContext } from '@/contexts';
+import { usePostContext, useListingsFilter, useIsOverlay } from '@/contexts';
 import PostExpandContract from '@/components/posts/postActions/PostExpandContract';
-import { useAppSelector } from '@/redux/hooks';
 import { decodeHTMLEntities, sanitizeHref } from '@/utils/sanitize';
+import { buildDetailNavState } from '@/utils/navigationState';
 import type { LinkData } from '@/types/redditApi';
 import PostHeaderComment from './PostHeaderComment';
 import PostTimeAgo from './PostTimeAgo';
@@ -35,10 +35,9 @@ function PostHeader({
   parent = false,
 }: PostHeaderProps): React.JSX.Element {
   const postContext = usePostContext();
-  const listType = useAppSelector(
-    (state) => state.listings.currentFilter.listType
-  );
-  const params = useParams<{ listType?: string; target?: string }>();
+  const { listType } = useListingsFilter();
+  const location = useLocation();
+  const inOverlay = useIsOverlay();
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
 
@@ -172,7 +171,7 @@ function PostHeader({
       <Link
         aria-label="Title"
         className="list-group-item-heading align-middle"
-        state={{ showBack: true }}
+        state={buildDetailNavState(location, inOverlay)}
         to={linkData.permalink}
       >
         {decodeHTMLEntities(linkData.title)}
@@ -189,12 +188,6 @@ function PostHeader({
       {flairs}
     </h6>
   );
-
-  // Show subreddit?
-  let showSubreddits = true;
-  if (params.listType === 'r' && params.target !== 'popular') {
-    showSubreddits = false;
-  }
 
   const handleKeyDown = (event: MouseEvent | KeyboardEvent): void => {
     if ('key' in event && (event.key === 'Enter' || event.key === ' ')) {
@@ -224,11 +217,9 @@ function PostHeader({
             <span className="ms-1 small">{linkData.selftext}</span>
           )}
         </div>
-        {showSubreddits && (
-          <div className="me-2">
-            <PostSubLink subreddit={linkData.subreddit} />
-          </div>
-        )}
+        <div className="me-2">
+          <PostSubLink subreddit={linkData.subreddit} />
+        </div>
         <div className="me-2">
           <PostTimeAgo createdUtc={linkData.created_utc} />
         </div>

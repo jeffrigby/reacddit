@@ -1,0 +1,23 @@
+#post-overlay {
+  position: fixed;
+  top: 3rem; // header height, see layout.scss .navbar/#main
+  right: 0;
+  bottom: 0; // NOT height:100vh (iOS dynamic toolbar)
+  left: 14rem; // sidebar offset, mirrors #main padding-left
+  z-index: 4; // must stay < 5 (#navigation z-index, sidebar.scss)
+  background-color: var(--bs-body-bg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+// Mirror the #main full-bleed rules (sidebar.scss)
+.hide-menu #post-overlay {
+  left: 0;
+}
+
+@media (max-width: 767.98px) {
+  #post-overlay {
+    left: 0;
+  }
+}

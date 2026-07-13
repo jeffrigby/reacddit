@@ -2,7 +2,6 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import listingsReducer from './slices/listingsSlice';
 import siteSettingsReducer from './slices/siteSettingsSlice';
-import historyReducer from './slices/historySlice';
 import bearerReducer from './slices/redditBearerSlice';
 import meReducer from './slices/redditMeSlice';
 import subredditFilterReducer from './slices/subredditFilterSlice';
@@ -16,7 +15,6 @@ import { redditApiReducer, redditApiMiddleware } from './api';
 const rootReducer = combineReducers({
   listings: listingsReducer,
   siteSettings: siteSettingsReducer,
-  history: historyReducer,
   redditBearer: bearerReducer,
   redditMe: meReducer,
   redditApi: redditApiReducer,

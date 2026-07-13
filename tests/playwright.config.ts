@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 const dir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(dir, '.env') });
@@ -66,7 +66,7 @@ export default defineConfig({
     {
       name: 'anonymous',
       testMatch: /\.spec\.ts$/,
-      testIgnore: /auth\//,
+      testIgnore: [/auth\//, /\.mobile\.spec\.ts$/],
       use: { channel: 'chrome' },
     },
     {
@@ -74,6 +74,11 @@ export default defineConfig({
       testMatch: /auth\/.*\.spec\.ts$/,
       dependencies: ['setup'],
       use: { channel: 'chrome', storageState: AUTH_FILE },
+    },
+    {
+      name: 'mobile',
+      testMatch: /\.mobile\.spec\.ts$/,
+      use: { ...devices['Pixel 7'] },
     },
   ],
 });

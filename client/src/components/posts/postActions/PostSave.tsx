@@ -15,7 +15,11 @@ import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useSavePostMutation, useUnsavePostMutation } from '@/redux/api';
-import { PostsContextActionable, usePostContext } from '@/contexts';
+import {
+  PostsContextActionable,
+  usePostContext,
+  useListingsActive,
+} from '@/contexts';
 import { hotkeyStatus } from '@/common';
 
 function PostSave() {
@@ -24,6 +28,7 @@ function PostSave() {
   const { post } = postContext;
   const data = post.data as LinkData;
   const actionable = use(PostsContextActionable) as boolean;
+  const isActive = useListingsActive();
 
   const [savedState, setSavedState] = useState(data.saved);
   const [optimisticSaved, setOptimisticSaved] = useOptimistic(
@@ -81,13 +86,13 @@ function PostSave() {
       }
     };
 
-    if (actionable) {
+    if (actionable && isActive) {
       document.addEventListener('keydown', hotkeys);
     } else {
       document.removeEventListener('keydown', hotkeys);
     }
     return () => document.removeEventListener('keydown', hotkeys);
-  }, [actionable, triggerSave]);
+  }, [actionable, isActive, triggerSave]);
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();

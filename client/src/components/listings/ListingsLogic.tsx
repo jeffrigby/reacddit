@@ -8,7 +8,9 @@ import {
   ListingsContextLastExpanded,
   useListingsContext,
 } from '@/contexts/ListingsContext';
+import { useListingsActive } from '@/contexts/ListingsActiveContext';
 import {
+  getActiveEntriesContainer,
   getCurrentListingState,
   unfocusIFrame,
   autoPlayVideos,
@@ -33,6 +35,7 @@ interface ExtendedListingsState extends ListingsState {
 
 function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   const location = useLocation();
+  const isActive = useListingsActive();
   // Get status from context (RTK Query)
   const { status } = useListingsContext();
   const settings = useAppSelector((state) => state.siteSettings);
@@ -113,18 +116,22 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   );
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
     document.addEventListener('keydown', hotkeys);
     return () => {
       document.removeEventListener('keydown', hotkeys);
     };
-  }, [hotkeys]);
+  }, [hotkeys, isActive]);
 
   const monitorEntries = useCallback(() => {
     if (!scrollResize.current) {
       return;
     }
 
-    const postsCollection = document.getElementsByClassName('entry');
+    const postsCollection =
+      getActiveEntriesContainer().getElementsByClassName('entry');
     if (postsCollection.length === 0) {
       return;
     }
@@ -170,20 +177,35 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
     scrollResize.current = true;
   }, [dispatch, lastExpanded, locationKey, settings.autoplay, settings.view]);
 
+  const delayedUpdateTimer = useRef<number | undefined>(undefined);
+
   const forceDelayedUpdate = useCallback(() => {
     monitorEntries();
-    setTimeout(monitorEntries, 500);
+    window.clearTimeout(delayedUpdateTimer.current);
+    delayedUpdateTimer.current = window.setTimeout(monitorEntries, 500);
   }, [monitorEntries]);
+
+  // A pending delayed update must not fire once this tree is suspended: it
+  // would read the OVERLAY's #entries and write overlay-derived focus state
+  // into this location's uiState.
+  useEffect(() => {
+    if (!isActive) {
+      window.clearTimeout(delayedUpdateTimer.current);
+    }
+    return () => {
+      window.clearTimeout(delayedUpdateTimer.current);
+    };
+  }, [isActive]);
 
   const { view } = settings;
 
   useEffect(() => {
-    if (prevView.current === view) {
+    if (!isActive || prevView.current === view) {
       return;
     }
     forceDelayedUpdate();
     prevView.current = view;
-  }, [forceDelayedUpdate, view]);
+  }, [forceDelayedUpdate, view, isActive]);
 
   // Monitor Entries
   // Note: We use scroll/resize listeners here (not IntersectionObserver) because we need
@@ -200,6 +222,9 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
   );
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
     forceDelayedUpdate();
 
     const handleScroll = () => {
@@ -214,9 +239,12 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
       document.removeEventListener('scroll', handleScroll, true);
       throttledUpdate.cancel?.();
     };
-  }, [forceDelayedUpdate, throttledUpdate]);
+  }, [forceDelayedUpdate, throttledUpdate, isActive]);
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
     const handleUserInteraction = () => {
       unfocusIFrame();
     };
@@ -228,11 +256,14 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
       document.removeEventListener('click', handleUserInteraction);
       document.removeEventListener('keydown', handleUserInteraction);
     };
-  }, []);
+  }, [isActive]);
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
     forceDelayedUpdate();
-  }, [forceDelayedUpdate, saved]);
+  }, [forceDelayedUpdate, saved, isActive]);
 
   return null;
 }

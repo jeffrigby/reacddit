@@ -8,7 +8,7 @@ import {
   useCallback,
   useMemo,
 } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -20,8 +20,10 @@ import {
   PostsContextActionable,
   ListingsContextLastExpanded,
   useIntersectionObservers,
+  useListingsActive,
 } from '@/contexts';
-import { hotkeyStatus, scrollByAmount } from '@/common';
+import { getScrollViewport, hotkeyStatus, scrollByAmount } from '@/common';
+import { findEntry } from '@/components/posts/PostsFunctions';
 import { isSafeUrl } from '@/utils/sanitize';
 import {
   selectListingStatus,
@@ -117,7 +119,7 @@ function Post({
 
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams<{ listType?: string }>();
+  const isActive = useListingsActive();
 
   const postRef = useRef<HTMLDivElement>(null);
 
@@ -191,10 +193,6 @@ function Post({
   }, [observeForMediaControl, handleMediaControlIntersection]);
 
   const initView = useCallback(() => {
-    if (params.listType === 'comments') {
-      return true;
-    }
-
     if (parent) {
       return true;
     }
@@ -213,7 +211,6 @@ function Post({
     }
     return siteSettings.view === 'expanded' || false;
   }, [
-    params.listType,
     data,
     siteSettings.condenseSticky,
     siteSettings.condensePinned,
@@ -243,15 +240,17 @@ function Post({
         setExpand(true);
       }
 
-      if (data.name === lastExpanded) {
+      if (data.name === lastExpanded && isActive) {
         const reposition = (): boolean => {
-          const lastExpandedPost = document.getElementById(lastExpanded);
+          const lastExpandedPost = findEntry(lastExpanded);
           if (!lastExpandedPost) {
             return false;
           }
 
-          const { top, bottom } = lastExpandedPost.getBoundingClientRect();
-          const bottomPos = bottom - window.innerHeight;
+          const { top: viewTop, height: viewHeight } = getScrollViewport();
+          const rect = lastExpandedPost.getBoundingClientRect();
+          const top = rect.top - viewTop;
+          const bottomPos = rect.bottom - viewTop - viewHeight;
 
           if (top < 50 || bottomPos > -10) {
             const scrollBy = top - 50;
@@ -274,7 +273,7 @@ function Post({
     return () => {
       clearInterval(reposInt);
     };
-  }, [data.name, expand, lastExpanded, siteSettings.view]);
+  }, [data.name, expand, lastExpanded, siteSettings.view, isActive]);
 
   const { renderedContent } = useRenderedContent(data, kind, shouldLoad);
 
@@ -348,7 +347,7 @@ function Post({
       }
     };
 
-    if (actionable) {
+    if (actionable && isActive) {
       document.addEventListener('keydown', hotkeys);
     } else {
       document.removeEventListener('keydown', hotkeys);
@@ -358,6 +357,7 @@ function Post({
     };
   }, [
     actionable,
+    isActive,
     gotoDuplicates,
     listingsStatus,
     openLink,
@@ -401,9 +401,18 @@ function Post({
     </div>
   ) : null;
 
+  // While this tree is suspended behind the overlay, force the fully-off-
+  // screen media pathway so <video> pauses and iframes unmount; VideoComp
+  // auto-resumes when the tree is reactivated.
   const postContext = useMemo(
-    () => ({ post, isLoaded, actionable, idx, fullyOffScreen }),
-    [actionable, isLoaded, post, idx, fullyOffScreen]
+    () => ({
+      post,
+      isLoaded,
+      actionable,
+      idx,
+      fullyOffScreen: fullyOffScreen || !isActive,
+    }),
+    [actionable, isLoaded, post, idx, fullyOffScreen, isActive]
   );
 
   return (
