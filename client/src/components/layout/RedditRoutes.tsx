@@ -159,8 +159,10 @@ function buildRoutes(configs: RouteConfig[]): React.JSX.Element[] {
   });
 }
 
-const commentsRouteConfigs = routes.filter(
-  (route) => route.overrides.listType === 'comments'
+// Routes that render inside the post-detail overlay (must stay in sync with
+// isOverlayPath in utils/navigationState.ts).
+const detailRouteConfigs = routes.filter((route) =>
+  ['comments', 'duplicates'].includes(route.overrides.listType)
 );
 
 function RedditRoutes(): React.JSX.Element {
@@ -181,7 +183,7 @@ function RedditRoutes(): React.JSX.Element {
         <PostDetailOverlay>
           <ListingsActiveContext value={true}>
             <OverlayContext value={true}>
-              <Routes>{buildRoutes(commentsRouteConfigs)}</Routes>
+              <Routes>{buildRoutes(detailRouteConfigs)}</Routes>
             </OverlayContext>
           </ListingsActiveContext>
         </PostDetailOverlay>

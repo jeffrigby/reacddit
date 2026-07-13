@@ -135,7 +135,11 @@ function Sort() {
           break;
         case 'comments':
         case 'u':
+          // Sort travels via ?sort= on the SAME page. The pathname must be
+          // absolute: the header renders outside any route context, so a
+          // relative To resolves against the root ('/'), not the current URL.
           qs.set('sort', sort);
+          to.pathname = location.pathname;
           break;
         default:
           break;
@@ -150,7 +154,7 @@ function Sort() {
 
       return to;
     },
-    [listingsFilter, me, search]
+    [listingsFilter, me, search, location.pathname]
   );
 
   // Sort changes must carry the current navigation state through so changing

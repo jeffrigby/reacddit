@@ -1,8 +1,8 @@
 import type { ReactNode, RefObject } from 'react';
-import { createContext, useContext, useMemo, useRef } from 'react';
+import { createContext, use, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router';
 import type { BackgroundLocation } from '@/types/navigation';
-import { getBackgroundLocation, isCommentsPath } from '@/utils/navigationState';
+import { getBackgroundLocation, isOverlayPath } from '@/utils/navigationState';
 
 interface OverlayRouting {
   /** Is the post-detail overlay open for the current location? */
@@ -45,7 +45,7 @@ export function OverlayRoutingProvider({
   const overlayOpen =
     background != null &&
     location.key !== bootKeyRef.current &&
-    isCommentsPath(location.pathname);
+    isOverlayPath(location.pathname);
 
   // Capture the focus-restore target BEFORE the commit applies `inert` to the
   // background tree: inert synchronously blurs the activating element, so an
@@ -74,5 +74,5 @@ export function OverlayRoutingProvider({
 }
 
 export function useOverlayRouting(): OverlayRouting {
-  return useContext(OverlayRoutingContext);
+  return use(OverlayRoutingContext);
 }

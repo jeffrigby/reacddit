@@ -396,6 +396,62 @@ test.describe('Post overlay routing', () => {
     await expect(page.locator('#entries .entry').first()).toBeVisible();
   });
 
+  test('duplicates open in a stacked overlay and back walks the chain', async ({
+    page,
+  }) => {
+    await loadDeepList(page);
+    const state = await openOverlay(page);
+
+    // The parent post's "other posts linking to this" icon (non-self posts).
+    const dupLink = page
+      .locator('#post-overlay a[href^="/duplicates/"]')
+      .first();
+    if ((await dupLink.count()) === 0) {
+      test.info().annotations.push({
+        type: 'reason',
+        description:
+          'Opened post is a self post; duplicates link not present — ' +
+          'stacked duplicates overlay not exercised',
+      });
+      return;
+    }
+
+    await dupLink.click();
+    await expect(page).toHaveURL(/\/duplicates\//);
+    await expect(page.locator('#post-overlay')).toBeVisible();
+    await expectEntriesPrefix(page, BACKGROUND_ENTRIES, state.ids);
+
+    // Back steps to the comments overlay, then to the intact list.
+    await page.goBack();
+    await expect(page).toHaveURL(/\/comments\//);
+    await expect(page.locator('#post-overlay')).toBeVisible();
+
+    await page.goBack();
+    await expect(page.locator('#post-overlay')).toHaveCount(0);
+    await expectEntriesPrefix(page, '#entries', state.ids);
+    expect(
+      Math.abs((await bodyScrollTop(page)) - state.scrollTop)
+    ).toBeLessThan(60);
+  });
+
+  test('direct load of a duplicates URL renders standalone', async ({
+    page,
+  }) => {
+    await waitForPosts(page, '/r/pics');
+
+    const dupHref = await page
+      .locator('#entries .entry a[href^="/duplicates/"]')
+      .first()
+      .getAttribute('href');
+    expect(dupHref).toBeTruthy();
+
+    await page.goto(dupHref as string);
+    await expect(page).toHaveURL(/\/duplicates\//);
+    await expect(page.locator('#post-overlay')).toHaveCount(0);
+    await expect(page.locator(BACKGROUND_ENTRIES)).toHaveCount(0);
+    await expect(page.locator('#entries')).toBeVisible();
+  });
+
   test('sort change on a reloaded standalone page does not resurrect the overlay', async ({
     page,
   }) => {

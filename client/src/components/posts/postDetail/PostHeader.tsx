@@ -113,7 +113,7 @@ function PostHeader({
       <div>
         <Link
           className={btnClass}
-          state={{ showBack: true }}
+          state={buildDetailNavState(location, inOverlay)}
           title="Search for other posts linking to this link"
           to={searchTo}
         >

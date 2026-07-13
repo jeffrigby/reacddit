@@ -11,12 +11,24 @@ const COMMENTS_PATTERNS = [
   '/r/:target/comments/:postName/:postTitle/:comment',
 ];
 
+const DUPLICATES_PATTERN = '/duplicates/:target';
+
 /**
  * Does the pathname match one of the post-detail (comments) route patterns?
  */
 export function isCommentsPath(pathname: string): boolean {
   return COMMENTS_PATTERNS.some(
     (pattern) => matchPath(pattern, pathname) != null
+  );
+}
+
+/**
+ * Does the pathname match any route rendered inside the post-detail overlay
+ * (comments or duplicates/cross-posts)?
+ */
+export function isOverlayPath(pathname: string): boolean {
+  return (
+    isCommentsPath(pathname) || matchPath(DUPLICATES_PATTERN, pathname) != null
   );
 }
 

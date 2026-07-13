@@ -20,10 +20,12 @@ import {
   PostsContextActionable,
   ListingsContextLastExpanded,
   useIntersectionObservers,
+  useIsOverlay,
   useListingsActive,
 } from '@/contexts';
 import { getScrollViewport, hotkeyStatus, scrollByAmount } from '@/common';
 import { findEntry } from '@/components/posts/PostsFunctions';
+import { buildDetailNavState } from '@/utils/navigationState';
 import { isSafeUrl } from '@/utils/sanitize';
 import {
   selectListingStatus,
@@ -120,6 +122,7 @@ function Post({
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = useListingsActive();
+  const inOverlay = useIsOverlay();
 
   const postRef = useRef<HTMLDivElement>(null);
 
@@ -299,9 +302,9 @@ function Post({
     const linkData = data as LinkData;
     if (!linkData.is_self) {
       const searchTo = `/duplicates/${linkData.id}`;
-      navigate(searchTo);
+      navigate(searchTo, { state: buildDetailNavState(location, inOverlay) });
     }
-  }, [data, navigate]);
+  }, [data, navigate, location, inOverlay]);
 
   const openReddit = useCallback(() => {
     window.open(`https://www.reddit.com${data.permalink}`, '_blank');
