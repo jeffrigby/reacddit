@@ -78,7 +78,9 @@ export default defineConfig({
     {
       name: 'mobile',
       testMatch: /\.mobile\.spec\.ts$/,
-      use: { ...devices['Pixel 7'] },
+      // channel: 'chrome' keeps mobile on the same branded-Chrome build as
+      // every other project (bundled Chromium lacks proprietary codecs).
+      use: { ...devices['Pixel 7'], channel: 'chrome' },
     },
   ],
 });

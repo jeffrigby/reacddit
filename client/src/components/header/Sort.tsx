@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import type { To } from 'react-router';
 import { NavLink, useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
@@ -19,6 +19,7 @@ import {
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useAppSelector } from '@/redux/hooks';
 import { useOverlayRouting } from '@/contexts';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { hotkeyStatus, isEmpty } from '@/common';
 
 interface SortCategories {
@@ -65,16 +66,12 @@ const catsComments: SortCategories = {
   Q: 'qa',
 };
 
-// Shift+key hotkey -> sort name. qa/old only apply on comments pages.
+// Shift+key hotkey -> sort name, derived from the category maps above.
+// qa/old only apply on comments pages (gated in handleSortHotkey).
 const hotkeySorts: SortCategories = {
-  H: 'hot',
-  B: 'best',
-  N: 'new',
-  C: 'controversial',
-  R: 'rising',
-  T: 'top',
-  Q: 'qa',
-  O: 'old',
+  ...catsFront,
+  Q: catsComments.Q,
+  O: catsComments.O,
 };
 
 const timeCats: SortCategories = {
@@ -187,12 +184,9 @@ function Sort() {
     [genLink, listingsFilter, navigate, sortNavState]
   );
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleSortHotkey);
-    return () => {
-      document.removeEventListener('keydown', handleSortHotkey);
-    };
-  }, [handleSortHotkey]);
+  // Header singleton: renders outside any ListingsActiveContext provider, so
+  // the hook's active gate reads the default (true) and this stays always-on.
+  useDocumentKeydown(handleSortHotkey);
 
   const renderTimeSubLinks = (sort: string) => {
     const { listType, target } = listingsFilter;

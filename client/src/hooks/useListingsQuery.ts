@@ -3,9 +3,8 @@
  *
  * Encapsulates:
  * - Location-based caching with React Router
- * - Streaming/polling when auto-refresh is enabled
+ * - Streaming/polling when auto-refresh is enabled (active tree only)
  * - Pagination helpers (load more, load new)
- * - Scroll position checks for streaming
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -13,7 +12,6 @@ import type { Location } from 'react-router';
 import { useGetListingsQuery } from '@/redux/api';
 import type { ListingsFilter } from '@/types/listings';
 import { useAppSelector } from '@/redux/hooks';
-import { getScrollContainer } from '@/common';
 
 export interface UseListingsQueryOptions {
   /** Limit for initial load (default: 25, or 100 for condensed view) */
@@ -104,13 +102,13 @@ export function useListingsQuery(
   };
 
   const result = useGetListingsQuery(queryArgs, {
-    // Enable polling when this tree is active, streaming is on, and the
-    // active scroll container is at the top (the body is an element scroller
-    // in this app, so window.scrollY is always 0 and would be meaningless).
-    pollingInterval:
-      active && stream && getScrollContainer().scrollTop <= 10
-        ? 5000
-        : undefined,
+    // Poll whenever this tree is active and streaming is on. No scroll-
+    // position gate: a render-time scrollTop read only re-evaluates when
+    // something else re-renders, so it would latch polling off after the
+    // user scrolls down and never resume it at the top. (This matches the
+    // long-shipped behavior — the old `window.scrollY <= 10` check was
+    // always true with the body element scroller.)
+    pollingInterval: active && stream ? 5000 : undefined,
     skip: false,
   });
 

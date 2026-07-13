@@ -202,8 +202,6 @@ export interface OverlayOpenState {
    * uncovering the link from the fixed header), which is part of leaving.
    */
   scrollTop: number;
-  /** Number of `.entry` elements in the list before opening. */
-  count: number;
   /** Ordered `id`s of the list entries before opening. */
   ids: string[];
 }
@@ -229,7 +227,6 @@ export async function openOverlay(
   { minScroll = 1000 }: OpenOverlayOptions = {}
 ): Promise<OverlayOpenState> {
   const listEntries = page.locator('#entries .entry');
-  const count = await listEntries.count();
 
   // Tag the first entry so we can detect a remount after the round-trip.
   await listEntries
@@ -257,7 +254,16 @@ export async function openOverlay(
       break;
     }
   }
-  const target = listEntries.nth(pick >= 0 ? pick : Math.max(0, count - 4));
+  if (pick < 0) {
+    // No deep entry reached the threshold: fall back to the entry with the
+    // MOST comments anywhere in the list (never a zero-comment post unless
+    // literally every entry has zero), preferring the deepest on ties.
+    pick = commentCounts.reduce(
+      (best, n, i) => (n >= commentCounts[best] ? i : best),
+      0
+    );
+  }
+  const target = listEntries.nth(pick);
 
   // Scroll the TITLE LINK itself into view before capturing the offset —
   // otherwise Playwright's implicit pre-click scroll (entries can be taller
@@ -279,7 +285,7 @@ export async function openOverlay(
   const scrollTop = await bodyScrollTop(page);
   expect(scrollTop).toBeGreaterThan(minScroll);
 
-  return { url: page.url(), scrollTop, count, ids };
+  return { url: page.url(), scrollTop, ids };
 }
 
 /**
