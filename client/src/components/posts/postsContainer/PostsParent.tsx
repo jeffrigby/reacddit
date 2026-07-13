@@ -1,8 +1,8 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
-import { Link, useLocation } from 'react-router';
-import { useListingsFilter, useIsOverlay } from '@/contexts';
-import { buildDetailNavState } from '@/utils/navigationState';
+import { Link } from 'react-router';
+import { useListingsFilter } from '@/contexts';
+import { useDetailNavState } from '@/hooks/useDetailNavState';
 import type { NavState } from '@/types/navigation';
 import type { Thing, LinkData, CommentData } from '@/types/redditApi';
 import Post from '@/components/posts/postDetail/Post';
@@ -44,8 +44,7 @@ function renderCommentLinks(
  */
 function PostsParent({ post }: PostsParentProps): ReactElement | null {
   const listingsFilter = useListingsFilter();
-  const location = useLocation();
-  const inOverlay = useIsOverlay();
+  const detailNavState = useDetailNavState();
   const { listType, comment } = listingsFilter;
 
   // Memoize regex match to prevent re-execution on every render
@@ -77,12 +76,8 @@ function PostsParent({ post }: PostsParentProps): ReactElement | null {
       data: { permalink },
     } = post;
 
-    return renderCommentLinks(
-      permalink,
-      comment,
-      buildDetailNavState(location, inOverlay)
-    );
-  }, [post, comment, shouldRenderParent, location, inOverlay]);
+    return renderCommentLinks(permalink, comment, detailNavState);
+  }, [post, comment, shouldRenderParent, detailNavState]);
 
   if (!shouldRenderParent) {
     return null;

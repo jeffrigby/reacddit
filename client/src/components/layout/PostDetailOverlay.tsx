@@ -27,7 +27,7 @@ function PostDetailOverlay({
     setActiveOverlayElement(node);
   }, []);
 
-  useBodyScrollLock(true);
+  useBodyScrollLock();
 
   // Focus restore target comes from OverlayRoutingProvider, captured at
   // render time BEFORE the commit applied `inert` to the background tree

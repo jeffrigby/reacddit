@@ -24,12 +24,17 @@ export function getActiveEntriesContainer(): Element {
 /**
  * Find an entry element by its reddit fullname, scoped to the active tree.
  * Entry ids are duplicated across trees while the overlay is open, so a
- * global document.getElementById would resolve to the background copy.
+ * global document.getElementById can resolve to the background copy. Try the
+ * O(1) id lookup first (called from j/k keydown hot paths) and only fall back
+ * to scanning the active container when the id resolved outside it.
  */
 export function findEntry(name: string): HTMLElement | null {
-  return getActiveEntriesContainer().querySelector<HTMLElement>(
-    `[id="${CSS.escape(name)}"]`
-  );
+  const container = getActiveEntriesContainer();
+  const byId = document.getElementById(name);
+  if (byId != null && container.contains(byId)) {
+    return byId;
+  }
+  return container.querySelector<HTMLElement>(`[id="${CSS.escape(name)}"]`);
 }
 
 /**

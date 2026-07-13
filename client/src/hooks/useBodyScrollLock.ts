@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react';
 
 /**
- * Lock body scrolling while `active` is true.
+ * Lock body scrolling for the lifetime of the calling component.
  *
  * This app's scroll container is document.body itself (an element scroller;
  * window.scrollY is always 0), so a plain overflow:hidden reliably blocks
@@ -11,12 +11,8 @@ import { useLayoutEffect } from 'react';
  * compensated with padding to avoid a layout shift on classic-scrollbar
  * platforms.
  */
-export function useBodyScrollLock(active: boolean): void {
+export function useBodyScrollLock(): void {
   useLayoutEffect(() => {
-    if (!active) {
-      return;
-    }
-
     const { body } = document;
     const previousOverflow = body.style.overflow;
     const previousPaddingRight = body.style.paddingRight;
@@ -35,5 +31,5 @@ export function useBodyScrollLock(active: boolean): void {
         body.scrollTop = previousScrollTop;
       }
     };
-  }, [active]);
+  }, []);
 }

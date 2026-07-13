@@ -3,6 +3,7 @@ import { createContext, use, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router';
 import type { BackgroundLocation } from '@/types/navigation';
 import { getBackgroundLocation, isOverlayPath } from '@/utils/navigationState';
+import { useListingsActive } from './ListingsActiveContext';
 
 interface OverlayRouting {
   /** Is the post-detail overlay open for the current location? */
@@ -75,4 +76,19 @@ export function OverlayRoutingProvider({
 
 export function useOverlayRouting(): OverlayRouting {
   return use(OverlayRoutingContext);
+}
+
+/**
+ * True when rendering inside the post-detail overlay routes tree.
+ *
+ * Derived rather than provided: while the overlay is open the ONLY active
+ * listing tree is the overlay itself (the background renders with
+ * ListingsActiveContext=false), so "overlay open AND this tree is active"
+ * exactly identifies the overlay tree. On a standalone detail page the
+ * overlay is closed, so this is false there.
+ */
+export function useIsOverlay(): boolean {
+  const { overlayOpen } = useOverlayRouting();
+  const isActive = useListingsActive();
+  return overlayOpen && isActive;
 }

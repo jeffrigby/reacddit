@@ -1,5 +1,12 @@
-import { test, expect, type Page } from '@playwright/test';
-import { waitForPosts, loadMorePosts } from './helpers';
+import { test, expect } from '@playwright/test';
+import {
+  BACKGROUND_ENTRIES,
+  bodyScrollTop,
+  expectEntriesPrefix,
+  loadMorePosts,
+  openOverlay,
+  waitForPosts,
+} from './helpers';
 
 /**
  * Mobile (Pixel 7 device emulation) coverage for the post-detail overlay.
@@ -13,34 +20,6 @@ import { waitForPosts, loadMorePosts } from './helpers';
  * the list position and entries.
  */
 
-const BACKGROUND_ENTRIES = '.entries:not(#entries)';
-
-async function bodyScrollTop(page: Page): Promise<number> {
-  return page.evaluate(() => document.body.scrollTop);
-}
-
-async function entryIds(page: Page, selector: string): Promise<string[]> {
-  return page
-    .locator(`${selector} .entry`)
-    .evaluateAll((els) => els.map((el) => el.id));
-}
-
-/**
- * Assert the captured entries are still present, in order, at the FRONT of the
- * list (the infinite list may legitimately have grown via autoload).
- */
-async function expectEntriesPrefix(
-  page: Page,
-  selector: string,
-  ids: string[]
-): Promise<void> {
-  await expect
-    .poll(async () => (await entryIds(page, selector)).slice(0, ids.length), {
-      timeout: 15_000,
-    })
-    .toEqual(ids);
-}
-
 test.describe('Post overlay routing (mobile)', () => {
   test('opens a full-width overlay that scrolls while the body stays frozen', async ({
     page,
@@ -48,44 +27,12 @@ test.describe('Post overlay routing (mobile)', () => {
     await waitForPosts(page, '/r/pics');
     await loadMorePosts(page, { greaterThan: 0 });
 
-    const listEntries = page.locator('#entries .entry');
-    const count = await listEntries.count();
-    const ids = await entryIds(page, '#entries');
-
-    // Open a deep entry that actually has comments (so kind-t1 assertions
-    // can't fail on a zero-comment post), leaving slack below so background
-    // embed resizes can't clamp the offset.
-    const commentCounts = await listEntries.evaluateAll((els) =>
-      els.map((el) => {
-        const link = el.querySelector('a[href*="/comments/"]');
-        const match = link?.textContent?.match(/[\d.]+[KMBT]?/);
-        if (!match) return 0;
-        const n = parseFloat(match[0]);
-        return /[KMBT]$/.test(match[0]) ? n * 1000 : n;
-      })
-    );
-    let pick = -1;
-    for (let i = commentCounts.length - 8; i >= 0; i -= 1) {
-      if (commentCounts[i] >= 3) {
-        pick = i;
-        break;
-      }
-    }
-    const target = listEntries.nth(pick >= 0 ? pick : Math.max(0, count - 4));
-    const titleLink = target.getByRole('link', { name: 'Title' }).first();
-    await titleLink.scrollIntoViewIfNeeded();
-
-    await titleLink.click();
-    await expect(page).toHaveURL(/\/comments\//);
+    // One pagination on a small viewport scrolls less deep than the desktop
+    // flow, hence the lower minScroll.
+    const state = await openOverlay(page, { minScroll: 500 });
 
     const overlay = page.locator('#post-overlay');
-    await expect(overlay).toBeVisible();
     await expect(overlay).toHaveAttribute('aria-modal', 'true');
-
-    // The offset where the user left the list, captured once the overlay is
-    // open (the click itself may scroll to focus/uncover the link).
-    const scrollAtOpen = await bodyScrollTop(page);
-    expect(scrollAtOpen).toBeGreaterThan(500);
 
     // Comments render inside the active #entries within the overlay.
     await expect(
@@ -120,11 +67,11 @@ test.describe('Post overlay routing (mobile)', () => {
     await page.goBack();
     await expect(overlay).toHaveCount(0);
     await expect(page).not.toHaveURL(/\/comments\//);
-    await expect(listEntries.first()).toBeVisible();
+    await expect(page.locator('#entries .entry').first()).toBeVisible();
     await expect(page.locator(BACKGROUND_ENTRIES)).toHaveCount(0);
-    await expectEntriesPrefix(page, '#entries', ids);
-    expect(Math.abs((await bodyScrollTop(page)) - scrollAtOpen)).toBeLessThan(
-      60
-    );
+    await expectEntriesPrefix(page, '#entries', state.ids);
+    expect(
+      Math.abs((await bodyScrollTop(page)) - state.scrollTop)
+    ).toBeLessThan(60);
   });
 });

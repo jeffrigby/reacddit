@@ -1,11 +1,11 @@
 import { Route, Routes, useLocation } from 'react-router';
 import NotFound404 from '@/NotFound404';
 import ListingsRoute from '@/components/listings/ListingsRoute';
+import { ListingsActiveContext, useOverlayRouting } from '@/contexts';
 import {
-  ListingsActiveContext,
-  OverlayContext,
-  useOverlayRouting,
-} from '@/contexts';
+  COMMENTS_PATTERNS,
+  DUPLICATES_PATTERNS,
+} from '@/utils/navigationState';
 import PostDetailOverlay from './PostDetailOverlay';
 
 const redditSorts = ['hot', 'new', 'top', 'controversial', 'rising', 'best'];
@@ -95,20 +95,17 @@ const routes: RouteConfig[] = [
       target: userTargets,
     },
   },
-  // Duplicates
+  // Duplicates (paths shared with isOverlayPath via navigationState)
   {
-    paths: [`/duplicates/:target`],
+    paths: DUPLICATES_PATTERNS,
     overrides: {
       listType: 'duplicates',
     },
     validations: {},
   },
-  // Comments
+  // Comments (paths shared with isCommentsPath/isOverlayPath via navigationState)
   {
-    paths: [
-      `/r/:target/comments/:postName/:postTitle`,
-      `/r/:target/comments/:postName/:postTitle/:comment`,
-    ],
+    paths: COMMENTS_PATTERNS,
     overrides: {
       listType: 'comments',
     },
@@ -159,11 +156,17 @@ function buildRoutes(configs: RouteConfig[]): React.JSX.Element[] {
   });
 }
 
-// Routes that render inside the post-detail overlay (must stay in sync with
-// isOverlayPath in utils/navigationState.ts).
+// Routes that render inside the post-detail overlay. Their paths come from
+// navigationState's shared pattern constants, so isOverlayPath and this tree
+// cannot drift apart.
 const detailRouteConfigs = routes.filter((route) =>
   ['comments', 'duplicates'].includes(route.overrides.listType)
 );
+
+// The route configs are module constants, so build the <Route> elements once
+// instead of on every navigation-driven re-render.
+const mainRouteElements = buildRoutes(routes);
+const detailRouteElements = buildRoutes(detailRouteConfigs);
 
 function RedditRoutes(): React.JSX.Element {
   const location = useLocation();
@@ -174,18 +177,17 @@ function RedditRoutes(): React.JSX.Element {
       <ListingsActiveContext value={!overlayOpen}>
         <div inert={overlayOpen}>
           <Routes location={background ?? location}>
-            {buildRoutes(routes)}
+            {mainRouteElements}
             <Route element={<NotFound404 />} key="NotFound404" path="*" />
           </Routes>
         </div>
       </ListingsActiveContext>
+      {/* The overlay tree sits OUTSIDE the provider above, so it reads the
+          ListingsActiveContext default (active) — while open, the overlay IS
+          the active tree. */}
       {overlayOpen && (
         <PostDetailOverlay>
-          <ListingsActiveContext value={true}>
-            <OverlayContext value={true}>
-              <Routes>{buildRoutes(detailRouteConfigs)}</Routes>
-            </OverlayContext>
-          </ListingsActiveContext>
+          <Routes>{detailRouteElements}</Routes>
         </PostDetailOverlay>
       )}
     </>

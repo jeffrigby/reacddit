@@ -65,6 +65,18 @@ const catsComments: SortCategories = {
   Q: 'qa',
 };
 
+// Shift+key hotkey -> sort name. qa/old only apply on comments pages.
+const hotkeySorts: SortCategories = {
+  H: 'hot',
+  B: 'best',
+  N: 'new',
+  C: 'controversial',
+  R: 'rising',
+  T: 'top',
+  Q: 'qa',
+  O: 'old',
+};
+
 const timeCats: SortCategories = {
   hour: 'past hour',
   day: 'past 24 hour',
@@ -157,54 +169,20 @@ function Sort() {
     [listingsFilter, me, search, location.pathname]
   );
 
-  // Sort changes must carry the current navigation state through so changing
-  // sort inside the post-detail overlay keeps the overlay + background alive.
   const handleSortHotkey = useCallback(
     (event: KeyboardEvent) => {
       const { target, listType } = listingsFilter;
-      if (hotkeyStatus() && target !== 'friends') {
-        const pressedKey = event.key;
-        switch (pressedKey) {
-          case 'H': {
-            navigate(genLink('hot'), { state: sortNavState });
-            break;
-          }
-          case 'B': {
-            navigate(genLink('best'), { state: sortNavState });
-            break;
-          }
-          case 'N': {
-            navigate(genLink('new'), { state: sortNavState });
-            break;
-          }
-          case 'C': {
-            navigate(genLink('controversial'), { state: sortNavState });
-            break;
-          }
-          case 'R': {
-            navigate(genLink('rising'), { state: sortNavState });
-            break;
-          }
-          case 'T': {
-            navigate(genLink('top'), { state: sortNavState });
-            break;
-          }
-          case 'Q': {
-            if (listType === 'comments') {
-              navigate(genLink('qa'), { state: sortNavState });
-            }
-            break;
-          }
-          case 'O': {
-            if (listType === 'comments') {
-              navigate(genLink('old'), { state: sortNavState });
-            }
-            break;
-          }
-          default:
-            break;
-        }
+      if (!hotkeyStatus() || target === 'friends') {
+        return;
       }
+      const sort = hotkeySorts[event.key];
+      if (
+        !sort ||
+        ((sort === 'qa' || sort === 'old') && listType !== 'comments')
+      ) {
+        return;
+      }
+      navigate(genLink(sort), { state: sortNavState });
     },
     [genLink, listingsFilter, navigate, sortNavState]
   );

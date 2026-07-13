@@ -14,6 +14,7 @@ import {
   statusUpdated,
 } from '@/redux/slices/listingsSlice';
 import { useListingsQuery } from '@/hooks/useListingsQuery';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { useGetSubredditAboutQuery } from '@/redux/api';
 import {
   ListingsContext,
@@ -155,15 +156,7 @@ function Listings({ match }: ListingsProps) {
     [status, loadNew]
   );
 
-  useEffect(() => {
-    if (!isActive) {
-      return;
-    }
-    document.addEventListener('keydown', hotkeys);
-    return () => {
-      document.removeEventListener('keydown', hotkeys);
-    };
-  }, [hotkeys, isActive]);
+  useDocumentKeydown(hotkeys);
 
   // Prepare context values
   const lastExpandedContext = useMemo(

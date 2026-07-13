@@ -6,12 +6,17 @@ import { matchPath } from 'react-router';
 import type { Location } from 'react-router';
 import type { BackgroundLocation, NavState } from '@/types/navigation';
 
-const COMMENTS_PATTERNS = [
+/**
+ * Route patterns for the post-detail pages. These are the single source of
+ * truth: RedditRoutes builds its comments/duplicates route configs from them,
+ * so the overlay <Routes> can always render every path isOverlayPath accepts.
+ */
+export const COMMENTS_PATTERNS = [
   '/r/:target/comments/:postName/:postTitle',
   '/r/:target/comments/:postName/:postTitle/:comment',
 ];
 
-const DUPLICATES_PATTERN = '/duplicates/:target';
+export const DUPLICATES_PATTERNS = ['/duplicates/:target'];
 
 /**
  * Does the pathname match one of the post-detail (comments) route patterns?
@@ -28,7 +33,8 @@ export function isCommentsPath(pathname: string): boolean {
  */
 export function isOverlayPath(pathname: string): boolean {
   return (
-    isCommentsPath(pathname) || matchPath(DUPLICATES_PATTERN, pathname) != null
+    isCommentsPath(pathname) ||
+    DUPLICATES_PATTERNS.some((pattern) => matchPath(pattern, pathname) != null)
   );
 }
 

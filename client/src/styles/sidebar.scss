@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 // Colors
 $light-theme-hover-color: #fcf8e3;
 $dark-theme-hover-color: #333333;
@@ -8,9 +10,6 @@ $dark-inactive-color: #6c757d;
 $overlay-bg-color: black;
 $dark-theme-navigation-background-color: rgb(33, 37, 41);
 $light-theme-navigation-background-color: rgb(255, 255, 255);
-
-// Sizes
-$sidebar-width: 14rem;
 
 // Default theme (light)
 :root {
@@ -36,10 +35,10 @@ $sidebar-width: 14rem;
 
 #navigation {
   position: fixed;
-  top: 3rem;
+  top: $header-height;
   left: 0;
-  z-index: 5;
-  height: calc(100vh - 3rem);
+  z-index: $zindex-sidebar;
+  height: calc(100vh - #{$header-height});
   overflow: hidden !important;
   border-right: 1px solid var(--bs-border-color);
   background-color: var(--navigation-background-color, pink);
@@ -185,7 +184,7 @@ $sidebar-width: 14rem;
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: $mobile-breakpoint) {
   .open-menu-link {
     display: inherit;
   }

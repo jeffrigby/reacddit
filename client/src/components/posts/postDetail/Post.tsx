@@ -20,12 +20,12 @@ import {
   PostsContextActionable,
   ListingsContextLastExpanded,
   useIntersectionObservers,
-  useIsOverlay,
   useListingsActive,
 } from '@/contexts';
 import { getScrollViewport, hotkeyStatus, scrollByAmount } from '@/common';
 import { findEntry } from '@/components/posts/PostsFunctions';
-import { buildDetailNavState } from '@/utils/navigationState';
+import { useDetailNavState } from '@/hooks/useDetailNavState';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { isSafeUrl } from '@/utils/sanitize';
 import {
   selectListingStatus,
@@ -122,7 +122,7 @@ function Post({
   const navigate = useNavigate();
   const location = useLocation();
   const isActive = useListingsActive();
-  const inOverlay = useIsOverlay();
+  const detailNavState = useDetailNavState();
 
   const postRef = useRef<HTMLDivElement>(null);
 
@@ -302,9 +302,9 @@ function Post({
     const linkData = data as LinkData;
     if (!linkData.is_self) {
       const searchTo = `/duplicates/${linkData.id}`;
-      navigate(searchTo, { state: buildDetailNavState(location, inOverlay) });
+      navigate(searchTo, { state: detailNavState });
     }
-  }, [data, navigate, location, inOverlay]);
+  }, [data, navigate, detailNavState]);
 
   const openReddit = useCallback(() => {
     window.open(`https://www.reddit.com${data.permalink}`, '_blank');
@@ -318,16 +318,14 @@ function Post({
     window.open(linkData.url, '_blank', 'noopener,noreferrer');
   }, [data]);
 
-  useEffect(() => {
-    const hotkeys = (event: Event): void => {
-      const keyEvent = event as globalThis.KeyboardEvent;
+  const hotkeys = useCallback(
+    (event: globalThis.KeyboardEvent): void => {
       if (
         hotkeyStatus() &&
         (listingsStatus === 'loaded' || listingsStatus === 'loadedAll')
       ) {
-        const pressedKey = keyEvent.key;
         try {
-          switch (pressedKey) {
+          switch (event.key) {
             case 'x':
               toggleViewAction();
               break;
@@ -348,25 +346,11 @@ function Post({
           console.error(e);
         }
       }
-    };
+    },
+    [gotoDuplicates, listingsStatus, openLink, openReddit, toggleViewAction]
+  );
 
-    if (actionable && isActive) {
-      document.addEventListener('keydown', hotkeys);
-    } else {
-      document.removeEventListener('keydown', hotkeys);
-    }
-    return () => {
-      document.removeEventListener('keydown', hotkeys);
-    };
-  }, [
-    actionable,
-    isActive,
-    gotoDuplicates,
-    listingsStatus,
-    openLink,
-    openReddit,
-    toggleViewAction,
-  ]);
+  useDocumentKeydown(hotkeys, actionable);
 
   const isLoaded = hide ? false : shouldLoad;
 

@@ -1,10 +1,12 @@
+@use 'variables' as *;
+
 .navbar {
   align-items: center;
-  height: 3rem;
+  height: $header-height;
 }
 
 #main {
-  padding-left: 14rem;
-  margin-top: 3rem;
+  padding-left: $sidebar-width;
+  margin-top: $header-height;
   position: relative;
 }

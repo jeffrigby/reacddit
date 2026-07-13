@@ -19,6 +19,7 @@ import {
   prevEntry,
   prevEntryCollapsed,
 } from '@/components/posts/PostsFunctions';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { hotkeyStatus } from '@/common';
 import type { ListingsState } from '@/types/listings';
 
@@ -115,15 +116,7 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
     [status, next, prev]
   );
 
-  useEffect(() => {
-    if (!isActive) {
-      return;
-    }
-    document.addEventListener('keydown', hotkeys);
-    return () => {
-      document.removeEventListener('keydown', hotkeys);
-    };
-  }, [hotkeys, isActive]);
+  useDocumentKeydown(hotkeys);
 
   const monitorEntries = useCallback(() => {
     if (!scrollResize.current) {
@@ -187,15 +180,14 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
 
   // A pending delayed update must not fire once this tree is suspended: it
   // would read the OVERLAY's #entries and write overlay-derived focus state
-  // into this location's uiState.
-  useEffect(() => {
-    if (!isActive) {
+  // into this location's uiState. The cleanup runs on every isActive flip
+  // (and on unmount), which is exactly when the pending timer must die.
+  useEffect(
+    () => () => {
       window.clearTimeout(delayedUpdateTimer.current);
-    }
-    return () => {
-      window.clearTimeout(delayedUpdateTimer.current);
-    };
-  }, [isActive]);
+    },
+    [isActive]
+  );
 
   const { view } = settings;
 

@@ -1,7 +1,6 @@
 import {
   memo,
   use,
-  useEffect,
   useState,
   useCallback,
   useOptimistic,
@@ -15,11 +14,8 @@ import { faBookmark as farBookmark } from '@fortawesome/free-regular-svg-icons';
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useSavePostMutation, useUnsavePostMutation } from '@/redux/api';
-import {
-  PostsContextActionable,
-  usePostContext,
-  useListingsActive,
-} from '@/contexts';
+import { PostsContextActionable, usePostContext } from '@/contexts';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { hotkeyStatus } from '@/common';
 
 function PostSave() {
@@ -28,7 +24,6 @@ function PostSave() {
   const { post } = postContext;
   const data = post.data as LinkData;
   const actionable = use(PostsContextActionable) as boolean;
-  const isActive = useListingsActive();
 
   const [savedState, setSavedState] = useState(data.saved);
   const [optimisticSaved, setOptimisticSaved] = useOptimistic(
@@ -75,24 +70,16 @@ function PostSave() {
     unsavePost,
   ]);
 
-  useEffect(() => {
-    const hotkeys = (event: KeyboardEvent) => {
-      const pressedKey = event.key;
-
-      if (hotkeyStatus()) {
-        if (pressedKey === 's') {
-          triggerSave();
-        }
+  const hotkeys = useCallback(
+    (event: KeyboardEvent) => {
+      if (hotkeyStatus() && event.key === 's') {
+        triggerSave();
       }
-    };
+    },
+    [triggerSave]
+  );
 
-    if (actionable && isActive) {
-      document.addEventListener('keydown', hotkeys);
-    } else {
-      document.removeEventListener('keydown', hotkeys);
-    }
-    return () => document.removeEventListener('keydown', hotkeys);
-  }, [actionable, isActive, triggerSave]);
+  useDocumentKeydown(hotkeys, actionable);
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();

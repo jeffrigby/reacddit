@@ -21,11 +21,10 @@ export {
   useListingsActive,
 } from './ListingsActiveContext';
 
-export { OverlayContext, useIsOverlay } from './OverlayContext';
-
 export {
   OverlayRoutingProvider,
   useOverlayRouting,
+  useIsOverlay,
 } from './OverlayRoutingContext';
 
 export {

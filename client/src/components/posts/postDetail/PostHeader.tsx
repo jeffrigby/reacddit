@@ -1,6 +1,6 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo } from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faThumbtack,
@@ -11,10 +11,10 @@ import { faCopy } from '@fortawesome/free-regular-svg-icons';
 import { faReddit } from '@fortawesome/free-brands-svg-icons';
 import PostVote from '@/components/posts/postActions/PostVote';
 import PostSave from '@/components/posts/postActions/PostSave';
-import { usePostContext, useListingsFilter, useIsOverlay } from '@/contexts';
+import { usePostContext, useListingsFilter } from '@/contexts';
 import PostExpandContract from '@/components/posts/postActions/PostExpandContract';
 import { decodeHTMLEntities, sanitizeHref } from '@/utils/sanitize';
-import { buildDetailNavState } from '@/utils/navigationState';
+import { useDetailNavState } from '@/hooks/useDetailNavState';
 import type { LinkData } from '@/types/redditApi';
 import PostHeaderComment from './PostHeaderComment';
 import PostTimeAgo from './PostTimeAgo';
@@ -36,8 +36,7 @@ function PostHeader({
 }: PostHeaderProps): React.JSX.Element {
   const postContext = usePostContext();
   const { listType } = useListingsFilter();
-  const location = useLocation();
-  const inOverlay = useIsOverlay();
+  const detailNavState = useDetailNavState();
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
 
@@ -113,7 +112,7 @@ function PostHeader({
       <div>
         <Link
           className={btnClass}
-          state={buildDetailNavState(location, inOverlay)}
+          state={detailNavState}
           title="Search for other posts linking to this link"
           to={searchTo}
         >
@@ -171,7 +170,7 @@ function PostHeader({
       <Link
         aria-label="Title"
         className="list-group-item-heading align-middle"
-        state={buildDetailNavState(location, inOverlay)}
+        state={detailNavState}
         to={linkData.permalink}
       >
         {decodeHTMLEntities(linkData.title)}

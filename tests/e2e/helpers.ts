@@ -142,6 +142,146 @@ export async function loadMorePosts(
   }
 }
 
+/** Selector for the suspended background listing behind the post-detail
+ * overlay (keeps class `.entries` but loses the active `id="entries"`). */
+export const BACKGROUND_ENTRIES = '.entries:not(#entries)';
+
+/** Read `document.body.scrollTop` (the app's scroll container is the body). */
+export async function bodyScrollTop(page: Page): Promise<number> {
+  return page.evaluate(() => document.body.scrollTop);
+}
+
+/** Read the ordered ids of `.entry` elements matched by `selector`. */
+export async function entryIds(
+  page: Page,
+  selector: string
+): Promise<string[]> {
+  return page
+    .locator(`${selector} .entry`)
+    .evaluateAll((els) => els.map((el) => el.id));
+}
+
+/**
+ * Assert the captured entries are still present, in order, at the FRONT of the
+ * list matched by `selector`. The infinite list may legitimately have grown
+ * (autoload can fire during scrolling), so exact-count equality is wrong — the
+ * preservation invariant is prefix equality.
+ */
+export async function expectEntriesPrefix(
+  page: Page,
+  selector: string,
+  ids: string[]
+): Promise<void> {
+  await expect
+    .poll(async () => (await entryIds(page, selector)).slice(0, ids.length), {
+      timeout: 15_000,
+    })
+    .toEqual(ids);
+}
+
+/**
+ * Navigate to `path`, load posts, and paginate twice so the body is scrolled
+ * well down an infinite list (a meaningful scroll offset to preserve).
+ */
+export async function loadDeepList(
+  page: Page,
+  path = '/r/pics'
+): Promise<void> {
+  await waitForPosts(page, path);
+  await loadMorePosts(page, { greaterThan: 0 });
+  await loadMorePosts(page);
+}
+
+export interface OverlayOpenState {
+  /** URL of the opened comments page. */
+  url: string;
+  /**
+   * `document.body.scrollTop` captured immediately AFTER the overlay opened —
+   * the offset "where the user left the list". Captured post-open because the
+   * browser may legitimately scroll during the real click itself (focus +
+   * uncovering the link from the fixed header), which is part of leaving.
+   */
+  scrollTop: number;
+  /** Number of `.entry` elements in the list before opening. */
+  count: number;
+  /** Ordered `id`s of the list entries before opening. */
+  ids: string[];
+}
+
+export interface OpenOverlayOptions {
+  /**
+   * Minimum body scroll offset the open must have retained. Scale to how deep
+   * the caller loaded the list (e.g. 1000 after `loadDeepList`, 500 after a
+   * single pagination on a mobile viewport).
+   */
+  minScroll?: number;
+}
+
+/**
+ * Open the post-detail overlay by clicking the title link of an entry near the
+ * bottom of the loaded list (so a non-zero body scroll offset is retained).
+ * Marks the first list entry with `data-e2e-persist` so a later round-trip can
+ * prove the same DOM node survived (i.e. no remount / no loading flash).
+ * Returns the captured pre-open state.
+ */
+export async function openOverlay(
+  page: Page,
+  { minScroll = 1000 }: OpenOverlayOptions = {}
+): Promise<OverlayOpenState> {
+  const listEntries = page.locator('#entries .entry');
+  const count = await listEntries.count();
+
+  // Tag the first entry so we can detect a remount after the round-trip.
+  await listEntries
+    .first()
+    .evaluate((el) => el.setAttribute('data-e2e-persist', '1'));
+
+  // Click an entry near the bottom (keeps the body scrolled down), preferring
+  // the last one that actually HAS comments so `.entry.kind-t1` assertions on
+  // the opened thread cannot fail on a zero-comment post.
+  const commentCounts = await listEntries.evaluateAll((els) =>
+    els.map((el) => {
+      const link = el.querySelector('a[href*="/comments/"]');
+      const match = link?.textContent?.match(/[\d.]+[KMBT]?/);
+      if (!match) return 0;
+      const n = parseFloat(match[0]);
+      return /[KMBT]$/.test(match[0]) ? n * 1000 : n;
+    })
+  );
+  // Start a few entries above the end: deep in the list, but with slack below
+  // so live embed resizes in the background can never clamp body.scrollTop.
+  let pick = -1;
+  for (let i = commentCounts.length - 8; i >= 0; i -= 1) {
+    if (commentCounts[i] >= 3) {
+      pick = i;
+      break;
+    }
+  }
+  const target = listEntries.nth(pick >= 0 ? pick : Math.max(0, count - 4));
+
+  // Scroll the TITLE LINK itself into view before capturing the offset —
+  // otherwise Playwright's implicit pre-click scroll (entries can be taller
+  // than the viewport) lands between the capture and the click and the
+  // preservation assertion compares against a stale offset.
+  const titleLink = target.getByRole('link', { name: 'Title' }).first();
+  await titleLink.scrollIntoViewIfNeeded();
+
+  const ids = await entryIds(page, '#entries');
+
+  await titleLink.click();
+
+  await expect(page).toHaveURL(/\/comments\//);
+  await expect(page.locator('#post-overlay')).toBeVisible();
+
+  // The preserved offset the whole feature is about: where the list sits the
+  // moment the overlay opens. Must be deep (we scrolled down) and must survive
+  // the overlay's lifetime and the back-navigation.
+  const scrollTop = await bodyScrollTop(page);
+  expect(scrollTop).toBeGreaterThan(minScroll);
+
+  return { url: page.url(), scrollTop, count, ids };
+}
+
 /**
  * Selector that distinguishes a resolved embed (real media) from the thumb
  * fallback. Excludes `.reddit-thumb` and `.no-embed` so this never matches a

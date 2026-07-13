@@ -1,7 +1,6 @@
 import {
   memo,
   use,
-  useEffect,
   useState,
   useCallback,
   useOptimistic,
@@ -21,11 +20,8 @@ import {
 import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useVoteMutation } from '@/redux/api';
-import {
-  usePostContext,
-  PostsContextActionable,
-  useListingsActive,
-} from '@/contexts';
+import { usePostContext, PostsContextActionable } from '@/contexts';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { hotkeyStatus } from '@/common';
 
 interface VoteState {
@@ -68,7 +64,6 @@ function PostVote() {
   const { post } = postContext;
   const data = post.data as LinkData;
   const actionable = use(PostsContextActionable) as boolean;
-  const isActive = useListingsActive();
 
   const [voteState, setVoteState] = useState<VoteState>({
     ups: data.ups,
@@ -127,12 +122,10 @@ function PostVote() {
     [bearer.status, data.name, voteState, setOptimisticVoteState, voteOnPost]
   );
 
-  useEffect(() => {
-    const hotkeys = (event: KeyboardEvent) => {
-      const pressedKey = event.key;
-
+  const hotkeys = useCallback(
+    (event: KeyboardEvent) => {
       if (hotkeyStatus()) {
-        switch (pressedKey) {
+        switch (event.key) {
           case 'a':
             vote(1);
             break;
@@ -143,15 +136,11 @@ function PostVote() {
             break;
         }
       }
-    };
+    },
+    [vote]
+  );
 
-    if (actionable && isActive) {
-      document.addEventListener('keydown', hotkeys);
-    } else {
-      document.removeEventListener('keydown', hotkeys);
-    }
-    return () => document.removeEventListener('keydown', hotkeys);
-  }, [actionable, isActive, vote]);
+  useDocumentKeydown(hotkeys, actionable);
 
   const handleUpvote = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
