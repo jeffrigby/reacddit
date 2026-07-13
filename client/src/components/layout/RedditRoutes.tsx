@@ -1,3 +1,5 @@
+import { memo } from 'react';
+import type { Location } from 'react-router';
 import { Route, Routes, useLocation } from 'react-router';
 import NotFound404 from '@/NotFound404';
 import ListingsRoute from '@/components/listings/ListingsRoute';
@@ -6,6 +8,7 @@ import {
   COMMENTS_PATTERNS,
   DUPLICATES_PATTERNS,
 } from '@/utils/navigationState';
+import type { BackgroundLocation } from '@/types/navigation';
 import PostDetailOverlay from './PostDetailOverlay';
 
 const redditSorts = ['hot', 'new', 'top', 'controversial', 'rising', 'best'];
@@ -168,6 +171,38 @@ const detailRouteConfigs = routes.filter((route) =>
 const mainRouteElements = buildRoutes(routes);
 const detailRouteElements = buildRoutes(detailRouteConfigs);
 
+interface BackgroundRoutesProps {
+  location: Location | BackgroundLocation;
+}
+
+/**
+ * The always-mounted primary tree, memoized on the location KEY (unique per
+ * history entry). While the overlay is open, navigations within it change
+ * only the real location — the background stays on the same history entry,
+ * and re-rendering <Routes> would hand every post row a fresh
+ * LocationContext identity (react-router rebuilds the context value on each
+ * <Routes> render), re-rendering the whole memoized list for identical
+ * output. Context updates from above (Redux, ListingsActiveContext) still
+ * propagate through the memo boundary.
+ *
+ * NOTE: the key comparison is load-bearing — if this component ever grows
+ * another prop, extend the comparator or its updates will be silently
+ * swallowed.
+ */
+const BackgroundRoutes = memo(
+  function BackgroundRoutes({
+    location,
+  }: BackgroundRoutesProps): React.JSX.Element {
+    return (
+      <Routes location={location}>
+        {mainRouteElements}
+        <Route element={<NotFound404 />} key="NotFound404" path="*" />
+      </Routes>
+    );
+  },
+  (prev, next) => prev.location.key === next.location.key
+);
+
 function RedditRoutes(): React.JSX.Element {
   const location = useLocation();
   const { overlayOpen, background } = useOverlayRouting();
@@ -176,10 +211,7 @@ function RedditRoutes(): React.JSX.Element {
     <>
       <ListingsActiveContext value={!overlayOpen}>
         <div inert={overlayOpen}>
-          <Routes location={background ?? location}>
-            {mainRouteElements}
-            <Route element={<NotFound404 />} key="NotFound404" path="*" />
-          </Routes>
+          <BackgroundRoutes location={background ?? location} />
         </div>
       </ListingsActiveContext>
       {/* The overlay tree sits OUTSIDE the provider above, so it reads the
