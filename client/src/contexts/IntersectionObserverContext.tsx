@@ -140,17 +140,18 @@ export function IntersectionObserverProvider({
       }, 100);
     };
 
-    // Listen to scroll on body element (where scroll actually happens)
-    document.body.addEventListener('scroll', handleScroll, { passive: true });
-    // Also listen to window scroll as fallback for other scroll containers
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    // One capture-phase document listener sees scrolls from ANY container
+    // (body scroller, post-detail overlay) since scroll events don't bubble
+    document.addEventListener('scroll', handleScroll, {
+      passive: true,
+      capture: true,
+    });
 
     return () => {
       loadObserverRef.current?.disconnect();
       visibilityObserverRef.current?.disconnect();
       mediaControlObserverRef.current?.disconnect();
-      document.body.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('scroll', handleScroll, { capture: true });
       clearTimeout(scrollTimeout);
     };
   }, []);

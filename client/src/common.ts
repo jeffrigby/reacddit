@@ -2,7 +2,23 @@ export function trimSlashes(path: string): string {
   return path.replace(/^\/|\/$/g, '');
 }
 
-function getScrollContainer(): Element {
+/**
+ * The post-detail overlay registers its element here on mount so that every
+ * scroll utility (including the header singletons that sit outside the
+ * overlay's React tree) targets the overlay while it is open, and the body
+ * otherwise.
+ */
+let activeOverlayElement: HTMLElement | null = null;
+
+export function setActiveOverlayElement(element: HTMLElement | null): void {
+  activeOverlayElement = element;
+}
+
+export function getScrollContainer(): Element {
+  if (activeOverlayElement?.isConnected) {
+    return activeOverlayElement;
+  }
+
   const body = document.body;
   const html = document.documentElement;
 
@@ -12,6 +28,26 @@ function getScrollContainer(): Element {
   }
 
   return html;
+}
+
+export interface ScrollViewport {
+  container: Element;
+  top: number;
+  height: number;
+}
+
+/**
+ * Geometry of the active scroll container's visible area in viewport
+ * coordinates. For the body/html scroller this is the browser viewport; for
+ * the post-detail overlay it is the overlay's own bounding rect.
+ */
+export function getScrollViewport(): ScrollViewport {
+  const container = getScrollContainer();
+  if (container === document.body || container === document.documentElement) {
+    return { container, top: 0, height: window.innerHeight };
+  }
+  const rect = container.getBoundingClientRect();
+  return { container, top: rect.top, height: rect.height };
 }
 
 export function scrollToPosition(x: number, y: number): void {

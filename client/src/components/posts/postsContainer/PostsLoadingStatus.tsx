@@ -6,9 +6,10 @@ import {
   faSpinner,
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
-import { useListingsContext } from '@/contexts/ListingsContext';
-import { useAppSelector } from '@/redux/hooks';
-import { selectCurrentFilter } from '@/redux/slices/listingsSlice';
+import {
+  useListingsContext,
+  useListingsFilter,
+} from '@/contexts/ListingsContext';
 
 type ListingStatus =
   | 'error'
@@ -114,7 +115,7 @@ function PostsLoadingStatus(): ReactElement | null {
   // Get data and status from RTK Query via context
   const { data, status } = useListingsContext();
   const [searchParams] = useSearchParams();
-  const filter = useAppSelector(selectCurrentFilter);
+  const filter = useListingsFilter();
 
   // Parse search query from URL
   const searchQuery = useMemo(

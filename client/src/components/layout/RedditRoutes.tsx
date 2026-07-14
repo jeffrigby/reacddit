@@ -1,6 +1,15 @@
-import { Route, Routes } from 'react-router';
+import { memo } from 'react';
+import type { Location } from 'react-router';
+import { Route, Routes, useLocation } from 'react-router';
 import NotFound404 from '@/NotFound404';
 import ListingsRoute from '@/components/listings/ListingsRoute';
+import { ListingsActiveContext, useOverlayRouting } from '@/contexts';
+import {
+  COMMENTS_PATTERNS,
+  DUPLICATES_PATTERNS,
+} from '@/utils/navigationState';
+import type { BackgroundLocation } from '@/types/navigation';
+import PostDetailOverlay from './PostDetailOverlay';
 
 const redditSorts = ['hot', 'new', 'top', 'controversial', 'rising', 'best'];
 const userSorts = ['hot', 'new', 'top', 'controversial'];
@@ -89,20 +98,17 @@ const routes: RouteConfig[] = [
       target: userTargets,
     },
   },
-  // Duplicates
+  // Duplicates (paths shared with isOverlayPath via navigationState)
   {
-    paths: [`/duplicates/:target`],
+    paths: DUPLICATES_PATTERNS,
     overrides: {
       listType: 'duplicates',
     },
     validations: {},
   },
-  // Comments
+  // Comments (paths shared with isCommentsPath/isOverlayPath via navigationState)
   {
-    paths: [
-      `/r/:target/comments/:postName/:postTitle`,
-      `/r/:target/comments/:postName/:postTitle/:comment`,
-    ],
+    paths: COMMENTS_PATTERNS,
     overrides: {
       listType: 'comments',
     },
@@ -129,8 +135,8 @@ function filterValidations(
     );
 }
 
-function RedditRoutes() {
-  const generatedRoutes = routes.flatMap((route) => {
+function buildRoutes(configs: RouteConfig[]): React.JSX.Element[] {
+  return configs.flatMap((route) => {
     const { paths, overrides, validations } = route;
     return paths.map((path) => {
       const filteredValidations = filterValidations(
@@ -151,12 +157,72 @@ function RedditRoutes() {
       );
     });
   });
+}
+
+// Routes that render inside the post-detail overlay. Their paths come from
+// navigationState's shared pattern constants, so isOverlayPath and this tree
+// cannot drift apart.
+const detailRouteConfigs = routes.filter((route) =>
+  ['comments', 'duplicates'].includes(route.overrides.listType)
+);
+
+// The route configs are module constants, so build the <Route> elements once
+// instead of on every navigation-driven re-render.
+const mainRouteElements = buildRoutes(routes);
+const detailRouteElements = buildRoutes(detailRouteConfigs);
+
+interface BackgroundRoutesProps {
+  location: Location | BackgroundLocation;
+}
+
+/**
+ * The always-mounted primary tree, memoized on the location KEY (unique per
+ * history entry). While the overlay is open, navigations within it change
+ * only the real location — the background stays on the same history entry,
+ * and re-rendering <Routes> would hand every post row a fresh
+ * LocationContext identity (react-router rebuilds the context value on each
+ * <Routes> render), re-rendering the whole memoized list for identical
+ * output. Context updates from above (Redux, ListingsActiveContext) still
+ * propagate through the memo boundary.
+ *
+ * NOTE: the key comparison is load-bearing — if this component ever grows
+ * another prop, extend the comparator or its updates will be silently
+ * swallowed.
+ */
+const BackgroundRoutes = memo(
+  function BackgroundRoutes({
+    location,
+  }: BackgroundRoutesProps): React.JSX.Element {
+    return (
+      <Routes location={location}>
+        {mainRouteElements}
+        <Route element={<NotFound404 />} key="NotFound404" path="*" />
+      </Routes>
+    );
+  },
+  (prev, next) => prev.location.key === next.location.key
+);
+
+function RedditRoutes(): React.JSX.Element {
+  const location = useLocation();
+  const { overlayOpen, background } = useOverlayRouting();
 
   return (
-    <Routes>
-      {generatedRoutes}
-      <Route element={<NotFound404 />} key="NotFound404" path="*" />
-    </Routes>
+    <>
+      <ListingsActiveContext value={!overlayOpen}>
+        <div inert={overlayOpen}>
+          <BackgroundRoutes location={background ?? location} />
+        </div>
+      </ListingsActiveContext>
+      {/* The overlay tree sits OUTSIDE the provider above, so it reads the
+          ListingsActiveContext default (active) — while open, the overlay IS
+          the active tree. */}
+      {overlayOpen && (
+        <PostDetailOverlay>
+          <Routes>{detailRouteElements}</Routes>
+        </PostDetailOverlay>
+      )}
+    </>
   );
 }
 

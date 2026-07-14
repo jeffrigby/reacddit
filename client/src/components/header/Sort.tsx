@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import type { To } from 'react-router';
 import { NavLink, useNavigate, useLocation } from 'react-router';
 import type { JSX } from 'react/jsx-runtime';
@@ -18,6 +18,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { useAppSelector } from '@/redux/hooks';
+import { useOverlayRouting } from '@/contexts';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { hotkeyStatus, isEmpty } from '@/common';
 
 interface SortCategories {
@@ -64,6 +66,14 @@ const catsComments: SortCategories = {
   Q: 'qa',
 };
 
+// Shift+key hotkey -> sort name, derived from the category maps above.
+// qa/old only apply on comments pages (gated in handleSortHotkey).
+const hotkeySorts: SortCategories = {
+  ...catsFront,
+  Q: catsComments.Q,
+  O: catsComments.O,
+};
+
 const timeCats: SortCategories = {
   hour: 'past hour',
   day: 'past 24 hour',
@@ -93,7 +103,13 @@ function Sort() {
   );
   const location = useLocation();
   const navigate = useNavigate();
+  const { overlayOpen } = useOverlayRouting();
   const { search } = location;
+
+  // Sort navigations must keep an OPEN overlay alive (the state carries its
+  // backgroundLocation), but must NOT forward stale state on a standalone
+  // page — history.state survives reloads and would resurrect the overlay.
+  const sortNavState: unknown = overlayOpen ? location.state : undefined;
 
   const getIcon = (sort: string) => (
     <FontAwesomeIcon fixedWidth icon={sortIcons[sort]} />
@@ -128,7 +144,11 @@ function Sort() {
           break;
         case 'comments':
         case 'u':
+          // Sort travels via ?sort= on the SAME page. The pathname must be
+          // absolute: the header renders outside any route context, so a
+          // relative To resolves against the root ('/'), not the current URL.
           qs.set('sort', sort);
+          to.pathname = location.pathname;
           break;
         default:
           break;
@@ -143,65 +163,30 @@ function Sort() {
 
       return to;
     },
-    [listingsFilter, me, search]
+    [listingsFilter, me, search, location.pathname]
   );
 
   const handleSortHotkey = useCallback(
     (event: KeyboardEvent) => {
       const { target, listType } = listingsFilter;
-      if (hotkeyStatus() && target !== 'friends') {
-        const pressedKey = event.key;
-        switch (pressedKey) {
-          case 'H': {
-            navigate(genLink('hot'));
-            break;
-          }
-          case 'B': {
-            navigate(genLink('best'));
-            break;
-          }
-          case 'N': {
-            navigate(genLink('new'));
-            break;
-          }
-          case 'C': {
-            navigate(genLink('controversial'));
-            break;
-          }
-          case 'R': {
-            navigate(genLink('rising'));
-            break;
-          }
-          case 'T': {
-            navigate(genLink('top'));
-            break;
-          }
-          case 'Q': {
-            if (listType === 'comments') {
-              navigate(genLink('qa'));
-            }
-            break;
-          }
-          case 'O': {
-            if (listType === 'comments') {
-              navigate(genLink('old'));
-            }
-            break;
-          }
-          default:
-            break;
-        }
+      if (!hotkeyStatus() || target === 'friends') {
+        return;
       }
+      const sort = hotkeySorts[event.key];
+      if (
+        !sort ||
+        ((sort === 'qa' || sort === 'old') && listType !== 'comments')
+      ) {
+        return;
+      }
+      navigate(genLink(sort), { state: sortNavState });
     },
-    [genLink, listingsFilter, navigate]
+    [genLink, listingsFilter, navigate, sortNavState]
   );
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleSortHotkey);
-    return () => {
-      document.removeEventListener('keydown', handleSortHotkey);
-    };
-  }, [handleSortHotkey]);
+  // Header singleton: renders outside any ListingsActiveContext provider, so
+  // the hook's active gate reads the default (true) and this stays always-on.
+  useDocumentKeydown(handleSortHotkey);
 
   const renderTimeSubLinks = (sort: string) => {
     const { listType, target } = listingsFilter;
@@ -231,6 +216,7 @@ function Sort() {
           as={NavLink}
           className={sortActive}
           key={linkKey}
+          state={sortNavState}
           to={url}
         >
           <span className="sort-title ps-3 small">{linkString}</span>
@@ -303,6 +289,7 @@ function Sort() {
             <Dropdown.Item
               as={NavLink}
               className={`d-flex small ${active ? 'sort-active' : ''}`}
+              state={sortNavState}
               to={genLink(sortName)}
             >
               <div className="me-auto pe-2 sort-title">

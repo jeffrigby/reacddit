@@ -6,6 +6,7 @@ import { fetchMe } from '@/redux/slices/redditMeSlice';
 import { siteSettingsChanged } from '@/redux/slices/siteSettingsSlice';
 import { hotkeyStatus, scrollToPosition } from '@/common';
 import { useModals } from '@/contexts/ModalContext';
+import { OverlayRoutingProvider } from '@/contexts';
 import { useScrollClickPrevention } from '@/hooks/useScrollClickPrevention';
 import Navigation from './Navigation';
 import Header from './Header';
@@ -244,24 +245,26 @@ function App() {
   return (
     <div className={containerClasses}>
       <StrictMode>
-        <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
-          <Header />
-        </header>
-        <aside className="sidebar pt-2" id="navigation">
-          <div className="h-100 d-flex px-3" id="aside-content">
-            <Navigation
-              redditBearer={redditBearer}
-              subredditsFilter={subredditsFilter}
-            />
-          </div>
-        </aside>
+        <OverlayRoutingProvider>
+          <header className="navbar navbar-dark fixed-top bg-dark flex-nowrap p-0 shadow">
+            <Header />
+          </header>
+          <aside className="sidebar pt-2" id="navigation">
+            <div className="h-100 d-flex px-3" id="aside-content">
+              <Navigation
+                redditBearer={redditBearer}
+                subredditsFilter={subredditsFilter}
+              />
+            </div>
+          </aside>
 
-        <main id="main">
-          <Routes />
-        </main>
+          <main id="main">
+            <Routes />
+          </main>
 
-        <Help />
-        <div id="menu-overlay" />
+          <Help />
+          <div id="menu-overlay" />
+        </OverlayRoutingProvider>
       </StrictMode>
     </div>
   );

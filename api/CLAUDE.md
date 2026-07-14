@@ -1,18 +1,6 @@
 # Reacddit API
 
-Koa.js OAuth2 server for Reddit authentication and utility endpoints (TypeScript).
-
-## Commands
-
-```bash
-npm start              # Development server with tsx watch
-npm run lint           # Prettier + ESLint
-npm run type-check     # TypeScript type checking
-npm test               # Run tests with Vitest (watch mode)
-npm run test:run       # Run tests once (CI mode)
-npm run test:coverage  # Run tests with coverage
-npm run build          # SAM build for Lambda deployment (requires Docker)
-```
+Koa.js OAuth2 server for Reddit authentication and utility endpoints (TypeScript). Commands are the standard scripts in `package.json` — note `npm run build` is a SAM build for Lambda and requires Docker.
 
 ## TypeScript Standards
 
@@ -40,13 +28,8 @@ npm run build          # SAM build for Lambda deployment (requires Docker)
 
 ## API Endpoints
 
-**OAuth:**
-- `GET /api/bearer` - Get/refresh anonymous or authenticated token
-- `GET /api/login` - Redirect to Reddit OAuth login
-- `GET /api/callback` - Reddit OAuth redirect callback
-- `GET /api/logout` - Revoke tokens, clear session, redirect to client
+OAuth routes (`/api/bearer`, `/api/login`, `/api/callback`, `/api/logout`) are defined in `src/app.ts`. One endpoint needs context the code can't give:
 
-**Utility:**
 - `POST /api/resolve-share` - Batch resolve Reddit share links (`/r/sub/s/code`) to post IDs
   - Body: `{ urls: string[] }` (max 50 per request)
   - Returns: `{ results: { [url]: { postId } | { error } } }`
@@ -72,15 +55,6 @@ npm run build          # SAM build for Lambda deployment (requires Docker)
 - Body parser limited to 16kb JSON
 - CORS restricted to `CLIENT_PATH` origin
 
-## Key Files
-
-- `src/app.ts` - Koa server, routes, middleware, rate limiting
-- `src/config.ts` - Environment configuration with validation
-- `src/util.ts` - AES-256-GCM encryption (HKDF key derivation), token helpers
-- `src/logger.ts` - Structured logging (`@aws-lambda-powertools/logger`)
-- `src/types/` - TypeScript type definitions
-- `template.yaml` - SAM CloudFormation template for AWS Lambda deployment
-
 ## SAM Deployment
 
 **Build:** `npm run build` (requires Docker)
@@ -95,15 +69,7 @@ npm run build          # SAM build for Lambda deployment (requires Docker)
 
 ## Testing
 
-**Framework:** Vitest
-
-**Patterns:**
-- Test OAuth flows with mocked Reddit API
-- Validate encryption/decryption
-- Test configuration validation
-- API endpoint responses
-
-**Run tests:** `npm test`
+- Test OAuth flows with mocked Reddit API (never the live API)
 
 ## Code Quality
 

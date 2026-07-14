@@ -1,4 +1,6 @@
+import type { MouseEvent } from 'react';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router';
 import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -6,9 +8,11 @@ import {
   faAngleDoubleDown,
   faAngleDoubleUp,
 } from '@fortawesome/free-solid-svg-icons';
-import { usePostContext } from '@/contexts';
+import { usePostContext, useListingsFilter } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
 import { sanitizeHTML } from '@/utils/sanitize';
+import { isCommentsPath } from '@/utils/navigationState';
+import { useDetailNavState } from '@/hooks/useDetailNavState';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import SelfInline from './SelfInline';
 import '../../../styles/self.scss';
@@ -27,14 +31,55 @@ interface SelfProps {
 
 const HTTP_URL_RE = /^https?:\/\//;
 const WHITESPACE_ONLY_RE = /^\s*$/;
+const REDDIT_HOST_RE =
+  /^https?:\/\/(?:www\.|old\.|new\.|np\.|sh\.)?reddit\.com\//i;
+
+/**
+ * If the href is a reddit post permalink (absolute reddit.com URL or a
+ * relative path) that matches the app's comments routes, return the
+ * app-relative path for SPA navigation. Anything else (including /s/ share
+ * links, user/subreddit links, external domains) returns null and stays an
+ * external link.
+ */
+function getInternalPostPath(href: string): string | null {
+  let url: URL;
+  try {
+    // Exclude protocol-relative hrefs ('//host/...') — they point at another
+    // host, not a reddit-relative path.
+    if (href.startsWith('/') && !href.startsWith('//')) {
+      url = new URL(href, 'https://www.reddit.com');
+    } else if (REDDIT_HOST_RE.test(href)) {
+      url = new URL(href);
+    } else {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  if (!isCommentsPath(url.pathname)) {
+    return null;
+  }
+
+  return `${url.pathname}${url.search}${url.hash}`;
+}
 
 const cleanLinks = (html: string): string => {
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
-  // Set target and rel on all anchor tags; shorten long URL text
+  // Rewrite reddit post permalinks to internal SPA links; set target and rel
+  // on all other anchor tags; shorten long URL text
   doc.querySelectorAll('a').forEach((anchor) => {
-    anchor.setAttribute('target', '_blank');
-    anchor.setAttribute('rel', 'noopener noreferrer');
+    const internalPath = getInternalPostPath(anchor.getAttribute('href') ?? '');
+    if (internalPath) {
+      anchor.setAttribute('href', internalPath);
+      anchor.removeAttribute('target');
+      anchor.removeAttribute('rel');
+      anchor.setAttribute('data-internal-link', '');
+    } else {
+      anchor.setAttribute('target', '_blank');
+      anchor.setAttribute('rel', 'noopener noreferrer');
+    }
     const text = anchor.textContent ?? '';
     if (HTTP_URL_RE.test(text) && text.length >= 20) {
       const shortened = `${text.replace(HTTP_URL_RE, '').substring(0, 25)}...`;
@@ -59,10 +104,10 @@ function Self({ name, content }: SelfProps) {
   const postContext = usePostContext();
   const { post } = postContext;
 
-  const listType = useAppSelector(
-    (state) => state.listings.currentFilter.listType
-  );
+  const { listType } = useListingsFilter();
   const debug = useAppSelector((state) => state.siteSettings.debug);
+  const navigate = useNavigate();
+  const detailNavState = useDetailNavState();
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(content?.expand ?? false);
@@ -114,6 +159,37 @@ function Self({ name, content }: SelfProps) {
     };
   }, [content.html, checkOverflow]);
 
+  // Delegated click handler: SPA-navigate rewritten reddit post permalinks
+  // (the anchors themselves are the interactive elements; keyboard activation
+  // of an anchor fires a click that bubbles here too). Modifier-clicks and
+  // non-primary buttons fall through to default behavior.
+  const handleContentClick = (event: MouseEvent<HTMLDivElement>): void => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    const anchor = target.closest('a[data-internal-link]');
+    if (!anchor || !event.currentTarget.contains(anchor)) {
+      return;
+    }
+    const href = anchor.getAttribute('href');
+    if (!href) {
+      return;
+    }
+    event.preventDefault();
+    navigate(href, { state: detailNavState });
+  };
+
   const toggleExpansion = useCallback(() => {
     if (content.expand) {
       return;
@@ -140,7 +216,12 @@ function Self({ name, content }: SelfProps) {
 
   return (
     <div className={`self self-${post.kind} self-${post.kind}-${listType}`}>
-      <div className={contentClasses} ref={contentRef}>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events -- click delegation for the anchors inside; keyboard-activated anchors bubble a click here */}
+      <div
+        className={contentClasses}
+        ref={contentRef}
+        onClick={handleContentClick}
+      >
         <div dangerouslySetInnerHTML={{ __html: rawhtml }} />
       </div>
 

@@ -208,8 +208,6 @@ export const selectUiState = createSelector(
     return (
       uiStateByLocation[key] ?? {
         focused: '',
-        visible: [],
-        minHeights: {},
         actionable: null,
         hasError: false,
       }

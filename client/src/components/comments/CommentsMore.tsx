@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap';
 import { NavLink, useParams } from 'react-router';
 import type { Thing, CommentData, MoreChildrenData } from '@/types/redditApi';
 import { useGetMoreChildrenQuery } from '@/redux/api';
+import { useDetailNavState } from '@/hooks/useDetailNavState';
 import CommentsRender from './CommentsRender';
 
 type CommentOrMore = Thing<CommentData> | Thing<MoreChildrenData>;
@@ -40,6 +41,7 @@ interface CommentsMoreProps {
 function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
   const { count, children } = moreList.data;
   const [shouldFetch, setShouldFetch] = useState(false);
+  const detailNavState = useDetailNavState();
   const { target, postName, postTitle } = useParams<{
     target: string;
     postName: string;
@@ -71,6 +73,7 @@ function CommentsMore({ moreList, linkId }: CommentsMoreProps) {
       <div className="comments-more">
         <NavLink
           className="btn btn-outline-secondary btn-sm mb-2"
+          state={detailNavState}
           to={`/r/${target}/comments/${postName}/${postTitle}/${parentID}`}
         >
           Continue This Thread
