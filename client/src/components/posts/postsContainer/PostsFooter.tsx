@@ -6,7 +6,7 @@ import {
   faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
 import { useListingsContext } from '@/contexts/ListingsContext';
-import { useIntersectionObservers } from '@/contexts';
+import { useIntersectionObservers, useListingsActive } from '@/contexts';
 
 type FooterStatus = 'loadingNext' | 'loadedAll';
 
@@ -39,15 +39,18 @@ function PostsFooter(): ReactElement {
   const { status, loadMore } = useListingsContext();
   const footerRef = useRef<HTMLDivElement>(null);
   const { observeForLoading } = useIntersectionObservers();
+  const isActive = useListingsActive();
 
-  // Trigger loading more posts when footer comes into view
+  // Trigger loading more posts when footer comes into view. Suspended trees
+  // must not paginate: their covered sentinel still "intersects" the viewport
+  // while the overlay is open.
   const handleIntersection = useCallback(
     (isIntersecting: boolean) => {
-      if (isIntersecting && status === 'loaded') {
+      if (isIntersecting && isActive && status === 'loaded') {
         loadMore();
       }
     },
-    [status, loadMore]
+    [status, loadMore, isActive]
   );
 
   // Register footer with IntersectionObserver

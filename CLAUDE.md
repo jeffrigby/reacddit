@@ -1,16 +1,6 @@
 # CLAUDE.md
 
-Reacddit is a Reddit client with enhanced media viewing and embedded content support.
-
-## Tech Stack
-
-- **Client:** React 19, Redux Toolkit, React Router 8, TypeScript (ES2023), Vite 8
-- **API:** Koa.js OAuth2 server (Reddit auth + share link resolver)
-- **Proxy:** Node.js HTTPS reverse proxy for local dev SSL
-- **Deployment:** AWS Lambda via SAM/CloudFormation
-- **Package Management:** npm workspaces (client, api, proxy, tests)
-- **E2E Tests:** Playwright (`tests/` workspace)
-- **Standalone tool:** `reddit-api-tester/` — not a workspace; install/run separately
+Reacddit is a Reddit client with enhanced media viewing and embedded content support. npm workspaces monorepo (client, api, proxy, tests) — see the workspace manifests for the stack; each workspace has its own CLAUDE.md with details.
 
 ## Quick Start
 
@@ -35,23 +25,7 @@ npm outdated --workspaces   # Check outdated packages
 npm run <script> -w client  # Run script in specific workspace
 ```
 
-**Client-specific:**
-```bash
-cd client
-npm run lint              # Prettier + ESLint (CRITICAL: zero warnings/errors required)
-npm run build             # Production build
-npm run test:component    # Component tests (vitest browser mode + Playwright)
-```
-
-**API-specific:**
-```bash
-cd api
-npm run lint              # Prettier + ESLint
-npm run type-check        # TypeScript type checking
-npm test                  # Run tests with Vitest
-npm run test:run          # Run tests once (CI mode)
-npm run test:coverage     # Run tests with coverage
-```
+Per-workspace commands are documented in `client/CLAUDE.md` and `api/CLAUDE.md`.
 
 ## Code Quality (CRITICAL)
 
@@ -85,54 +59,17 @@ npm run test:coverage     # Run tests with coverage
 - React.memo for performance optimization
 
 **Embed System (Key Differentiator):**
-- Plugin-based architecture for embedded content
-- Entry: `client/src/components/posts/embeds/index.ts`
-- Domain handlers: `domains/` directory (YouTube, Twitter, Reddit, Imgur, Facebook, Instagram, etc.)
-- Reddit cross-post handler: `domains/redditcom.ts` fetches linked post data via OAuth API, delegates to appropriate domain handler
-- Reddit share link resolution via `POST /api/resolve-share` (batch, with client-side LRU cache in `redditcom.ts`)
-- Adult content: `domains_custom/` (separate)
-- Dynamic loading via `import.meta.glob`
-- Add new embeds: Create `domains/[domain].ts` with default export render function
+- Plugin-based rendering of embedded content in `client/src/components/posts/embeds/` — full details in `client/CLAUDE.md`
 
 **Routing:**
 - React Router 8 with dynamic route generation
 - Supports Reddit patterns: `/r/subreddit`, `/u/user`, `/m/multi`
 
 **HTTPS Proxy (`/proxy/`):**
-- Required for embedded content (iframes need HTTPS)
-- HTTP/2 with HTTP/1.1 fallback, Brotli/gzip compression for API responses
-- Auto-generates self-signed certs on first run (also supports Let's Encrypt)
-- Routes `/api/*` → Koa (3001), everything else → Vite (3000)
-- WebSocket support for HMR
-- Request hardening: 10MB body limit, path normalization, hop-by-hop header stripping
-- Security headers: HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
-- Config: `proxy/server.ts`, certs: `proxy/certs.ts`
+- Local-dev HTTPS reverse proxy, required because embedded iframes need HTTPS — details in `proxy/CLAUDE.md`
 
-## Key Files
+## Config
 
-**Client:**
-- `client/src/components/layout/App.tsx` - Main app & routing
-- `client/src/redux/configureStore.ts` - Redux store
-- `client/src/redux/api/redditApi.ts` - RTK Query config
-- `client/src/components/posts/embeds/index.ts` - Embed system entry
-- `client/src/components/posts/embeds/domains/redditcom.ts` - Reddit cross-post embed handler (share link batch resolver)
-- `client/src/utils/sanitize.ts` - HTML sanitization (DOMPurify) and URL validation
-- `client/src/types/redditApi.ts` - Reddit API types (centralized, may be incomplete)
-
-**API:**
-- `api/src/app.ts` - Koa OAuth server, share link resolver, rate limiting
-- `api/src/config.ts` - Environment config with validation
-- `api/src/util.ts` - AES-256-GCM encryption (HKDF key derivation), token helpers
-- `api/src/logger.ts` - Structured logging (@aws-lambda-powertools/logger)
-
-**Proxy:**
-- `proxy/server.ts` - HTTPS reverse proxy
-
-**Scripts (TypeScript):**
-- `scripts/setup-wizard.ts` - Interactive setup
-- `scripts/start-dev.ts` - Dev server launcher
-
-**Config:**
 - `.env` - Proxy (domain, ports, certs)
 - `api/.env` - Reddit OAuth credentials
 - `client/.env` - Vite build config
@@ -144,3 +81,6 @@ npm run test:coverage     # Run tests with coverage
 - **Reddit API types:** Centralized in `client/src/types/redditApi.ts` (flag if incomplete)
 - **Dev URL:** https://dev.reacdd.it/ (NEVER use localhost URLs)
 - **Not implemented:** Creating posts/comments (viewing, voting, saving work)
+- **Standalone tool:** `reddit-api-tester/` is NOT an npm workspace — install/run it separately (see its CLAUDE.md)
+- **Branching:** feature branches PR into `develop` (long-lived integration branch — never delete it); `develop` merges to `main` for releases
+- **Dev server:** started by the user (requires sudo — binds port 443). Never start/stop/restart it from a session; if it's needed, ask

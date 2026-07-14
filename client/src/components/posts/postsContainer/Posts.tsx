@@ -1,9 +1,10 @@
 import type { ReactElement } from 'react';
 import { memo, useMemo } from 'react';
 import { IntersectionObserverProvider } from '@/contexts';
-import { useListingsContext } from '@/contexts/ListingsContext';
-import { useAppSelector } from '@/redux/hooks';
-import { selectCurrentFilter } from '@/redux/slices/listingsSlice';
+import {
+  useListingsContext,
+  useListingsFilter,
+} from '@/contexts/ListingsContext';
 import PostsLoadingStatus from './PostsLoadingStatus';
 import PostsFooter from './PostsFooter';
 import PostsRender from './PostsRender';
@@ -13,9 +14,8 @@ function Posts(): ReactElement {
   // Get data from RTK Query via context
   const { data } = useListingsContext();
 
-  // Get listType from current filter
-  const filter = useAppSelector(selectCurrentFilter);
-  const listType = filter.listType;
+  // Get listType from this tree's own filter (not the global currentFilter)
+  const { listType } = useListingsFilter();
 
   const entriesObject = data?.children;
   const originalPost = data?.originalPost;

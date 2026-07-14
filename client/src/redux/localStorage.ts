@@ -78,7 +78,7 @@ function filterApiCache(apiState: ApiState): ApiState {
 export type PersistedState = Partial<
   Pick<
     RootState,
-    'siteSettings' | 'subredditPolling' | 'redditMe' | 'history' | 'redditApi'
+    'siteSettings' | 'subredditPolling' | 'redditMe' | 'redditApi'
   >
 >;
 
@@ -94,7 +94,9 @@ export function loadState(): PersistedState | undefined {
       return undefined;
     }
 
-    const rawState = JSON.parse(serializedState);
+    const rawState = JSON.parse(serializedState) as Record<string, unknown>;
+    // Drop the removed write-only history slice from older persisted state
+    delete rawState['history'];
     const persistedState = rawState as PersistedState;
     const cookieToken = cookies.get('token');
 
@@ -104,10 +106,9 @@ export function loadState(): PersistedState | undefined {
     // If no cookie token, clear auth-specific data from persisted state
     // This prevents showing authenticated user's data when logged out
     if (!hasCookieToken) {
-      // Clear auth-specific slices but preserve siteSettings and history
+      // Clear auth-specific slices but preserve siteSettings
       return {
         siteSettings: persistedState.siteSettings,
-        history: persistedState.history,
         // Don't restore subredditPolling, redditMe, or redditApi when not authenticated
       };
     }

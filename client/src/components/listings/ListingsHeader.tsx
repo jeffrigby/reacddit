@@ -1,14 +1,13 @@
 import { useLocation } from 'react-router';
 import { useAppSelector } from '@/redux/hooks';
 import { selectListingStatus } from '@/redux/slices/listingsSlice';
+import { useListingsFilter } from '@/contexts';
 import ListingsHeaderSub from './ListingsHeaderSub';
 import ListingsHeaderMulti from './ListingsHeaderMulti';
 import ListingsHeaderError from './ListingsHeaderError';
 
 function ListingsHeader() {
-  const listType = useAppSelector(
-    (state) => state.listings.currentFilter?.listType
-  );
+  const { listType } = useListingsFilter();
   const location = useLocation();
   const status = useAppSelector((state) =>
     selectListingStatus(state, location.key)

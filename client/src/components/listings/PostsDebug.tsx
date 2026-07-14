@@ -21,6 +21,7 @@ import {
   selectBearerStatus,
   selectIsAuth,
 } from '@/redux/slices/redditBearerSlice';
+import { useListingsFilter } from '@/contexts';
 
 interface CopyButtonProps {
   text: string;
@@ -60,9 +61,7 @@ function PostsDebug(): React.JSX.Element | null {
   const match = useParams();
 
   const debugEnabled = useAppSelector((state) => state.siteSettings.debug);
-  const listingsFilter = useAppSelector(
-    (state) => state.listings.currentFilter
-  );
+  const listingsFilter = useListingsFilter();
   const listingsState = useAppSelector((state) =>
     selectUiState(state, location.key)
   );
@@ -91,7 +90,7 @@ function PostsDebug(): React.JSX.Element | null {
   const bearerStatus = useAppSelector(selectBearerStatus);
   const isAuth = useAppSelector(selectIsAuth);
 
-  const { actionable, focused, visible } = listingsState;
+  const { actionable, focused } = listingsState;
 
   if (!debugEnabled) {
     return null;
@@ -109,7 +108,7 @@ function PostsDebug(): React.JSX.Element | null {
     2
   );
 
-  const visFocu = JSON.stringify({ focused, visible, actionable }, null, 2);
+  const visFocu = JSON.stringify({ focused, actionable }, null, 2);
   const router = JSON.stringify({ location, match }, null, 2);
 
   // Posts state

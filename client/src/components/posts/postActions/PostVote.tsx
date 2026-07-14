@@ -1,7 +1,6 @@
 import {
   memo,
   use,
-  useEffect,
   useState,
   useCallback,
   useOptimistic,
@@ -22,6 +21,7 @@ import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useVoteMutation } from '@/redux/api';
 import { usePostContext, PostsContextActionable } from '@/contexts';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { hotkeyStatus } from '@/common';
 
 interface VoteState {
@@ -122,12 +122,10 @@ function PostVote() {
     [bearer.status, data.name, voteState, setOptimisticVoteState, voteOnPost]
   );
 
-  useEffect(() => {
-    const hotkeys = (event: KeyboardEvent) => {
-      const pressedKey = event.key;
-
+  const hotkeys = useCallback(
+    (event: KeyboardEvent) => {
       if (hotkeyStatus()) {
-        switch (pressedKey) {
+        switch (event.key) {
           case 'a':
             vote(1);
             break;
@@ -138,15 +136,11 @@ function PostVote() {
             break;
         }
       }
-    };
+    },
+    [vote]
+  );
 
-    if (actionable) {
-      document.addEventListener('keydown', hotkeys);
-    } else {
-      document.removeEventListener('keydown', hotkeys);
-    }
-    return () => document.removeEventListener('keydown', hotkeys);
-  }, [actionable, vote]);
+  useDocumentKeydown(hotkeys, actionable);
 
   const handleUpvote = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();

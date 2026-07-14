@@ -5,14 +5,16 @@ import {
   subredditSelectors,
   useGetSubredditAboutQuery,
 } from '@/redux/api';
+import { useListingsActive, useListingsFilter } from '@/contexts';
 import SubUnSub from './SubUnSub';
 import MultiToggle from './MultiToggle';
 
 function ListingsHeaderSub() {
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
+  const isActive = useListingsActive();
 
-  const filter = useAppSelector((state) => state.listings.currentFilter);
+  const filter = useListingsFilter();
   const { target, listType, multi } = filter;
 
   // Use RTK Query hook to get cached subreddit data from subreddit list
@@ -153,7 +155,7 @@ function ListingsHeaderSub() {
 
   return (
     <>
-      {pageTitle && <title>{pageTitle}</title>}
+      {isActive && pageTitle && <title>{pageTitle}</title>}
       <div className="d-flex">
         <div className="me-auto title-contrainer">
           <h5 className="m-0 p-0 w-100">

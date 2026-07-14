@@ -1,0 +1,7 @@
+// Shared layout geometry — the single source for the app frame that
+// layout.scss (#main), sidebar.scss (#navigation), and postOverlay.scss
+// (#post-overlay) must all agree on.
+$header-height: 3rem;
+$sidebar-width: 14rem;
+$mobile-breakpoint: 767.98px; // Bootstrap md breakpoint (max-width form)
+$zindex-sidebar: 5;

@@ -35,8 +35,6 @@ export interface ListingsData {
  */
 export interface ListingsState {
   focused: string;
-  visible: string[];
-  minHeights: Record<string, number>;
   actionable: string | number | null;
   hasError: boolean;
   saved?: number;

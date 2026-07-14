@@ -74,20 +74,4 @@ DEBUG=true npm run test-api test -- --endpoints "/api/v1/me"
 ```
 3. **Check results** in `results/` directory (`.json` for details, `.md` for summaries)
 
-## Key Files
-
-- `src/index.ts` - CLI entry point
-- `src/token-manager.ts` - Token acquisition/caching
-- `src/api-tester.ts` - Core testing logic
-- `src/type-validator.ts` - Type validation
-- `src/endpoints.json` - Endpoints to test
-- `results/` - Test results and reports
-
-## Development
-
-```bash
-npm run build    # Compile TypeScript
-npm run dev      # Run CLI directly (tsx) — alias of test-api
-```
-
-Uses Commander.js for CLI, Axios for HTTP requests, Node.js native modules only.
+Results land in `results/` (`.json` for details, `.md` for summaries).

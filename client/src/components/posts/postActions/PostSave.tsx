@@ -1,7 +1,6 @@
 import {
   memo,
   use,
-  useEffect,
   useState,
   useCallback,
   useOptimistic,
@@ -16,6 +15,7 @@ import type { LinkData } from '@/types/redditApi';
 import { useAppSelector } from '@/redux/hooks';
 import { useSavePostMutation, useUnsavePostMutation } from '@/redux/api';
 import { PostsContextActionable, usePostContext } from '@/contexts';
+import { useDocumentKeydown } from '@/hooks/useDocumentKeydown';
 import { hotkeyStatus } from '@/common';
 
 function PostSave() {
@@ -70,24 +70,16 @@ function PostSave() {
     unsavePost,
   ]);
 
-  useEffect(() => {
-    const hotkeys = (event: KeyboardEvent) => {
-      const pressedKey = event.key;
-
-      if (hotkeyStatus()) {
-        if (pressedKey === 's') {
-          triggerSave();
-        }
+  const hotkeys = useCallback(
+    (event: KeyboardEvent) => {
+      if (hotkeyStatus() && event.key === 's') {
+        triggerSave();
       }
-    };
+    },
+    [triggerSave]
+  );
 
-    if (actionable) {
-      document.addEventListener('keydown', hotkeys);
-    } else {
-      document.removeEventListener('keydown', hotkeys);
-    }
-    return () => document.removeEventListener('keydown', hotkeys);
-  }, [actionable, triggerSave]);
+  useDocumentKeydown(hotkeys, actionable);
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
