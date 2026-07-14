@@ -1,20 +1,8 @@
 # Reacddit Client
 
-React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embedding.
-
-## Commands
-
-```bash
-npm start              # Vite dev server with HMR
-npm run build          # Production build
-npm run preview        # Preview production build
-npm run lint           # Prettier + ESLint (CRITICAL: zero errors required)
-npm run test:component # Component tests (vitest in browser mode + Playwright)
-```
+React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embedding. Commands are the standard scripts in `package.json`.
 
 ## Code Style
-
-**Formatting:** `semi: true`, `singleQuote: true`, `trailingComma: es5`
 
 **Linting (ESLint v10):**
 - Run `npm run lint` after ALL changes
@@ -25,10 +13,7 @@ npm run test:component # Component tests (vitest in browser mode + Playwright)
 
 **Naming:** `camelCase` (variables/functions), `PascalCase` (components)
 
-**Path Aliases (tsconfig):**
-- `@/*` → `src/*`
-- `@/redux/*`, `@/types/*`, `@/components/*`, `@/styles/*`, `@/test/*`
-- Prefer aliases over relative imports across feature boundaries
+**Path Aliases:** prefer the tsconfig `@/*` aliases over relative imports across feature boundaries
 
 ## TypeScript Standards
 
@@ -76,10 +61,11 @@ npm run test:component # Component tests (vitest in browser mode + Playwright)
 - Lazy-load routes/components
 
 **Embed System:**
-- Plugin-based: `src/components/posts/embeds/domains/` (one file per domain)
-- Entry point: `src/components/posts/embeds/index.ts`
+- Plugin-based: `src/components/posts/embeds/domains/` (one file per domain — YouTube, Twitter, Reddit, Imgur, Facebook, Instagram, etc.)
+- Entry point: `src/components/posts/embeds/index.ts`; handlers load dynamically via `import.meta.glob`
 - Reddit cross-posts: `domains/redditcom.ts` resolves linked posts via OAuth API, delegates rendering to the appropriate domain handler
 - Share links (`/r/sub/s/code`): batched via `POST /api/resolve-share` with client-side LRU cache
+- Adult content handlers live separately in `domains_custom/`
 - Add new embeds: Create `domains/[domain].ts` with default export async render function
 
 **Security:**
@@ -87,6 +73,22 @@ npm run test:component # Component tests (vitest in browser mode + Playwright)
 - URL validation: `isSafeUrl()` and `sanitizeHref()` in `src/utils/sanitize.ts`
 - Always use `sanitizeHTML()` when rendering user-provided HTML (e.g., Reddit selftext_html)
 - Always use `sanitizeHref()` for dynamic href attributes
+
+## Gotchas
+
+- **`document.body` is the scroll container** (element scroller, not the window):
+  `window.scrollY` is ALWAYS 0. Read/set scroll via `document.body.scrollTop`,
+  or better, the utilities in `src/common.ts` (`getScrollContainer`,
+  `getScrollViewport`) which also handle the post-detail overlay
+- **Post-detail overlay routing** (background-location pattern, `RedditRoutes.tsx`):
+  two listing trees can be mounted at once; only the ACTIVE tree owns
+  `id="entries"`. Inside listing trees: document-level hotkey listeners MUST go
+  through `useDocumentKeydown` (auto-detached when the tree is suspended), and
+  links into comments/duplicates pages MUST carry `useDetailNavState()` as Link
+  `state` — a plain Link breaks the overlay/back-button chain
+- Entry DOM ids are duplicated across trees while the overlay is open — use
+  `findEntry`/`getActiveEntriesContainer` from `PostsFunctions.ts`, never a bare
+  `document.getElementById`
 
 ## Error Handling
 
