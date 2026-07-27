@@ -74,7 +74,55 @@ function keyEntryChildren(entries: BaseListingResponse): KeyedListingData {
   };
 }
 
-const MAX_POSTS_IN_MEMORY = 500;
+/**
+ * Cap for the prepend path (streaming / "load new").
+ *
+ * Trimming here drops from the TAIL — the oldest posts, which sit below the
+ * user's scroll position — so it is cheap and safe. Unchanged from the
+ * long-shipped value.
+ */
+const MAX_POSTS_PREPEND = 500;
+
+/**
+ * Cap for the append path (infinite scroll).
+ *
+ * Deliberately much higher than the prepend cap because it trims from the
+ * HEAD: the dropped posts may still be mounted ABOVE the user's scroll
+ * position, and unmounting them collapses that height out from under the
+ * viewport. A measured deep read of the front page loaded 407 entries, so
+ * 1000 leaves ~2.5x headroom and in practice only fires on a pathological
+ * session. It also sits at Reddit's own practical listing depth (most
+ * endpoints stop handing out an `after` cursor around 1000 items).
+ *
+ * Sizing, so this is not oversold: listing JSON measures ~5 KB/post (4,096 KB
+ * across 5 listings / 825 posts) against ~430 MB for a fully-read listing —
+ * roughly 1%. This is a guard against unbounded growth and a prerequisite for
+ * entry virtualization (which can lower it safely once off-screen entries no
+ * longer occupy real DOM height), not a memory win on its own.
+ */
+const MAX_POSTS_APPEND = 1000;
+
+/**
+ * Trim a keyed children map to `max` entries, preserving insertion order.
+ *
+ * `keep: 'first'` drops from the tail (oldest posts, below the viewport);
+ * `keep: 'last'` drops from the head (newest posts, above the viewport).
+ */
+function trimChildren(
+  children: Record<string, Thing<LinkData>>,
+  max: number,
+  keep: 'first' | 'last'
+): Record<string, Thing<LinkData>> {
+  const keys = Object.keys(children);
+  if (keys.length <= max) {
+    return children;
+  }
+
+  const keptKeys =
+    keep === 'first' ? keys.slice(0, max) : keys.slice(keys.length - max);
+
+  return Object.fromEntries(keptKeys.map((key) => [key, children[key]]));
+}
 
 /**
  * Query argument types
@@ -214,7 +262,8 @@ export const listingsApi = redditApi.injectEndpoints({
      * - New: { before } → prepend new posts (streaming/refresh)
      *
      * Automatic features:
-     * - Memory management: truncates to 500 posts when streaming
+     * - Memory management: both merge paths are capped (MAX_POSTS_PREPEND on
+     *   prepend/streaming, MAX_POSTS_APPEND on infinite scroll)
      * - Smart merging: prepend vs append based on pagination direction
      * - Parallel subreddit about fetch (use separate query)
      */
@@ -305,25 +354,20 @@ export const listingsApi = redditApi.injectEndpoints({
             return currentCache;
           }
 
-          // Prepend new posts to existing
+          // Prepend new posts to existing, then truncate from the tail
           const merged: ListingsData = {
             ...newData,
             after: currentCache.after, // Keep existing after cursor
-            children: {
-              ...newData.children,
-              ...currentCache.children,
-            },
+            children: trimChildren(
+              {
+                ...newData.children,
+                ...currentCache.children,
+              },
+              MAX_POSTS_PREPEND,
+              'first'
+            ),
             saved: Date.now(),
           };
-
-          // Truncate to conserve memory
-          const childKeys = Object.keys(merged.children);
-          if (childKeys.length > MAX_POSTS_IN_MEMORY) {
-            const keysToKeep = childKeys.slice(0, MAX_POSTS_IN_MEMORY);
-            merged.children = Object.fromEntries(
-              keysToKeep.map((key) => [key, merged.children[key]])
-            );
-          }
 
           return merged;
         }
@@ -333,10 +377,17 @@ export const listingsApi = redditApi.injectEndpoints({
           return {
             ...currentCache,
             after: newData.after, // Update after cursor
-            children: {
-              ...currentCache.children,
-              ...newData.children,
-            },
+            // Trim from the head: the user is scrolling down, so the oldest
+            // keys are the ones furthest behind them. See MAX_POSTS_APPEND for
+            // why this cap is high enough that it should never bind mid-read.
+            children: trimChildren(
+              {
+                ...currentCache.children,
+                ...newData.children,
+              },
+              MAX_POSTS_APPEND,
+              'last'
+            ),
             saved: Date.now(),
           };
         }
