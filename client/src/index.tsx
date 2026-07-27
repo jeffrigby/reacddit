@@ -10,7 +10,6 @@ import { scrollToPosition } from './common';
 import './styles/bootstrap.scss';
 import './styles/main.scss';
 import Root from './components/layout/Root';
-import reportWebVitals from './reportWebVitals';
 
 const { hash, search } = window.location;
 
@@ -107,5 +106,3 @@ if (parsed.has('login') || parsed.has('logout')) {
     </Provider>
   );
 }
-
-reportWebVitals();
