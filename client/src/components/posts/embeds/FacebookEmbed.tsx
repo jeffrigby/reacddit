@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useIntersectionObservers } from '@/contexts/IntersectionObserverContext';
+import { usePostContext } from '@/contexts';
 
 interface FacebookEmbedProps {
   url: string;
@@ -25,9 +25,15 @@ declare global {
  */
 function FacebookEmbed({ url }: FacebookEmbedProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(true);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);
-  const { observeForMediaControl } = useIntersectionObservers();
+
+  // Visibility comes from the post, not from a media-control observer of our
+  // own. Post.tsx already folds `!isActive` into `fullyOffScreen`, so reading
+  // it here is what makes this embed (and its third-party iframe and its
+  // ResizeObserver) go quiet while the post-detail overlay has this listing
+  // tree suspended.
+  const { fullyOffScreen } = usePostContext();
+  const isVisible = !fullyOffScreen;
 
   // Reset measured height on window resize (embeds are responsive)
   useEffect(() => {
@@ -65,23 +71,6 @@ function FacebookEmbed({ url }: FacebookEmbedProps): React.JSX.Element {
     };
   }, [isVisible]);
 
-  // Unload embed when off screen
-  useEffect(() => {
-    if (!containerRef.current) {
-      return undefined;
-    }
-
-    const cleanup = observeForMediaControl(
-      containerRef.current,
-      (isOffScreen) => {
-        // When fully off screen, unmount the embed
-        setIsVisible(!isOffScreen);
-      }
-    );
-
-    return cleanup;
-  }, [observeForMediaControl, url]);
-
   // Load and process Facebook embed
   useEffect(() => {
     if (!isVisible) {
@@ -113,23 +102,35 @@ function FacebookEmbed({ url }: FacebookEmbedProps): React.JSX.Element {
     }
   }, [url, isVisible]);
 
+  // Reserve the last measured height on the OUTER box, which is not the
+  // observed element, so it cannot feed back into measuredHeight. This holds
+  // the layout across the placeholder -> embed swap: React re-mounts an empty
+  // `.fb-post` div (0px until FB.XFBML.parse fills it), which would otherwise
+  // collapse the listing every time the post-detail overlay closes over a
+  // visible embed.
+  const reservedHeight = measuredHeight > 0 ? `${measuredHeight}px` : undefined;
+
   return (
-    <div ref={containerRef} style={{ maxWidth: '500px', margin: '0 auto' }}>
-      {isVisible ? (
-        <div
-          className="fb-post"
-          data-href={url}
-          data-show-text="true"
-          data-width="500"
-        />
-      ) : (
-        <div
-          style={{
-            height: measuredHeight > 0 ? `${measuredHeight}px` : '600px',
-            minHeight: '600px',
-          }}
-        />
-      )}
+    <div
+      style={{ maxWidth: '500px', margin: '0 auto', minHeight: reservedHeight }}
+    >
+      <div ref={containerRef}>
+        {isVisible ? (
+          <div
+            className="fb-post"
+            data-href={url}
+            data-show-text="true"
+            data-width="500"
+          />
+        ) : (
+          <div
+            style={{
+              height: measuredHeight > 0 ? `${measuredHeight}px` : '600px',
+              minHeight: '600px',
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
