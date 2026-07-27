@@ -246,10 +246,23 @@ export function unfocusIFrame(): void {
   }
 }
 
+/**
+ * Resume autoplay for videos the user can actually see.
+ *
+ * Scoped to `.entry.on-screen` (Post applies `on-screen` to the entry element
+ * from the visibility observer). The unscoped selector played EVERY video in
+ * the listing on every throttled scroll tick, which both buffered minutes of
+ * off-screen media and re-started videos VideoComp had just paused for being
+ * off-screen. This is still needed even though VideoComp's autoPlay attribute
+ * is now visibility-gated: re-adding the attribute does not restart a video
+ * (the HTML "can autoplay" flag is one-shot), so this is the path that resumes
+ * a video scrolled back into view. `.manual-stop` remains the user opt-out and
+ * getActiveEntriesContainer() keeps this out of the suspended background tree.
+ */
 export function autoPlayVideos(): void {
   const videoCollection =
     getActiveEntriesContainer().querySelectorAll<HTMLVideoElement>(
-      'video:not(.manual-stop)'
+      '.entry.on-screen video:not(.manual-stop)'
     );
   if (videoCollection.length !== 0) {
     const videos = Array.from(videoCollection);

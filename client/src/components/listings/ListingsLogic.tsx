@@ -163,6 +163,9 @@ function ListingsLogic({ saved = 0 }: ListingsLogicProps) {
 
     unfocusIFrame();
 
+    // Only resumes videos inside on-screen entries; VideoComp's autoPlay
+    // attribute covers videos that mount already visible, this covers the ones
+    // scrolled back into view.
     if (settings.autoplay) {
       autoPlayVideos();
     }
