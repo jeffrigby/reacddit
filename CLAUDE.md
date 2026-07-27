@@ -74,6 +74,34 @@ Per-workspace commands are documented in `client/CLAUDE.md` and `api/CLAUDE.md`.
 - `api/.env` - Reddit OAuth credentials
 - `client/.env` - Vite build config
 
+## TypeScript (dual install — do not "fix" this)
+
+Root `package.json` deliberately uses npm aliases:
+
+```json
+"@typescript/native": "npm:typescript@^7.0.2",
+"typescript": "npm:@typescript/typescript6@^6.0.2"
+```
+
+TypeScript 7 (the Go rewrite) ships **no programmatic compiler API** — its `.` export is
+just a version string. typescript-eslint peers on `typescript >=4.8.4 <6.1.0` and imports
+the API directly, so a plain `typescript@^7` bump silently kills all type-aware linting.
+
+The aliases give both: `tsc` → TS 7 (used by every `type-check` script, ~7x faster), `tsc6`
+→ TS 6, and `import 'typescript'` → the TS 6 API that typescript-eslint needs. This is
+Microsoft's documented side-by-side recipe.
+
+- The alias *keys* matter. `@typescript/typescript6` pulls real TS 6 in as `@typescript/old`,
+  which also declares `bin.tsc`. `@typescript/native` sorts before `@typescript/old`, so npm
+  links `.bin/tsc` to TS 7. Renaming that key can silently flip `tsc` back to TS 6 —
+  verify with `npx tsc --version` after any dependency change.
+- Changing these aliases requires a clean `rm -rf node_modules package-lock.json && npm install`;
+  npm will not re-resolve an alias on an incremental install.
+- Vite/esbuild does the production build and never invokes `tsc`, so this is type-check +
+  editor tooling only.
+- Revisit when typescript-eslint supports TS 7 (blocked on the TS 7.1 API; not on their
+  9.0.0 milestone as of July 2026). Then drop the aliases and set `"typescript": "^7"`.
+
 ## Important Notes
 
 - **OAuth setup:** Use `npm run setup` wizard (handles domain/port/credentials automatically)
