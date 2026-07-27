@@ -49,17 +49,6 @@ React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embe
 - `src/reddit/redditApiTs.ts` - ONLY infrastructure (axios, auth, tokens)
 - Endpoint files - Business logic (URLs, params, HTTP methods)
 
-**File Organization:**
-- Feature-based: `src/components/[feature]/`
-- Presentational/container separation
-- Keep related files together
-
-**Performance:**
-- `React.memo` for expensive renders
-- RTK Query auto request deduplication
-- Debounce search inputs
-- Lazy-load routes/components
-
 **Embed System:**
 - Plugin-based: `src/components/posts/embeds/domains/` (one file per domain — YouTube, Twitter, Reddit, Imgur, Facebook, Instagram, etc.)
 - Entry point: `src/components/posts/embeds/index.ts`; handlers load dynamically via `import.meta.glob`
@@ -89,9 +78,3 @@ React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embe
 - Entry DOM ids are duplicated across trees while the overlay is open — use
   `findEntry`/`getActiveEntriesContainer` from `PostsFunctions.ts`, never a bare
   `document.getElementById`
-
-## Error Handling
-
-- Try/catch for async operations
-- Descriptive error messages
-- Status properties in state for loading/error states
