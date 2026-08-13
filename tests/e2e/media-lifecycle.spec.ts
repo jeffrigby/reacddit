@@ -190,20 +190,25 @@ test.describe('Media lifecycle', () => {
       timeout: 30_000,
     });
 
-    const belowBand = await page.evaluate(() => {
-      const rows: { id: string; iframes: number }[] = [];
-      document.querySelectorAll('#entries .entry').forEach((entry) => {
-        const rect = entry.getBoundingClientRect();
-        // 900 > the 800px mount band, so anything sampled is genuinely past it.
-        if (rect.top > window.innerHeight + 900) {
-          rows.push({
-            id: entry.id,
-            iframes: entry.querySelectorAll('iframe').length,
-          });
-        }
+    const sampleBelowBand = async (): Promise<
+      { id: string; iframes: number }[]
+    > =>
+      page.evaluate(() => {
+        const rows: { id: string; iframes: number }[] = [];
+        document.querySelectorAll('#entries .entry').forEach((entry) => {
+          const rect = entry.getBoundingClientRect();
+          // 900 > the 800px mount band, so anything sampled is genuinely past it.
+          if (rect.top > window.innerHeight + 900) {
+            rows.push({
+              id: entry.id,
+              iframes: entry.querySelectorAll('iframe').length,
+            });
+          }
+        });
+        return rows;
       });
-      return rows;
-    });
+
+    const belowBand = await sampleBelowBand();
 
     if (belowBand.length === 0) {
       test.info().annotations.push({
@@ -219,7 +224,19 @@ test.describe('Media lifecycle', () => {
       description: `${belowBand.length} entries past the band in r/${sub}`,
     });
 
-    expect(belowBand.filter((e) => e.iframes > 0)).toEqual([]);
+    // Polled, not sampled once — same reason as the video test above. An entry
+    // that mounted its iframe while it sat inside the band can be pushed past
+    // this 900px line by images resolving above it, and the teardown only runs
+    // on the next IntersectionObserver delivery. The invariant is that an entry
+    // past the band ENDS UP holding no iframe.
+    await expect
+      .poll(
+        async () => (await sampleBelowBand()).filter((e) => e.iframes > 0),
+        {
+          timeout: 10_000,
+        }
+      )
+      .toEqual([]);
   });
 
   test('a listing suspended behind the overlay holds no iframes', async ({
