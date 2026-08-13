@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
   BACKGROUND_ENTRIES,
-  bodyScrollTop,
+  expectAnchorPreserved,
   expectEntriesPrefix,
   loadMorePosts,
   openOverlay,
@@ -49,8 +49,7 @@ test.describe('Post overlay routing (mobile)', () => {
       expect(Math.abs(box.width - viewport.width)).toBeLessThanOrEqual(2);
     }
 
-    // Body is scroll-locked; scrolling the overlay never moves the body.
-    const bodyBefore = await bodyScrollTop(page);
+    // Body is scroll-locked; scrolling the overlay never moves the background.
     const scrollable = await overlay.evaluate(
       (el) => el.scrollHeight > el.clientHeight
     );
@@ -61,7 +60,10 @@ test.describe('Post overlay routing (mobile)', () => {
     if (scrollable) {
       expect(overlayScroll).toBeGreaterThan(0);
     }
-    expect(await bodyScrollTop(page)).toBe(bodyBefore);
+    // Asserted on the anchor rather than body.scrollTop: media still settling
+    // in the background moves scrollTop on its own, which an exact-equality
+    // check reads as a scroll-lock failure.
+    await expectAnchorPreserved(page, BACKGROUND_ENTRIES, state, 5);
 
     // Back restores the list, its entries, and the scroll offset.
     await page.goBack();
@@ -70,8 +72,6 @@ test.describe('Post overlay routing (mobile)', () => {
     await expect(page.locator('#entries .entry').first()).toBeVisible();
     await expect(page.locator(BACKGROUND_ENTRIES)).toHaveCount(0);
     await expectEntriesPrefix(page, '#entries', state.ids);
-    expect(
-      Math.abs((await bodyScrollTop(page)) - state.scrollTop)
-    ).toBeLessThan(60);
+    await expectAnchorPreserved(page, '#entries', state);
   });
 });
