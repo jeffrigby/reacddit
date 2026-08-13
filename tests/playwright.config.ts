@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, devices } from '@playwright/test';
@@ -8,6 +8,19 @@ const dir = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(dir, '.env') });
 
 export const AUTH_FILE = resolve(dir, 'e2e', '.auth', 'user.json');
+
+/**
+ * Seed the setup project with any state we already have.
+ *
+ * The app's own `token` cookie lives for SESSION_LENGTH_SECS (7 days), but the
+ * reddit.com session cookies saved alongside it last far longer. Starting setup
+ * from a blank context throws that session away and forces a full credential
+ * login against reddit.com every time the app token lapses — which is the step
+ * Reddit challenges, and it surfaces as a bare "Invalid email or password".
+ * Reusing the state lets an unexpired reddit.com session carry the OAuth
+ * handshake without typing credentials at all.
+ */
+const seedState = existsSync(AUTH_FILE) ? AUTH_FILE : undefined;
 
 function loadBaseURL(): string {
   if (process.env['BASE_URL']) {
@@ -61,7 +74,7 @@ export default defineConfig({
     {
       name: 'setup',
       testMatch: /auth\.setup\.ts/,
-      use: { channel: 'chrome' },
+      use: { channel: 'chrome', storageState: seedState },
     },
     {
       name: 'anonymous',

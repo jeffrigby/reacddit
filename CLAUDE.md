@@ -72,6 +72,14 @@ Microsoft's documented side-by-side recipe.
 - **Reddit API types:** Centralized in `client/src/types/redditApi.ts` (flag if incomplete)
 - **Dev URL:** https://dev.reacdd.it/ (NEVER use localhost URLs)
 - **Not implemented:** Creating posts/comments (viewing, voting, saving work)
+- **Broken upstream — adding a subreddit to a custom feed:** the client talks to
+  `https://oauth.reddit.com` directly from the browser (`client/src/reddit/redditApiTs.ts`),
+  and Reddit's response to `PUT /api/multi/<path>/r/<sub>` carries no CORS headers, so the
+  mutation never persists. Creating, listing and deleting feeds are unaffected — it is only
+  the add-subreddit call. Nothing in this repo can fix it; routing that one call through the
+  `api/` workspace would be the workaround if it ever becomes worth doing. The e2e test is
+  `test.fixme`'d as a canary (see `tests/CLAUDE.md`), so do not "fix" it by rewriting the
+  assertions.
 - **Standalone tool:** `reddit-api-tester/` is NOT an npm workspace — install/run it separately (see its CLAUDE.md)
 - **Branching:** feature branches PR into `develop` (long-lived integration branch — never delete it); `develop` merges to `main` for releases
 - **Dev server:** started by the user (requires sudo — binds port 443). Never start/stop/restart it from a session; if it's needed, ask
