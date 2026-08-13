@@ -61,7 +61,12 @@ test.describe('Keyboard Shortcuts', () => {
       page.keyboard.press('l'),
     ]);
     if (lPopup) {
-      expect(lPopup.url()).toBeTruthy();
+      // `openLink` uses window.open(..., 'noopener'), so the popup surfaces
+      // before its navigation commits — url() is '' (or 'about:blank') until
+      // then. Poll rather than reading it on the popup event.
+      await expect
+        .poll(() => lPopup.url(), { timeout: 10_000 })
+        .not.toMatch(/^(about:blank)?$/);
       await lPopup.close();
     }
 
@@ -71,7 +76,10 @@ test.describe('Keyboard Shortcuts', () => {
       page.keyboard.press('o'),
     ]);
     if (oPopup) {
-      expect(oPopup.url()).toContain('reddit.com');
+      // Same deferred-navigation race as the `l` popup above.
+      await expect
+        .poll(() => oPopup.url(), { timeout: 10_000 })
+        .toContain('reddit.com');
       await oPopup.close();
     }
 
