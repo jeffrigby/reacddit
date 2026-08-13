@@ -352,7 +352,24 @@ function VideoComp({ link = '', content }: VideoCompProps) {
   // watchdog below: that timer only runs once playback was requested, so with
   // the autoplay setting off a broken source would otherwise render as a
   // permanently black box with no message and no direct link.
+  //
+  // React attaches `error` listeners to <source> elements and propagates them
+  // up the React tree, so this handler ALSO sees a single failed candidate -
+  // and a failed candidate is not a failed element. Safari/iOS get an HLS
+  // source ahead of the MP4 fallback (redditVideoPreview), so reporting on the
+  // raw event flashes "Unable to load this video" on a clip that then plays
+  // fine from the fallback. Only report once the element itself has given up:
+  // either it stored a MediaError, or resource selection ran out of candidates
+  // (NETWORK_NO_SOURCE, which the spec sets before queueing the error task).
   const eventError = () => {
+    const video = videoRef.current;
+    if (
+      !video ||
+      (!video.error &&
+        video.networkState !== HTMLMediaElement.NETWORK_NO_SOURCE)
+    ) {
+      return;
+    }
     setShowLoadError(true);
   };
 
