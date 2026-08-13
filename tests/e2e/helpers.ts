@@ -246,7 +246,13 @@ export async function openOverlay(
   // the opened thread cannot fail on a zero-comment post.
   const commentCounts = await listEntries.evaluateAll((els) =>
     els.map((el) => {
-      const link = el.querySelector('a[href*="/comments/"]');
+      // Select the comment-count link by its icon, NOT by href. An entry holds
+      // several /comments/ links (title, permalink, "open on reddit"), and the
+      // first one in DOM order can be the title — whose digits then read as a
+      // count. A post titled "A huge Soviet K700 tractor" scored 700 comments
+      // and opened a thread with none, which is exactly what the >= 3 filter
+      // below exists to prevent.
+      const link = el.querySelector('a:has(svg[data-icon="comment"])');
       const match = link?.textContent?.match(/[\d.]+[KMBT]?/);
       if (!match) return 0;
       const n = parseFloat(match[0]);
