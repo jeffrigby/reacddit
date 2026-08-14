@@ -5,6 +5,21 @@ All notable changes to Reacddit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Off-screen videos no longer play or buffer: the `autoPlay` attribute is gated on visibility, `preload` is now set (it was absent entirely), and autoplay resumption is scoped to on-screen entries
+- Embedded iframes mount within a narrow band around the viewport and are reclaimed once scrolled past, instead of staying mounted for the life of the listing
+- A listing tree suspended behind the post-detail overlay no longer runs its scroll sweep, and its social embeds are torn down with the rest of the tree
+
+### Fixed
+
+- Broken video sources surface the load-error message again regardless of the autoplay setting
+- Imgur `.gifv`/`.mp4` posts have a poster frame instead of painting black before metadata loads
+- The infinite-scroll cache is bounded on the append path (it was capped only when streaming)
+- `refreshTrigger` no longer gains a permanent entry per navigation; removed the write-only `subredditsByLocation` state
+
 ## [1.5.0] - 2026-07-14
 
 ### Added

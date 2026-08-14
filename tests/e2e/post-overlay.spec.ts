@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import {
   BACKGROUND_ENTRIES,
-  bodyScrollTop,
+  expectAnchorPreserved,
   expectEntriesPrefix,
   loadDeepList,
   openOverlay,
@@ -65,9 +65,8 @@ test.describe('Post overlay routing', () => {
       () => getComputedStyle(document.body).overflow
     );
     expect(overflow).toBe('hidden');
-    expect(
-      Math.abs((await bodyScrollTop(page)) - state.scrollTop)
-    ).toBeLessThan(5);
+    // Nothing should move the background while the overlay owns the screen.
+    await expectAnchorPreserved(page, BACKGROUND_ENTRIES, state, 5);
   });
 
   test('browser back closes the overlay and restores the list without a reload flash', async ({
@@ -91,10 +90,8 @@ test.describe('Post overlay routing', () => {
     // Same first DOM node persisted through the whole trip → no remount / flash.
     await expect(listEntries.first()).toHaveAttribute('data-e2e-persist', '1');
 
-    // Scroll position restored (small tolerance for sub-pixel/layout settling).
-    expect(
-      Math.abs((await bodyScrollTop(page)) - state.scrollTop)
-    ).toBeLessThan(60);
+    // Scroll position restored — the opened post is back where it was.
+    await expectAnchorPreserved(page, '#entries', state);
   });
 
   test('direct load of a comments URL renders standalone (no overlay)', async ({
@@ -316,9 +313,7 @@ test.describe('Post overlay routing', () => {
     await page.goBack();
     await expect(page.locator('#post-overlay')).toHaveCount(0);
     await expectEntriesPrefix(page, '#entries', state.ids);
-    expect(
-      Math.abs((await bodyScrollTop(page)) - state.scrollTop)
-    ).toBeLessThan(60);
+    await expectAnchorPreserved(page, '#entries', state);
   });
 
   test('direct load of a duplicates URL renders standalone', async ({

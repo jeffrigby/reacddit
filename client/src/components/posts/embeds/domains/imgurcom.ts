@@ -93,6 +93,11 @@ async function render(
       width,
       height,
       sources,
+      // Imgur serves the cover frame of any id as .jpg (same trick as getMP4
+      // above). Without it the video element has no poster, and since it is
+      // only asked to fetch when it scrolls into view the post would paint as
+      // a black box until the metadata request comes back.
+      thumb: `https://i.imgur.com/${id}.jpg`,
       imgurRenderType: 'imgurGifVPath',
       hasAudio: true,
     };
@@ -107,6 +112,7 @@ async function render(
       width,
       height,
       sources,
+      thumb: `https://i.imgur.com/${id}.jpg`,
       imgurRenderType: 'imgurMP4Path',
     };
   }

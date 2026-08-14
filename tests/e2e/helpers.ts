@@ -204,6 +204,14 @@ export interface OverlayOpenState {
   scrollTop: number;
   /** Ordered `id`s of the list entries before opening. */
   ids: string[];
+  /** `id` of the entry that was opened — the visual anchor for `expectAnchorPreserved`. */
+  anchorId: string;
+  /**
+   * The anchor entry's top edge relative to the VIEWPORT, captured alongside
+   * `scrollTop`. This, not `scrollTop`, is the quantity that survives the round
+   * trip — see `expectAnchorPreserved`.
+   */
+  anchorTop: number;
 }
 
 export interface OpenOverlayOptions {
@@ -238,7 +246,13 @@ export async function openOverlay(
   // the opened thread cannot fail on a zero-comment post.
   const commentCounts = await listEntries.evaluateAll((els) =>
     els.map((el) => {
-      const link = el.querySelector('a[href*="/comments/"]');
+      // Select the comment-count link by its icon, NOT by href. An entry holds
+      // several /comments/ links (title, permalink, "open on reddit"), and the
+      // first one in DOM order can be the title — whose digits then read as a
+      // count. A post titled "A huge Soviet K700 tractor" scored 700 comments
+      // and opened a thread with none, which is exactly what the >= 3 filter
+      // below exists to prevent.
+      const link = el.querySelector('a:has(svg[data-icon="comment"])');
       const match = link?.textContent?.match(/[\d.]+[KMBT]?/);
       if (!match) return 0;
       const n = parseFloat(match[0]);
@@ -285,7 +299,56 @@ export async function openOverlay(
   const scrollTop = await bodyScrollTop(page);
   expect(scrollTop).toBeGreaterThan(minScroll);
 
-  return { url: page.url(), scrollTop, ids };
+  // The anchor: where the opened post sits on screen. Captured from the
+  // BACKGROUND tree, which is where the list lives once the overlay is up.
+  const anchorId = ids[pick];
+  const anchorTop = await entryTop(page, BACKGROUND_ENTRIES, anchorId);
+
+  return { url: page.url(), scrollTop, ids, anchorId, anchorTop };
+}
+
+/** Top edge of entry `id` inside `container`, relative to the viewport. */
+async function entryTop(
+  page: Page,
+  container: string,
+  id: string
+): Promise<number> {
+  return page
+    .locator(`${container} [id="${id}"]`)
+    .first()
+    .evaluate((el) => el.getBoundingClientRect().top);
+}
+
+/**
+ * Assert the list is still visually where the user left it.
+ *
+ * Compares the ANCHOR ENTRY's offset from the top of the viewport, NOT
+ * `document.body.scrollTop`. Raw scrollTop is not a stable quantity across this
+ * round trip: images above the viewport are still decoding, and each one that
+ * resolves reflows everything below it — a fully-read /r/pics list was measured
+ * growing ~243px mid-test, which Chrome's scroll anchoring then compensates for
+ * by moving scrollTop the same way. Asserting on scrollTop therefore measures
+ * how much media happened to settle during the test, not whether the feature
+ * works, and it fails or passes with whatever Reddit is serving that hour.
+ *
+ * The invariant the feature actually promises is that the post you left from is
+ * still where you left it. That holds regardless of reflow above it.
+ */
+export async function expectAnchorPreserved(
+  page: Page,
+  container: string,
+  state: OverlayOpenState,
+  tolerance = 60
+): Promise<void> {
+  await expect
+    .poll(
+      async () =>
+        Math.abs(
+          (await entryTop(page, container, state.anchorId)) - state.anchorTop
+        ),
+      { timeout: 10_000 }
+    )
+    .toBeLessThan(tolerance);
 }
 
 /**

@@ -1,7 +1,7 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '@/types/redux';
-import type { Thing, LinkData, SubredditData } from '@/types/redditApi';
+import type { Thing, LinkData } from '@/types/redditApi';
 import type { ListingsFilter, ListingsState } from '@/types/listings';
 
 const MAX_HISTORY_LOCATIONS = 7;
@@ -28,10 +28,6 @@ interface LocationData {
   status: ListingsStatus;
 }
 
-interface CachedSubredditData extends SubredditData {
-  saved: number;
-}
-
 interface CachedListingsState extends ListingsState {
   saved: number;
 }
@@ -39,12 +35,21 @@ interface CachedListingsState extends ListingsState {
 export interface ListingsSliceState {
   currentFilter: ListingsFilter;
   listingsByLocation: Record<string, LocationData>;
-  subredditsByLocation: Record<string, CachedSubredditData>;
   uiStateByLocation: Record<string, CachedListingsState>;
   refreshTrigger: Record<string, number>; // locationKey -> timestamp
 }
-function pruneLocationData<T extends { saved: number }>(
+
+/**
+ * Drop all but the `maxKeys` most recently touched entries, and anything older
+ * than `maxAgeSeconds`. Every map in this slice is keyed by history location
+ * key, so without this they gain one permanent entry per navigation.
+ *
+ * `getSaved` exists because the timestamp lives in a different place per map:
+ * the object maps carry a `saved` field, `refreshTrigger` IS the timestamp.
+ */
+function pruneByRecency<T>(
   data: Record<string, T>,
+  getSaved: (value: T) => number,
   maxKeys: number,
   maxAgeSeconds: number
 ): Record<string, T> {
@@ -53,12 +58,12 @@ function pruneLocationData<T extends { saved: number }>(
   const newData: Record<string, T> = {};
 
   const validEntries = Object.entries(data).filter(([_key, value]) => {
-    const elapsed = now - value.saved;
+    const elapsed = now - getSaved(value);
     return elapsed <= maxAgeMs;
   });
 
   const sortedEntries = validEntries
-    .sort((a, b) => b[1].saved - a[1].saved)
+    .sort((a, b) => getSaved(b[1]) - getSaved(a[1]))
     .slice(0, maxKeys);
 
   sortedEntries.forEach(([key, value]) => {
@@ -68,6 +73,15 @@ function pruneLocationData<T extends { saved: number }>(
   return newData;
 }
 
+/** `pruneByRecency` for the maps whose values carry their own `saved` stamp. */
+function pruneLocationData<T extends { saved: number }>(
+  data: Record<string, T>,
+  maxKeys: number,
+  maxAgeSeconds: number
+): Record<string, T> {
+  return pruneByRecency(data, (value) => value.saved, maxKeys, maxAgeSeconds);
+}
+
 const initialState: ListingsSliceState = {
   currentFilter: {
     listType: 'r',
@@ -75,7 +89,6 @@ const initialState: ListingsSliceState = {
     sort: 'hot',
   },
   listingsByLocation: {},
-  subredditsByLocation: {},
   uiStateByLocation: {},
   refreshTrigger: {},
 };
@@ -123,11 +136,33 @@ const listingsSlice = createSlice({
       } else {
         state.listingsByLocation[locationKey].status = status;
       }
+
+      // Deliberately NOT pruned, unlike every other map in this slice. This is
+      // the only writer, and it only fires when a listing's locationKey or
+      // status string actually changes - a mounted-but-idle tree never
+      // re-stamps its key. While the post-detail overlay is open the background
+      // tree is exactly that: frozen at 'loaded' while each in-overlay
+      // navigation writes a fresh key. Any recency/age prune therefore evicts
+      // the key of a tree that is still mounted and about to be shown again,
+      // and consumers read a missing key as 'unloaded': Reload renders the
+      // refresh button disabled and Post drops every post hotkey (x/o/l/d).
+      // The entries are a handful of scalars, so this map is not worth the
+      // risk of bounding.
     },
 
     refreshRequested(state, action: PayloadAction<{ locationKey: string }>) {
       const { locationKey } = action.payload;
       state.refreshTrigger[locationKey] = Date.now();
+
+      // The value here IS the timestamp, so prune on the value itself. Losing
+      // a key is harmless: `selectRefreshTrigger` falls back to 0 and the
+      // consumer only reacts to a trigger that both changed and is > 0.
+      state.refreshTrigger = pruneByRecency(
+        state.refreshTrigger,
+        (timestamp) => timestamp,
+        MAX_HISTORY_LOCATIONS,
+        MAX_HISTORY_TIME_SECONDS
+      );
     },
   },
 });
@@ -141,8 +176,6 @@ export const {
 
 const selectListingsByLocation = (state: RootState) =>
   state.listings?.listingsByLocation ?? {};
-const selectSubredditsByLocation = (state: RootState) =>
-  state.listings?.subredditsByLocation ?? {};
 const selectUiStateByLocation = (state: RootState) =>
   state.listings?.uiStateByLocation ?? {};
 export const selectCurrentFilter = (state: RootState): ListingsFilter =>
@@ -186,17 +219,6 @@ export const selectListingStatus = createSelector(
 
 export const selectRefreshTrigger = (state: RootState, locationKey: string) =>
   state.listings?.refreshTrigger?.[locationKey] ?? 0;
-
-export const selectSubredditData = createSelector(
-  [
-    selectSubredditsByLocation,
-    (_state: RootState, locationKey: string) => locationKey,
-  ],
-  (subredditsByLocation, locationKey) => {
-    const key = locationKey ?? 'front';
-    return subredditsByLocation[key] ?? {};
-  }
-);
 
 export const selectUiState = createSelector(
   [
