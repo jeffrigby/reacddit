@@ -9,13 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- E2E coverage for the bounded-media behaviour: off-screen video teardown, the embed-mount band, and iframe release in a listing suspended behind the overlay
+- E2E coverage for the bounded-media behaviour: off-screen video pausing, the embed-mount band, and iframe release in a listing suspended behind the overlay
 
 ### Changed
 
 - Off-screen videos no longer play or buffer: the `autoPlay` attribute is gated on visibility, `preload` is now set (it was absent entirely), and autoplay resumption is scoped to on-screen entries
 - Embedded iframes mount within a narrow band around the viewport and are reclaimed once scrolled past, instead of staying mounted for the life of the listing
-- A listing tree suspended behind the post-detail overlay no longer runs its scroll sweep, and its social embeds are torn down with the rest of the tree
+- A listing tree suspended behind the post-detail overlay no longer runs its scroll sweep, and its social embeds unmount along with its iframes while it is suspended
 - Type-checking runs on TypeScript 7 (the Go rewrite) via a side-by-side install, with TypeScript 6 retained for type-aware ESLint
 - Minor dependency updates
 - Documented the upstream CORS limitation that prevents adding a subreddit to a custom feed
@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Broken video sources surface the load-error message again regardless of the autoplay setting, and a failed source candidate no longer reports an error when a later fallback source plays
 - Imgur `.gifv`/`.mp4` posts have a poster frame instead of painting black before metadata loads
 - The infinite-scroll cache is bounded on the append path (it was capped only when streaming)
-- `refreshTrigger` no longer gains a permanent entry per navigation; removed the write-only `subredditsByLocation` state
+- `refreshTrigger` no longer gains a permanent entry per navigation; removed the unused `subredditsByLocation` state
 - Stabilized E2E assertions against live content: overlay scroll preservation is measured on an anchor entry rather than raw `body.scrollTop`, hotkey popup navigation is polled, and the comment-count heuristic selects by icon instead of matching digits in an href
 - Auth setup reuses a saved Reddit session instead of forcing a full credential login whenever the app token lapses
 
@@ -74,6 +74,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Flaky E2E tests stabilized with dynamic content discovery
 
 ## [1.3.1] - 2026-03-19
+
+> Shipped as git tag `v1.3.0` (tagged 2026-03-19). The `v1.3.1` tag marks an
+> intermediate commit inside this release, not its end, so this entry's compare
+> link uses commit SHAs rather than tag names.
 
 ### Changed
 
@@ -347,8 +351,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [1.6.0]: https://github.com/jeffrigby/reacddit/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/jeffrigby/reacddit/compare/v1.4.0...v1.5.0
-[1.4.0]: https://github.com/jeffrigby/reacddit/compare/v1.3.1...v1.4.0
-[1.3.1]: https://github.com/jeffrigby/reacddit/compare/v1.3.0...v1.3.1
+[1.4.0]: https://github.com/jeffrigby/reacddit/compare/v1.3.0...v1.4.0
+[1.3.1]: https://github.com/jeffrigby/reacddit/compare/97c778c07deb9c533f8affa9215554f6fac38efe...4e9cf5b16a2c40d3011101d891ec5caa6b24a488
 [1.3.0]: https://github.com/jeffrigby/reacddit/compare/1.2.1...1.3.0
 [1.2.1]: https://github.com/jeffrigby/reacddit/compare/release/1.2...1.2.1
 [1.2.0]: https://github.com/jeffrigby/reacddit/compare/1.1.0...release/1.2
