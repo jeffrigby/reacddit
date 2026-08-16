@@ -62,11 +62,6 @@ function IFrame({
     onLoad();
   }, [onLoad]);
 
-  // Block non-https protocols (javascript:, data:, vbscript:, etc.)
-  if (!isSafeUrl(src, true)) {
-    return null;
-  }
-
   // Mount the iframe only while the post sits in the embed-mount band, so
   // scrolling away actually reclaims it, and unmount it outright while this
   // listing tree is suspended behind the post-detail overlay.
@@ -80,6 +75,25 @@ function IFrame({
   // bounded - so embeds are still painted before they are scrolled to instead
   // of spinning on arrival.
   const shouldRenderIframe = isLoaded && isActive && inMountBand;
+
+  // Only the <iframe> child is unmounted when the band drops it - the wrappers
+  // below have to stay, because contRef is the element the observer watches. So
+  // this component survives teardown and `iframeLoaded` survives with it, and
+  // without this reset the NEXT iframe renders with `loading-icon` already
+  // cleared: a fresh document loading against a bare black box, no spinner.
+  useEffect(() => {
+    if (!shouldRenderIframe) {
+      setIframeLoaded(false);
+    }
+  }, [shouldRenderIframe]);
+
+  // Block non-https protocols (javascript:, data:, vbscript:, etc.). This has to
+  // stay below every hook above - a conditional return cannot precede the reset
+  // effect - and it still runs before anything reads `src`, which the JSX below
+  // is the only place to do.
+  if (!isSafeUrl(src, true)) {
+    return null;
+  }
 
   return (
     <div ref={contRef} className="media-cont black-bg">
