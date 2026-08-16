@@ -191,10 +191,14 @@ test.describe('Media lifecycle', () => {
     });
 
     const sampleBelowBand = async (): Promise<
-      { id: string; iframes: number }[]
+      { id: string; iframes: number; releasedEmbed: boolean }[]
     > =>
       page.evaluate(() => {
-        const rows: { id: string; iframes: number }[] = [];
+        const rows: {
+          id: string;
+          iframes: number;
+          releasedEmbed: boolean;
+        }[] = [];
         document.querySelectorAll('#entries .entry').forEach((entry) => {
           const rect = entry.getBoundingClientRect();
           // 900 > the 800px mount band, so anything sampled is genuinely past it.
@@ -202,6 +206,20 @@ test.describe('Media lifecycle', () => {
             rows.push({
               id: entry.id,
               iframes: entry.querySelectorAll('iframe').length,
+              // An empty .media-ratio is an IFrame wrapper with no iframe in it:
+              // ImageComp always renders an <img> or .image-placeholder into its
+              // own, and VideoComp renders a <video> into its own for any loaded
+              // post (VideoComp.tsx:407 leaves it empty for an UNLOADED post,
+              // but Content only mounts it once shouldLoad has latched, so that
+              // state is unreachable here).
+              //
+              // Reported only, never asserted, and deliberately weak: it cannot
+              // tell "mounted then released" from "never mounted" - the wrapper
+              // looks identical either way. What it does separate is a run where
+              // entries past the band had embed slots at all from one where
+              // there was nothing to release, which is the difference between a
+              // meaningful pass and a trivial one.
+              releasedEmbed: !!entry.querySelector('.media-ratio:empty'),
             });
           }
         });
@@ -219,9 +237,10 @@ test.describe('Media lifecycle', () => {
       return;
     }
 
+    const released = belowBand.filter((e) => e.releasedEmbed).length;
     test.info().annotations.push({
       type: 'sampled',
-      description: `${belowBand.length} entries past the band in r/${sub}`,
+      description: `${belowBand.length} entries past the band in r/${sub}, ${released} with an empty embed slot at first sample (before the poll settles)`,
     });
 
     // Polled, not sampled once — same reason as the video test above. An entry
