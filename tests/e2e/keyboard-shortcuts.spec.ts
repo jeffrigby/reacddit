@@ -61,8 +61,22 @@ test.describe('Keyboard Shortcuts', () => {
       page.keyboard.press('l'),
     ]);
     if (lPopup) {
-      expect(lPopup.url()).toBeTruthy();
+      // `openLink` uses window.open(..., 'noopener'), so the popup surfaces
+      // before its navigation commits — url() is '' (or 'about:blank') until
+      // then. Poll rather than reading it on the popup event.
+      await expect
+        .poll(() => lPopup.url(), { timeout: 10_000 })
+        .not.toMatch(/^(about:blank)?$/);
       await lPopup.close();
+    } else {
+      // Soft-pass per tests/CLAUDE.md. `openLink` (Post.tsx:313) has no self-post
+      // check - it bails only when `isSafeUrl(linkData.url)` is false - so this
+      // branch is rarer than it looks. Annotated so a PERMANENTLY dead `l` shows
+      // up in the report instead of silently satisfying this test every run.
+      test.info().annotations.push({
+        type: 'reason',
+        description: 'l: no popup - link was missing or failed isSafeUrl',
+      });
     }
 
     // o opens the post on Reddit
@@ -71,8 +85,21 @@ test.describe('Keyboard Shortcuts', () => {
       page.keyboard.press('o'),
     ]);
     if (oPopup) {
-      expect(oPopup.url()).toContain('reddit.com');
+      // Same deferred-navigation race as the `l` popup above.
+      await expect
+        .poll(() => oPopup.url(), { timeout: 10_000 })
+        .toContain('reddit.com');
       await oPopup.close();
+    } else {
+      // `openReddit` (Post.tsx:309) has no content gate at all, but the handler
+      // around it does: it runs only for the actionable post, while hotkeyStatus()
+      // is true and listingsStatus is 'loaded'/'loadedAll' (Post.tsx:323), so a
+      // press landing during an autoload is dropped. One hit is timing; a run of
+      // them across runs means `o` is broken.
+      test.info().annotations.push({
+        type: 'reason',
+        description: 'o: no popup - press dropped, or openReddit is broken',
+      });
     }
 
     // . loads new entries (triggers refresh)

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useIntersectionObservers } from '@/contexts/IntersectionObserverContext';
+import { usePostContext } from '@/contexts';
 
 interface InstagramEmbedProps {
   url: string;
@@ -24,9 +24,15 @@ declare global {
  */
 function InstagramEmbed({ url }: InstagramEmbedProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(true);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);
-  const { observeForMediaControl } = useIntersectionObservers();
+
+  // Visibility comes from the post, not from a media-control observer of our
+  // own. Post.tsx already folds `!isActive` into `fullyOffScreen`, so reading
+  // it here is what makes this embed (and its third-party iframe and its
+  // ResizeObserver) go quiet while the post-detail overlay has this listing
+  // tree suspended.
+  const { fullyOffScreen } = usePostContext();
+  const isVisible = !fullyOffScreen;
 
   // Reset measured height on window resize (embeds are responsive)
   useEffect(() => {
@@ -64,23 +70,6 @@ function InstagramEmbed({ url }: InstagramEmbedProps): React.JSX.Element {
     };
   }, [isVisible]);
 
-  // Unload embed when off screen
-  useEffect(() => {
-    if (!containerRef.current) {
-      return undefined;
-    }
-
-    const cleanup = observeForMediaControl(
-      containerRef.current,
-      (isOffScreen) => {
-        // When fully off screen, unmount the embed
-        setIsVisible(!isOffScreen);
-      }
-    );
-
-    return cleanup;
-  }, [observeForMediaControl, url]);
-
   // Load and process Instagram embed
   useEffect(() => {
     if (!isVisible) {
@@ -105,34 +94,46 @@ function InstagramEmbed({ url }: InstagramEmbedProps): React.JSX.Element {
     }
   }, [url, isVisible]);
 
+  // Reserve the last measured height on the OUTER box, which is not the
+  // observed element, so it cannot feed back into measuredHeight. This holds
+  // the layout across the placeholder -> blockquote swap: React re-mounts an
+  // empty blockquote and embed.js needs a round-trip to fill it, which would
+  // otherwise collapse the listing every time the post-detail overlay closes
+  // over a visible embed.
+  const reservedHeight = measuredHeight > 0 ? `${measuredHeight}px` : undefined;
+
   return (
-    <div ref={containerRef} style={{ maxWidth: '540px', margin: '0 auto' }}>
-      {isVisible ? (
-        <blockquote
-          className="instagram-media"
-          data-instgrm-permalink={url}
-          data-instgrm-version="14"
-          style={{
-            background: '#FFF',
-            border: '0',
-            borderRadius: '3px',
-            boxShadow:
-              '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)',
-            margin: '1px',
-            maxWidth: '540px',
-            minWidth: '326px',
-            padding: '0',
-            width: 'calc(100% - 2px)',
-          }}
-        />
-      ) : (
-        <div
-          style={{
-            height: measuredHeight > 0 ? `${measuredHeight}px` : '400px',
-            minHeight: '400px',
-          }}
-        />
-      )}
+    <div
+      style={{ maxWidth: '540px', margin: '0 auto', minHeight: reservedHeight }}
+    >
+      <div ref={containerRef}>
+        {isVisible ? (
+          <blockquote
+            className="instagram-media"
+            data-instgrm-permalink={url}
+            data-instgrm-version="14"
+            style={{
+              background: '#FFF',
+              border: '0',
+              borderRadius: '3px',
+              boxShadow:
+                '0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)',
+              margin: '1px',
+              maxWidth: '540px',
+              minWidth: '326px',
+              padding: '0',
+              width: 'calc(100% - 2px)',
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              height: measuredHeight > 0 ? `${measuredHeight}px` : '400px',
+              minHeight: '400px',
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }

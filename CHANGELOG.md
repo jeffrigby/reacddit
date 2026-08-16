@@ -5,9 +5,124 @@ All notable changes to Reacddit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-08-14
+
+### Added
+
+- E2E coverage for the bounded-media behaviour: off-screen video pausing, the embed-mount band, and iframe release in a listing suspended behind the overlay
+
+### Changed
+
+- Off-screen videos no longer play or buffer: the `autoPlay` attribute is gated on visibility, `preload` is now set (it was absent entirely), and autoplay resumption is scoped to on-screen entries
+- Embedded iframes mount within a narrow band around the viewport and are reclaimed once scrolled past, instead of staying mounted for the life of the listing
+- A listing tree suspended behind the post-detail overlay no longer runs its scroll sweep, and its social embeds unmount along with its iframes while it is suspended
+- Type-checking runs on TypeScript 7 (the Go rewrite) via a side-by-side install, with TypeScript 6 retained for type-aware ESLint
+- Minor dependency updates
+- Documented the upstream CORS limitation that prevents adding a subreddit to a custom feed
+
+### Fixed
+
+- Broken video sources surface the load-error message again regardless of the autoplay setting, and a failed source candidate no longer reports an error when a later fallback source plays
+- Imgur `.gifv`/`.mp4` posts have a poster frame instead of painting black before metadata loads
+- The infinite-scroll cache is bounded on the append path (it was capped only when streaming)
+- `refreshTrigger` no longer gains a permanent entry per navigation; removed the unused `subredditsByLocation` state
+- Stabilized E2E assertions against live content: overlay scroll preservation is measured on an anchor entry rather than raw `body.scrollTop`, hotkey popup navigation is polled, and the comment-count heuristic selects by icon instead of matching digits in an href
+- Auth setup reuses a saved Reddit session instead of forcing a full credential login whenever the app token lapses
+
+### Removed
+
+- Unused web-vitals instrumentation
+
+## [1.5.0] - 2026-07-14
+
+### Added
+
+- Post-detail overlay: opening a post's comments now renders above the listing instead of navigating away, preserving scroll position, autoloaded pages, and keyboard-navigation focus; Back closes the overlay in place
+- Duplicates/cross-posts pages open in the same overlay
+- Playwright E2E coverage for the overlay (desktop and mobile Pixel 7 projects)
+
+### Changed
+
+- Memoized the background route tree so navigation inside the overlay (comment sort, load-more) no longer re-renders the listing behind it
+- Consolidated per-component logic into shared hooks (`useDetailNavState`, `useDocumentKeydown`, `useBodyScrollLock`)
+- Single-sourced overlay route patterns and Sass layout variables
+- Overhauled project documentation across all workspaces
+
+### Fixed
+
+- Live-stream polling stopping permanently after scrolling down the page
+- Comment-sort link resolution on post detail pages
+
+## [1.4.0] - 2026-07-05
+
+### Added
+
+- Playwright E2E test suite (anonymous and authenticated projects) with Vitest browser-mode component tests
+- Reddit API batching, caching, and share-link optimizations
+
+### Changed
+
+- Upgraded build toolchain: Vite 8 (Rolldown bundler), TypeScript 6, React Router 8.1, ESLint 10 with `@eslint-react`
+- Modernized React 19 patterns (Context as provider, title hoisting, error callbacks) and RTK 2.x slice selectors
+- Replaced query-string with native URLSearchParams; dropped copy-to-clipboard for a shared `useCopyToClipboard` hook; upgraded react-tooltip to v6
+- Removed dead CRA-era static HTML and cleaned up PWA assets
+
+### Fixed
+
+- Reddit cross-post embeds now resolve to i.redd.it media
+- useEffect bugs, silent failures, and type-safety issues found across two verified code-review passes
+- Flaky E2E tests stabilized with dynamic content discovery
+
+## [1.3.1] - 2026-03-19
+
+> Shipped as git tag `v1.3.0` (tagged 2026-03-19). The `v1.3.1` tag marks an
+> intermediate commit inside this release, not its end, so this entry's compare
+> link uses commit SHAs rather than tag names.
+
+### Changed
+
+- Replaced classnames with clsx and removed unused browserslist config
+- Optimized Vite 7 build configuration
+- Updated documentation for Node.js 24, Vite 7, and new API endpoints
+
+### Fixed
+
+- MeResponse type bug
+- Error logging, guard clauses, and test gaps from code review
+
+### Security
+
+- Completed an internal security audit remediation across client, API, and proxy: fixed all critical and high-severity findings plus extensive proxy hardening (headers, timeouts, privilege handling)
+
+## [1.3.0] - 2026-03-09
+
+### Added
+
+- Reddit share-link resolver API endpoint
+- Sandbox permissions so links inside embedded iframes can open in new tabs
+
+### Changed
+
+- Upgraded Lambda runtime to Node.js 24 and major dependencies
+- Optimized subreddit last-updated polling (stable selectors, ref-based effect deps, visibility-aware refresh)
+- Simplified client and API code and consolidated shared patterns
+
+### Fixed
+
+- Initial poll timing, sync status labels, and ESM/import issues
+- All outstanding TypeScript type errors and ESLint warnings
+
+## [1.2.1] - 2025-12-13
+
+### Changed
+
+- Renamed PWA icons and consolidated loading assets
+- Updated npm dependencies
+
 ## [1.2.0] - 2025-11-28
 
 ### Added
+
 - HTTPS reverse proxy for local development with HTTP/2, compression, and connection pooling
 - Interactive setup wizard with TypeScript migration for easy first-time configuration
 - Automatic dependency installation in setup wizard
@@ -15,6 +130,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Interactive sudo prompt with security hardening
 
 ### Changed
+
 - Replaced react-social-media-embed with official platform SDKs (Twitter, Facebook, Instagram)
 - Migrated to npm workspaces for better monorepo management
 - Converted all relative imports to TypeScript path aliases
@@ -22,6 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed unused lodash functions
 
 ### Fixed
+
 - Subscribe and multi buttons not showing for unsubscribed subreddits
 - j/k navigation hotkeys and improved accessibility
 - Multi search functionality
@@ -36,6 +153,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Network error handling improvements
 
 ### Security
+
 - Fixed incomplete URL substring sanitization in service worker (strict origin matching)
 - Removed clear-text logging of usernames in reddit-api-tester
 - Improved proxy security with privilege separation and HTTP compliance
@@ -43,6 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0] - 2025-11-08
 
 ### Added
+
 - RTK Query for API caching with tag-based invalidation
 - Selective RTK Query cache persistence
 - PWA update dialog UI improvements
@@ -54,6 +173,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CloudFront domain alias for Cloudflare proxy support
 
 ### Changed
+
 - Complete TypeScript migration for client and API
 - Migrated from Webpack to Vite 6
 - React 19 upgrade
@@ -67,6 +187,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Service worker optimization with Workbox
 
 ### Fixed
+
 - Subreddit header info loading for non-subscribed subreddits
 - Pointer events on scroll for touch devices
 - Search on mobile layout
@@ -78,6 +199,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Various TypeScript errors and linting issues
 
 ### Removed
+
 - jQuery dependencies (replaced with React)
 - Babel (replaced with esbuild)
 - Yarn (replaced with npm)
@@ -88,6 +210,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.7] - 2021-06-11
 
 ### Added
+
 - Back button support
 - Pinned posts condensed view option
 - User sort functionality
@@ -96,6 +219,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Last updated indicator for friends
 
 ### Changed
+
 - Huge improvement to collapsed/minimized view
 - Major updates to devserver config (CRA-like)
 - Refactored webpack config
@@ -104,6 +228,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved video player with progress bar and controls
 
 ### Fixed
+
 - Autoplay from triggering on manually stopped videos
 - Focused & actionable in condensed mode
 - Inline content rendering
@@ -114,6 +239,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.6] - 2020-01-20
 
 ### Added
+
 - Favorite subreddit functionality
 - Click-to-copy for post IDs
 - Duplicate post filtering
@@ -126,6 +252,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mobile authorization compact mode
 
 ### Changed
+
 - Huge refactor to make listings more manageable
 - Improved content rendering and loading
 - Better strict mode support
@@ -133,6 +260,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved headers and navigation
 
 ### Fixed
+
 - Voting and saving functionality
 - Streaming issues
 - Back button support
@@ -145,10 +273,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.5] - 2019-07-11
 
 ### Added
+
 - 404 not found page
 - Min-height to posts to prevent scrolling jumps on iOS
 
 ### Changed
+
 - Package updates
 - Documentation updates
 - Removed jQuery commented out code
@@ -156,11 +286,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.4] - 2019-06-12
 
 ### Fixed
+
 - React tooltip z-index issue (moved to app level)
 
 ## [1.0.2] - 2019-06-12
 
 ### Added
+
 - Video progress bar
 - Ability to add and remove subreddits to/from multi
 - React.memo for performance optimization
@@ -168,6 +300,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Subreddit menu toggle
 
 ### Changed
+
 - Converted tooltips from jQuery to react-tooltip
 - Moved logout button & added karma tooltip
 - Changed "Multi" to "Custom Feeds" to match reddit.com
@@ -176,6 +309,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Organized listings to separate directory
 
 ### Fixed
+
 - Search functionality improvements
 - Placeholder when there's no preview
 - Menu position memory
@@ -185,12 +319,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2019-05-29
 
 ### Added
+
 - CORS support
 - Configurable API path
 - Build time to settings menu for debugging
 - Scripts to start/stop API
 
 ### Fixed
+
 - Client/server URL configuration
 - Login/logout URLs
 - dotenv path issues
@@ -198,6 +334,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2019-05-27
 
 ### Added
+
 - Initial release of Reacddit
 - Reddit OAuth authentication
 - Subreddit browsing and navigation
@@ -212,6 +349,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PWA support with service worker
 - Responsive design for mobile/desktop
 
+[1.6.0]: https://github.com/jeffrigby/reacddit/compare/v1.5.0...v1.6.0
+[1.5.0]: https://github.com/jeffrigby/reacddit/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/jeffrigby/reacddit/compare/v1.3.0...v1.4.0
+[1.3.1]: https://github.com/jeffrigby/reacddit/compare/97c778c07deb9c533f8affa9215554f6fac38efe...4e9cf5b16a2c40d3011101d891ec5caa6b24a488
+[1.3.0]: https://github.com/jeffrigby/reacddit/compare/1.2.1...1.3.0
+[1.2.1]: https://github.com/jeffrigby/reacddit/compare/release/1.2...1.2.1
 [1.2.0]: https://github.com/jeffrigby/reacddit/compare/1.1.0...release/1.2
 [1.1.0]: https://github.com/jeffrigby/reacddit/compare/1.0.7...1.1.0
 [1.0.7]: https://github.com/jeffrigby/reacddit/compare/1.0.6...1.0.7

@@ -1,7 +1,11 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { LinkData } from '@/types/redditApi';
-import { usePostContext } from '@/contexts';
+import {
+  usePostContext,
+  useIntersectionObservers,
+  useListingsActive,
+} from '@/contexts';
 import { isSafeUrl } from '@/utils/sanitize';
 
 interface IFrameContent {
@@ -36,37 +40,63 @@ function IFrame({
   const postContext = usePostContext();
   const { title } = postContext.post.data as LinkData;
   const [iframeLoaded, setIframeLoaded] = useState(false);
-  const hasBeenOnScreen = useRef(false);
+  const contRef = useRef<HTMLDivElement>(null);
+  const [inMountBand, setInMountBand] = useState(false);
+  const { observeForEmbedMount } = useIntersectionObservers();
+  const isActive = useListingsActive();
 
   const style: CSSProperties = {};
   style.aspectRatio = `${width}/${height}`;
 
-  const { isLoaded, fullyOffScreen } = postContext;
+  const { isLoaded } = postContext;
 
-  // Track if iframe has ever been on-screen
   useEffect(() => {
-    if (!fullyOffScreen && !hasBeenOnScreen.current) {
-      hasBeenOnScreen.current = true;
+    if (!contRef.current) {
+      return undefined;
     }
-  }, [fullyOffScreen]);
+    return observeForEmbedMount(contRef.current, setInMountBand);
+  }, [observeForEmbedMount]);
 
   const handleIframeLoad = useCallback(() => {
     setIframeLoaded(true);
     onLoad();
   }, [onLoad]);
 
-  // Block non-https protocols (javascript:, data:, vbscript:, etc.)
+  // Mount the iframe only while the post sits in the embed-mount band, so
+  // scrolling away actually reclaims it, and unmount it outright while this
+  // listing tree is suspended behind the post-detail overlay.
+  //
+  // This intentionally replaces an earlier `hasBeenOnScreen` latch that kept
+  // the iframe mounted until the post had been seen once, so an embed resolved
+  // below the fold could pre-load. That latch had no teardown path: an entry
+  // that resolved below the fold and was never actually scrolled into view kept
+  // its iframe for the life of the listing. The band keeps the pre-load - just
+  // a much smaller one than the load observer's 2000px, which is what makes it
+  // bounded - so embeds are still painted before they are scrolled to instead
+  // of spinning on arrival.
+  const shouldRenderIframe = isLoaded && isActive && inMountBand;
+
+  // Only the <iframe> child is unmounted when the band drops it - the wrappers
+  // below have to stay, because contRef is the element the observer watches. So
+  // this component survives teardown and `iframeLoaded` survives with it, and
+  // without this reset the NEXT iframe renders with `loading-icon` already
+  // cleared: a fresh document loading against a bare black box, no spinner.
+  useEffect(() => {
+    if (!shouldRenderIframe) {
+      setIframeLoaded(false);
+    }
+  }, [shouldRenderIframe]);
+
+  // Block non-https protocols (javascript:, data:, vbscript:, etc.). This has to
+  // stay below every hook above - a conditional return cannot precede the reset
+  // effect - and it still runs before anything reads `src`, which the JSX below
+  // is the only place to do.
   if (!isSafeUrl(src, true)) {
     return null;
   }
 
-  // Only unmount iframe if it's been on-screen before
-  // This allows iframes to load initially (even if below viewport)
-  const shouldRenderIframe =
-    isLoaded && (!fullyOffScreen || !hasBeenOnScreen.current);
-
   return (
-    <div className="media-cont black-bg">
+    <div ref={contRef} className="media-cont black-bg">
       <div className="media-ratio" style={style}>
         {shouldRenderIframe && (
           <iframe

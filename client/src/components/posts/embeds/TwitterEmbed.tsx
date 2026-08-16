@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useIntersectionObservers } from '@/contexts/IntersectionObserverContext';
+import { usePostContext } from '@/contexts';
 
 interface TwitterEmbedProps {
   url: string;
@@ -25,9 +25,15 @@ declare global {
  */
 function TwitterEmbed({ url }: TwitterEmbedProps): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(true);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);
-  const { observeForMediaControl } = useIntersectionObservers();
+
+  // Visibility comes from the post, not from a media-control observer of our
+  // own. Post.tsx already folds `!isActive` into `fullyOffScreen`, so reading
+  // it here is what makes this embed (and its third-party iframe, its
+  // ResizeObserver and its MutationObserver) go quiet while the post-detail
+  // overlay has this listing tree suspended.
+  const { fullyOffScreen } = usePostContext();
+  const isVisible = !fullyOffScreen;
 
   // Reset measured height on window resize (embeds are responsive)
   useEffect(() => {
@@ -64,23 +70,6 @@ function TwitterEmbed({ url }: TwitterEmbedProps): React.JSX.Element {
       resizeObserver.disconnect();
     };
   }, [isVisible]);
-
-  // Unload embed when off screen
-  useEffect(() => {
-    if (!containerRef.current) {
-      return undefined;
-    }
-
-    const cleanup = observeForMediaControl(
-      containerRef.current,
-      (isOffScreen) => {
-        // When fully off screen, unmount the embed
-        setIsVisible(!isOffScreen);
-      }
-    );
-
-    return cleanup;
-  }, [observeForMediaControl, url]);
 
   // Load and process Twitter embed
   useEffect(() => {
@@ -166,20 +155,30 @@ function TwitterEmbed({ url }: TwitterEmbedProps): React.JSX.Element {
   // Twitter's widgets.js only recognizes twitter.com URLs
   const twitterUrl = url.replace('x.com', 'twitter.com');
 
+  // Reserve the last measured height on the OUTER box, which is not the
+  // observed element, so it cannot feed back into measuredHeight. This holds
+  // the layout across the placeholder -> blockquote swap: React re-mounts a
+  // bare, unrendered blockquote (~30px) and widgets.js needs a syndication
+  // round-trip to fill it, which would otherwise collapse the listing every
+  // time the post-detail overlay closes over a visible tweet.
+  const reservedHeight = measuredHeight > 0 ? `${measuredHeight}px` : undefined;
+
   return (
-    <div ref={containerRef}>
-      {isVisible ? (
-        <blockquote className="twitter-tweet" data-dnt="true">
-          <a href={twitterUrl}>{twitterUrl}</a>
-        </blockquote>
-      ) : (
-        <div
-          style={{
-            height: measuredHeight > 0 ? `${measuredHeight}px` : '200px',
-            minHeight: '200px',
-          }}
-        />
-      )}
+    <div style={{ minHeight: reservedHeight }}>
+      <div ref={containerRef}>
+        {isVisible ? (
+          <blockquote className="twitter-tweet" data-dnt="true">
+            <a href={twitterUrl}>{twitterUrl}</a>
+          </blockquote>
+        ) : (
+          <div
+            style={{
+              height: measuredHeight > 0 ? `${measuredHeight}px` : '200px',
+              minHeight: '200px',
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
