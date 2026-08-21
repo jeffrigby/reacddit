@@ -8,20 +8,8 @@ Access via the domain configured in `.env` (`PROXY_DOMAIN` + `PROXY_PORT`). Defa
 
 ## Code Quality (CRITICAL)
 
-- **ESLint v10 with flat config** - strict standards enforced
 - **Zero warnings/errors required** before committing
 - Run `npm run lint-all` after ANY code changes
-- Each workspace has tailored ESLint config (React for client, Node for api/proxy)
-
-## TypeScript Standards
-
-- **Zero `any` types policy** - always define proper types
-- **Explicit types required** on all function parameters and return values
-- Function declarations preferred over arrow functions for components
-- `.tsx` for React components, `.ts` for utilities
-- Use `interface` for objects/props, `type` for unions/primitives
-- Typed Redux selectors: `useSelector((state: RootState) => state.something)`
-- Process env access uses bracket notation: `process.env['KEY']`
 
 ## Architecture
 
@@ -30,12 +18,6 @@ Access via the domain configured in `.env` (`PROXY_DOMAIN` + `PROXY_PORT`). Defa
 
 **HTTPS Proxy (`/proxy/`):**
 - Local-dev HTTPS reverse proxy, required because embedded iframes need HTTPS — details in `proxy/CLAUDE.md`
-
-## Config
-
-- `.env` - Proxy (domain, ports, certs)
-- `api/.env` - Reddit OAuth credentials
-- `client/.env` - Vite build config
 
 ## TypeScript (dual install — do not "fix" this)
 
