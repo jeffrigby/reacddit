@@ -16,12 +16,12 @@ import redditMediaEmbed from '@/components/posts/embeds/defaults/redditMediaEmbe
 import redditGallery from '@/components/posts/embeds/defaults/redditGallery';
 import { isSafeUrl } from '@/utils/sanitize';
 import {
-  isRedditShareLink,
   resolveShareLinks,
+  getCachedSharePermalinks,
   extractPostId,
-  isShareLink,
   prefetchPostData,
 } from '@/components/posts/embeds/domains/redditcom';
+import { isShareHref } from '@/utils/redditLinks';
 
 // Compile URL regex once for performance
 const URL_REGEX = urlRegex();
@@ -126,7 +126,7 @@ async function inlineLinks(
   // share-link resolution round trip below.
   const directPostIds: string[] = [];
   for (const link of links) {
-    if (isShareLink(link)) {
+    if (isShareHref(link)) {
       continue;
     }
     const postId = extractPostId(link);
@@ -140,7 +140,7 @@ async function inlineLinks(
   // Pre-resolve Reddit share links in a single batch before pLimit processing.
   // This populates shareCache so individual URLs hit cache instantly during
   // pLimit waves; the resolved post IDs are then prefetched too.
-  const shareLinks = links.filter(isRedditShareLink);
+  const shareLinks = links.filter(isShareHref);
   if (shareLinks.length > 0) {
     const resolvedShareLinks = await resolveShareLinks(shareLinks);
     const sharePostIds = [...resolvedShareLinks.values()];
@@ -148,6 +148,9 @@ async function inlineLinks(
       await prefetchPostData(sharePostIds);
     }
   }
+  // Resolving above also recorded each link's canonical path; hand it to the
+  // renderer so it can turn these into in-app links without re-resolving.
+  const sharePermalinks = getCachedSharePermalinks(shareLinks);
   if (directPrefetch) {
     await directPrefetch;
   }
@@ -207,7 +210,34 @@ async function inlineLinks(
     }
   });
 
-  return { renderedLinks, inline };
+  return { renderedLinks, inline, sharePermalinks };
+}
+
+/**
+ * Merge the inline-link pass results into the rendered content.
+ *
+ * The embeds themselves are attached only when at least one URL rendered, but
+ * resolved share permalinks are attached whenever there are any: a comment can
+ * link to a post that produces no embed and still needs its link rewritten.
+ * Returns the original content untouched when there is nothing to add.
+ */
+function withInlineLinks(
+  content: EmbedContent,
+  links: InlineLinksResult
+): EmbedContent {
+  const hasEmbeds = links.inline.length > 0;
+  const hasPermalinks = links.sharePermalinks.size > 0;
+  if (!hasEmbeds && !hasPermalinks) {
+    return content;
+  }
+  return {
+    ...content,
+    ...(hasEmbeds && {
+      inline: links.inline,
+      inlineLinks: links.renderedLinks,
+    }),
+    ...(hasPermalinks && { sharePermalinks: links.sharePermalinks }),
+  };
 }
 
 function nonSSLFallback(
@@ -365,15 +395,7 @@ async function RenderContent(
         entry
       );
       const commentInlineLinks = await inlineLinks(entry, kind);
-      if (commentInlineLinks.inline.length > 0 && content) {
-        result = {
-          ...content,
-          inline: commentInlineLinks.inline,
-          inlineLinks: commentInlineLinks.renderedLinks,
-        } as EmbedContent;
-      } else {
-        result = content;
-      }
+      result = content ? withInlineLinks(content, commentInlineLinks) : content;
       if (result !== null) {
         embedCache.set(cacheKey, result);
       }
@@ -398,22 +420,21 @@ async function RenderContent(
 
     const content = await getContent(keys, entry);
 
+    let selfInline: InlineLinksResult | null = null;
     if (keys.greedyDomain === 'self' && selfTextHtml) {
-      const getInline = await inlineLinks(entry, kind);
-      if (getInline.inline.length > 0 && content) {
-        result = {
-          ...content,
-          inline: getInline.inline,
-          inlineLinks: getInline.renderedLinks,
-        } as EmbedContent;
-        if (result !== null) {
-          embedCache.set(cacheKey, result);
-        }
+      selfInline = await inlineLinks(entry, kind);
+      if (selfInline.inline.length > 0 && content) {
+        result = withInlineLinks(content, selfInline);
+        embedCache.set(cacheKey, result);
         return result;
       }
     }
 
     result = nonSSLFallback(content, entry);
+    // Self text with no embeddable links can still contain share links.
+    if (result !== null && selfInline) {
+      result = withInlineLinks(result, selfInline);
+    }
     if (result !== null) {
       embedCache.set(cacheKey, result);
     }
