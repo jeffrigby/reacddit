@@ -18,7 +18,7 @@ permissions:
 
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
   STACK_NAME: ${{ vars.STACK_NAME }}
 
 jobs:
