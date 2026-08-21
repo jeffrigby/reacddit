@@ -89,6 +89,12 @@ export interface SelfTextContent extends BaseEmbedContent {
   html: string;
   inline: EmbedContent[];
   inlineLinks?: string[];
+  /**
+   * Share links (`/r/<sub>/s/<code>`) in `html` mapped to the canonical post
+   * path they redirect to. Resolved during the inline-link pass, which already
+   * has to visit every anchor, so the renderer can rewrite them synchronously.
+   */
+  sharePermalinks?: ReadonlyMap<string, string>;
 }
 
 // Reddit Gallery content
@@ -207,6 +213,8 @@ export interface DomainKeys {
 export interface InlineLinksResult {
   renderedLinks: string[];
   inline: EmbedContent[];
+  /** Share links found in the text, mapped to their canonical post paths. */
+  sharePermalinks: ReadonlyMap<string, string>;
 }
 
 export type MaybeEmbedContent = EmbedContent | null;

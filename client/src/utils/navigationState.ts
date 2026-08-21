@@ -1,6 +1,11 @@
 /**
  * Helpers for the background-location overlay routing pattern: building and
  * validating the navigation state carried by post-detail (comments) links.
+ *
+ * Also the single source of truth for the app's route patterns and their
+ * parameter allowlists: RedditRoutes builds its <Route> tree from these, and
+ * redditLinks resolves reddit.com hrefs against the same values, so a link can
+ * never be rewritten to a path the router would 404 on.
  */
 import { matchPath } from 'react-router';
 import type { Location } from 'react-router';
@@ -17,6 +22,155 @@ export const COMMENTS_PATTERNS = [
 ];
 
 export const DUPLICATES_PATTERNS = ['/duplicates/:target'];
+
+/** Sorts accepted by the subreddit and multireddit listing routes. */
+export const REDDIT_SORTS = [
+  'hot',
+  'new',
+  'top',
+  'controversial',
+  'rising',
+  'best',
+];
+
+/** Sorts accepted by the user listing routes. */
+export const USER_SORTS = ['hot', 'new', 'top', 'controversial'];
+
+/** The `:target` values the user listing routes accept. */
+export const USER_TARGETS = [
+  'upvoted',
+  'downvoted',
+  'posts',
+  'comments',
+  'overview',
+  'submitted',
+  'saved',
+  'hidden',
+  'gilded',
+];
+
+/**
+ * One listing route: the path patterns that render it, the props the listing
+ * gets, and the allowlists its params must satisfy.
+ */
+export interface RouteConfig {
+  paths: string[];
+  overrides: {
+    listType: string;
+    multi?: boolean;
+    user?: string;
+  };
+  validations: {
+    sort?: string[];
+    target?: string[];
+    user?: string;
+  };
+  /**
+   * May a reddit link inside user-authored text resolve to this route?
+   *
+   * False for routes that only make sense from inside the app (`/me/...`,
+   * search, the bare `/` feed): reddit never links to them, and rewriting an
+   * href onto one would replace a working outbound link with a 404.
+   */
+  linkable?: boolean;
+}
+
+/**
+ * Every listing route in the app. RedditRoutes builds its <Route> tree from
+ * this, and getInternalRedditPath matches in-body reddit links against the
+ * `linkable` subset — so a link can never be rewritten onto a path the router
+ * would 404 on.
+ */
+export const ROUTES: RouteConfig[] = [
+  // Reddit Paths
+  {
+    paths: ['/', '/:sort'],
+    overrides: {
+      listType: 'r',
+    },
+    validations: {
+      sort: REDDIT_SORTS,
+    },
+  },
+  {
+    paths: ['/r/:target', '/r/:target/:sort'],
+    overrides: {
+      listType: 'r',
+    },
+    validations: {
+      sort: REDDIT_SORTS,
+    },
+    linkable: true,
+  },
+  // Search Paths
+  {
+    paths: ['/search', '/r/:target/search'],
+    overrides: {
+      listType: 'search',
+    },
+    validations: {},
+  },
+  {
+    paths: ['/user/:target/m/:userType/search', '/:user/m/:target/search'],
+    overrides: {
+      multi: true,
+      listType: 's',
+    },
+    validations: {
+      user: 'me',
+    },
+  },
+  // Multis
+  {
+    paths: [`/user/:user/m/:target`, `/user/:user/m/:target/:sort`],
+    overrides: {
+      listType: 'm',
+    },
+    validations: {
+      sort: REDDIT_SORTS,
+    },
+    linkable: true,
+  },
+  {
+    paths: [`/me/m/:target`, `/me/m/:target/:sort`],
+    overrides: {
+      listType: 'm',
+      user: 'me',
+    },
+    validations: {
+      sort: REDDIT_SORTS,
+    },
+  },
+  {
+    paths: [`/user/:user/:target`, `/user/:user/:target/:sort`],
+    overrides: {
+      listType: 'user',
+    },
+    validations: {
+      sort: USER_SORTS,
+      target: USER_TARGETS,
+    },
+    linkable: true,
+  },
+  // Duplicates (paths shared with isOverlayPath via navigationState)
+  {
+    paths: DUPLICATES_PATTERNS,
+    overrides: {
+      listType: 'duplicates',
+    },
+    validations: {},
+    linkable: true,
+  },
+  // Comments (paths shared with isCommentsPath/isOverlayPath via navigationState)
+  {
+    paths: COMMENTS_PATTERNS,
+    overrides: {
+      listType: 'comments',
+    },
+    validations: {},
+    linkable: true,
+  },
+];
 
 /**
  * Does the pathname match one of the post-detail (comments) route patterns?

@@ -614,13 +614,53 @@ const SHARE_LINK_REGEX =
 // Max URLs per batch request
 const MAX_BATCH_SIZE = 50;
 
-type ShareResolveResult = { postId: string } | { error: string };
+/**
+ * A resolved share link: the post's id plus the canonical path the redirect
+ * landed on. Keeping the path (not just the id) lets the client link straight
+ * into its comments route without a second lookup for subreddit and slug.
+ */
+interface ResolvedShare {
+  postId: string;
+  permalink?: string;
+}
+
+type ShareResolveResult = ResolvedShare | { error: string };
+
+/** Hosts whose paths are reddit paths, for validating a redirect target. */
+const REDDIT_REDIRECT_HOSTS = new Set([
+  'reddit.com',
+  'www.reddit.com',
+  'old.reddit.com',
+  'new.reddit.com',
+  'np.reddit.com',
+  'sh.reddit.com',
+]);
+
+/**
+ * The path a share link redirected to, or undefined when the target is not on
+ * reddit. Query and hash are dropped — Reddit appends tracking params that have
+ * no business in an in-app route.
+ *
+ * Deliberately does NOT check the path's shape: which paths are routable is the
+ * client's business, and the client validates whatever it gets back.
+ */
+function redirectPathname(location: string): string | undefined {
+  try {
+    const url = new URL(location, 'https://www.reddit.com');
+    if (!REDDIT_REDIRECT_HOSTS.has(url.hostname.toLowerCase())) {
+      return undefined;
+    }
+    return url.pathname;
+  } catch {
+    return undefined;
+  }
+}
 
 // Server-side cache for resolved share links.
 // Only successful resolutions are cached; errors are retried on next request.
 // In-memory only — resets on Lambda cold starts and isn't shared across instances.
 // TODO: Move to ElastiCache/DynamoDB for persistence across Lambda invocations.
-const shareCache = new LRUCache<string, string>({
+const shareCache = new LRUCache<string, ResolvedShare>({
   max: 5000,
   ttl: 1000 * 60 * 60 * 6, // 6 hours (share links are stable)
 });
@@ -641,7 +681,7 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
 
   const cached = shareCache.get(url);
   if (cached !== undefined) {
-    return { postId: cached };
+    return { ...cached };
   }
 
   try {
@@ -662,8 +702,12 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
       return { error: 'Could not extract post ID from redirect' };
     }
 
-    shareCache.set(url, postId);
-    return { postId };
+    const resolved: ResolvedShare = {
+      postId,
+      permalink: redirectPathname(location),
+    };
+    shareCache.set(url, resolved);
+    return { ...resolved };
   } catch (error) {
     logger.warn('Share link resolution failed', {
       url,
@@ -678,7 +722,7 @@ async function resolveShareUrl(url: string): Promise<ShareResolveResult> {
  * Resolves one or more Reddit share links to post IDs by following redirects
  * @route POST /api/resolve-share
  * @body { urls: string[] }
- * @returns { results: { [url: string]: { postId: string } | { error: string } } }
+ * @returns { results: { [url: string]: { postId: string, permalink?: string } | { error: string } } }
  */
 router.post('/api/resolve-share', shareRateLimit, async (ctx) => {
   const body = ctx.request.body as { urls?: unknown };
