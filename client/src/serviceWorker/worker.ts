@@ -27,9 +27,8 @@ function hasExtension(pathname: string, extensions: string[]): boolean {
 // via the update notification before activating the new service worker
 clientsClaim();
 
-// vite-plugin-pwa injects the precache manifest into __WB_MANIFEST at build time.
-// Its dev-mode substitution matches a bare `self` reference, which the cast
-// below defeats — hence the `?? []`, which is what dev would have produced.
+// vite-plugin-pwa substitutes __WB_MANIFEST only on a bare `self` reference, so
+// the cast leaves it undefined in dev.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const manifest = (self as any).__WB_MANIFEST ?? [];
 precacheAndRoute(manifest);

@@ -109,9 +109,7 @@
   div.entry {
     //border-left: 0;
 
-    // Skip rendering off-screen content. 'auto' remembers the last rendered
-    // size; 700px is the first-paint guess, measured against real entries
-    // (594-817px) — too low and every entry shifts as it scrolls in.
+    // 700px is the first-paint guess; real entries measure 594-817px.
     content-visibility: auto;
     contain-intrinsic-size: auto 700px;
 

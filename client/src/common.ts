@@ -38,8 +38,7 @@ export function getScrollContainer(): Element {
     return body;
   }
 
-  // scrollHeight/clientHeight force a synchronous layout; caching stops this
-  // re-running on every scroll sweep.
+  // scrollHeight/clientHeight force a synchronous layout, so probe only once.
   if (body.scrollHeight > body.clientHeight) {
     bodyIsScrollContainer = true;
     return body;
