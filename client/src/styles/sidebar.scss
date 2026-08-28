@@ -5,8 +5,10 @@ $light-theme-hover-color: #fcf8e3;
 $dark-theme-hover-color: #333333;
 $border-color: rgba(0, 0, 0, 0.125);
 $active-color: #dc3545;
-$light-inactive-color: #d3d3d3;
-$dark-inactive-color: #6c757d;
+// Dimmed sub labels. Both values are the lightest/darkest that still clear
+// 4.5:1 on their theme background, so don't mute them further.
+$light-inactive-color: #6c757d; // 4.69:1 on #fff
+$dark-inactive-color: #8b939b; // 4.95:1 on #212529
 $overlay-bg-color: black;
 $dark-theme-navigation-background-color: rgb(33, 37, 41);
 $light-theme-navigation-background-color: rgb(255, 255, 255);

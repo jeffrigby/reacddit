@@ -1,7 +1,5 @@
 import { Suspense } from 'react';
-import JsonView from 'react18-json-view';
-import 'react18-json-view/src/style.css';
-import 'react18-json-view/src/dark.css';
+import LazyJsonView from '@/components/posts/LazyJsonView';
 import { usePostContext } from '@/contexts';
 import type { LinkData, CommentData } from '@/types/redditApi';
 import type { EmbedContent } from '@/components/posts/embeds/types';
@@ -30,7 +28,7 @@ function PostDebug({
         {renderedContent && (
           <div className="code-block rounded">
             <h6>Content</h6>
-            <JsonView
+            <LazyJsonView
               dark
               src={{
                 ...renderedContent,
@@ -43,12 +41,12 @@ function PostDebug({
         {linkData?.preview && (
           <div className="code-block rounded">
             <h6>Preview</h6>
-            <JsonView dark src={linkData.preview} theme="atom" />
+            <LazyJsonView dark src={linkData.preview} theme="atom" />
           </div>
         )}
         <div className="code-block rounded">
           <h6>Entry</h6>
-          <JsonView dark src={data} theme="atom" />
+          <LazyJsonView dark src={data} theme="atom" />
         </div>
       </Suspense>
     </div>

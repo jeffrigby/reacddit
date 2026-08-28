@@ -14,20 +14,38 @@ export function setActiveOverlayElement(element: HTMLElement | null): void {
   activeOverlayElement = element;
 }
 
+/**
+ * Memoised body-vs-documentElement decision.
+ *
+ * `public/base.css` sets `overflow-x: hidden` on html and body, which computes
+ * the vertical axis to `auto`, so body is this document's scroll container for
+ * its whole lifetime — nothing at runtime can flip it.
+ *
+ * Only the positive answer is cached: the first call runs at boot (index.tsx
+ * scrolls before React renders), when the body is still the splash screen and
+ * genuinely does not overflow.
+ */
+let bodyIsScrollContainer = false;
+
 export function getScrollContainer(): Element {
   if (activeOverlayElement?.isConnected) {
     return activeOverlayElement;
   }
 
   const body = document.body;
-  const html = document.documentElement;
 
-  // Bootstrap 5 reboot sets overflow on body, making it the scroll container
-  if (body.scrollHeight > body.clientHeight) {
+  if (bodyIsScrollContainer) {
     return body;
   }
 
-  return html;
+  // scrollHeight/clientHeight force a synchronous layout; caching stops this
+  // re-running on every scroll sweep.
+  if (body.scrollHeight > body.clientHeight) {
+    bodyIsScrollContainer = true;
+    return body;
+  }
+
+  return document.documentElement;
 }
 
 export interface ScrollViewport {

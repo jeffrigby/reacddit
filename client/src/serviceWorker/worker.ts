@@ -28,8 +28,10 @@ function hasExtension(pathname: string, extensions: string[]): boolean {
 clientsClaim();
 
 // vite-plugin-pwa injects the precache manifest into __WB_MANIFEST at build time.
+// Its dev-mode substitution matches a bare `self` reference, which the cast
+// below defeats — hence the `?? []`, which is what dev would have produced.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const manifest = (self as any).__WB_MANIFEST;
+const manifest = (self as any).__WB_MANIFEST ?? [];
 precacheAndRoute(manifest);
 
 // Set up App Shell-style routing using NavigationRoute
