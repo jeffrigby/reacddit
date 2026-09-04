@@ -336,7 +336,7 @@ function Sort() {
   return (
     <Dropdown className="sort-menu header-button">
       <Dropdown.Toggle
-        aria-label="Sort"
+        aria-label={`Sort: ${currentSort}`}
         className="form-control-sm sort-button"
         id="dropdown-sort"
         size="sm"

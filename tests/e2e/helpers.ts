@@ -283,7 +283,9 @@ export async function openOverlay(
   // otherwise Playwright's implicit pre-click scroll (entries can be taller
   // than the viewport) lands between the capture and the click and the
   // preservation assertion compares against a stale offset.
-  const titleLink = target.getByRole('link', { name: 'Title' }).first();
+  const titleLink = target
+    .locator('h6.title a.list-group-item-heading')
+    .first();
   await titleLink.scrollIntoViewIfNeeded();
 
   const ids = await entryIds(page, '#entries');

@@ -5,7 +5,7 @@ import type { ImageEmbedContent } from '@/components/posts/embeds/types';
 const IMAGE_HEIGHT_THRESHOLD = 748;
 const IMAGE_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|avif|svg|bmp|ico)$/i;
 
-function findBestResolution(
+export function findBestResolution(
   resolutions: ImageDetails[]
 ): ImageDetails | undefined {
   return resolutions.find((res) => res.height > IMAGE_HEIGHT_THRESHOLD);

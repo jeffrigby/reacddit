@@ -156,7 +156,6 @@ function PostHeader({
   if (listType === 'comments') {
     titleLink = (
       <a
-        aria-label="Title"
         className="list-group-item-heading align-middle"
         href={sanitizeHref(linkData.url)}
         rel="noopener noreferrer"
@@ -168,7 +167,6 @@ function PostHeader({
   } else {
     titleLink = (
       <Link
-        aria-label="Title"
         className="list-group-item-heading align-middle"
         state={detailNavState}
         to={linkData.permalink}

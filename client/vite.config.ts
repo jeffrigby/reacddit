@@ -130,8 +130,23 @@ export default defineConfig(({ mode }) => {
             },
             {
               name: 'ui-vendor',
-              test: /[\\/]node_modules[\\/](react-bootstrap|bootstrap)[\\/]/,
+              test: /[\\/]node_modules[\\/](react-bootstrap|bootstrap|react-tooltip|@floating-ui[\\/][^\\/]+)[\\/]/,
               priority: 10,
+            },
+            {
+              name: 'icons-vendor',
+              test: /[\\/]node_modules[\\/]@fortawesome[\\/]/,
+              priority: 9,
+            },
+            {
+              name: 'media-vendor',
+              test: /[\\/]node_modules[\\/]react-image-gallery[\\/]/,
+              priority: 8,
+            },
+            {
+              name: 'utils-vendor',
+              test: /[\\/]node_modules[\\/](dompurify|tldts|tldts-core|date-fns|axios)[\\/]/,
+              priority: 7,
             },
           ],
         },

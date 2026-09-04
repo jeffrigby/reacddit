@@ -7,7 +7,7 @@
   }
 
   .reddit {
-    color: rgb(252, 71, 35);
+    color: rgb(252, 91, 58);
   }
 
   .post-action-expand {
@@ -109,10 +109,9 @@
   div.entry {
     //border-left: 0;
 
-    // Modern CSS optimization: skip rendering off-screen content
-    // The 'auto' keyword remembers last rendered size to prevent layout shifts
+    // 700px is the first-paint guess; real entries measure 594-817px.
     content-visibility: auto;
-    contain-intrinsic-size: auto 500px;
+    contain-intrinsic-size: auto 700px;
 
     &.comment-child,
     .comments-more {
@@ -410,7 +409,8 @@
   }
 
   .actions {
-    opacity: 0.5;
+    // 0.6 is the minimum that keeps the composited text above 4.5:1.
+    opacity: 0.6;
   }
 
   .actionable .actions,
