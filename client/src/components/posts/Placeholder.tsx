@@ -1,5 +1,6 @@
 import { usePostContext } from '@/contexts';
 import renderSelf from '@/components/posts/embeds/domains/self';
+import { findBestResolution } from '@/components/posts/embeds/defaults/redditImagePreview';
 import type { LinkData } from '@/types/redditApi';
 import Self from './contentTypes/Self';
 
@@ -20,14 +21,16 @@ function Placeholder() {
         ];
       }
 
-      // Check for source
+      // Same pick order as redditImagePreview, so the placeholder box and the
+      // ImageComp that replaces it resolve to identical dimensions.
       if (preview.images) {
-        const { resolutions } = preview.images[0];
-        if (resolutions[5]) {
-          return [resolutions[5].width, resolutions[5].height];
+        const { resolutions, source } = preview.images[0];
+
+        const bestRes = resolutions && findBestResolution(resolutions);
+        if (bestRes) {
+          return [bestRes.width, bestRes.height];
         }
 
-        const { source } = preview.images[0];
         if (source) {
           return [source.width, source.height];
         }

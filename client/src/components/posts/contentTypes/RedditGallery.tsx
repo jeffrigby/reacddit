@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import ImageGallery from 'react-image-gallery';
 import 'react-image-gallery/styles/image-gallery.css';
 import { usePostContext } from '@/contexts';
+import { decodeHTMLEntities } from '@/utils/sanitize';
 import type { LinkData, CommentData } from '@/types/redditApi';
 import type { RedditGalleryContent } from '@/components/posts/embeds/types';
 
@@ -18,7 +19,7 @@ interface GalleryImage {
 
 // A gallery only ever exists on a link post, but the context data is a union.
 function isLinkData(data: LinkData | CommentData): data is LinkData {
-  return 'domain' in data && 'url' in data;
+  return 'title' in data;
 }
 
 function RedditGallery({ content }: RedditGalleryProps) {
@@ -27,7 +28,9 @@ function RedditGallery({ content }: RedditGalleryProps) {
   const { post } = postContext;
   const { data } = post;
 
-  const title = isLinkData(data) ? data.title : '';
+  // Reddit ships titles HTML-escaped; alt text is read verbatim by a screen
+  // reader, so the entities have to be resolved first.
+  const title = isLinkData(data) ? decodeHTMLEntities(data.title) : '';
 
   const images = useMemo<GalleryImage[]>(
     () =>
