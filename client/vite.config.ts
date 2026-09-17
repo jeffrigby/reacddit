@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
     {
       name: 'create-build-json',
       closeBundle() {
-        const distPath = path.resolve(__dirname, 'dist');
+        const distPath = path.resolve(import.meta.dirname, 'dist');
         const buildJsonPath = path.join(distPath, 'build.json');
 
         // Ensure dist directory exists
@@ -65,13 +65,13 @@ export default defineConfig(({ mode }) => {
   // Path aliases matching webpack configuration
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@/types': path.resolve(__dirname, './src/types'),
-      '@/redux': path.resolve(__dirname, './src/redux'),
-      '@/components': path.resolve(__dirname, './src/components'),
-      '@/styles': path.resolve(__dirname, './src/styles'),
-      '@/common': path.resolve(__dirname, './src/common.js'),
-      '@/test': path.resolve(__dirname, './src/test'),
+      '@': path.resolve(import.meta.dirname, './src'),
+      '@/types': path.resolve(import.meta.dirname, './src/types'),
+      '@/redux': path.resolve(import.meta.dirname, './src/redux'),
+      '@/components': path.resolve(import.meta.dirname, './src/components'),
+      '@/styles': path.resolve(import.meta.dirname, './src/styles'),
+      '@/common': path.resolve(import.meta.dirname, './src/common.js'),
+      '@/test': path.resolve(import.meta.dirname, './src/test'),
     },
   },
 
