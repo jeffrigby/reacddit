@@ -51,6 +51,7 @@
     "tldts": "^7.0.19",
     "url-parse": "^1.4.7",
     "url-regex-safe": "^4.0.0",
+    "use-debounce": "^10.1.1",
     "workbox-core": "^7.4.0",
     "workbox-expiration": "^7.4.0",
     "workbox-precaching": "^7.4.0",

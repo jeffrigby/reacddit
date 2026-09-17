@@ -1,81 +1,114 @@
-import { useState } from 'react';
+import { useMemo, useState, type ReactElement } from 'react';
 import { Button } from 'react-bootstrap';
-import { useSearchParams } from 'react-router';
+import { useDebounce } from 'use-debounce';
 import { useAppSelector } from '@/redux/hooks';
-import {
-  useGetSubredditsQuery,
-  subredditSelectors,
-  useSearchSubredditsByNameQuery,
-} from '@/redux/api';
-import { buildSortPath } from './navHelpers';
+import { useSearchSubredditsQuery } from '@/redux/api';
+import { formatCompactNumber, formatNumber } from '@/common';
+import { buildSubredditHref, TRIGGER_CLASS } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
+import { rankSubredditSearch } from './rankSubredditSearch';
+import { useSubscribedNames } from './useFilteredSubreddits';
+import { useNavSection } from './useNavSection';
+import { useSidebarSelection } from './useSidebarSelection';
+import { useSubredditSortPath } from './useSubredditSortPath';
 
-interface SearchRedditNamesProps {
-  filterText?: string;
-}
+/** Shortest term that is searched. */
+const MIN_TERM_LENGTH = 2;
+/** Pause after the last keystroke before a term is searched. */
+const SEARCH_DEBOUNCE_MS = 250;
 
 /**
- * Display a list of subreddit names that match the filter text
+ * Subreddits matching the filter text that the user isn't subscribed to.
+ *
+ * Reddit matches the term against subreddit names, titles and descriptions;
+ * rankSubredditSearch orders the hits by name match then subscriber count.
  */
-function SearchRedditNames({ filterText = '' }: SearchRedditNamesProps) {
+function SearchRedditNames(): ReactElement | null {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
   const redditBearer = useAppSelector((state) => state.redditBearer);
-  const sort = useAppSelector((state) => state.listings.currentFilter.sort);
   const auth = redditBearer.status === 'auth';
-  const [searchParams] = useSearchParams();
+  const sortPath = useSubredditSortPath();
 
-  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
-
-  // Use RTK Query hook to get subreddit IDs
-  const { subredditIds } = useGetSubredditsQuery(
-    { where },
-    {
-      selectFromResult: ({ data }) => ({
-        subredditIds: data ? subredditSelectors.selectIds(data) : [],
-      }),
-    }
-  );
+  const subscribedNames = useSubscribedNames();
+  const { filterActive, filterText, selectedTarget } = useSidebarSelection();
 
   const initShowSearchResuts = over18 ?? false;
   const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
 
-  // Use RTK Query hook to search for subreddits
-  const { data: searchData } = useSearchSubredditsByNameQuery(
-    { query: filterText, includeOver18: showNSFW },
-    { skip: !filterText }
+  const trimmedFilter = filterText.trim();
+  const [debouncedFilter] = useDebounce(trimmedFilter, SEARCH_DEBOUNCE_MS);
+  // The results on screen belong to the debounced term, so ranking and
+  // rendering both key off it rather than the term being typed.
+  const term = trimmedFilter.length < MIN_TERM_LENGTH ? '' : debouncedFilter;
+  const skipSearch = term.length < MIN_TERM_LENGTH;
+
+  // currentData is scoped to the term being requested: it is undefined while a
+  // new term is in flight, so results are never ranked under a term they were
+  // not fetched for.
+  const { currentData: searchData } = useSearchSubredditsQuery(
+    { query: term, includeOver18: showNSFW },
+    { skip: skipSearch }
   );
 
-  const searchResults =
-    searchData?.subreddits.map((subreddit) => subreddit.name) ?? [];
+  const ranked = useMemo(
+    () => rankSubredditSearch(searchData?.data.children, term, subscribedNames),
+    [searchData, term, subscribedNames]
+  );
 
-  if (!filterText || searchResults.length === 0) {
+  // Hrefs are built once and used for both the anchors and the registry, so
+  // the path keyboard navigation lands on is the path the link carries.
+  const hrefs = useMemo(
+    () =>
+      ranked.map((result) =>
+        buildSubredditHref(`r/${result.subreddit.display_name}`, sortPath)
+      ),
+    [ranked, sortPath]
+  );
+
+  useNavSection('search', hrefs);
+
+  if (skipSearch || ranked.length === 0) {
     return null;
   }
 
-  // Filter out subscribed reddits
-  const lowerCaseSubreddits = subredditIds.map((sub) =>
-    String(sub).toLowerCase()
-  );
-  const filteredSubs = searchResults.filter(
-    (value) => value && !lowerCaseSubreddits.includes(value.toLowerCase())
-  );
+  const firstRelated = ranked.findIndex((result) => result.tier === 'related');
 
-  const sortPath = buildSortPath(sort, searchParams.get('t') ?? undefined);
+  const navItems: ReactElement[] = [];
+  ranked.forEach((result, idx) => {
+    const { display_name: displayName, subscribers } = result.subreddit;
 
-  let navItems: React.ReactElement[] = [];
-  if (filteredSubs.length > 0) {
-    navItems = filteredSubs.map((value, idx) => {
-      const key = `sr_search_${value}_${idx}`;
-      const to = `/r/${value}/${sortPath}`;
-      return (
-        <NavigationGenericNavItem id={key} key={key} text={value} to={to} />
+    if (idx === firstRelated && idx > 0) {
+      navItems.push(
+        <li aria-hidden="true" key="related-divider">
+          <hr />
+        </li>
       );
-    });
-  }
+    }
 
-  if (navItems.length === 0) {
-    return null;
-  }
+    const href = hrefs[idx];
+    const trigger = filterActive && href === selectedTarget;
+    navItems.push(
+      <li className="nav-item d-flex align-items-center" key={displayName}>
+        <NavigationGenericNavItem
+          noLi
+          classes={trigger ? TRIGGER_CLASS : ''}
+          id={`sr_search_${displayName}`}
+          text={displayName}
+          title={result.subreddit.title || displayName}
+          to={href}
+        />
+        {subscribers != null && (
+          <span
+            className="search-subscribers"
+            title={`${formatNumber(subscribers)} subscribers`}
+          >
+            {formatCompactNumber(subscribers)}
+            <span className="visually-hidden"> subscribers</span>
+          </span>
+        )}
+      </li>
+    );
+  });
 
   const toggleNSFW = () => {
     setShowNSFW(!showNSFW);

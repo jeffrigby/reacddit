@@ -3,6 +3,8 @@
  * Includes time-based CSS class generation and URL building utilities
  */
 
+import { trimSlashes } from '@/common';
+
 // Time thresholds in seconds
 const SECONDS_IN_HOUR = 3600;
 const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
@@ -20,6 +22,9 @@ function lastUpdatedDiff(lastUpdated: number): number {
   const now = Math.floor(Date.now() / 1000);
   return now - lastUpdated;
 }
+
+/** Classes marking the nav item the filter box opens on Enter */
+export const TRIGGER_CLASS = 'mark trigger';
 
 /**
  * Generate classnames for nav items based on last update time
@@ -49,7 +54,7 @@ export function getDiffClassName(
   }
 
   if (trigger) {
-    classes.push('mark trigger');
+    classes.push(TRIGGER_CLASS);
   }
 
   return classes.join(' ');
@@ -116,4 +121,26 @@ export function buildSortPath(
 
   const queryString = buildSortQueryString(sort, timeFilter);
   return normalizedSort + queryString;
+}
+
+/**
+ * Builds the path a sidebar subreddit link points at.
+ *
+ * The returned string carries any query string from the sort path and never
+ * ends in a slash, matching the href the anchor renders.
+ *
+ * @param path - Subreddit path, with or without surrounding slashes (`/r/pics/`)
+ * @param sortPath - Sort segment from buildSortPath
+ * @param isUserProfile - Whether the destination is a user profile's post list
+ * @returns Absolute path for the link
+ */
+export function buildSubredditHref(
+  path: string,
+  sortPath: string,
+  isUserProfile = false
+): string {
+  const base = trimSlashes(path.trim());
+  const prefix = isUserProfile ? `${base}/posts` : base;
+  const sort = trimSlashes(sortPath.trim());
+  return sort ? `/${prefix}/${sort}` : `/${prefix}`;
 }

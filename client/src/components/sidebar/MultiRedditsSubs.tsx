@@ -1,6 +1,8 @@
 import type { ReactElement } from 'react';
 import type { SubredditData } from '@/types/redditApi';
+import { buildSubredditHref } from './navHelpers';
 import NavigationItem from './NavigationItem';
+import { useSubredditSortPath } from './useSubredditSortPath';
 
 interface SubredditItem {
   name: string;
@@ -10,7 +12,10 @@ interface MultiRedditsSubsProps {
   multiRedditSubs: SubredditItem[];
 }
 
-function genNavItems(multiRedditSubs: SubredditItem[]): ReactElement[] {
+function genNavItems(
+  multiRedditSubs: SubredditItem[],
+  sortPath: string
+): ReactElement[] {
   // Create a map of subreddits keyed by lowercase display name to remove duplicates
   const multiRedditSubsKeyed = multiRedditSubs.reduce<Record<string, string>>(
     (acc, subreddit) => ({
@@ -45,18 +50,27 @@ function genNavItems(multiRedditSubs: SubredditItem[]): ReactElement[] {
         icon_img: null,
         url: `/r/${subredditName}/`,
       };
-      return <NavigationItem item={item} key={item.name} trigger={false} />;
+      return (
+        <NavigationItem
+          href={buildSubredditHref(item.url, sortPath)}
+          item={item}
+          key={item.name}
+          trigger={false}
+        />
+      );
     });
 }
 
 function MultiRedditsSubs({
   multiRedditSubs,
 }: MultiRedditsSubsProps): ReactElement | null {
+  const sortPath = useSubredditSortPath();
+
   if (multiRedditSubs?.length === 0) {
     return null;
   }
 
-  const navItems = genNavItems(multiRedditSubs);
+  const navItems = genNavItems(multiRedditSubs, sortPath);
   return <ul className="nav subnav ps-2">{navItems}</ul>;
 }
 

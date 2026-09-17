@@ -89,6 +89,12 @@ $light-theme-navigation-background-color: rgb(255, 255, 255);
     overflow: hidden;
   }
 
+  .search-subscribers {
+    color: var(--inactive-color);
+    font-size: 0.85em;
+    white-space: nowrap;
+  }
+
   .sidebar-heading {
     margin: 0.75rem 0 0 0;
     padding: 0;

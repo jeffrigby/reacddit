@@ -233,6 +233,17 @@
       "expectedType": "Thing<LabeledMultiData>[]"
     },
     {
+      "endpoint": "/subreddits/search",
+      "method": "GET",
+      "description": "Search subreddits by name, title and description",
+      "params": {
+        "q": "javascript",
+        "limit": 10,
+        "raw_json": 1
+      },
+      "expectedType": "SubredditsListingResponse"
+    },
+    {
       "endpoint": "/api/search_subreddits",
       "method": "POST",
       "description": "Search for subreddits",

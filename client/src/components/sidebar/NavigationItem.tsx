@@ -1,22 +1,25 @@
+import { memo, type ReactElement } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { useSearchParams } from 'react-router';
 import type { SubredditData } from '@/types/redditApi';
 import type { RootState } from '@/types/redux';
-import { trimSlashes } from '@/common';
 import { useAppSelector } from '@/redux/hooks';
-import { getDiffClassName, buildSortPath } from './navHelpers';
+import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
 
 interface NavigationItemProps {
   item: SubredditData;
+  /** Destination path, built by the list that also publishes it to the registry */
+  href: string;
   trigger: boolean;
 }
 
-function NavigationItem({ item, trigger }: NavigationItemProps) {
-  const sort = useAppSelector((state) => state.listings.currentFilter.sort);
+function NavigationItem({
+  item,
+  href,
+  trigger,
+}: NavigationItemProps): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);
-  const [searchParams] = useSearchParams();
 
   // Select only this item's lastPost value — the returned number is compared
   // via strict === equality, so re-renders only occur when this specific
@@ -26,14 +29,6 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
       state.subredditPolling.lastUpdatedTracking[item.name]?.lastPost ?? 0
   );
 
-  const tValues = searchParams.getAll('t');
-  const timeFilter = tValues.length > 1 ? tValues : tValues[0];
-  const sortPath = buildSortPath(sort, timeFilter);
-
-  const href =
-    item.subreddit_type === 'user'
-      ? `/${trimSlashes(item.url.trim())}/posts/${trimSlashes(sortPath.trim())}`
-      : `/${trimSlashes(item.url.trim())}/${trimSlashes(sortPath.trim())}`;
   const classNameStr = getDiffClassName(lastUpdated, trigger);
   const subLabel = classNameStr.includes('sub-new') ? 'New' : undefined;
 
@@ -63,11 +58,11 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
           id={item.id}
           text={item.display_name}
           title={title}
-          to={href.replace(/\/$/, '')}
+          to={href}
         />
       </div>
     </li>
   );
 }
 
-export default NavigationItem;
+export default memo(NavigationItem);
