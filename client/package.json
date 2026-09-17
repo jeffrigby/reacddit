@@ -20,7 +20,7 @@
     "lint": "prettier --write 'src/**/*.{js,jsx,ts,tsx}' && eslint --fix 'src/**/*.{js,jsx,ts,tsx}'",
     "lint:check": "prettier --check 'src/**/*.{js,jsx,ts,tsx}' && eslint 'src/**/*.{js,jsx,ts,tsx}'",
     "type-check": "tsc --noEmit",
-    "test:component": "vitest --browser"
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -68,7 +68,6 @@
     "@types/react-dom": "^19.1.5",
     "@types/url-parse": "^1.4.11",
     "@vitejs/plugin-react": "^6.0.0",
-    "@vitest/browser-playwright": "^5.0.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-node": "^0.4.0",
     "eslint-import-resolver-typescript": "^4.3.5",
@@ -76,6 +75,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.0.0",
     "globals": "^17.0.0",
+    "happy-dom": "^20.14.5",
     "rollup-plugin-visualizer": "^7.0.1",
     "sass": "^1.94.2",
     "typescript-eslint": "^8.59.1",

@@ -29,10 +29,7 @@ export default defineConfig(({ mode }) => {
       },
       manifest: false, // Use existing public/pwa/manifest.json instead of generating
       devOptions: {
-        // Off under `test`: registering the dev service worker pulls in the
-        // workbox packages, which Vite's dep optimizer then discovers mid-run,
-        // and the reload that follows kills the browser-mode test iframe.
-        enabled: mode !== 'test',
+        enabled: true, // Enable service worker in development mode
         type: 'module', // Required: Vite serves dev SW with ES module imports
       },
     }),

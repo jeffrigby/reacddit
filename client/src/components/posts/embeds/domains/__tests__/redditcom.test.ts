@@ -1,3 +1,9 @@
+/**
+ * The embed registry reaches src/utils/sanitize.ts, which calls
+ * DOMPurify.addHook() as it loads. DOMPurify only exposes that with a window.
+ *
+ * @vitest-environment happy-dom
+ */
 import { describe, it, expect } from 'vitest';
 // Initialize the embed registry first. redditcom.ts, embeds.ts and redd.ts form
 // a circular dependency (embeds.ts eager-globs the domain modules, and redd.ts

@@ -23,7 +23,7 @@
     "update-all": "npm update --workspaces",
     "test:e2e": "npm run test:e2e -w tests",
     "test:e2e:ui": "npm run test:e2e:ui -w tests",
-    "test:component": "npm run test:component -w client"
+    "test:unit": "npm run test:unit -w client"
   },
   "keywords": [
     "es6",
