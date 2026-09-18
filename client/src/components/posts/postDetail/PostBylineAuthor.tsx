@@ -36,6 +36,11 @@ function PostBylineAuthor({
   isSubmitter = false,
 }: PostBylineAuthorProps): React.JSX.Element {
   const redditBearer = useAppSelector((state) => state.redditBearer);
+  const meName = useAppSelector((state) => state.redditMe?.me?.name);
+  // Following needs an account, and an account cannot follow itself.
+  const canFollow =
+    redditBearer.status === 'auth' &&
+    meName?.toLowerCase() !== author.toLowerCase();
 
   const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
   const authorSub = useMemo(() => `u_${author.toLowerCase()}`, [author]);
@@ -126,16 +131,22 @@ function PostBylineAuthor({
     </div>
   ) : (
     <>
-      <Button
-        aria-label={title}
-        className="shadow-none"
-        size="sm"
-        title={title}
-        variant="link"
-        onClick={onClick}
-      >
-        <FontAwesomeIcon icon={displayFollowing ? faUserMinus : faUserPlus} />
-      </Button>{' '}
+      {canFollow && (
+        <>
+          <Button
+            aria-label={title}
+            className="shadow-none"
+            size="sm"
+            title={title}
+            variant="link"
+            onClick={onClick}
+          >
+            <FontAwesomeIcon
+              icon={displayFollowing ? faUserMinus : faUserPlus}
+            />
+          </Button>{' '}
+        </>
+      )}
       <Link
         className={authorClasses}
         state={{ showBack: true }}
