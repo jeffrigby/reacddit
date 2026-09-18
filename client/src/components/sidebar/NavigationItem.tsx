@@ -1,32 +1,27 @@
 import { memo, type ReactElement } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistance } from 'date-fns';
 import type { SubredditData } from '@/types/redditApi';
 import type { RootState } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
 import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
+import { useStalenessClock } from './useStalenessClock';
 
 interface NavigationItemProps {
   item: SubredditData;
   /** Destination path, built by the list that also publishes it to the registry */
   href: string;
   trigger: boolean;
-  /**
-   * Clock reading in milliseconds the staleness classes are measured against.
-   * A list that owns a ticking value passes it so the memo sees it change;
-   * omitting it falls back to the current time at render.
-   */
-  now?: number;
 }
 
 function NavigationItem({
   item,
   href,
   trigger,
-  now,
 }: NavigationItemProps): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);
+  const now = useStalenessClock();
 
   // Select only this item's lastPost value — the returned number is compared
   // via strict === equality, so re-renders only occur when this specific
@@ -41,7 +36,7 @@ function NavigationItem({
 
   let { title } = item;
   if (lastUpdated !== 0) {
-    const timeago = formatDistanceToNow(lastUpdated * 1000);
+    const timeago = formatDistance(lastUpdated * 1000, now);
     title += ` - updated ${timeago} ago`;
   }
 

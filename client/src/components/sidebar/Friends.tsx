@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistance } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUserFriends,
@@ -18,6 +18,7 @@ import { selectLastUpdatedTracking } from '@/redux/slices/subredditPollingSlice'
 import { useAppSelector } from '@/redux/hooks';
 import { getDiffClassName } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
+import { useStalenessClock } from './useStalenessClock';
 
 // Constants
 const MENU_ID = 'friends';
@@ -88,6 +89,7 @@ function Friends() {
     isError,
     unfollowUser,
   } = useFriends();
+  const now = useStalenessClock();
 
   const friendItems = useMemo(() => {
     if (isLoading || isError) {
@@ -101,12 +103,12 @@ function Friends() {
     return userSubreddits.map(({ url, id, display_name: displayName }) => {
       const link = `${url}posts?sort=new`;
       const friendLastUpdated = lastUpdated[`t5_${id}`]?.lastPost ?? 0;
-      const classNameStr = getDiffClassName(friendLastUpdated, false);
+      const classNameStr = getDiffClassName(friendLastUpdated, false, now);
       const badge = classNameStr.includes('sub-new') ? 'New' : null;
       const cleanDisplayName = displayName.replace('u_', '');
       const timeago =
         friendLastUpdated !== 0
-          ? formatDistanceToNow(friendLastUpdated * 1000)
+          ? formatDistance(friendLastUpdated * 1000, now)
           : '';
 
       return (
@@ -142,7 +144,7 @@ function Friends() {
         </li>
       );
     });
-  }, [allSubreddits, isLoading, isError, lastUpdated, unfollowUser]);
+  }, [allSubreddits, isLoading, isError, lastUpdated, now, unfollowUser]);
 
   if (!friendItems || friendItems.length === 0) {
     return null;

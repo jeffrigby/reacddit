@@ -30,18 +30,15 @@ export const TRIGGER_CLASS = 'mark trigger';
 /**
  * Generate classnames for nav items based on last update time
  *
- * The thresholds are measured against `nowMs`, so a caller that re-renders on a
- * shared clock passes that reading in and every row ages against the same value.
- *
  * @param lastUpdated - Timestamp of last update in seconds
  * @param trigger - Whether to add trigger class
- * @param nowMs - Reference time in milliseconds, defaulting to the current time
+ * @param nowMs - Reference time in milliseconds the thresholds are measured against
  * @returns CSS class string
  */
 export function getDiffClassName(
   lastUpdated: number,
   trigger: boolean,
-  nowMs: number = Date.now()
+  nowMs: number
 ): string {
   const classes: string[] = [];
 
