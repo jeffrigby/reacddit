@@ -4,6 +4,7 @@
  */
 
 import { trimSlashes } from '@/common';
+import type { NavSectionId } from './useNavSection';
 
 // Time thresholds in seconds
 const SECONDS_IN_HOUR = 3600;
@@ -26,6 +27,17 @@ function lastUpdatedDiff(lastUpdated: number, nowMs: number): number {
 
 /** Classes marking the nav item the filter box opens on Enter */
 export const TRIGGER_CLASS = 'mark trigger';
+
+/**
+ * DOM id of the anchor a registered nav target renders as.
+ *
+ * Section and path together make the id unique: the same subreddit can be
+ * listed under a custom feed as well, and those rows are not registered.
+ */
+export function navTargetDomId(section: NavSectionId, href: string): string {
+  const slug = href.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+  return `nav-${section}-${slug}`;
+}
 
 /**
  * Generate classnames for nav items based on last update time

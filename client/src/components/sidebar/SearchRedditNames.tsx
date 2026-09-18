@@ -13,7 +13,11 @@ import {
   useSubscribeToSubredditMutation,
 } from '@/redux/api';
 import { formatCompactNumber, formatNumber } from '@/common';
-import { buildSubredditHref, TRIGGER_CLASS } from './navHelpers';
+import {
+  buildSubredditHref,
+  navTargetDomId,
+  TRIGGER_CLASS,
+} from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import {
   rankSubredditSearch,
@@ -140,7 +144,7 @@ function SearchRedditNames(): ReactElement | null {
         <NavigationGenericNavItem
           noLi
           classes={trigger ? TRIGGER_CLASS : ''}
-          id={`sr_search_${displayName}`}
+          id={navTargetDomId('search', href)}
           text={displayName}
           title={result.subreddit.title || displayName}
           to={href}

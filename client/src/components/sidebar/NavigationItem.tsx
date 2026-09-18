@@ -3,9 +3,10 @@ import { formatDistance } from 'date-fns';
 import type { SubredditData } from '@/types/redditApi';
 import type { RootState } from '@/types/redux';
 import { useAppSelector } from '@/redux/hooks';
-import { getDiffClassName } from './navHelpers';
+import { getDiffClassName, navTargetDomId } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
+import type { NavSectionId } from './useNavSection';
 import { useStalenessClock } from './useStalenessClock';
 
 interface NavigationItemProps {
@@ -13,12 +14,15 @@ interface NavigationItemProps {
   /** Destination path, built by the list that also publishes it to the registry */
   href: string;
   trigger: boolean;
+  /** Section that registered href, if this row is keyboard-reachable */
+  navSection?: NavSectionId;
 }
 
 function NavigationItem({
   item,
   href,
   trigger,
+  navSection,
 }: NavigationItemProps): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);
   const now = useStalenessClock();
@@ -57,7 +61,7 @@ function NavigationItem({
           noLi
           badge={subLabel}
           classes={classNameStr}
-          id={item.id}
+          id={navSection ? navTargetDomId(navSection, href) : item.id}
           text={item.display_name}
           title={title}
           to={href}

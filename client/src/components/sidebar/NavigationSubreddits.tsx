@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCaretDown,
@@ -16,6 +17,7 @@ import {
 } from '@/redux/slices/subredditPollingSlice';
 import { getMenuStatus, hotkeyStatus, setMenuStatus, isEmpty } from '@/common';
 import { buildSubredditHref } from './navHelpers';
+import { scrollSidebarRowIntoView } from './scrollSidebarRow';
 import NavigationItem from './NavigationItem';
 import SyncStatus from './SyncStatus';
 import { useFilteredSubreddits } from './useFilteredSubreddits';
@@ -40,6 +42,7 @@ function NavigationSubReddits() {
   const { favorites, regular, where, data, isLoading, isError, refetch } =
     useFilteredSubreddits();
   const { filterActive, filterText, selectedTarget } = useSidebarSelection();
+  const { pathname } = useLocation();
 
   // Clear polling state when auth status changes
   useEffect(() => {
@@ -195,6 +198,20 @@ function NavigationSubReddits() {
     };
   }, [refetch]);
 
+  // Bring the current route's row on screen when the route changes or the
+  // list first arrives. Not while filtering: focusing the box scrolls to the
+  // top and the keyboard selection owns the scroll position then.
+  const rowCount = favorites.length + regular.length;
+  useEffect(() => {
+    if (filterActive || rowCount === 0) {
+      return;
+    }
+    const row = document.querySelector('#sidebar-subreddits a.active');
+    if (row) {
+      scrollSidebarRowIntoView(row);
+    }
+  }, [pathname, rowCount, filterActive]);
+
   const reloadSubreddits = useCallback(async () => {
     // Refetch subreddits list without clearing lastUpdated cache
     await refetch();
@@ -265,6 +282,7 @@ function NavigationSubReddits() {
           href={href}
           item={sub}
           key={sub.name}
+          navSection="subscribed"
           trigger={filterActive && href === selectedTarget}
         />
       );

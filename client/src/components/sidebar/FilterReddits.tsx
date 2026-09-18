@@ -14,6 +14,7 @@ import {
   selectSelectedNavTarget,
 } from '@/redux/slices/subredditFilterSlice';
 import { hotkeyStatus } from '@/common';
+import { useScrollSelectionIntoView } from './useScrollSelectionIntoView';
 
 function FilterReddits() {
   const filterInput = useRef<HTMLInputElement>(null);
@@ -25,6 +26,8 @@ function FilterReddits() {
   const selectedTarget = useAppSelector(selectSelectedNavTarget);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  useScrollSelectionIntoView(selectedTarget, engaged);
 
   /**
    * Set the subreddit filter data.
