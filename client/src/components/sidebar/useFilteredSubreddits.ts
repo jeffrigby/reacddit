@@ -48,6 +48,22 @@ export function useSubscribedNames(): ReadonlySet<string> {
   return useMemo(() => new Set(ids ?? []), [ids]);
 }
 
+const EMPTY_ENTITIES: SubredditsEntityState['entities'] = {};
+
+/**
+ * Subscribed subreddits keyed by lowercased display name, filter ignored.
+ * Empty until the list has loaded.
+ */
+export function useSubscribedEntities(): SubredditsEntityState['entities'] {
+  const where = useSubredditsWhere();
+  const { entities } = useGetSubredditsQuery(
+    { where },
+    { selectFromResult: ({ data }) => ({ entities: data?.entities }) }
+  );
+
+  return entities ?? EMPTY_ENTITIES;
+}
+
 /**
  * Split subscribed subreddits into the two lists the sidebar renders.
  * User profile subreddits are excluded; a filter term matches anywhere in the
