@@ -225,3 +225,30 @@ export function formatRelativeTime(timestamp: number): string {
   const day = date.getDate();
   return `${month} ${day}`;
 }
+
+const compactNumberFormatter = new Intl.NumberFormat('en', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+/**
+ * Format a count compactly (e.g., "394", "1.5K", "2.3M")
+ *
+ * @param value - The number to format
+ * @returns Compact string representation
+ */
+export function formatCompactNumber(value: number): string {
+  return compactNumberFormatter.format(value);
+}
+
+const numberFormatter = new Intl.NumberFormat();
+
+/**
+ * Format a count in full with group separators (e.g., "1,532,904")
+ *
+ * @param value - The number to format
+ * @returns Grouped string representation
+ */
+export function formatNumber(value: number): string {
+  return numberFormatter.format(value);
+}

@@ -46,7 +46,7 @@ function Navigation({ redditBearer, subredditsFilter }: NavigationProps) {
         <div className="nav-divider" />
       </div>
       <NavigationSubReddits />
-      <SearchRedditNames filterText={filterText} />
+      <SearchRedditNames />
       <div className="my-5 py-3 bottom-spacer" />
     </div>
   );

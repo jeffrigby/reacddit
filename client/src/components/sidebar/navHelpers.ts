@@ -3,6 +3,9 @@
  * Includes time-based CSS class generation and URL building utilities
  */
 
+import { trimSlashes } from '@/common';
+import type { NavSectionId } from './useNavSection';
+
 // Time thresholds in seconds
 const SECONDS_IN_HOUR = 3600;
 const SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
@@ -12,29 +15,47 @@ const TODAY_THRESHOLD = SECONDS_IN_DAY; // 1 day
 const NEW_THRESHOLD = SECONDS_IN_HOUR / 2; // 30 minutes
 
 /**
- * Calculate the difference between current time and last updated time
+ * Calculate the difference between a reference time and last updated time
  * @param lastUpdated - Timestamp of last update in seconds
+ * @param nowMs - Reference time in milliseconds
  * @returns Difference in seconds
  */
-function lastUpdatedDiff(lastUpdated: number): number {
-  const now = Math.floor(Date.now() / 1000);
+function lastUpdatedDiff(lastUpdated: number, nowMs: number): number {
+  const now = Math.floor(nowMs / 1000);
   return now - lastUpdated;
+}
+
+/** Classes marking the nav item the filter box opens on Enter */
+export const TRIGGER_CLASS = 'mark trigger';
+
+/**
+ * DOM id of the anchor a registered nav target renders as.
+ *
+ * Section and path together make the id unique: the same subreddit can be
+ * listed under a custom feed as well, and those rows are not registered.
+ */
+export function navTargetDomId(section: NavSectionId, href: string): string {
+  const slug = href.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+  return `nav-${section}-${slug}`;
 }
 
 /**
  * Generate classnames for nav items based on last update time
+ *
  * @param lastUpdated - Timestamp of last update in seconds
  * @param trigger - Whether to add trigger class
+ * @param nowMs - Reference time in milliseconds the thresholds are measured against
  * @returns CSS class string
  */
 export function getDiffClassName(
   lastUpdated: number,
-  trigger: boolean
+  trigger: boolean,
+  nowMs: number
 ): string {
   const classes: string[] = [];
 
   if (lastUpdated > 0) {
-    const seconds = lastUpdatedDiff(lastUpdated);
+    const seconds = lastUpdatedDiff(lastUpdated, nowMs);
 
     // Check in order from most recent to oldest
     if (seconds <= NEW_THRESHOLD) {
@@ -49,7 +70,7 @@ export function getDiffClassName(
   }
 
   if (trigger) {
-    classes.push('mark trigger');
+    classes.push(TRIGGER_CLASS);
   }
 
   return classes.join(' ');
@@ -116,4 +137,26 @@ export function buildSortPath(
 
   const queryString = buildSortQueryString(sort, timeFilter);
   return normalizedSort + queryString;
+}
+
+/**
+ * Builds the path a sidebar subreddit link points at.
+ *
+ * The returned string carries any query string from the sort path and never
+ * ends in a slash, matching the href the anchor renders.
+ *
+ * @param path - Subreddit path, with or without surrounding slashes (`/r/pics/`)
+ * @param sortPath - Sort segment from buildSortPath
+ * @param isUserProfile - Whether the destination is a user profile's post list
+ * @returns Absolute path for the link
+ */
+export function buildSubredditHref(
+  path: string,
+  sortPath: string,
+  isUserProfile = false
+): string {
+  const base = trimSlashes(path.trim());
+  const prefix = isUserProfile ? `${base}/posts` : base;
+  const sort = trimSlashes(sortPath.trim());
+  return sort ? `/${prefix}/${sort}` : `/${prefix}`;
 }

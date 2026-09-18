@@ -147,6 +147,13 @@ export interface CommentData {
   subreddit_name_prefixed: string;
   subreddit_type?: SubredditType;
 
+  // Parent post, present on comments in user listings (overview, comments,
+  // gilded) and absent inside a thread
+  link_title?: string;
+  link_permalink?: string; // Absolute URL on www.reddit.com
+  link_author?: string;
+  link_url?: string;
+
   // Thread structure
   replies?: Listing<CommentData | MoreChildrenData> | '';
 

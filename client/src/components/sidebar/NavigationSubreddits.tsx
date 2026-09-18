@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCaretDown,
@@ -9,26 +10,28 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import type { SubredditData } from '@/types/redditApi';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { useGetSubredditsQuery, subredditSelectors } from '@/redux/api';
-import { selectSubredditFilter } from '@/redux/slices/subredditFilterSlice';
 import {
   fetchSubredditsLastUpdated,
   lastUpdatedCleared,
   selectEarliestExpiration,
 } from '@/redux/slices/subredditPollingSlice';
 import { getMenuStatus, hotkeyStatus, setMenuStatus, isEmpty } from '@/common';
+import { buildSubredditHref } from './navHelpers';
+import { scrollSidebarRowIntoView } from './scrollSidebarRow';
 import NavigationItem from './NavigationItem';
 import SyncStatus from './SyncStatus';
+import { useFilteredSubreddits } from './useFilteredSubreddits';
+import { useNavSection } from './useNavSection';
+import { useSidebarSelection } from './useSidebarSelection';
+import { useSubredditSortPath } from './useSubredditSortPath';
 
 function NavigationSubReddits() {
   const [showMenu, setShowMenu] = useState(() =>
     getMenuStatus('subreddits', true)
   );
-  const redditBearer = useAppSelector((state) => state.redditBearer);
-  const filter = useAppSelector(selectSubredditFilter);
   const dispatch = useAppDispatch();
+  const sortPath = useSubredditSortPath();
 
-  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
   const earliestExpiration = useAppSelector(selectEarliestExpiration);
   const earliestExpirationRef = useRef(earliestExpiration);
   const prevWhereRef = useRef<string | null>(null);
@@ -36,32 +39,10 @@ function NavigationSubReddits() {
   const lastRefreshTimeRef = useRef(Date.now());
   const initialPollFiredRef = useRef(false);
 
-  // Use RTK Query hook - automatically fetches and caches
-  const { data, isLoading, isError, refetch } = useGetSubredditsQuery(
-    { where },
-    {
-      // Don't refetch on mount if we have cached data (1-hour cache)
-      refetchOnMountOrArgChange: false,
-    }
-  );
-
-  // Get all subreddits as array from the entity state
-  const allSubreddits = useMemo(
-    () => (data ? subredditSelectors.selectAll(data) : []),
-    [data]
-  );
-
-  // Filter subreddits locally
-  const filteredSubreddits = useMemo(() => {
-    if (!filter.filterText) {
-      return allSubreddits;
-    }
-
-    const filterLower = filter.filterText.toLowerCase();
-    return allSubreddits.filter((sub: SubredditData) =>
-      sub.display_name.toLowerCase().includes(filterLower)
-    );
-  }, [allSubreddits, filter.filterText]);
+  const { favorites, regular, where, data, isLoading, isError, refetch } =
+    useFilteredSubreddits();
+  const { filterActive, filterText, selectedTarget } = useSidebarSelection();
+  const { pathname } = useLocation();
 
   // Clear polling state when auth status changes
   useEffect(() => {
@@ -217,6 +198,20 @@ function NavigationSubReddits() {
     };
   }, [refetch]);
 
+  // Bring the current route's row on screen when the route changes or the
+  // list first arrives. Not while filtering: focusing the box scrolls to the
+  // top and the keyboard selection owns the scroll position then.
+  const rowCount = favorites.length + regular.length;
+  useEffect(() => {
+    if (filterActive || rowCount === 0) {
+      return;
+    }
+    const row = document.querySelector('#sidebar-subreddits a.active');
+    if (row) {
+      scrollSidebarRowIntoView(row);
+    }
+  }, [pathname, rowCount, filterActive]);
+
   const reloadSubreddits = useCallback(async () => {
     // Refetch subreddits list without clearing lastUpdated cache
     await refetch();
@@ -252,66 +247,61 @@ function NavigationSubReddits() {
     setShowMenu(!showMenu);
   };
 
+  const menuOpen = showMenu || !isEmpty(filterText);
+
+  // Hrefs are built once and used for both the anchors and the registry, so
+  // the path keyboard navigation lands on is the path the link carries.
+  const rows = useMemo(
+    () =>
+      [...favorites, ...regular].map((sub) => ({
+        sub,
+        href: buildSubredditHref(
+          sub.url,
+          sortPath,
+          sub.subreddit_type === 'user'
+        ),
+      })),
+    [favorites, regular, sortPath]
+  );
+
+  // The list renders nothing while loading, after an error, or when collapsed.
+  const targets = useMemo(
+    () =>
+      !isLoading && !isError && menuOpen ? rows.map((row) => row.href) : [],
+    [rows, isLoading, isError, menuOpen]
+  );
+
+  useNavSection('subscribed', targets);
+
   const navItems = useMemo(() => {
-    const filterActive = filter.active && !isEmpty(filter.filterText);
-
-    // Separate favorites and regular subreddits
-    const { favorites, regular } = filteredSubreddits.reduce<{
-      favorites: SubredditData[];
-      regular: SubredditData[];
-    }>(
-      (
-        acc: { favorites: SubredditData[]; regular: SubredditData[] },
-        item: SubredditData
-      ) => {
-        if (item.subreddit_type === 'user') {
-          return acc;
-        }
-        if (item.user_has_favorited) {
-          acc.favorites.push(item);
-        } else {
-          acc.regular.push(item);
-        }
-        return acc;
-      },
-      { favorites: [], regular: [] }
-    );
-
     const items: React.ReactElement[] = [];
-    let pos = 0;
 
-    // Render favorites
-    if (favorites.length > 0) {
-      favorites.forEach((sub: SubredditData) => {
-        const trigger = filter.activeIndex === pos && filterActive;
-        items.push(
-          <NavigationItem item={sub} key={sub.name} trigger={trigger} />
-        );
-        pos += 1;
-      });
-      items.push(
-        <li key="divider">
-          <hr />
-        </li>
+    function renderItem(sub: SubredditData, href: string): React.ReactElement {
+      return (
+        <NavigationItem
+          href={href}
+          item={sub}
+          key={sub.name}
+          navSection="subscribed"
+          trigger={filterActive && href === selectedTarget}
+        />
       );
     }
 
-    // Render regular subreddits
-    regular.forEach((sub: SubredditData) => {
-      const trigger = filter.activeIndex === pos && filterActive;
-      items.push(
-        <NavigationItem item={sub} key={sub.name} trigger={trigger} />
-      );
-      pos += 1;
+    const favoriteCount = favorites.length;
+    rows.forEach(({ sub, href }, idx) => {
+      items.push(renderItem(sub, href));
+      if (favoriteCount > 0 && idx === favoriteCount - 1) {
+        items.push(
+          <li key="divider">
+            <hr />
+          </li>
+        );
+      }
     });
 
     return items;
-  }, [
-    filteredSubreddits,
-    filter.active,
-    filter.activeIndex,
-    filter.filterText,
-  ]);
+  }, [rows, favorites.length, filterActive, selectedTarget]);
 
   const caretIcon = showMenu ? faCaretDown : faCaretRight;
 
@@ -330,7 +320,7 @@ function NavigationSubReddits() {
         <br />
         <button
           aria-label="Reload Subreddits"
-          className="astext"
+          className="text-button text-decoration-underline"
           type="button"
           onClick={reloadSubredditsClick}
         >
@@ -351,38 +341,28 @@ function NavigationSubReddits() {
     }
   }
 
-  const handleReloadKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      reloadSubreddits();
-    }
-  };
-
   return (
     <div id="sidebar-subreddits">
       <div className="sidebar-heading d-flex text-muted">
-        <span
-          className="me-auto show-cursor"
-          role="presentation"
+        <button
+          aria-expanded={showMenu}
+          className="text-button me-auto show-cursor"
+          type="button"
           onClick={toggleMenu}
         >
           <FontAwesomeIcon className="menu-caret" icon={caretIcon} /> Subreddits
-        </span>
-        <span>
-          <FontAwesomeIcon
-            aria-label="Reload Subreddits"
-            className="reload"
-            icon={faSyncAlt}
-            role="button"
-            spin={isLoading}
-            tabIndex={-1}
-            onClick={reloadSubredditsClick}
-            onKeyDown={handleReloadKeyDown}
-          />
-        </span>
+        </button>
+        <button
+          aria-label="Reload Subreddits"
+          className="text-button reload"
+          type="button"
+          onClick={reloadSubredditsClick}
+        >
+          <FontAwesomeIcon icon={faSyncAlt} spin={isLoading} />
+        </button>
       </div>
-      {(showMenu || filter.filterText) && content}
-      {(showMenu || filter.filterText) && <SyncStatus />}
+      {menuOpen && content}
+      {menuOpen && <SyncStatus />}
     </div>
   );
 }

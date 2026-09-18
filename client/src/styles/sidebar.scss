@@ -89,6 +89,12 @@ $light-theme-navigation-background-color: rgb(255, 255, 255);
     overflow: hidden;
   }
 
+  .search-subscribers {
+    color: var(--inactive-color);
+    font-size: 0.85em;
+    white-space: nowrap;
+  }
+
   .sidebar-heading {
     margin: 0.75rem 0 0 0;
     padding: 0;
@@ -104,6 +110,24 @@ $light-theme-navigation-background-color: rgb(255, 255, 255);
   .reload {
     cursor: pointer;
   }
+
+  // Buttons that carry no chrome of their own: they take the typography and
+  // colour of the text around them, and keep a focus ring in the tab order.
+  .text-button {
+    appearance: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-transform: inherit;
+    text-align: inherit;
+
+    &:focus-visible {
+      outline: 1px solid currentcolor;
+      outline-offset: 2px;
+    }
+  }
 }
 
 .form-control-clear {
@@ -113,6 +137,17 @@ $light-theme-navigation-background-color: rgb(255, 255, 255);
   position: absolute;
   right: 12px;
   top: 17px;
+}
+
+button.form-control-clear {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  line-height: 1;
 }
 
 .filter-active {
