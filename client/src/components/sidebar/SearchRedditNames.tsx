@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactElement } from 'react';
+import { useMemo, useRef, useState, type ReactElement } from 'react';
 import { Button } from 'react-bootstrap';
 import { useDebounce } from 'use-debounce';
 import { useAppSelector } from '@/redux/hooks';
@@ -6,7 +6,10 @@ import { useSearchSubredditsQuery } from '@/redux/api';
 import { formatCompactNumber, formatNumber } from '@/common';
 import { buildSubredditHref, TRIGGER_CLASS } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import { rankSubredditSearch } from './rankSubredditSearch';
+import {
+  rankSubredditSearch,
+  type RankedSubreddit,
+} from './rankSubredditSearch';
 import { useSubscribedNames } from './useFilteredSubreddits';
 import { useNavSection } from './useNavSection';
 import { useSidebarSelection } from './useSidebarSelection';
@@ -32,8 +35,11 @@ function SearchRedditNames(): ReactElement | null {
   const subscribedNames = useSubscribedNames();
   const { filterActive, filterText, selectedTarget } = useSidebarSelection();
 
-  const initShowSearchResuts = over18 ?? false;
-  const [showNSFW, setShowNSFW] = useState(initShowSearchResuts);
+  // Anonymous users toggle NSFW results by hand; signed-in users follow their
+  // Reddit over_18 preference, which arrives with the account and can resolve
+  // after this mounts.
+  const [showNSFWAnon, setShowNSFWAnon] = useState(false);
+  const showNSFW = auth ? (over18 ?? false) : showNSFWAnon;
 
   const trimmedFilter = filterText.trim();
   const [debouncedFilter] = useDebounce(trimmedFilter, SEARCH_DEBOUNCE_MS);
@@ -45,7 +51,7 @@ function SearchRedditNames(): ReactElement | null {
   // currentData is scoped to the term being requested: it is undefined while a
   // new term is in flight, so results are never ranked under a term they were
   // not fetched for.
-  const { currentData: searchData } = useSearchSubredditsQuery(
+  const { currentData: searchData, isFetching } = useSearchSubredditsQuery(
     { query: term, includeOver18: showNSFW },
     { skip: skipSearch }
   );
@@ -55,26 +61,36 @@ function SearchRedditNames(): ReactElement | null {
     [searchData, term, subscribedNames]
   );
 
+  // Ranking a term in flight yields nothing, so the last ranked list is held
+  // and keeps rendering, faded, until the new one lands. The rows and the
+  // hrefs registered from them survive a keystroke that way. A skipped search
+  // is not in flight, so a term that falls under MIN_TERM_LENGTH empties this.
+  const retained = useRef<RankedSubreddit[]>([]);
+  if (!isFetching) {
+    retained.current = ranked;
+  }
+  const results = retained.current;
+
   // Hrefs are built once and used for both the anchors and the registry, so
   // the path keyboard navigation lands on is the path the link carries.
   const hrefs = useMemo(
     () =>
-      ranked.map((result) =>
+      results.map((result) =>
         buildSubredditHref(`r/${result.subreddit.display_name}`, sortPath)
       ),
-    [ranked, sortPath]
+    [results, sortPath]
   );
 
   useNavSection('search', hrefs);
 
-  if (skipSearch || ranked.length === 0) {
+  if (results.length === 0) {
     return null;
   }
 
-  const firstRelated = ranked.findIndex((result) => result.tier === 'related');
+  const firstRelated = results.findIndex((result) => result.tier === 'related');
 
   const navItems: ReactElement[] = [];
-  ranked.forEach((result, idx) => {
+  results.forEach((result, idx) => {
     const { display_name: displayName, subscribers } = result.subreddit;
 
     if (idx === firstRelated && idx > 0) {
@@ -111,7 +127,7 @@ function SearchRedditNames(): ReactElement | null {
   });
 
   const toggleNSFW = () => {
-    setShowNSFW(!showNSFW);
+    setShowNSFWAnon((prev) => !prev);
   };
 
   const nsfwText = showNSFW ? 'Hide NSFW' : 'Show NSFW';
@@ -129,12 +145,14 @@ function SearchRedditNames(): ReactElement | null {
     </div>
   ) : null;
 
+  const resultsClass = isFetching ? 'nav flex-column faded' : 'nav flex-column';
+
   return (
     <div id="sidebar-search-results">
       <div className="sidebar-heading d-flex text-muted">
         <span className="me-auto">Search</span>
       </div>
-      <ul className="nav flex-column">{navItems}</ul>
+      <ul className={resultsClass}>{navItems}</ul>
       {nsfwButton}
     </div>
   );
