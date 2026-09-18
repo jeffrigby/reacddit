@@ -10,6 +10,7 @@ import {
   rankSubredditSearch,
   type RankedSubreddit,
 } from './rankSubredditSearch';
+import SearchSubscribe from './SearchSubscribe';
 import { useSubscribedNames } from './useFilteredSubreddits';
 import { useNavSection } from './useNavSection';
 import { useSidebarSelection } from './useSidebarSelection';
@@ -91,7 +92,7 @@ function SearchRedditNames(): ReactElement | null {
 
   const navItems: ReactElement[] = [];
   results.forEach((result, idx) => {
-    const { display_name: displayName, subscribers } = result.subreddit;
+    const { display_name: displayName, name, subscribers } = result.subreddit;
 
     if (idx === firstRelated && idx > 0) {
       navItems.push(
@@ -122,6 +123,7 @@ function SearchRedditNames(): ReactElement | null {
             <span className="visually-hidden"> subscribers</span>
           </span>
         )}
+        <SearchSubscribe displayName={displayName} name={name} />
       </li>
     );
   });
