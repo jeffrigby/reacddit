@@ -553,7 +553,7 @@ export async function subreddits(
 
   const params = setParams(defaults, options);
 
-  const mine = where.match(/subscriber|contributer|moderator|streams/);
+  const mine = where.match(/subscriber|contributor|moderator|streams/);
   const url =
     mine === null ? `/subreddits/${where}` : `/subreddits/mine/${where}`;
 
