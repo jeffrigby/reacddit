@@ -11,10 +11,14 @@ import {
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import {
-  faFile,
-  faThumbsUp,
-  faThumbsDown,
   faBookmark,
+  faComments,
+  faEyeSlash,
+  faFile,
+  faStar,
+  faThumbsDown,
+  faThumbsUp,
+  faUser,
 } from '@fortawesome/free-regular-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '@/common';
@@ -55,6 +59,12 @@ function NavigationAccount(): ReactElement | null {
                 break;
               case 'b':
                 navigate(`/user/${name}/posts`);
+                break;
+              case 'c':
+                navigate(`/user/${name}/comments`);
+                break;
+              case 'v':
+                navigate(`/user/${name}/overview`);
                 break;
               case 's':
                 navigate(`/user/${name}/saved`);
@@ -116,10 +126,22 @@ function NavigationAccount(): ReactElement | null {
           <ul className="nav flex-column">
             <Friends />
             <NavigationGenericNavItem
+              icon={faUser}
+              text="Overview"
+              title="Show My Posts and Comments"
+              to={`/user/${me.name}/overview`}
+            />
+            <NavigationGenericNavItem
               icon={faFile}
               text="Posts"
               title="Show My Submitted Posts"
               to={`/user/${me.name}/posts`}
+            />
+            <NavigationGenericNavItem
+              icon={faComments}
+              text="Comments"
+              title="Show My Comments"
+              to={`/user/${me.name}/comments`}
             />
             <NavigationGenericNavItem
               icon={faThumbsUp}
@@ -138,6 +160,18 @@ function NavigationAccount(): ReactElement | null {
               text="Saved"
               title="Show My Saved Posts"
               to={`/user/${me.name}/saved`}
+            />
+            <NavigationGenericNavItem
+              icon={faEyeSlash}
+              text="Hidden"
+              title="Show My Hidden Posts"
+              to={`/user/${me.name}/hidden`}
+            />
+            <NavigationGenericNavItem
+              icon={faStar}
+              text="Gilded"
+              title="Show My Gilded Posts and Comments"
+              to={`/user/${me.name}/gilded`}
             />
           </ul>
         )}
