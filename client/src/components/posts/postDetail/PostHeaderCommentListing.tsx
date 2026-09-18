@@ -37,12 +37,12 @@ function PostHeaderCommentListing(): React.JSX.Element {
 
   return (
     <header className="comment-listing-header">
-      <div className="d-flex">
-        <div className="me-auto comment-meta meta">
+      <div className="d-flex align-items-center">
+        <div className="me-auto comment-meta meta text-truncate">
           <PostSubLink subreddit={subreddit} />
           {postTitle && (
             <>
-              <span className="px-2">&middot;</span>
+              <span className="px-1 text-muted">&middot;</span>
               {postPath ? (
                 <Link
                   className="comment-listing-title"
@@ -62,15 +62,15 @@ function PostHeaderCommentListing(): React.JSX.Element {
           <PostSave />
         </div>
       </div>
-      <div className="comment-meta meta">
-        <span className="pe-2">
+      <div className="comment-meta meta d-flex align-items-center">
+        <span className="pe-1">
           <PostBylineAuthor
             author={author}
             flair={flair ?? null}
             isSubmitter={Boolean(isSubmitter)}
           />
         </span>
-        <span className="pe-2">commented</span>
+        <span className="pe-1 text-muted">commented</span>
         <Link state={detailNavState} to={permalink}>
           <PostTimeAgo createdUtc={createdUtc} />
         </Link>

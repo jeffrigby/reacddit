@@ -134,12 +134,21 @@
       padding-top: 0.75rem;
       padding-bottom: 0.75rem;
 
-      .entry-interior-t1 .entry-after-header {
-        border-left: 0 !important;
+      .comment-listing-header > div {
+        min-height: 1.5rem;
       }
 
       .comment-listing-title {
         font-weight: bold;
+      }
+
+      .entry-interior-t1 .entry-after-header {
+        border-left: 0 !important;
+        margin-top: 0.25rem;
+      }
+
+      .self-t1 {
+        padding-left: 0 !important;
       }
     }
 
