@@ -95,15 +95,6 @@ $light-theme-navigation-background-color: rgb(255, 255, 255);
     white-space: nowrap;
   }
 
-  .search-subscribe {
-    color: var(--inactive-color);
-
-    &:hover,
-    &:focus-visible {
-      color: inherit;
-    }
-  }
-
   .sidebar-heading {
     margin: 0.75rem 0 0 0;
     padding: 0;

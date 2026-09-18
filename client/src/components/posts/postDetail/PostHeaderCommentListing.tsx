@@ -1,13 +1,12 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { Link } from 'react-router';
-import PostVote from '@/components/posts/postActions/PostVote';
-import PostSave from '@/components/posts/postActions/PostSave';
 import { usePostContext } from '@/contexts';
 import { useDetailNavState } from '@/hooks/useDetailNavState';
 import { decodeHTMLEntities } from '@/utils/sanitize';
 import { getInternalRedditPath } from '@/utils/redditLinks';
 import type { CommentData } from '@/types/redditApi';
 import PostBylineAuthor from './PostBylineAuthor';
+import PostCommentActions from './PostCommentActions';
 import PostSubLink from './PostSubLink';
 import PostTimeAgo from './PostTimeAgo';
 
@@ -32,45 +31,42 @@ function PostHeaderCommentListing(): React.JSX.Element {
     subreddit,
   } = data;
 
-  const postPath = linkPermalink ? getInternalRedditPath(linkPermalink) : null;
-  const postTitle = linkTitle ? decodeHTMLEntities(linkTitle) : null;
+  const postPath = useMemo(
+    () =>
+      (linkPermalink ? getInternalRedditPath(linkPermalink) : null) ??
+      permalink,
+    [linkPermalink, permalink]
+  );
+  const postTitle = useMemo(
+    () => decodeHTMLEntities(linkTitle ?? ''),
+    [linkTitle]
+  );
 
   return (
     <header className="comment-listing-header">
       <div className="d-flex align-items-center">
         <div className="me-auto comment-meta meta text-truncate">
           <PostSubLink subreddit={subreddit} />
-          {postTitle && (
-            <>
-              <span className="px-1 text-muted">&middot;</span>
-              {postPath ? (
-                <Link
-                  className="comment-listing-title"
-                  state={detailNavState}
-                  to={postPath}
-                >
-                  {postTitle}
-                </Link>
-              ) : (
-                <span className="comment-listing-title">{postTitle}</span>
-              )}
-            </>
-          )}
+          <span className="px-1 text-muted">&middot;</span>
+          <Link
+            className="comment-listing-title"
+            state={detailNavState}
+            to={postPath}
+          >
+            {postTitle}
+          </Link>
         </div>
-        <div className="text-nowrap align-middle d-flex actions">
-          <PostVote />
-          <PostSave />
-        </div>
+        <PostCommentActions />
       </div>
       <div className="comment-meta meta d-flex align-items-center">
-        <span className="pe-1">
+        <span className="pe-2">
           <PostBylineAuthor
             author={author}
-            flair={flair ?? null}
-            isSubmitter={Boolean(isSubmitter)}
+            flair={flair}
+            isSubmitter={isSubmitter}
           />
         </span>
-        <span className="pe-1 text-muted">commented</span>
+        <span className="pe-2 text-muted">commented</span>
         <Link state={detailNavState} to={permalink}>
           <PostTimeAgo createdUtc={createdUtc} />
         </Link>

@@ -38,16 +38,14 @@ function PostHeader({
   const postContext = usePostContext();
   const { listType } = useListingsFilter();
   const detailNavState = useDetailNavState();
-  const { post, isLoaded } = postContext;
+  const { post, isLoaded, commentListing } = postContext;
   const { data, kind } = post;
 
-  // A comment inside its thread collapses; one in a listing names its post.
+  if (commentListing) {
+    return <PostHeaderCommentListing />;
+  }
   if (kind === 't1') {
-    return listType === 'comments' ? (
-      <PostHeaderComment expand={expand} toggleView={toggleView} />
-    ) : (
-      <PostHeaderCommentListing />
-    );
+    return <PostHeaderComment expand={expand} toggleView={toggleView} />;
   }
 
   // After the kind check, data is LinkData (t3)

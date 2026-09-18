@@ -21,7 +21,6 @@ import {
   PostsContextData,
   useIntersectionObservers,
   useListingsActive,
-  useListingsFilter,
 } from '@/contexts';
 import { getScrollViewport, hotkeyStatus, scrollByAmount } from '@/common';
 import { findEntry } from '@/components/posts/PostsFunctions';
@@ -124,9 +123,9 @@ function Post({
   const location = useLocation();
   const isActive = useListingsActive();
   const detailNavState = useDetailNavState();
-  const { listType } = useListingsFilter();
-  // A comment outside its thread has no collapsed form.
-  const alwaysExpanded = kind === 't1' && listType !== 'comments';
+  // Reddit attaches the parent post's title to a comment only in user
+  // listings; a comment carrying one is outside its thread and never collapses.
+  const commentListing = kind === 't1' && 'link_title' in data;
 
   const postRef = useRef<HTMLDivElement>(null);
 
@@ -200,7 +199,7 @@ function Post({
   }, [observeForMediaControl, handleMediaControlIntersection]);
 
   const initView = useCallback(() => {
-    if (parent || alwaysExpanded) {
+    if (parent || commentListing) {
       return true;
     }
 
@@ -225,7 +224,7 @@ function Post({
     siteSettings.view,
     parent,
     duplicate,
-    alwaysExpanded,
+    commentListing,
   ]);
 
   const [expand, setExpand] = useState(initView);
@@ -240,6 +239,9 @@ function Post({
   }
 
   useEffect(() => {
+    if (commentListing) {
+      return undefined;
+    }
     let reposInt: ReturnType<typeof setTimeout> | undefined;
     if (siteSettings.view === 'condensed' && lastExpanded) {
       if (expand && data.name !== lastExpanded) {
@@ -281,12 +283,19 @@ function Post({
     return () => {
       clearInterval(reposInt);
     };
-  }, [data.name, expand, lastExpanded, siteSettings.view, isActive]);
+  }, [
+    commentListing,
+    data.name,
+    expand,
+    lastExpanded,
+    siteSettings.view,
+    isActive,
+  ]);
 
   const { renderedContent } = useRenderedContent(data, kind, shouldLoad);
 
   const toggleViewAction = useCallback(() => {
-    if (alwaysExpanded) {
+    if (commentListing) {
       return;
     }
     if (siteSettings.view === 'expanded') {
@@ -296,7 +305,7 @@ function Post({
       setLastExpanded(lastexp);
       setExpand(!expand);
     }
-  }, [alwaysExpanded, data.name, expand, setLastExpanded, siteSettings.view]);
+  }, [commentListing, data.name, expand, setLastExpanded, siteSettings.view]);
 
   const toggleView = useCallback(
     (event: MouseEvent | KeyboardEvent) => {
@@ -373,7 +382,7 @@ function Post({
     loaded: shouldLoad,
     'on-screen': onScreen,
     'comment-child': kind === 't1' && commentDepth != null && commentDepth > 0,
-    'comment-listing': alwaysExpanded,
+    'comment-listing': commentListing,
   });
 
   const commentData = data as CommentData;
@@ -407,8 +416,9 @@ function Post({
       actionable,
       idx,
       fullyOffScreen: fullyOffScreen || !isActive,
+      commentListing,
     }),
-    [actionable, isLoaded, post, idx, fullyOffScreen, isActive]
+    [actionable, isLoaded, post, idx, fullyOffScreen, isActive, commentListing]
   );
 
   return (

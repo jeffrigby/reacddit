@@ -1,8 +1,17 @@
-import { useMemo, useRef, useState, type ReactElement } from 'react';
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+} from 'react';
 import { Button } from 'react-bootstrap';
 import { useDebounce } from 'use-debounce';
 import { useAppSelector } from '@/redux/hooks';
-import { useSearchSubredditsQuery } from '@/redux/api';
+import {
+  useSearchSubredditsQuery,
+  useSubscribeToSubredditMutation,
+} from '@/redux/api';
 import { formatCompactNumber, formatNumber } from '@/common';
 import { buildSubredditHref, TRIGGER_CLASS } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
@@ -35,6 +44,28 @@ function SearchRedditNames(): ReactElement | null {
 
   const subscribedNames = useSubscribedNames();
   const { filterActive, filterText, selectedTarget } = useSidebarSelection();
+
+  // A successful subscribe invalidates the subscribed list, which refetches
+  // and drops the row out of the results, so a row stays pending until it
+  // goes; only a failure clears it.
+  const [subscribeToSubreddit] = useSubscribeToSubredditMutation();
+  const [pendingName, setPendingName] = useState<string | null>(null);
+  const subscribe = useCallback(
+    async (name: string) => {
+      setPendingName(name);
+      try {
+        await subscribeToSubreddit({
+          name,
+          action: 'sub',
+          type: 'sr',
+        }).unwrap();
+      } catch (error) {
+        console.error('Subscribe failed:', error);
+        setPendingName(null);
+      }
+    },
+    [subscribeToSubreddit]
+  );
 
   // Anonymous users toggle NSFW results by hand; signed-in users follow their
   // Reddit over_18 preference, which arrives with the account and can resolve
@@ -123,7 +154,13 @@ function SearchRedditNames(): ReactElement | null {
             <span className="visually-hidden"> subscribers</span>
           </span>
         )}
-        <SearchSubscribe displayName={displayName} name={name} />
+        {auth && (
+          <SearchSubscribe
+            displayName={displayName}
+            pending={pendingName === name}
+            onSubscribe={() => subscribe(name)}
+          />
+        )}
       </li>
     );
   });

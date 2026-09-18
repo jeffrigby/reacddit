@@ -14,7 +14,7 @@
     margin-left: -0.3rem !important;
   }
 
-  .entry-interior-t1 .entry-after-header {
+  .entry:not(.comment-listing) .entry-interior-t1 .entry-after-header {
     border-left: 1px solid rgba(0, 0, 0, 0.125) !important;
   }
 
@@ -121,7 +121,7 @@
       padding-top: 0;
     }
 
-    &.kind-t1 {
+    &.kind-t1:not(.comment-listing) {
       border-bottom: 0;
       padding-top: 0;
       &.condensed {
@@ -130,7 +130,6 @@
     }
 
     &.comment-listing {
-      border-bottom: 1px solid rgba(0, 0, 0, 0.125);
       padding-top: 0.75rem;
       padding-bottom: 0.75rem;
 
@@ -142,13 +141,8 @@
         font-weight: bold;
       }
 
-      .entry-interior-t1 .entry-after-header {
-        border-left: 0 !important;
+      .entry-after-header {
         margin-top: 0.25rem;
-      }
-
-      .self-t1 {
-        padding-left: 0 !important;
       }
     }
 

@@ -10,18 +10,9 @@ import {
   faInfoCircle,
   faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
-import {
-  faBookmark,
-  faComments,
-  faEyeSlash,
-  faFile,
-  faStar,
-  faThumbsDown,
-  faThumbsUp,
-  faUser,
-} from '@fortawesome/free-regular-svg-icons';
 import { useAppSelector } from '@/redux/hooks';
 import { setMenuStatus, getMenuStatus, hotkeyStatus } from '@/common';
+import { ACCOUNT_LINKS } from './accountLinks';
 import Friends from './Friends';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import 'react-tooltip/dist/react-tooltip.css';
@@ -44,33 +35,13 @@ function NavigationAccount(): ReactElement | null {
       const pressedKey = event.key;
 
       if (hotkeyStatus()) {
-        if (lastKeyPressed.current === 'g') {
-          if (me?.name) {
-            const { name } = me;
-            switch (pressedKey) {
-              case 'f':
-                navigate('/r/friends');
-                break;
-              case 'u':
-                navigate(`/user/${name}/upvoted`);
-                break;
-              case 'd':
-                navigate(`/user/${name}/downvoted`);
-                break;
-              case 'b':
-                navigate(`/user/${name}/posts`);
-                break;
-              case 'c':
-                navigate(`/user/${name}/comments`);
-                break;
-              case 'v':
-                navigate(`/user/${name}/overview`);
-                break;
-              case 's':
-                navigate(`/user/${name}/saved`);
-                break;
-              default:
-                break;
+        if (lastKeyPressed.current === 'g' && me?.name) {
+          if (pressedKey === 'f') {
+            navigate('/r/friends');
+          } else {
+            const link = ACCOUNT_LINKS.find((l) => l.hotkey === pressedKey);
+            if (link) {
+              navigate(`/user/${me.name}/${link.target}`);
             }
           }
         }
@@ -81,8 +52,6 @@ function NavigationAccount(): ReactElement | null {
 
     document.addEventListener('keydown', hotkeys);
     return () => document.removeEventListener('keydown', hotkeys);
-    // Only depend on me?.name, not full me object to avoid unnecessary reruns
-    // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
   }, [me?.name, navigate]);
 
   function toggleShowMenu(): void {
@@ -125,54 +94,15 @@ function NavigationAccount(): ReactElement | null {
         {showNavAccountMenu && (
           <ul className="nav flex-column">
             <Friends />
-            <NavigationGenericNavItem
-              icon={faUser}
-              text="Overview"
-              title="Show My Posts and Comments"
-              to={`/user/${me.name}/overview`}
-            />
-            <NavigationGenericNavItem
-              icon={faFile}
-              text="Posts"
-              title="Show My Submitted Posts"
-              to={`/user/${me.name}/posts`}
-            />
-            <NavigationGenericNavItem
-              icon={faComments}
-              text="Comments"
-              title="Show My Comments"
-              to={`/user/${me.name}/comments`}
-            />
-            <NavigationGenericNavItem
-              icon={faThumbsUp}
-              text="Upvoted"
-              title="Show My Upvoted Posts"
-              to={`/user/${me.name}/upvoted`}
-            />
-            <NavigationGenericNavItem
-              icon={faThumbsDown}
-              text="Downvoted"
-              title="Show My Downvoted Posts"
-              to={`/user/${me.name}/downvoted`}
-            />
-            <NavigationGenericNavItem
-              icon={faBookmark}
-              text="Saved"
-              title="Show My Saved Posts"
-              to={`/user/${me.name}/saved`}
-            />
-            <NavigationGenericNavItem
-              icon={faEyeSlash}
-              text="Hidden"
-              title="Show My Hidden Posts"
-              to={`/user/${me.name}/hidden`}
-            />
-            <NavigationGenericNavItem
-              icon={faStar}
-              text="Gilded"
-              title="Show My Gilded Posts and Comments"
-              to={`/user/${me.name}/gilded`}
-            />
+            {ACCOUNT_LINKS.map((link) => (
+              <NavigationGenericNavItem
+                icon={link.icon}
+                key={link.target}
+                text={link.text}
+                title={link.title}
+                to={`/user/${me.name}/${link.target}`}
+              />
+            ))}
           </ul>
         )}
       </div>

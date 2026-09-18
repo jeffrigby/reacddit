@@ -1,19 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router';
 import clsx from 'clsx';
-import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faUser,
-  faUserMinus,
-  faUserPlus,
-} from '@fortawesome/free-solid-svg-icons';
-import {
-  useGetSubredditsQuery,
-  subredditSelectors,
-  useSubscribeToSubredditMutation,
-} from '@/redux/api';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
+import { useGetSubredditsQuery, subredditSelectors } from '@/redux/api';
 import { useAppSelector } from '@/redux/hooks';
+import { selectIsAuth } from '@/redux/slices/redditBearerSlice';
+import { selectUsername } from '@/redux/slices/redditMeSlice';
+import PostBylineFollow from './PostBylineFollow';
 
 interface PostBylineAuthorProps {
   author: string;
@@ -35,93 +29,33 @@ function PostBylineAuthor({
   flair = null,
   isSubmitter = false,
 }: PostBylineAuthorProps): React.JSX.Element {
-  const redditBearer = useAppSelector((state) => state.redditBearer);
-  const meName = useAppSelector((state) => state.redditMe?.me?.name);
-  // Following needs an account, and an account cannot follow itself.
-  const canFollow =
-    redditBearer.status === 'auth' &&
-    meName?.toLowerCase() !== author.toLowerCase();
-
-  const where = redditBearer.status === 'anon' ? 'default' : 'subscriber';
   const authorSub = useMemo(() => `u_${author.toLowerCase()}`, [author]);
 
-  // Use RTK Query mutation for subscribing/unsubscribing
-  const [subscribeToSubreddit] = useSubscribeToSubredditMutation();
+  // Following needs an account, and an account cannot follow itself.
+  const canFollow = useAppSelector(
+    (state) =>
+      selectIsAuth(state) &&
+      selectUsername(state)?.toLowerCase() !== author.toLowerCase()
+  );
 
-  // Use RTK Query hook with selectFromResult to check if user is followed
-  const { followedUser } = useGetSubredditsQuery(
-    { where },
+  const { isFollowed } = useGetSubredditsQuery(
+    { where: 'subscriber' },
     {
+      skip: !canFollow,
       selectFromResult: ({ data }) => ({
-        followedUser: data
-          ? subredditSelectors.selectById(data, authorSub)
-          : undefined,
+        isFollowed:
+          data !== undefined &&
+          subredditSelectors.selectById(data, authorSub) !== undefined,
       }),
     }
   );
-
-  const isFollowed = useMemo(() => !!followedUser, [followedUser]);
-
-  const [optimisticFollowing, setOptimisticFollowing] = useState<
-    boolean | null
-  >(null);
-
-  // Use optimistic value if set, otherwise fall back to server state
-  const displayFollowing = optimisticFollowing ?? isFollowed;
-
-  // Keep the optimistic value until the server state catches up — clearing it
-  // when the mutation resolves would revert the button to the stale cache
-  // value while the invalidation refetch is still in flight.
-  useEffect(() => {
-    if (optimisticFollowing !== null && optimisticFollowing === isFollowed) {
-      setOptimisticFollowing(null);
-    }
-  }, [optimisticFollowing, isFollowed]);
-
-  const unfollowUser = async (name: string): Promise<void> => {
-    setOptimisticFollowing(false);
-    try {
-      await subscribeToSubreddit({
-        name,
-        action: 'unsub',
-        type: 'sr_name',
-      }).unwrap();
-    } catch (error) {
-      console.error('Failed to unfollow user:', error);
-      setOptimisticFollowing(null); // Revert to server state on error
-    }
-  };
-
-  const followUser = async (name: string): Promise<void> => {
-    setOptimisticFollowing(true);
-    try {
-      await subscribeToSubreddit({
-        name,
-        action: 'sub',
-        type: 'sr_name',
-      }).unwrap();
-    } catch (error) {
-      console.error('Failed to follow user:', error);
-      setOptimisticFollowing(null); // Revert to server state on error
-    }
-  };
-
-  const onClick = (): void => {
-    if (displayFollowing) {
-      unfollowUser(authorSub);
-    } else {
-      followUser(authorSub);
-    }
-  };
-
-  const title = !displayFollowing ? `follow ${author}` : `unfollow ${author}`;
 
   const authorFlair = flair ? (
     <span className="badge bg-dark">{flair}</span>
   ) : null;
 
   const authorClasses = clsx({
-    'is-followed': displayFollowing,
+    'is-followed': isFollowed,
     'is-submitter': isSubmitter,
   });
 
@@ -132,20 +66,11 @@ function PostBylineAuthor({
   ) : (
     <>
       {canFollow && (
-        <>
-          <Button
-            aria-label={title}
-            className="shadow-none"
-            size="sm"
-            title={title}
-            variant="link"
-            onClick={onClick}
-          >
-            <FontAwesomeIcon
-              icon={displayFollowing ? faUserMinus : faUserPlus}
-            />
-          </Button>{' '}
-        </>
+        <PostBylineFollow
+          author={author}
+          authorSub={authorSub}
+          isFollowed={isFollowed}
+        />
       )}
       <Link
         className={authorClasses}
