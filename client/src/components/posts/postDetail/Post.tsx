@@ -16,11 +16,12 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Content from '@/components/posts/Content';
 import renderContent from '@/components/posts/embeds';
 import {
-  PostsContextData,
-  PostsContextActionable,
   ListingsContextLastExpanded,
+  PostsContextActionable,
+  PostsContextData,
   useIntersectionObservers,
   useListingsActive,
+  useListingsFilter,
 } from '@/contexts';
 import { getScrollViewport, hotkeyStatus, scrollByAmount } from '@/common';
 import { findEntry } from '@/components/posts/PostsFunctions';
@@ -123,6 +124,9 @@ function Post({
   const location = useLocation();
   const isActive = useListingsActive();
   const detailNavState = useDetailNavState();
+  const { listType } = useListingsFilter();
+  // A comment outside its thread has no collapsed form.
+  const alwaysExpanded = kind === 't1' && listType !== 'comments';
 
   const postRef = useRef<HTMLDivElement>(null);
 
@@ -196,7 +200,7 @@ function Post({
   }, [observeForMediaControl, handleMediaControlIntersection]);
 
   const initView = useCallback(() => {
-    if (parent) {
+    if (parent || alwaysExpanded) {
       return true;
     }
 
@@ -221,6 +225,7 @@ function Post({
     siteSettings.view,
     parent,
     duplicate,
+    alwaysExpanded,
   ]);
 
   const [expand, setExpand] = useState(initView);
@@ -281,6 +286,9 @@ function Post({
   const { renderedContent } = useRenderedContent(data, kind, shouldLoad);
 
   const toggleViewAction = useCallback(() => {
+    if (alwaysExpanded) {
+      return;
+    }
     if (siteSettings.view === 'expanded') {
       setExpand(!expand);
     } else {
@@ -288,7 +296,7 @@ function Post({
       setLastExpanded(lastexp);
       setExpand(!expand);
     }
-  }, [data.name, expand, setLastExpanded, siteSettings.view]);
+  }, [alwaysExpanded, data.name, expand, setLastExpanded, siteSettings.view]);
 
   const toggleView = useCallback(
     (event: MouseEvent | KeyboardEvent) => {
@@ -365,6 +373,7 @@ function Post({
     loaded: shouldLoad,
     'on-screen': onScreen,
     'comment-child': kind === 't1' && commentDepth != null && commentDepth > 0,
+    'comment-listing': alwaysExpanded,
   });
 
   const commentData = data as CommentData;

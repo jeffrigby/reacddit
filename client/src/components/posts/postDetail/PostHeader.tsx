@@ -17,6 +17,7 @@ import { decodeHTMLEntities, sanitizeHref } from '@/utils/sanitize';
 import { useDetailNavState } from '@/hooks/useDetailNavState';
 import type { LinkData } from '@/types/redditApi';
 import PostHeaderComment from './PostHeaderComment';
+import PostHeaderCommentListing from './PostHeaderCommentListing';
 import PostTimeAgo from './PostTimeAgo';
 import PostCommentLink from './PostCommentLink';
 import PostSubLink from './PostSubLink';
@@ -40,9 +41,13 @@ function PostHeader({
   const { post, isLoaded } = postContext;
   const { data, kind } = post;
 
-  // Is this a comment?
+  // A comment inside its thread collapses; one in a listing names its post.
   if (kind === 't1') {
-    return <PostHeaderComment expand={expand} toggleView={toggleView} />;
+    return listType === 'comments' ? (
+      <PostHeaderComment expand={expand} toggleView={toggleView} />
+    ) : (
+      <PostHeaderCommentListing />
+    );
   }
 
   // After the kind check, data is LinkData (t3)

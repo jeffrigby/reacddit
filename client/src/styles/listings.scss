@@ -129,6 +129,20 @@
       }
     }
 
+    &.comment-listing {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+
+      .entry-interior-t1 .entry-after-header {
+        border-left: 0 !important;
+      }
+
+      .comment-listing-title {
+        font-weight: bold;
+      }
+    }
+
     &:first-child {
       padding-top: 0.5em;
     }
