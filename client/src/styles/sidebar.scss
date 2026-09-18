@@ -110,6 +110,24 @@ $light-theme-navigation-background-color: rgb(255, 255, 255);
   .reload {
     cursor: pointer;
   }
+
+  // Buttons that carry no chrome of their own: they take the typography and
+  // colour of the text around them, and keep a focus ring in the tab order.
+  .text-button {
+    appearance: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-transform: inherit;
+    text-align: inherit;
+
+    &:focus-visible {
+      outline: 1px solid currentcolor;
+      outline-offset: 2px;
+    }
+  }
 }
 
 .form-control-clear {

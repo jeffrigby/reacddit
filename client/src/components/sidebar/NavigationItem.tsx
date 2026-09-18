@@ -12,12 +12,19 @@ interface NavigationItemProps {
   /** Destination path, built by the list that also publishes it to the registry */
   href: string;
   trigger: boolean;
+  /**
+   * Clock reading in milliseconds the staleness classes are measured against.
+   * A list that owns a ticking value passes it so the memo sees it change;
+   * omitting it falls back to the current time at render.
+   */
+  now?: number;
 }
 
 function NavigationItem({
   item,
   href,
   trigger,
+  now,
 }: NavigationItemProps): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);
 
@@ -29,7 +36,7 @@ function NavigationItem({
       state.subredditPolling.lastUpdatedTracking[item.name]?.lastPost ?? 0
   );
 
-  const classNameStr = getDiffClassName(lastUpdated, trigger);
+  const classNameStr = getDiffClassName(lastUpdated, trigger, now);
   const subLabel = classNameStr.includes('sub-new') ? 'New' : undefined;
 
   let { title } = item;

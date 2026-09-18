@@ -14,12 +14,13 @@ const TODAY_THRESHOLD = SECONDS_IN_DAY; // 1 day
 const NEW_THRESHOLD = SECONDS_IN_HOUR / 2; // 30 minutes
 
 /**
- * Calculate the difference between current time and last updated time
+ * Calculate the difference between a reference time and last updated time
  * @param lastUpdated - Timestamp of last update in seconds
+ * @param nowMs - Reference time in milliseconds
  * @returns Difference in seconds
  */
-function lastUpdatedDiff(lastUpdated: number): number {
-  const now = Math.floor(Date.now() / 1000);
+function lastUpdatedDiff(lastUpdated: number, nowMs: number): number {
+  const now = Math.floor(nowMs / 1000);
   return now - lastUpdated;
 }
 
@@ -28,18 +29,24 @@ export const TRIGGER_CLASS = 'mark trigger';
 
 /**
  * Generate classnames for nav items based on last update time
+ *
+ * The thresholds are measured against `nowMs`, so a caller that re-renders on a
+ * shared clock passes that reading in and every row ages against the same value.
+ *
  * @param lastUpdated - Timestamp of last update in seconds
  * @param trigger - Whether to add trigger class
+ * @param nowMs - Reference time in milliseconds, defaulting to the current time
  * @returns CSS class string
  */
 export function getDiffClassName(
   lastUpdated: number,
-  trigger: boolean
+  trigger: boolean,
+  nowMs: number = Date.now()
 ): string {
   const classes: string[] = [];
 
   if (lastUpdated > 0) {
-    const seconds = lastUpdatedDiff(lastUpdated);
+    const seconds = lastUpdatedDiff(lastUpdated, nowMs);
 
     // Check in order from most recent to oldest
     if (seconds <= NEW_THRESHOLD) {

@@ -23,10 +23,16 @@ import { useNavSection } from './useNavSection';
 import { useSidebarSelection } from './useSidebarSelection';
 import { useSubredditSortPath } from './useSubredditSortPath';
 
+// Interval of the shared clock the staleness classes are measured against.
+// One reading serves the whole list, so it is coarse enough that invalidating
+// every row's memo stays cheap.
+const STALENESS_TICK_MS = 300_000; // 5 minutes
+
 function NavigationSubReddits() {
   const [showMenu, setShowMenu] = useState(() =>
     getMenuStatus('subreddits', true)
   );
+  const [now, setNow] = useState(() => Date.now());
   const dispatch = useAppDispatch();
   const sortPath = useSubredditSortPath();
 
@@ -195,6 +201,45 @@ function NavigationSubReddits() {
     };
   }, [refetch]);
 
+  // Shared clock for the staleness classes, which are derived from elapsed time
+  // rather than from any store value. One interval drives every row; it runs
+  // only while the tab is visible and takes a fresh reading on return.
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startTick = (): void => {
+      intervalId = setInterval(() => {
+        setNow(Date.now());
+      }, STALENESS_TICK_MS);
+    };
+
+    const stopTick = (): void => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibility = (): void => {
+      stopTick();
+      if (!document.hidden) {
+        setNow(Date.now());
+        startTick();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    if (!document.hidden) {
+      startTick();
+    }
+
+    return () => {
+      stopTick();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, []);
+
   const reloadSubreddits = useCallback(async () => {
     // Refetch subreddits list without clearing lastUpdated cache
     await refetch();
@@ -265,6 +310,7 @@ function NavigationSubReddits() {
           href={href}
           item={sub}
           key={sub.name}
+          now={now}
           trigger={filterActive && href === selectedTarget}
         />
       );
@@ -283,7 +329,7 @@ function NavigationSubReddits() {
     });
 
     return items;
-  }, [rows, favorites.length, filterActive, selectedTarget]);
+  }, [rows, favorites.length, filterActive, selectedTarget, now]);
 
   const caretIcon = showMenu ? faCaretDown : faCaretRight;
 
@@ -302,7 +348,7 @@ function NavigationSubReddits() {
         <br />
         <button
           aria-label="Reload Subreddits"
-          className="astext"
+          className="text-button text-decoration-underline"
           type="button"
           onClick={reloadSubredditsClick}
         >
@@ -323,35 +369,25 @@ function NavigationSubReddits() {
     }
   }
 
-  const handleReloadKeyDown = (event: React.KeyboardEvent<SVGSVGElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      reloadSubreddits();
-    }
-  };
-
   return (
     <div id="sidebar-subreddits">
       <div className="sidebar-heading d-flex text-muted">
-        <span
-          className="me-auto show-cursor"
-          role="presentation"
+        <button
+          aria-expanded={showMenu}
+          className="text-button me-auto show-cursor"
+          type="button"
           onClick={toggleMenu}
         >
           <FontAwesomeIcon className="menu-caret" icon={caretIcon} /> Subreddits
-        </span>
-        <span>
-          <FontAwesomeIcon
-            aria-label="Reload Subreddits"
-            className="reload"
-            icon={faSyncAlt}
-            role="button"
-            spin={isLoading}
-            tabIndex={-1}
-            onClick={reloadSubredditsClick}
-            onKeyDown={handleReloadKeyDown}
-          />
-        </span>
+        </button>
+        <button
+          aria-label="Reload Subreddits"
+          className="text-button reload"
+          type="button"
+          onClick={reloadSubredditsClick}
+        >
+          <FontAwesomeIcon icon={faSyncAlt} spin={isLoading} />
+        </button>
       </div>
       {menuOpen && content}
       {menuOpen && <SyncStatus />}
