@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserMinus, faUserPlus } from '@fortawesome/free-solid-svg-icons';
@@ -8,38 +7,26 @@ interface PostBylineFollowProps {
   author: string;
   /** The author's profile subreddit, u_<name> in lowercase */
   authorSub: string;
-  isFollowed: boolean;
+  following: boolean;
+  /** Receives the intended state at once, and null if the request fails */
+  onOptimistic: (following: boolean | null) => void;
 }
 
 /**
  * Follow and unfollow button for an author. Following is a subscription to
- * the profile subreddit; the icon flips at once and holds until the
- * subscribed list has refetched.
+ * the profile subreddit.
  */
 function PostBylineFollow({
   author,
   authorSub,
-  isFollowed,
+  following,
+  onOptimistic,
 }: PostBylineFollowProps): React.JSX.Element {
   const [subscribeToSubreddit] = useSubscribeToSubredditMutation();
-  const [optimisticFollowing, setOptimisticFollowing] = useState<
-    boolean | null
-  >(null);
-
-  const displayFollowing = optimisticFollowing ?? isFollowed;
-
-  // Keep the optimistic value until the server state catches up — clearing it
-  // when the mutation resolves would revert the button to the stale cache
-  // value while the invalidation refetch is still in flight.
-  useEffect(() => {
-    if (optimisticFollowing !== null && optimisticFollowing === isFollowed) {
-      setOptimisticFollowing(null);
-    }
-  }, [optimisticFollowing, isFollowed]);
 
   const onClick = async (): Promise<void> => {
-    const follow = !displayFollowing;
-    setOptimisticFollowing(follow);
+    const follow = !following;
+    onOptimistic(follow);
     try {
       await subscribeToSubreddit({
         name: authorSub,
@@ -48,11 +35,11 @@ function PostBylineFollow({
       }).unwrap();
     } catch (error) {
       console.error(`Failed to ${follow ? 'follow' : 'unfollow'} user:`, error);
-      setOptimisticFollowing(null);
+      onOptimistic(null);
     }
   };
 
-  const title = displayFollowing ? `unfollow ${author}` : `follow ${author}`;
+  const title = following ? `unfollow ${author}` : `follow ${author}`;
 
   return (
     <Button
@@ -63,7 +50,7 @@ function PostBylineFollow({
       variant="link"
       onClick={onClick}
     >
-      <FontAwesomeIcon icon={displayFollowing ? faUserMinus : faUserPlus} />
+      <FontAwesomeIcon icon={following ? faUserMinus : faUserPlus} />
     </Button>
   );
 }

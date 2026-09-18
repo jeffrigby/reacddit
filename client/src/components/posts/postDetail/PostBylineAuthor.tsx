@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import clsx from 'clsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -50,12 +50,26 @@ function PostBylineAuthor({
     }
   );
 
+  // The intended state shows at once and holds until the subscribed list has
+  // refetched; clearing it when the request resolves would show the stale
+  // cache value while the refetch is still in flight.
+  const [optimisticFollowing, setOptimisticFollowing] = useState<
+    boolean | null
+  >(null);
+  const following = optimisticFollowing ?? isFollowed;
+
+  useEffect(() => {
+    if (optimisticFollowing !== null && optimisticFollowing === isFollowed) {
+      setOptimisticFollowing(null);
+    }
+  }, [optimisticFollowing, isFollowed]);
+
   const authorFlair = flair ? (
     <span className="badge bg-dark">{flair}</span>
   ) : null;
 
   const authorClasses = clsx({
-    'is-followed': isFollowed,
+    'is-followed': following,
     'is-submitter': isSubmitter,
   });
 
@@ -69,7 +83,8 @@ function PostBylineAuthor({
         <PostBylineFollow
           author={author}
           authorSub={authorSub}
-          isFollowed={isFollowed}
+          following={following}
+          onOptimistic={setOptimisticFollowing}
         />
       )}
       <Link
