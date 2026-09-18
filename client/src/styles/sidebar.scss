@@ -121,6 +121,17 @@ $light-theme-navigation-background-color: rgb(255, 255, 255);
   top: 17px;
 }
 
+button.form-control-clear {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  line-height: 1;
+}
+
 .filter-active {
   .close-menu-link {
     display: none !important;

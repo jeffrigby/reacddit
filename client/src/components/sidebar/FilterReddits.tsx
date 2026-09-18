@@ -154,24 +154,20 @@ function FilterReddits() {
         onFocus={setFocus}
       />
       {filterText && (
-        <FontAwesomeIcon
-          aria-hidden
-          aria-label="Clear Filter Box"
+        <button
+          aria-label="Clear filter"
           className="form-control-clear filter-clear"
-          icon={faTimesCircle}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              clearSearch();
-            }
+          type="button"
+          onClick={() => {
+            clearSearch();
+            filterInput.current?.focus();
           }}
           onMouseDown={(e) => {
-            e.preventDefault(); // Prevent blur on mousedown
-            clearSearch();
+            e.preventDefault(); // Keep focus on the input
           }}
-        />
+        >
+          <FontAwesomeIcon aria-hidden icon={faTimesCircle} />
+        </button>
       )}
     </div>
   );
