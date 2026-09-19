@@ -162,11 +162,10 @@ function FilterReddits() {
           className="form-control-clear filter-clear"
           type="button"
           onClick={() => {
-            clearSearch();
-            filterInput.current?.focus();
+            clearSearch(true); // Clear and leave filter mode, like Escape
           }}
           onMouseDown={(e) => {
-            e.preventDefault(); // Keep focus on the input
+            e.preventDefault(); // No focus change until the click lands
           }}
         >
           <FontAwesomeIcon aria-hidden icon={faTimesCircle} />
