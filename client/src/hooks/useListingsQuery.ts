@@ -112,7 +112,18 @@ export function useListingsQuery(
     skip: false,
   });
 
-  const { data, isLoading, isFetching, isError, error, refetch } = result;
+  // currentData belongs to the listing being shown: it is undefined until
+  // that listing's own first page arrives, so a failed load shows the error
+  // alone rather than over the previous listing. Pages merge into one cache
+  // entry per filter, so it stays populated while later pages load.
+  const {
+    currentData: data,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = result;
 
   // Clear transitioning flag when new data arrives
   useEffect(() => {
