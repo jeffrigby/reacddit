@@ -24,10 +24,12 @@ function SubUnSub({ about }: SubUnSubProps) {
 
   const { target, listType } = params;
 
-  // Local state for optimistic UI updates
-  const [optimisticSubscribed, setOptimisticSubscribed] = useState<
-    boolean | null
-  >(null);
+  // Optimistic state, tied to the subreddit it was set for so it cannot
+  // carry over when the header moves to another subreddit.
+  const [optimistic, setOptimistic] = useState<{
+    name: string;
+    subscribed: boolean;
+  } | null>(null);
 
   // RTK Query mutation hook
   const [subscribeToSubreddit, { isLoading }] =
@@ -38,6 +40,11 @@ function SubUnSub({ about }: SubUnSubProps) {
     display_name_prefixed: displayNamePrefixed,
   } = about ?? {};
 
+  const aboutName = about && 'name' in about ? about.name : undefined;
+  const optimisticSubscribed =
+    optimistic !== null && optimistic.name === aboutName
+      ? optimistic.subscribed
+      : null;
   // Use optimistic state if set, otherwise use server state
   const effectiveSubscribed = optimisticSubscribed ?? userIsSubscriber;
 
@@ -49,7 +56,7 @@ function SubUnSub({ about }: SubUnSubProps) {
     const newSubscribedState = !effectiveSubscribed;
 
     // Optimistically update UI immediately
-    setOptimisticSubscribed(newSubscribedState);
+    setOptimistic({ name: about.name, subscribed: newSubscribedState });
 
     try {
       await subscribeToSubreddit({
@@ -60,7 +67,7 @@ function SubUnSub({ about }: SubUnSubProps) {
     } catch (error) {
       console.error('Subscribe/unsubscribe failed:', error);
       // Revert optimistic update on error
-      setOptimisticSubscribed(null);
+      setOptimistic(null);
     }
   }, [effectiveSubscribed, about, subscribeToSubreddit]);
 
