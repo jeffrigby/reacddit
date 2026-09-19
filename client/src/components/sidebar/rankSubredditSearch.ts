@@ -1,4 +1,4 @@
-import type { AccountData, SubredditData, Thing } from '@/types/redditApi';
+import type { SubredditData, Thing } from '@/types/redditApi';
 
 /**
  * Tier a search result falls into, most relevant first:
@@ -18,94 +18,6 @@ export const RELATED_TIER_LIMIT = 5;
 
 /** Characters a display name cannot contain, dropped from the search term. */
 const NON_NAME_CHARS = /[^a-z0-9_]/g;
-
-/**
- * The part of a search term that can be a subreddit or user name: lowercased,
- * with every character a name cannot hold removed.
- */
-export function nameTermOf(term: string): string {
-  return term.trim().toLowerCase().replace(NON_NAME_CHARS, '');
-}
-
-/** Users offered per search. */
-export const USER_RESULT_LIMIT = 5;
-
-/**
- * Rank user search results for the sidebar.
- *
- * /users/search is a text search over profile content, so it returns names
- * that merely mention the term. Names starting with the term come first,
- * then the rest in Reddit's order; suspended accounts are dropped.
- *
- * @param children - Listing children from /users/search
- * @param nameTerm - Term reduced by nameTermOf
- * @returns At most USER_RESULT_LIMIT accounts, most relevant first
- */
-export function rankUserSearch(
-  children: Thing<AccountData>[] | undefined,
-  nameTerm: string
-): AccountData[] {
-  if (!children || nameTerm === '') {
-    return [];
-  }
-  const prefix: AccountData[] = [];
-  const rest: AccountData[] = [];
-  for (const { data } of children) {
-    if (data.is_suspended) {
-      continue;
-    }
-    (data.name.toLowerCase().startsWith(nameTerm) ? prefix : rest).push(data);
-  }
-  return [...prefix, ...rest].slice(0, USER_RESULT_LIMIT);
-}
-
-/** Exact-name destinations confirmed by Reddit that no result row covers. */
-export interface VerifiedDirect {
-  /** Subreddit name as Reddit spells it, or null */
-  subreddit: string | null;
-  /** User name as typed, or null */
-  user: string | null;
-}
-
-/**
- * The typed name as a subreddit and as a user, each only when Reddit
- * confirms it exists and no row on screen already leads there.
- *
- * @param nameTerm - Term reduced by nameTermOf
- * @param subscribedNames - Lowercased subscribed display names
- * @param results - Ranked subreddit results on screen
- * @param subredditNames - Names from /api/search_reddit_names, if loaded
- * @param users - Ranked user results on screen
- * @param usernameAvailable - /api/username_available for nameTerm, if loaded
- */
-export function verifiedDirect(
-  nameTerm: string,
-  subscribedNames: ReadonlySet<string>,
-  results: RankedSubreddit[],
-  subredditNames: string[] | undefined,
-  users: AccountData[],
-  usernameAvailable: boolean | undefined
-): VerifiedDirect {
-  if (nameTerm === '') {
-    return { subreddit: null, user: null };
-  }
-  const listedSub =
-    subscribedNames.has(nameTerm) ||
-    results.some(
-      (result) => result.subreddit.display_name.toLowerCase() === nameTerm
-    );
-  const confirmedSub = listedSub
-    ? undefined
-    : subredditNames?.find((name) => name.toLowerCase() === nameTerm);
-
-  const listedUser = users.some((user) => user.name.toLowerCase() === nameTerm);
-  const confirmedUser = !listedUser && usernameAvailable === false;
-
-  return {
-    subreddit: confirmedSub ?? null,
-    user: confirmedUser ? nameTerm : null,
-  };
-}
 
 /**
  * Sort by subscriber count, highest first. Missing counts sort as 0.
@@ -157,10 +69,11 @@ export function rankSubredditSearch(
   term: string,
   subscribedNames: ReadonlySet<string>
 ): RankedSubreddit[] {
-  if (!children || term.trim() === '') {
+  const searchTerm = term.trim().toLowerCase();
+  if (!children || searchTerm === '') {
     return [];
   }
-  const nameTerm = nameTermOf(term);
+  const nameTerm = searchTerm.replace(NON_NAME_CHARS, '');
 
   const prefix: RankedSubreddit[] = [];
   const contains: RankedSubreddit[] = [];

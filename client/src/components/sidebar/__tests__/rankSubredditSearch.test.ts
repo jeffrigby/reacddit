@@ -1,12 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { AccountData, SubredditData, Thing } from '@/types/redditApi';
+import type { SubredditData, Thing } from '@/types/redditApi';
 import {
   RELATED_TIER_LIMIT,
-  USER_RESULT_LIMIT,
-  nameTermOf,
   rankSubredditSearch,
-  rankUserSearch,
-  verifiedDirect,
 } from '../rankSubredditSearch';
 
 interface SubOverrides {
@@ -158,13 +154,6 @@ describe('rankSubredditSearch', () => {
   });
 });
 
-describe('nameTermOf', () => {
-  it('lowercases and drops characters a name cannot hold', () => {
-    expect(nameTermOf('  r/Ask Reddit! ')).toBe('raskreddit');
-    expect(nameTermOf('under_score')).toBe('under_score');
-  });
-});
-
 describe('rankSubredditSearch gated subreddits', () => {
   it('drops private, gold-only and employee-only subreddits', () => {
     expect(
@@ -193,84 +182,5 @@ describe('rankSubredditSearch gated subreddits', () => {
     expect(
       names([sub('readonlypics', { subredditType: 'restricted' })], 'pics')
     ).toEqual(['readonlypics']);
-  });
-});
-
-function account(name: string, suspended = false): Thing<AccountData> {
-  return {
-    kind: 't2',
-    data: {
-      id: name.toLowerCase(),
-      name,
-      is_suspended: suspended,
-    } as AccountData,
-  };
-}
-
-describe('rankUserSearch', () => {
-  it('puts names starting with the term first and keeps the rest in order', () => {
-    const ranked = rankUserSearch(
-      [account('Evil_Spez'), account('spez'), account('Spez-zo')],
-      'spez'
-    );
-    expect(ranked.map((u) => u.name)).toEqual(['spez', 'Spez-zo', 'Evil_Spez']);
-  });
-
-  it('drops suspended accounts and caps the list', () => {
-    const many = Array.from({ length: USER_RESULT_LIMIT + 3 }, (_, i) =>
-      account(`spez${i}`, i === 0)
-    );
-    const ranked = rankUserSearch(many, 'spez');
-    expect(ranked).toHaveLength(USER_RESULT_LIMIT);
-    expect(ranked.some((u) => u.name === 'spez0')).toBe(false);
-  });
-
-  it('returns nothing without a term or data', () => {
-    expect(rankUserSearch(undefined, 'spez')).toEqual([]);
-    expect(rankUserSearch([account('spez')], '')).toEqual([]);
-  });
-});
-
-describe('verifiedDirect', () => {
-  const none = new Set<string>();
-
-  it('offers nothing without a term', () => {
-    expect(verifiedDirect('', none, [], ['pics'], [], false)).toEqual({
-      subreddit: null,
-      user: null,
-    });
-  });
-
-  it('offers a subreddit only when Reddit lists the exact name', () => {
-    expect(
-      verifiedDirect('pics', none, [], ['Pics', 'picrew'], [], undefined)
-        .subreddit
-    ).toBe('Pics');
-    expect(
-      verifiedDirect('pic', none, [], ['Pics', 'picrew'], [], undefined)
-        .subreddit
-    ).toBeNull();
-    expect(
-      verifiedDirect('pics', none, [], undefined, [], undefined).subreddit
-    ).toBeNull();
-  });
-
-  it('withholds the subreddit when a row already leads there', () => {
-    expect(
-      verifiedDirect('pics', new Set(['pics']), [], ['pics'], [], undefined)
-        .subreddit
-    ).toBeNull();
-    const listed = rankSubredditSearch([sub('Pics')], 'pics', none);
-    expect(
-      verifiedDirect('pics', none, listed, ['pics'], [], undefined).subreddit
-    ).toBeNull();
-  });
-
-  it('offers a user only when the name is taken and not already listed', () => {
-    expect(verifiedDirect('spez', none, [], [], [], false).user).toBe('spez');
-    expect(verifiedDirect('spez', none, [], [], [], true).user).toBeNull();
-    expect(verifiedDirect('spez', none, [], [], [], undefined).user).toBeNull();
-    const users = rankUserSearch([account('Spez')], 'spez');
-    expect(verifiedDirect('spez', none, [], [], users, false).user).toBeNull();
   });
 });
