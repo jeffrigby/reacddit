@@ -12,11 +12,16 @@ import {
 interface SubOverrides {
   subscribers?: number | null;
   subredditType?: SubredditData['subreddit_type'];
+  contributor?: boolean;
 }
 
 function sub(
   displayName: string,
-  { subscribers = 0, subredditType = 'public' }: SubOverrides = {}
+  {
+    subscribers = 0,
+    subredditType = 'public',
+    contributor = false,
+  }: SubOverrides = {}
 ): Thing<SubredditData> {
   return {
     kind: 't5',
@@ -24,6 +29,8 @@ function sub(
       display_name: displayName,
       subscribers,
       subreddit_type: subredditType,
+      user_is_contributor: contributor,
+      user_is_subscriber: false,
     } as SubredditData,
   };
 }
@@ -155,6 +162,37 @@ describe('nameTermOf', () => {
   it('lowercases and drops characters a name cannot hold', () => {
     expect(nameTermOf('  r/Ask Reddit! ')).toBe('raskreddit');
     expect(nameTermOf('under_score')).toBe('under_score');
+  });
+});
+
+describe('rankSubredditSearch gated subreddits', () => {
+  it('drops private, gold-only and employee-only subreddits', () => {
+    expect(
+      names(
+        [
+          sub('secretpics', { subredditType: 'private' }),
+          sub('goldpics', { subredditType: 'gold_only' }),
+          sub('adminpics', { subredditType: 'employees_only' }),
+          sub('pics'),
+        ],
+        'pics'
+      )
+    ).toEqual(['pics']);
+  });
+
+  it('keeps a private subreddit the account is approved for', () => {
+    expect(
+      names(
+        [sub('secretpics', { subredditType: 'private', contributor: true })],
+        'pics'
+      )
+    ).toEqual(['secretpics']);
+  });
+
+  it('keeps restricted subreddits, which anyone can read', () => {
+    expect(
+      names([sub('readonlypics', { subredditType: 'restricted' })], 'pics')
+    ).toEqual(['readonlypics']);
   });
 });
 

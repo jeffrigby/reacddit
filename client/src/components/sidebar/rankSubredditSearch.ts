@@ -114,10 +114,31 @@ function bySubscribersDesc(a: RankedSubreddit, b: RankedSubreddit): number {
   return (b.subreddit.subscribers ?? 0) - (a.subreddit.subscribers ?? 0);
 }
 
+/** Subreddit types only some accounts may open. */
+const GATED_TYPES: ReadonlySet<SubredditData['subreddit_type']> = new Set([
+  'private',
+  'gold_only',
+  'employees_only',
+]);
+
+/**
+ * Whether the account can open a subreddit search returned. A gated
+ * subreddit is kept only when Reddit marks the account as an approved
+ * member; a subscriber would already be in the subscribed list.
+ */
+function canOpen(data: SubredditData): boolean {
+  return (
+    !GATED_TYPES.has(data.subreddit_type) ||
+    Boolean(data.user_is_contributor) ||
+    Boolean(data.user_is_subscriber)
+  );
+}
+
 /**
  * Rank subreddit search results for the sidebar.
  *
- * Subscribed subreddits and user profile subreddits are dropped; the rest are
+ * Subscribed subreddits, user profile subreddits and gated subreddits the
+ * account cannot open are dropped; the rest are
  * bucketed by how the display name matches the term and each bucket is sorted
  * by subscriber count. Prefix and contains matches are returned in full, the
  * related tier is capped at RELATED_TIER_LIMIT.
@@ -147,7 +168,7 @@ export function rankSubredditSearch(
 
   for (const { data } of children) {
     const displayName = data.display_name;
-    if (!displayName || data.subreddit_type === 'user') {
+    if (!displayName || data.subreddit_type === 'user' || !canOpen(data)) {
       continue;
     }
     const lowerName = displayName.toLowerCase();
