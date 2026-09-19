@@ -7,9 +7,10 @@
  * - Pagination helpers (load more, load new)
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { Location } from 'react-router';
 import { useGetListingsQuery } from '@/redux/api';
+import { serializeFilterKey } from '@/redux/api/endpoints/listings';
 import type { ListingsFilter } from '@/types/listings';
 import { useAppSelector } from '@/redux/hooks';
 
@@ -74,31 +75,23 @@ export function useListingsQuery(
     type: 'init',
   });
 
-  // Track when filters/location change to clear stale data
-  const prevFiltersRef = useRef<string>(JSON.stringify(filters));
-  const prevLocationKeyRef = useRef<string | undefined>(location.key);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    const filtersChanged = JSON.stringify(filters) !== prevFiltersRef.current;
-    const locationChanged = location.key !== prevLocationKeyRef.current;
-
-    if (filtersChanged || locationChanged) {
-      setIsTransitioning(true);
-      setPaginationState({
-        limit: baseLimit,
-        type: 'init',
-      });
-      prevFiltersRef.current = JSON.stringify(filters);
-      prevLocationKeyRef.current = location.key;
-    }
-  }, [filters, location.key, baseLimit]);
+  // A new listing, or the same listing navigated to again, starts from its
+  // first page. The reset is applied in the same render so the new listing
+  // is never requested with the previous listing's cursor.
+  const navKey = `${location.key}|${serializeFilterKey(filters)}:${location.search}`;
+  const prevNavKeyRef = useRef(navKey);
+  let pagination = paginationState;
+  if (prevNavKeyRef.current !== navKey) {
+    prevNavKeyRef.current = navKey;
+    pagination = { limit: baseLimit, type: 'init' };
+    setPaginationState(pagination);
+  }
 
   // Main query
   const queryArgs = {
     filters,
     location,
-    pagination: paginationState,
+    pagination,
   };
 
   const result = useGetListingsQuery(queryArgs, {
@@ -112,35 +105,19 @@ export function useListingsQuery(
     skip: false,
   });
 
-  // currentData belongs to the listing being shown: it is undefined until
-  // that listing's own first page arrives, so a failed load shows the error
-  // alone rather than over the previous listing. Pages merge into one cache
-  // entry per filter, so it stays populated while later pages load.
-  const {
-    currentData: data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = result;
-
-  // Clear transitioning flag when new data arrives
-  useEffect(() => {
-    if (data && !isFetching && isTransitioning) {
-      setIsTransitioning(false);
-    }
-  }, [data, isFetching, isTransitioning]);
-
-  // Hide stale data during filter/location transitions
-  const displayData = isTransitioning ? undefined : data;
+  const { isLoading, isFetching, isError, error, refetch } = result;
+  // currentData is undefined until this listing's own first page arrives, so
+  // a new listing shows a loading state and a failed load shows its error
+  // alone, never over the previous listing. Pages merge into one cache entry
+  // per filter, so it stays populated while later pages load.
+  const displayData = result.currentData;
 
   // Determine status based on query state
   const getStatus = useCallback((): UseListingsQueryResult['status'] => {
     if (isError) {
       return 'error';
     }
-    if (isTransitioning || (isLoading && !displayData)) {
+    if (isLoading && !displayData) {
       return 'loading';
     }
     if (isFetching && paginationState.type === 'next') {
@@ -153,14 +130,7 @@ export function useListingsQuery(
       return displayData.after ? 'loaded' : 'loadedAll';
     }
     return 'unloaded';
-  }, [
-    isLoading,
-    isFetching,
-    isError,
-    displayData,
-    paginationState.type,
-    isTransitioning,
-  ]);
+  }, [isLoading, isFetching, isError, displayData, paginationState.type]);
 
   // Load more posts (pagination)
   const loadMore = useCallback(() => {

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
@@ -12,83 +12,65 @@ interface SubUnSubProps {
 }
 
 /**
- * SubscribeButton component to handle subscribing and unsubscribing from subreddits
- * Uses RTK Query mutation with automatic cache invalidation and optimistic UI updates
+ * Subscribe and unsubscribe button for the listing header. The parent keys
+ * it by subreddit, so its state never outlives the subreddit it was set for.
  * @param about - Subreddit about data passed from parent
- * @returns Rendered SubscribeButton component or null if conditions not met
+ * @returns Rendered button, or null when there is nothing to act on
  */
 function SubUnSub({ about }: SubUnSubProps) {
-  const params = useParams();
-
+  const { target, listType } = useParams();
   const redditBearer = useAppSelector((state) => state.redditBearer);
-
-  const { target, listType } = params;
-
-  // Optimistic state, tied to the subreddit it was set for so it cannot
-  // carry over when the header moves to another subreddit.
-  const [optimistic, setOptimistic] = useState<{
-    name: string;
-    subscribed: boolean;
-  } | null>(null);
-
-  // RTK Query mutation hook
   const [subscribeToSubreddit, { isLoading }] =
     useSubscribeToSubredditMutation();
 
   const {
-    user_is_subscriber: userIsSubscriber,
+    name,
+    display_name: displayName,
     display_name_prefixed: displayNamePrefixed,
+    user_is_subscriber: userIsSubscriber,
   } = about ?? {};
 
-  const aboutName = about && 'name' in about ? about.name : undefined;
-  const optimisticSubscribed =
-    optimistic !== null && optimistic.name === aboutName
-      ? optimistic.subscribed
-      : null;
-  // Use optimistic state if set, otherwise use server state
-  const effectiveSubscribed = optimisticSubscribed ?? userIsSubscriber;
+  // The intended state shows at once and holds until the about entry has
+  // refetched; clearing it when the request resolves would show the stale
+  // cache value while the refetch is still in flight.
+  const [optimistic, setOptimistic] = useState<boolean | null>(null);
+  const subscribed = optimistic ?? userIsSubscriber;
+
+  useEffect(() => {
+    if (optimistic !== null && optimistic === userIsSubscriber) {
+      setOptimistic(null);
+    }
+  }, [optimistic, userIsSubscriber]);
 
   const buttonAction = useCallback(async () => {
-    if (!about || !('name' in about)) {
+    if (!name) {
       return;
     }
-
-    const newSubscribedState = !effectiveSubscribed;
-
-    // Optimistically update UI immediately
-    setOptimistic({ name: about.name, subscribed: newSubscribedState });
-
+    const next = !subscribed;
+    setOptimistic(next);
     try {
       await subscribeToSubreddit({
-        name: about.name, // This is the fullname (e.g., "t5_2qt55")
-        action: newSubscribedState ? 'sub' : 'unsub',
-        type: 'sr', // Use 'sr' for fullname, not 'sr_name'
+        name, // Fullname, e.g. t5_2qt55
+        action: next ? 'sub' : 'unsub',
+        type: 'sr',
+        displayName,
       }).unwrap();
     } catch (error) {
       console.error('Subscribe/unsubscribe failed:', error);
-      // Revert optimistic update on error
       setOptimistic(null);
     }
-  }, [effectiveSubscribed, about, subscribeToSubreddit]);
-
-  // Check if about is valid (not null, not empty object)
-  const hasAboutData =
-    about && 'name' in about && 'display_name_prefixed' in about;
+  }, [name, displayName, subscribed, subscribeToSubreddit]);
 
   if (
-    !hasAboutData ||
+    !name ||
     redditBearer.status !== 'auth' ||
     (target === 'popular' && listType === 'r')
   ) {
     return null;
   }
 
-  const subIcon = effectiveSubscribed ? faMinusCircle : faPlusCircle;
-  const text = effectiveSubscribed ? 'Unsubscribe' : 'Subscribe';
-
-  const title = `${
-    effectiveSubscribed ? `${text} From` : `${text} To`
-  } ${displayNamePrefixed}`;
+  const text = subscribed ? 'Unsubscribe' : 'Subscribe';
+  const title = `${text} ${subscribed ? 'From' : 'To'} ${displayNamePrefixed}`;
 
   return (
     <Button
@@ -99,7 +81,8 @@ function SubUnSub({ about }: SubUnSubProps) {
       variant="primary"
       onClick={buttonAction}
     >
-      <FontAwesomeIcon icon={subIcon} /> {text}
+      <FontAwesomeIcon icon={subscribed ? faMinusCircle : faPlusCircle} />{' '}
+      {text}
     </Button>
   );
 }

@@ -166,7 +166,7 @@ function ListingsHeaderSub() {
           <div className="listing-actions ps-2 d-flex flex-nowrap">
             {listType === 'r' && target !== 'mine' && (
               <>
-                <SubUnSub about={about} />
+                <SubUnSub about={about} key={target} />
                 <MultiToggle about={about} srName={target} />
               </>
             )}

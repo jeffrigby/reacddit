@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { SubredditData, Thing } from '@/types/redditApi';
+import type { SubredditData, SubredditType, Thing } from '@/types/redditApi';
 import {
   RELATED_TIER_LIMIT,
   rankSubredditSearch,
@@ -7,7 +7,7 @@ import {
 
 interface SubOverrides {
   subscribers?: number | null;
-  subredditType?: SubredditData['subreddit_type'];
+  subredditType?: SubredditType;
   contributor?: boolean;
 }
 

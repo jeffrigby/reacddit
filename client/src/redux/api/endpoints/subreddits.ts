@@ -17,6 +17,8 @@ interface SubscribeParams {
   name: string; // Subreddit name (e.g., "pics") or fullname (e.g., "t5_2qh0u")
   action: 'sub' | 'unsub';
   type?: 'sr' | 'sr_name'; // Default: 'sr_name'
+  /** Display name, when the subreddit's cached about entry should refetch */
+  displayName?: string;
 }
 
 interface FavoriteParams {
@@ -35,6 +37,8 @@ export const subredditsApi = redditApi.injectEndpoints({
      * @param name - Subreddit name or fullname
      * @param action - 'sub' to subscribe, 'unsub' to unsubscribe
      * @param type - 'sr' for fullname, 'sr_name' for name (default)
+     * @param displayName - Display name whose about entry carries
+     *   user_is_subscriber and should refetch
      *
      * After successful subscription, automatically refetches subreddit lists
      * via tag invalidation. No manual refetch needed!
@@ -58,8 +62,13 @@ export const subredditsApi = redditApi.injectEndpoints({
           },
         };
       },
-      // Invalidate LIST to trigger full refetch since subscription changes the list
-      invalidatesTags: [{ type: 'Subreddits', id: 'LIST' }],
+      // The list changes, and so does user_is_subscriber on the about entry
+      invalidatesTags: (_result, _error, { displayName }) => [
+        ...(displayName
+          ? [{ type: 'Subreddits' as const, id: displayName.toLowerCase() }]
+          : []),
+        { type: 'Subreddits' as const, id: 'LIST' },
+      ],
     }),
 
     /**

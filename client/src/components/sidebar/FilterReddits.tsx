@@ -164,9 +164,6 @@ function FilterReddits() {
           onClick={() => {
             clearSearch(true); // Clear and leave filter mode, like Escape
           }}
-          onMouseDown={(e) => {
-            e.preventDefault(); // No focus change until the click lands
-          }}
         >
           <FontAwesomeIcon aria-hidden icon={faTimesCircle} />
         </button>

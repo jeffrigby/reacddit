@@ -234,7 +234,7 @@ async function getContent(
  * Serialize filter for cache key
  * Only include properties that affect the content
  */
-function serializeFilterKey(filters: ListingsFilter): string {
+export function serializeFilterKey(filters: ListingsFilter): string {
   const { listType, target, sort, user, multi, postName, comment } = filters;
   return JSON.stringify({
     listType,

@@ -1,4 +1,4 @@
-import type { SubredditData, Thing } from '@/types/redditApi';
+import type { SubredditData, SubredditType, Thing } from '@/types/redditApi';
 
 /**
  * Tier a search result falls into, most relevant first:
@@ -27,22 +27,22 @@ function bySubscribersDesc(a: RankedSubreddit, b: RankedSubreddit): number {
 }
 
 /** Subreddit types only some accounts may open. */
-const GATED_TYPES: ReadonlySet<SubredditData['subreddit_type']> = new Set([
+const GATED_TYPES: ReadonlySet<SubredditType> = new Set<SubredditType>([
   'private',
   'gold_only',
   'employees_only',
 ]);
 
 /**
- * Whether the account can open a subreddit search returned. A gated
- * subreddit is kept only when Reddit marks the account as an approved
- * member; a subscriber would already be in the subscribed list.
+ * Whether the account cannot open a subreddit search returned. A gated
+ * subreddit is open to an approved member; a subscriber would already be in
+ * the subscribed list.
  */
-function canOpen(data: SubredditData): boolean {
+function isGated(data: SubredditData): boolean {
   return (
-    !GATED_TYPES.has(data.subreddit_type) ||
-    Boolean(data.user_is_contributor) ||
-    Boolean(data.user_is_subscriber)
+    GATED_TYPES.has(data.subreddit_type) &&
+    data.user_is_contributor !== true &&
+    data.user_is_subscriber !== true
   );
 }
 
@@ -81,7 +81,7 @@ export function rankSubredditSearch(
 
   for (const { data } of children) {
     const displayName = data.display_name;
-    if (!displayName || data.subreddit_type === 'user' || !canOpen(data)) {
+    if (!displayName || data.subreddit_type === 'user' || isGated(data)) {
       continue;
     }
     const lowerName = displayName.toLowerCase();
