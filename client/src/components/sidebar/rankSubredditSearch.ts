@@ -5,17 +5,13 @@ import type { SearchSort } from '@/redux/slices/siteSettingsSlice';
  * Tier a search result falls into, most relevant first:
  * - prefix: display name starts with the search term
  * - contains: display name contains the search term elsewhere
- * - related: matched on title or description only
  */
-export type SubredditSearchTier = 'prefix' | 'contains' | 'related';
+export type SubredditSearchTier = 'prefix' | 'contains';
 
 export interface RankedSubreddit {
   subreddit: SubredditData;
   tier: SubredditSearchTier;
 }
-
-/** Results matching on title/description only are capped at this many. */
-export const RELATED_TIER_LIMIT = 5;
 
 /** Characters a display name cannot contain, dropped from the search term. */
 const NON_NAME_CHARS = /[^a-z0-9_]/g;
@@ -59,18 +55,18 @@ function isGated(data: SubredditData): boolean {
 /**
  * Rank subreddit search results for the sidebar.
  *
- * Subscribed subreddits, user profile subreddits and gated subreddits the
- * account cannot open are dropped; the rest are bucketed by how the display
- * name matches the term. Prefix and contains matches are kept in full, the
- * related tier is capped at RELATED_TIER_LIMIT by subscriber count. Under
- * 'relevance' the tiers are returned in order, each sorted by subscriber
- * count; the other sorts order the whole list by subscribers or by name.
+ * Only results whose display name contains the term are kept: Reddit also
+ * matches titles and descriptions, and those hits read as noise next to name
+ * matches. Subscribed subreddits, user profile subreddits and gated
+ * subreddits the account cannot open are dropped too. Under 'relevance'
+ * names starting with the term come first, then names containing it, each
+ * group by subscriber count; the other sorts order the whole list by
+ * subscribers or by name.
  *
  * @param children - Listing children from /subreddits/search
  * @param term - Search term, matched case-insensitively. Display names hold
- *   only [A-Za-z0-9_], so any other character in the term is ignored when
- *   matching names; a term with no name characters leaves every result in the
- *   related tier.
+ *   only [A-Za-z0-9_], so any other character in the term is ignored; a term
+ *   with no name characters matches nothing.
  * @param subscribedNames - Lowercased display names already in the subscribed
  *   list, as the subreddit entity adapter keys them
  * @param sort - Order of the returned list
@@ -87,10 +83,12 @@ export function rankSubredditSearch(
     return [];
   }
   const nameTerm = searchTerm.replace(NON_NAME_CHARS, '');
+  if (nameTerm === '') {
+    return [];
+  }
 
   const prefix: RankedSubreddit[] = [];
   const contains: RankedSubreddit[] = [];
-  const related: RankedSubreddit[] = [];
 
   for (const { data } of children) {
     const displayName = data.display_name;
@@ -102,24 +100,17 @@ export function rankSubredditSearch(
       continue;
     }
 
-    if (nameTerm !== '' && lowerName.startsWith(nameTerm)) {
+    if (lowerName.startsWith(nameTerm)) {
       prefix.push({ subreddit: data, tier: 'prefix' });
-    } else if (nameTerm !== '' && lowerName.includes(nameTerm)) {
+    } else if (lowerName.includes(nameTerm)) {
       contains.push({ subreddit: data, tier: 'contains' });
-    } else {
-      related.push({ subreddit: data, tier: 'related' });
     }
   }
 
   prefix.sort(bySubscribersDesc);
   contains.sort(bySubscribersDesc);
-  related.sort(bySubscribersDesc);
 
-  const ranked = [
-    ...prefix,
-    ...contains,
-    ...related.slice(0, RELATED_TIER_LIMIT),
-  ];
+  const ranked = [...prefix, ...contains];
   if (sort === 'subscribers') {
     ranked.sort(bySubscribersDesc);
   } else if (sort === 'name') {

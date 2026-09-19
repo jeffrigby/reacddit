@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SubredditData, SubredditType, Thing } from '@/types/redditApi';
-import {
-  RELATED_TIER_LIMIT,
-  rankSubredditSearch,
-} from '../rankSubredditSearch';
+import { rankSubredditSearch } from '../rankSubredditSearch';
 
 interface SubOverrides {
   subscribers?: number | null;
@@ -57,19 +54,15 @@ describe('rankSubredditSearch', () => {
       sub('Cooking', { subscribers: 3_000 }),
     ];
 
-    expect(names(children, 'cook')).toEqual([
-      'Cooking',
-      'slowcooking',
-      'AskReddit',
-    ]);
+    expect(names(children, 'cook')).toEqual(['Cooking', 'slowcooking']);
   });
 
-  it('tags each result with its tier', () => {
+  it('tags each result with its tier and drops title-only matches', () => {
     const children = [sub('Cooking'), sub('slowcooking'), sub('nfl')];
 
     expect(
       rankSubredditSearch(children, 'cook', NONE).map((result) => result.tier)
-    ).toEqual(['prefix', 'contains', 'related']);
+    ).toEqual(['prefix', 'contains']);
   });
 
   it('matches case-insensitively on name and term', () => {
@@ -106,51 +99,16 @@ describe('rankSubredditSearch', () => {
       sub('Cooking', { subscribers: 3_000 }),
     ];
 
-    expect(names(children, 'ask reddit')).toEqual(['AskReddit', 'Cooking']);
+    expect(names(children, 'ask reddit')).toEqual(['AskReddit']);
     expect(names([sub('cooking')], 'cook ing')).toEqual(['cooking']);
-    expect(
-      rankSubredditSearch(children, 'ask reddit', NONE).map(
-        (result) => result.tier
-      )
-    ).toEqual(['prefix', 'related']);
   });
 
-  it('leaves a term with no name characters in the capped related tier', () => {
+  it('matches nothing for a term with no name characters', () => {
     const children = Array.from({ length: 7 }, (_unused, idx) =>
       sub(`sub${idx}`, { subscribers: idx })
     );
 
-    const ranked = rankSubredditSearch(children, '!!!', NONE);
-
-    expect(ranked).toHaveLength(RELATED_TIER_LIMIT);
-    expect(ranked.every((result) => result.tier === 'related')).toBe(true);
-  });
-
-  it('caps the related tier and keeps name matches in full', () => {
-    const nameMatches = Array.from({ length: 8 }, (_unused, idx) =>
-      sub(`cook${idx}`, { subscribers: idx })
-    );
-    const related = Array.from({ length: 9 }, (_unused, idx) =>
-      sub(`other${idx}`, { subscribers: idx })
-    );
-
-    const ranked = rankSubredditSearch(
-      [...nameMatches, ...related],
-      'cook',
-      NONE
-    );
-
-    expect(ranked.filter((result) => result.tier === 'prefix')).toHaveLength(8);
-    expect(ranked.filter((result) => result.tier === 'related')).toHaveLength(
-      RELATED_TIER_LIMIT
-    );
-    expect(names([...nameMatches, ...related], 'cook').slice(8)).toEqual([
-      'other8',
-      'other7',
-      'other6',
-      'other5',
-      'other4',
-    ]);
+    expect(rankSubredditSearch(children, '!!!', NONE)).toEqual([]);
   });
 });
 

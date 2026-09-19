@@ -45,10 +45,8 @@ const SORT_LABELS: Record<SearchSort, string> = {
 };
 
 /**
- * Subreddits matching the filter text that the user isn't subscribed to.
- *
- * Reddit matches the term against subreddit names, titles and descriptions;
- * rankSubredditSearch orders the hits by name match then subscriber count.
+ * Subreddits whose name matches the filter text that the user isn't
+ * subscribed to, in the order the search sort setting picks.
  */
 function SearchRedditNames(): ReactElement | null {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
@@ -143,23 +141,9 @@ function SearchRedditNames(): ReactElement | null {
     return null;
   }
 
-  // The tier divider only means something while the tiers are in order.
-  const firstRelated =
-    searchSort === 'relevance'
-      ? results.findIndex((result) => result.tier === 'related')
-      : -1;
-
   const navItems: ReactElement[] = [];
   results.forEach((result, idx) => {
     const { display_name: displayName, name, subscribers } = result.subreddit;
-
-    if (idx === firstRelated && idx > 0) {
-      navItems.push(
-        <li aria-hidden="true" key="related-divider">
-          <hr />
-        </li>
-      );
-    }
 
     const href = hrefs[idx];
     const trigger = filterActive && href === selectedTarget;
