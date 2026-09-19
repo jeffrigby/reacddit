@@ -4,7 +4,6 @@ import {
   faComments,
   faEyeSlash,
   faFile,
-  faStar,
   faThumbsDown,
   faThumbsUp,
   faUser,
@@ -70,11 +69,5 @@ export const ACCOUNT_LINKS: readonly AccountLink[] = [
     text: 'Hidden',
     title: 'Show My Hidden Posts',
     icon: faEyeSlash,
-  },
-  {
-    target: 'gilded',
-    text: 'Gilded',
-    title: 'Show My Gilded Posts and Comments',
-    icon: faStar,
   },
 ];
