@@ -1293,6 +1293,12 @@ export interface SubredditsListingParams extends PaginationQueryParams {
 }
 export type SubredditsListingResponse = Listing<SubredditData>;
 
+/** GET /users/search — accounts whose profile matches the query */
+export type UsersSearchResponse = Listing<AccountData>;
+
+/** GET /api/username_available — true when no account holds the name */
+export type UsernameAvailableResponse = boolean;
+
 // Subreddit About Details
 export interface SubredditRulesResponse {
   rules: SubredditRule[];

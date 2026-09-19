@@ -301,6 +301,26 @@
       },
       "requiresAuth": true,
       "expectedType": "Listing<CommentData>"
+    },
+    {
+      "endpoint": "/users/search",
+      "method": "GET",
+      "description": "Search user profiles",
+      "params": {
+        "q": "spez",
+        "limit": 5,
+        "raw_json": 1
+      },
+      "expectedType": "UsersSearchResponse"
+    },
+    {
+      "endpoint": "/api/username_available",
+      "method": "GET",
+      "description": "Whether a user name is unclaimed (false = account exists)",
+      "params": {
+        "user": "spez"
+      },
+      "expectedType": "UsernameAvailableResponse"
     }
   ]
 }
