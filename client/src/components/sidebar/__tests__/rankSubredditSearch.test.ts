@@ -184,3 +184,35 @@ describe('rankSubredditSearch gated subreddits', () => {
     ).toEqual(['readonlypics']);
   });
 });
+
+describe('rankSubredditSearch sort', () => {
+  const children = [
+    sub('picsofcats', { subscribers: 50 }),
+    sub('Pics', { subscribers: 10 }),
+    sub('epicpics', { subscribers: 90 }),
+  ];
+
+  it('orders the whole list by subscribers when asked', () => {
+    expect(
+      rankSubredditSearch(children, 'pics', NONE, 'subscribers').map(
+        (r) => r.subreddit.display_name
+      )
+    ).toEqual(['epicpics', 'picsofcats', 'Pics']);
+  });
+
+  it('orders the whole list by name, case-insensitively, when asked', () => {
+    expect(
+      rankSubredditSearch(children, 'pics', NONE, 'name').map(
+        (r) => r.subreddit.display_name
+      )
+    ).toEqual(['epicpics', 'Pics', 'picsofcats']);
+  });
+
+  it('keeps the tiers under relevance', () => {
+    expect(
+      rankSubredditSearch(children, 'pics', NONE, 'relevance').map(
+        (r) => r.subreddit.display_name
+      )
+    ).toEqual(['picsofcats', 'Pics', 'epicpics']);
+  });
+});

@@ -1,4 +1,5 @@
 import type { SubredditData, SubredditType, Thing } from '@/types/redditApi';
+import type { SearchSort } from '@/redux/slices/siteSettingsSlice';
 
 /**
  * Tier a search result falls into, most relevant first:
@@ -26,6 +27,15 @@ function bySubscribersDesc(a: RankedSubreddit, b: RankedSubreddit): number {
   return (b.subreddit.subscribers ?? 0) - (a.subreddit.subscribers ?? 0);
 }
 
+/** Sort by display name, case-insensitively. */
+function byName(a: RankedSubreddit, b: RankedSubreddit): number {
+  return a.subreddit.display_name.localeCompare(
+    b.subreddit.display_name,
+    undefined,
+    { sensitivity: 'base' }
+  );
+}
+
 /** Subreddit types only some accounts may open. */
 const GATED_TYPES: ReadonlySet<SubredditType> = new Set<SubredditType>([
   'private',
@@ -50,10 +60,11 @@ function isGated(data: SubredditData): boolean {
  * Rank subreddit search results for the sidebar.
  *
  * Subscribed subreddits, user profile subreddits and gated subreddits the
- * account cannot open are dropped; the rest are
- * bucketed by how the display name matches the term and each bucket is sorted
- * by subscriber count. Prefix and contains matches are returned in full, the
- * related tier is capped at RELATED_TIER_LIMIT.
+ * account cannot open are dropped; the rest are bucketed by how the display
+ * name matches the term. Prefix and contains matches are kept in full, the
+ * related tier is capped at RELATED_TIER_LIMIT by subscriber count. Under
+ * 'relevance' the tiers are returned in order, each sorted by subscriber
+ * count; the other sorts order the whole list by subscribers or by name.
  *
  * @param children - Listing children from /subreddits/search
  * @param term - Search term, matched case-insensitively. Display names hold
@@ -62,12 +73,14 @@ function isGated(data: SubredditData): boolean {
  *   related tier.
  * @param subscribedNames - Lowercased display names already in the subscribed
  *   list, as the subreddit entity adapter keys them
- * @returns Ranked results, most relevant first
+ * @param sort - Order of the returned list
+ * @returns Ranked results
  */
 export function rankSubredditSearch(
   children: Thing<SubredditData>[] | undefined,
   term: string,
-  subscribedNames: ReadonlySet<string>
+  subscribedNames: ReadonlySet<string>,
+  sort: SearchSort = 'relevance'
 ): RankedSubreddit[] {
   const searchTerm = term.trim().toLowerCase();
   if (!children || searchTerm === '') {
@@ -102,5 +115,15 @@ export function rankSubredditSearch(
   contains.sort(bySubscribersDesc);
   related.sort(bySubscribersDesc);
 
-  return [...prefix, ...contains, ...related.slice(0, RELATED_TIER_LIMIT)];
+  const ranked = [
+    ...prefix,
+    ...contains,
+    ...related.slice(0, RELATED_TIER_LIMIT),
+  ];
+  if (sort === 'subscribers') {
+    ranked.sort(bySubscribersDesc);
+  } else if (sort === 'name') {
+    ranked.sort(byName);
+  }
+  return ranked;
 }

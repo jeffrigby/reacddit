@@ -5,9 +5,13 @@ import {
   useState,
   type ReactElement,
 } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import { useDebounce } from 'use-debounce';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import {
+  siteSettingsChanged,
+  type SearchSort,
+} from '@/redux/slices/siteSettingsSlice';
 import {
   useSearchSubredditsQuery,
   useSubscribeToSubredditMutation,
@@ -34,6 +38,12 @@ const MIN_TERM_LENGTH = 2;
 /** Pause after the last keystroke before a term is searched. */
 const SEARCH_DEBOUNCE_MS = 250;
 
+const SORT_LABELS: Record<SearchSort, string> = {
+  relevance: 'Relevance',
+  subscribers: 'Subscribers',
+  name: 'A to Z',
+};
+
 /**
  * Subreddits matching the filter text that the user isn't subscribed to.
  *
@@ -42,6 +52,10 @@ const SEARCH_DEBOUNCE_MS = 250;
  */
 function SearchRedditNames(): ReactElement | null {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
+  const searchSort = useAppSelector(
+    (state) => state.siteSettings.searchSort ?? 'relevance'
+  );
+  const dispatch = useAppDispatch();
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const auth = redditBearer.status === 'auth';
   const sortPath = useSubredditSortPath();
@@ -93,8 +107,14 @@ function SearchRedditNames(): ReactElement | null {
   );
 
   const ranked = useMemo(
-    () => rankSubredditSearch(searchData?.data.children, term, subscribedNames),
-    [searchData, term, subscribedNames]
+    () =>
+      rankSubredditSearch(
+        searchData?.data.children,
+        term,
+        subscribedNames,
+        searchSort
+      ),
+    [searchData, term, subscribedNames, searchSort]
   );
 
   // Ranking a term in flight yields nothing, so the last ranked list is held
@@ -123,7 +143,11 @@ function SearchRedditNames(): ReactElement | null {
     return null;
   }
 
-  const firstRelated = results.findIndex((result) => result.tier === 'related');
+  // The tier divider only means something while the tiers are in order.
+  const firstRelated =
+    searchSort === 'relevance'
+      ? results.findIndex((result) => result.tier === 'related')
+      : -1;
 
   const navItems: ReactElement[] = [];
   results.forEach((result, idx) => {
@@ -192,8 +216,28 @@ function SearchRedditNames(): ReactElement | null {
 
   return (
     <div id="sidebar-search-results">
-      <div className="sidebar-heading d-flex text-muted">
+      <div className="sidebar-heading d-flex align-items-center text-muted">
         <span className="me-auto">Search</span>
+        <Form.Select
+          aria-label="Sort search results"
+          className="search-sort w-auto py-0"
+          size="sm"
+          title="Sort search results"
+          value={searchSort}
+          onChange={(event) => {
+            dispatch(
+              siteSettingsChanged({
+                searchSort: event.target.value as SearchSort,
+              })
+            );
+          }}
+        >
+          {(Object.keys(SORT_LABELS) as SearchSort[]).map((sort) => (
+            <option key={sort} value={sort}>
+              {SORT_LABELS[sort]}
+            </option>
+          ))}
+        </Form.Select>
       </div>
       <ul className={resultsClass}>{navItems}</ul>
       {nsfwButton}

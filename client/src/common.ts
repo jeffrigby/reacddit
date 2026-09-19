@@ -114,11 +114,12 @@ export function hotkeyStatus(): boolean {
 
   const { nodeName } = activeElement;
   const isTextArea = nodeName === 'TEXTAREA';
+  const isSelect = nodeName === 'SELECT';
   const isIframe = nodeName === 'IFRAME';
   const isTextInput =
     nodeName === 'INPUT' && (activeElement as HTMLInputElement).type === 'text';
 
-  return !isTextArea && !isIframe && !isTextInput;
+  return !isTextArea && !isSelect && !isIframe && !isTextInput;
 }
 
 export function isNumeric(value: unknown): value is number | string {

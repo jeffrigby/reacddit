@@ -5,6 +5,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
+/** Order of the sidebar's subreddit search results */
+export type SearchSort = 'relevance' | 'subscribers' | 'name';
+
 /**
  * State shape for site settings slice
  */
@@ -29,6 +32,8 @@ export interface SiteSettingsState {
   theme?: 'dark' | 'light';
   /** Enable auto-refresh feature */
   autoRefresh?: boolean;
+  /** Order of the sidebar's subreddit search results */
+  searchSort?: SearchSort;
 }
 
 /**
@@ -45,6 +50,7 @@ const initialState: SiteSettingsState = {
   pinMenu: true,
   theme: 'dark',
   autoRefresh: false,
+  searchSort: 'relevance',
 };
 
 const siteSettingsSlice = createSlice({
