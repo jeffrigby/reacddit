@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { useParams } from 'react-router';
 import { useAppSelector } from '@/redux/hooks';
+import { selectIsAuth } from '@/redux/slices/redditBearerSlice';
 import { useSubscribeToSubredditMutation } from '@/redux/api';
 import type { SubredditData } from '@/types/redditApi';
 
@@ -20,7 +21,7 @@ interface SubUnSubProps {
  */
 function SubUnSub({ about }: SubUnSubProps) {
   const { target, listType } = useParams();
-  const redditBearer = useAppSelector((state) => state.redditBearer);
+  const auth = useAppSelector(selectIsAuth);
   const [subscribeToSubreddit, { isLoading }] =
     useSubscribeToSubredditMutation();
 
@@ -47,11 +48,7 @@ function SubUnSub({ about }: SubUnSubProps) {
     }
   }, [name, displayName, subscribed, subscribeToSubreddit]);
 
-  if (
-    !name ||
-    redditBearer.status !== 'auth' ||
-    (target === 'popular' && listType === 'r')
-  ) {
+  if (!name || !auth || (target === 'popular' && listType === 'r')) {
     return null;
   }
 

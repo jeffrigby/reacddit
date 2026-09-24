@@ -8,6 +8,7 @@ import {
 import { Button, Form } from 'react-bootstrap';
 import { useDebounce } from 'use-debounce';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { selectIsAuth } from '@/redux/slices/redditBearerSlice';
 import {
   siteSettingsChanged,
   type SearchSort,
@@ -50,8 +51,7 @@ function SearchRedditNames(): ReactElement | null {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
   const searchSort = useAppSelector((state) => state.siteSettings.searchSort);
   const dispatch = useAppDispatch();
-  const redditBearer = useAppSelector((state) => state.redditBearer);
-  const auth = redditBearer.status === 'auth';
+  const auth = useAppSelector(selectIsAuth);
   const sortPath = useSubredditSortPath();
 
   const subscribedNames = useSubscribedNames();
@@ -63,13 +63,14 @@ function SearchRedditNames(): ReactElement | null {
   const [subscribeToSubreddit] = useSubscribeToSubredditMutation();
   const [pendingName, setPendingName] = useState<string | null>(null);
   const subscribe = useCallback(
-    async (name: string) => {
+    async (name: string, displayName: string) => {
       setPendingName(name);
       try {
         await subscribeToSubreddit({
           name,
           action: 'sub',
           type: 'sr',
+          displayName,
         }).unwrap();
       } catch (error) {
         console.error('Subscribe failed:', error);
@@ -166,7 +167,7 @@ function SearchRedditNames(): ReactElement | null {
           <SearchSubscribe
             displayName={displayName}
             pending={pendingName === name}
-            onSubscribe={() => subscribe(name)}
+            onSubscribe={() => subscribe(name, displayName)}
           />
         )}
       </li>

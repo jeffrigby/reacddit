@@ -162,7 +162,7 @@ function FilterReddits() {
           className="form-control-clear filter-clear"
           type="button"
           onClick={() => {
-            clearSearch(true); // Clear and leave filter mode, like Escape
+            clearSearch(true); // Clear and leave filter mode
           }}
         >
           <FontAwesomeIcon aria-hidden icon={faTimesCircle} />

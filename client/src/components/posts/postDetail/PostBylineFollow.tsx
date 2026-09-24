@@ -32,6 +32,7 @@ function PostBylineFollow({
         name: authorSub,
         action: follow ? 'sub' : 'unsub',
         type: 'sr_name',
+        displayName: authorSub,
       }).unwrap();
     } catch (error) {
       console.error(`Failed to ${follow ? 'follow' : 'unfollow'} user:`, error);

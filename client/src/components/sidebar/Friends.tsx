@@ -60,6 +60,7 @@ function useFriends() {
           name: nameLower,
           action: 'unsub',
           type: 'sr_name',
+          displayName: nameLower,
         }).unwrap();
       } catch (error) {
         console.error(`Error unfollowing user ${name}:`, error);
