@@ -7,10 +7,9 @@
  * - Pagination helpers (load more, load new)
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { Location } from 'react-router';
 import { useGetListingsQuery } from '@/redux/api';
-import { serializeFilterKey } from '@/redux/api/endpoints/listings';
 import type { ListingsFilter } from '@/types/listings';
 import { useAppSelector } from '@/redux/hooks';
 
@@ -22,6 +21,13 @@ export interface UseListingsQueryOptions {
    * Suspended background trees must not stream-poll.
    */
   active?: boolean;
+}
+
+interface Pagination {
+  after?: string;
+  before?: string;
+  limit: number;
+  type: 'init' | 'next' | 'new';
 }
 
 export interface UseListingsQueryResult {
@@ -64,28 +70,24 @@ export function useListingsQuery(
   // Determine limit based on view mode
   const baseLimit = options.limit ?? (view === 'condensed' ? 100 : 25);
 
-  // Track pagination state in component
-  const [paginationState, setPaginationState] = useState<{
-    after?: string;
-    before?: string;
-    limit: number;
-    type: 'init' | 'next' | 'new';
-  }>({
-    limit: baseLimit,
-    type: 'init',
-  });
-
-  // A new listing, or the same listing navigated to again, starts from its
-  // first page. The reset is applied in the same render so the new listing
-  // is never requested with the previous listing's cursor.
-  const navKey = `${location.key}|${serializeFilterKey(filters)}:${location.search}`;
-  const prevNavKeyRef = useRef(navKey);
-  let pagination = paginationState;
-  if (prevNavKeyRef.current !== navKey) {
-    prevNavKeyRef.current = navKey;
-    pagination = { limit: baseLimit, type: 'init' };
-    setPaginationState(pagination);
-  }
+  // A page belongs to the navigation that requested it. Every navigation,
+  // including one back to the same listing, carries a new location key, so
+  // a page from an earlier navigation gives way to the first page and the
+  // new listing is never requested with the previous listing's cursor.
+  const [paged, setPaged] = useState<{
+    locationKey: string;
+    pagination: Pagination;
+  } | null>(null);
+  const pagination: Pagination =
+    paged?.locationKey === location.key
+      ? paged.pagination
+      : { limit: baseLimit, type: 'init' };
+  const setPagination = useCallback(
+    (next: Pagination) => {
+      setPaged({ locationKey: location.key, pagination: next });
+    },
+    [location.key]
+  );
 
   // Main query
   const queryArgs = {
@@ -120,17 +122,17 @@ export function useListingsQuery(
     if (isLoading && !displayData) {
       return 'loading';
     }
-    if (isFetching && paginationState.type === 'next') {
+    if (isFetching && pagination.type === 'next') {
       return 'loadingNext';
     }
-    if (isFetching && paginationState.type === 'new') {
+    if (isFetching && pagination.type === 'new') {
       return 'loadingNew';
     }
     if (displayData) {
       return displayData.after ? 'loaded' : 'loadedAll';
     }
     return 'unloaded';
-  }, [isLoading, isFetching, isError, displayData, paginationState.type]);
+  }, [isLoading, isFetching, isError, displayData, pagination.type]);
 
   // Load more posts (pagination)
   const loadMore = useCallback(() => {
@@ -138,12 +140,12 @@ export function useListingsQuery(
       return;
     }
 
-    setPaginationState({
+    setPagination({
       after: displayData.after,
       limit: 50,
       type: 'next',
     });
-  }, [displayData?.after, isFetching]);
+  }, [displayData?.after, isFetching, setPagination]);
 
   // Load new posts (refresh)
   const loadNew = useCallback(() => {
@@ -157,12 +159,12 @@ export function useListingsQuery(
     }
 
     const firstPostId = childKeys[0];
-    setPaginationState({
+    setPagination({
       before: firstPostId,
       limit: 100,
       type: 'new',
     });
-  }, [displayData, isFetching]);
+  }, [displayData, isFetching, setPagination]);
 
   return {
     data: displayData,

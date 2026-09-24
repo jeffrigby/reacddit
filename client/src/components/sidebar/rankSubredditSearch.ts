@@ -1,35 +1,21 @@
 import type { SubredditData, SubredditType, Thing } from '@/types/redditApi';
 import type { SearchSort } from '@/redux/slices/siteSettingsSlice';
 
-/**
- * Tier a search result falls into, most relevant first:
- * - prefix: display name starts with the search term
- * - contains: display name contains the search term elsewhere
- */
-export type SubredditSearchTier = 'prefix' | 'contains';
-
-export interface RankedSubreddit {
-  subreddit: SubredditData;
-  tier: SubredditSearchTier;
-}
-
 /** Characters a display name cannot contain, dropped from the search term. */
 const NON_NAME_CHARS = /[^a-z0-9_]/g;
 
 /**
  * Sort by subscriber count, highest first. Missing counts sort as 0.
  */
-function bySubscribersDesc(a: RankedSubreddit, b: RankedSubreddit): number {
-  return (b.subreddit.subscribers ?? 0) - (a.subreddit.subscribers ?? 0);
+function bySubscribersDesc(a: SubredditData, b: SubredditData): number {
+  return (b.subscribers ?? 0) - (a.subscribers ?? 0);
 }
 
 /** Sort by display name, case-insensitively. */
-function byName(a: RankedSubreddit, b: RankedSubreddit): number {
-  return a.subreddit.display_name.localeCompare(
-    b.subreddit.display_name,
-    undefined,
-    { sensitivity: 'base' }
-  );
+function byName(a: SubredditData, b: SubredditData): number {
+  return a.display_name.localeCompare(b.display_name, undefined, {
+    sensitivity: 'base',
+  });
 }
 
 /** Subreddit types only some accounts may open. */
@@ -70,25 +56,21 @@ function isGated(data: SubredditData): boolean {
  * @param subscribedNames - Lowercased display names already in the subscribed
  *   list, as the subreddit entity adapter keys them
  * @param sort - Order of the returned list
- * @returns Ranked results
+ * @returns Subreddits in that order
  */
 export function rankSubredditSearch(
   children: Thing<SubredditData>[] | undefined,
   term: string,
   subscribedNames: ReadonlySet<string>,
   sort: SearchSort = 'relevance'
-): RankedSubreddit[] {
-  const searchTerm = term.trim().toLowerCase();
-  if (!children || searchTerm === '') {
-    return [];
-  }
-  const nameTerm = searchTerm.replace(NON_NAME_CHARS, '');
-  if (nameTerm === '') {
+): SubredditData[] {
+  const nameTerm = term.toLowerCase().replace(NON_NAME_CHARS, '');
+  if (!children || nameTerm === '') {
     return [];
   }
 
-  const prefix: RankedSubreddit[] = [];
-  const contains: RankedSubreddit[] = [];
+  const prefix: SubredditData[] = [];
+  const contains: SubredditData[] = [];
 
   for (const { data } of children) {
     const displayName = data.display_name;
@@ -101,9 +83,9 @@ export function rankSubredditSearch(
     }
 
     if (lowerName.startsWith(nameTerm)) {
-      prefix.push({ subreddit: data, tier: 'prefix' });
+      prefix.push(data);
     } else if (lowerName.includes(nameTerm)) {
-      contains.push({ subreddit: data, tier: 'contains' });
+      contains.push(data);
     }
   }
 

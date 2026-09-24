@@ -12,12 +12,13 @@
  */
 
 import { redditApi } from '@/redux/api/redditApi';
+import { listingsApi } from './listings';
 
 interface SubscribeParams {
   name: string; // Subreddit name (e.g., "pics") or fullname (e.g., "t5_2qh0u")
   action: 'sub' | 'unsub';
   type?: 'sr' | 'sr_name'; // Default: 'sr_name'
-  /** Display name, when the subreddit's cached about entry should refetch */
+  /** Display name, when the subreddit's cached about entry should follow */
   displayName?: string;
 }
 
@@ -37,8 +38,8 @@ export const subredditsApi = redditApi.injectEndpoints({
      * @param name - Subreddit name or fullname
      * @param action - 'sub' to subscribe, 'unsub' to unsubscribe
      * @param type - 'sr' for fullname, 'sr_name' for name (default)
-     * @param displayName - Display name whose about entry carries
-     *   user_is_subscriber and should refetch
+     * @param displayName - Display name whose cached about entry carries
+     *   user_is_subscriber; it is patched at once and refetched on success
      *
      * After successful subscription, automatically refetches subreddit lists
      * via tag invalidation. No manual refetch needed!
@@ -61,6 +62,39 @@ export const subredditsApi = redditApi.injectEndpoints({
             'Content-Type': 'application/x-www-form-urlencoded',
           },
         };
+      },
+      // Every cached about entry for the subreddit shows the new state at
+      // once, so each reader of it updates together; a failed request puts
+      // the old state back.
+      async onQueryStarted(
+        { action, displayName },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        if (!displayName) {
+          return;
+        }
+        const lowerName = displayName.toLowerCase();
+        const patches = listingsApi.util
+          .selectCachedArgsForQuery(getState(), 'getSubredditAbout')
+          .filter((args) => args.subreddit.toLowerCase() === lowerName)
+          .map((args) =>
+            dispatch(
+              listingsApi.util.updateQueryData(
+                'getSubredditAbout',
+                args,
+                (draft) => {
+                  if ('name' in draft) {
+                    draft.user_is_subscriber = action === 'sub';
+                  }
+                }
+              )
+            )
+          );
+        try {
+          await queryFulfilled;
+        } catch {
+          patches.forEach((patch) => patch.undo());
+        }
       },
       // The list changes, and so does user_is_subscriber on the about entry
       invalidatesTags: (_result, _error, { displayName }) => [

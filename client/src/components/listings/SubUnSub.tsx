@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMinusCircle, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
@@ -12,8 +12,9 @@ interface SubUnSubProps {
 }
 
 /**
- * Subscribe and unsubscribe button for the listing header. The parent keys
- * it by subreddit, so its state never outlives the subreddit it was set for.
+ * Subscribe and unsubscribe button for the listing header. The subscribe
+ * mutation patches the cached about entry, so the button reads its state
+ * from there alone.
  * @param about - Subreddit about data passed from parent
  * @returns Rendered button, or null when there is nothing to act on
  */
@@ -27,37 +28,22 @@ function SubUnSub({ about }: SubUnSubProps) {
     name,
     display_name: displayName,
     display_name_prefixed: displayNamePrefixed,
-    user_is_subscriber: userIsSubscriber,
+    user_is_subscriber: subscribed,
   } = about ?? {};
-
-  // The intended state shows at once and holds until the about entry has
-  // refetched; clearing it when the request resolves would show the stale
-  // cache value while the refetch is still in flight.
-  const [optimistic, setOptimistic] = useState<boolean | null>(null);
-  const subscribed = optimistic ?? userIsSubscriber;
-
-  useEffect(() => {
-    if (optimistic !== null && optimistic === userIsSubscriber) {
-      setOptimistic(null);
-    }
-  }, [optimistic, userIsSubscriber]);
 
   const buttonAction = useCallback(async () => {
     if (!name) {
       return;
     }
-    const next = !subscribed;
-    setOptimistic(next);
     try {
       await subscribeToSubreddit({
         name, // Fullname, e.g. t5_2qt55
-        action: next ? 'sub' : 'unsub',
+        action: subscribed ? 'unsub' : 'sub',
         type: 'sr',
         displayName,
       }).unwrap();
     } catch (error) {
       console.error('Subscribe/unsubscribe failed:', error);
-      setOptimistic(null);
     }
   }, [name, displayName, subscribed, subscribeToSubreddit]);
 

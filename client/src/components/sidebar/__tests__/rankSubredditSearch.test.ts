@@ -36,7 +36,7 @@ function names(
   subs: ReadonlySet<string> = NONE
 ) {
   return rankSubredditSearch(children, term, subs).map(
-    (result) => result.subreddit.display_name
+    (result) => result.display_name
   );
 }
 
@@ -57,12 +57,13 @@ describe('rankSubredditSearch', () => {
     expect(names(children, 'cook')).toEqual(['Cooking', 'slowcooking']);
   });
 
-  it('tags each result with its tier and drops title-only matches', () => {
+  it('returns the subreddit data itself and drops title-only matches', () => {
     const children = [sub('Cooking'), sub('slowcooking'), sub('nfl')];
 
-    expect(
-      rankSubredditSearch(children, 'cook', NONE).map((result) => result.tier)
-    ).toEqual(['prefix', 'contains']);
+    expect(rankSubredditSearch(children, 'cook', NONE)).toEqual([
+      children[0].data,
+      children[1].data,
+    ]);
   });
 
   it('matches case-insensitively on name and term', () => {
@@ -153,7 +154,7 @@ describe('rankSubredditSearch sort', () => {
   it('orders the whole list by subscribers when asked', () => {
     expect(
       rankSubredditSearch(children, 'pics', NONE, 'subscribers').map(
-        (r) => r.subreddit.display_name
+        (r) => r.display_name
       )
     ).toEqual(['epicpics', 'picsofcats', 'Pics']);
   });
@@ -161,7 +162,7 @@ describe('rankSubredditSearch sort', () => {
   it('orders the whole list by name, case-insensitively, when asked', () => {
     expect(
       rankSubredditSearch(children, 'pics', NONE, 'name').map(
-        (r) => r.subreddit.display_name
+        (r) => r.display_name
       )
     ).toEqual(['epicpics', 'Pics', 'picsofcats']);
   });
@@ -169,7 +170,7 @@ describe('rankSubredditSearch sort', () => {
   it('keeps the tiers under relevance', () => {
     expect(
       rankSubredditSearch(children, 'pics', NONE, 'relevance').map(
-        (r) => r.subreddit.display_name
+        (r) => r.display_name
       )
     ).toEqual(['picsofcats', 'Pics', 'epicpics']);
   });

@@ -4,6 +4,7 @@
  */
 import cookies from 'js-cookie';
 import type { RootState } from './configureStore';
+import { siteSettingsInitialState } from './slices/siteSettingsSlice';
 
 /**
  * Endpoint names that should be persisted to localStorage
@@ -98,6 +99,10 @@ export function loadState(): PersistedState | undefined {
     // Drop the removed write-only history slice from older persisted state
     delete rawState['history'];
     const persistedState = rawState as PersistedState;
+    const siteSettings = {
+      ...siteSettingsInitialState,
+      ...persistedState.siteSettings,
+    };
     const cookieToken = cookies.get('token');
 
     // Check if we have a valid cookie token
@@ -108,7 +113,7 @@ export function loadState(): PersistedState | undefined {
     if (!hasCookieToken) {
       // Clear auth-specific slices but preserve siteSettings
       return {
-        siteSettings: persistedState.siteSettings,
+        siteSettings,
         // Don't restore subredditPolling, redditMe, or redditApi when not authenticated
       };
     }
@@ -116,6 +121,7 @@ export function loadState(): PersistedState | undefined {
     // Reset runtime flags that should never be persisted
     return {
       ...persistedState,
+      siteSettings,
       subredditPolling: persistedState.subredditPolling
         ? {
             ...persistedState.subredditPolling,

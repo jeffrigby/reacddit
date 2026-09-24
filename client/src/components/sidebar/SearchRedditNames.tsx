@@ -17,16 +17,14 @@ import {
   useSubscribeToSubredditMutation,
 } from '@/redux/api';
 import { formatCompactNumber, formatNumber } from '@/common';
+import type { SubredditData } from '@/types/redditApi';
 import {
   buildSubredditHref,
   navTargetDomId,
   TRIGGER_CLASS,
 } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
-import {
-  rankSubredditSearch,
-  type RankedSubreddit,
-} from './rankSubredditSearch';
+import { rankSubredditSearch } from './rankSubredditSearch';
 import SearchSubscribe from './SearchSubscribe';
 import { useSubscribedNames } from './useFilteredSubreddits';
 import { useNavSection } from './useNavSection';
@@ -50,9 +48,7 @@ const SORT_LABELS: Record<SearchSort, string> = {
  */
 function SearchRedditNames(): ReactElement | null {
   const over18 = useAppSelector((state) => state.redditMe?.me?.over_18);
-  const searchSort = useAppSelector(
-    (state) => state.siteSettings.searchSort ?? 'relevance'
-  );
+  const searchSort = useAppSelector((state) => state.siteSettings.searchSort);
   const dispatch = useAppDispatch();
   const redditBearer = useAppSelector((state) => state.redditBearer);
   const auth = redditBearer.status === 'auth';
@@ -119,7 +115,7 @@ function SearchRedditNames(): ReactElement | null {
   // and keeps rendering, faded, until the new one lands. The rows and the
   // hrefs registered from them survive a keystroke that way. A skipped search
   // is not in flight, so a term that falls under MIN_TERM_LENGTH empties this.
-  const retained = useRef<RankedSubreddit[]>([]);
+  const retained = useRef<SubredditData[]>([]);
   if (!isFetching) {
     retained.current = ranked;
   }
@@ -130,7 +126,7 @@ function SearchRedditNames(): ReactElement | null {
   const hrefs = useMemo(
     () =>
       results.map((result) =>
-        buildSubredditHref(`r/${result.subreddit.display_name}`, sortPath)
+        buildSubredditHref(`r/${result.display_name}`, sortPath)
       ),
     [results, sortPath]
   );
@@ -143,7 +139,7 @@ function SearchRedditNames(): ReactElement | null {
 
   const navItems: ReactElement[] = [];
   results.forEach((result, idx) => {
-    const { display_name: displayName, name, subscribers } = result.subreddit;
+    const { display_name: displayName, name, subscribers, title } = result;
 
     const href = hrefs[idx];
     const trigger = filterActive && href === selectedTarget;
@@ -154,7 +150,7 @@ function SearchRedditNames(): ReactElement | null {
           classes={trigger ? TRIGGER_CLASS : ''}
           id={navTargetDomId('search', href)}
           text={displayName}
-          title={result.subreddit.title || displayName}
+          title={title || displayName}
           to={href}
         />
         {subscribers != null && (
