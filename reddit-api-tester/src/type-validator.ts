@@ -44,8 +44,6 @@ export class TypeValidator {
     // Perform basic validation based on common Reddit API patterns
     if (this.isRedditThing(response)) {
       this.validateRedditThing(response, result);
-    } else if (this.isRedditListing(response)) {
-      this.validateRedditListing(response, result);
     }
 
     // Check for common Reddit API response patterns
@@ -64,10 +62,6 @@ export class TypeValidator {
       'kind' in obj &&
       'data' in obj
     );
-  }
-
-  private isRedditListing(obj: unknown): boolean {
-    return this.isRedditThing(obj) && (obj as any).kind === 'Listing';
   }
 
   private validateRedditThing(thing: any, result: ValidationResult): void {
@@ -94,16 +88,16 @@ export class TypeValidator {
     // Validate based on kind
     if (thing.kind && thing.data) {
       switch (thing.kind) {
-        case 't1_': // Comment
+        case 't1': // Comment
           this.validateComment(thing.data, result);
           break;
-        case 't2_': // Account
+        case 't2': // Account
           this.validateAccount(thing.data, result);
           break;
-        case 't3_': // Link
+        case 't3': // Link
           this.validateLink(thing.data, result);
           break;
-        case 't5_': // Subreddit
+        case 't5': // Subreddit
           this.validateSubreddit(thing.data, result);
           break;
         case 'Listing':

@@ -14,6 +14,7 @@ import { redditAPI } from '@/reddit/redditApiTs';
 import { getKeys, tryDomainHandlers } from '@/components/posts/embeds/embeds';
 import { getAxiosErrorStatus } from '@/utils/axiosError';
 import { isSafeUrl } from '@/utils/sanitize';
+import { isShareHref } from '@/utils/redditLinks';
 
 // Regex patterns for extracting post IDs
 const REDDIT_POST_REGEX = /\/r\/[^/]+\/comments\/([a-z0-9]+)/i;
@@ -31,13 +32,6 @@ const REDDIT_IMAGE_EXTENSION_REGEX = /\.(jpg|jpeg|png|gif|webp)$/i;
 
 // Marker to prevent infinite recursion
 const REDDIT_EMBED_MARKER = '__reddit_embed_processed__';
-
-// Canonical Reddit share-link pattern. MUST stay in sync with the server's
-// SHARE_LINK_REGEX in api/src/app.ts (HTTPS-only, anchored, reddit.com host).
-// Links that don't match this exactly are rejected by the resolver server, so
-// the client must use the identical pattern to decide what to batch/resolve.
-export const SHARE_LINK_PATTERN =
-  /^https:\/\/(www\.)?reddit\.com\/r\/[a-zA-Z0-9_]+\/s\/[a-zA-Z0-9]+\/?$/;
 
 // Max URLs per batch request (must match server MAX_BATCH_SIZE)
 const MAX_BATCH_SIZE = 50;
@@ -66,7 +60,20 @@ interface PostData {
  * Each input URL maps to either a resolved postId or an error string.
  */
 interface ResolveShareResponse {
-  results: Record<string, { postId?: string; error?: string }>;
+  results: Record<
+    string,
+    { postId?: string; permalink?: string; error?: string }
+  >;
+}
+
+/**
+ * A resolved share link. `permalink` is the canonical post path the share
+ * redirect landed on; it is absent when the server could not validate one,
+ * in which case the link has no in-app destination and stays external.
+ */
+interface ResolvedShare {
+  postId: string;
+  permalink?: string;
 }
 
 function logShareError(
@@ -112,10 +119,18 @@ const redditApiQueue = new PQueue({
 // Cache for share link → post ID resolutions
 // Prevents re-resolving the same share links across browsing session
 // Only caches successful resolutions; failures will be retried
-const shareCache = new LRUCache<string, string>({
+const shareCache = new LRUCache<string, ResolvedShare>({
   max: 200,
   ttl: 1000 * 60 * 30, // 30 minute TTL (share links are stable)
 });
+
+/** Record one resolver result, keeping the permalink when the server sent one. */
+function cacheResolved(
+  url: string,
+  result: { postId: string; permalink?: string }
+): void {
+  shareCache.set(url, { postId: result.postId, permalink: result.permalink });
+}
 
 // In-flight bulk resolutions: allows resolveShareLink to await ongoing resolveShareLinks calls
 const inFlightResolutions = new Map<string, Promise<string | null>>();
@@ -146,9 +161,10 @@ async function executeBatch(): Promise<void> {
     data: ResolveShareResponse | null
   ): void => {
     for (const url of chunk) {
-      const postId = data?.results[url]?.postId ?? null;
+      const result = data?.results[url];
+      const postId = result?.postId ?? null;
       if (postId) {
-        shareCache.set(url, postId);
+        cacheResolved(url, { ...result, postId });
       }
       batch.get(url)?.forEach((cb) => cb(postId));
     }
@@ -215,27 +231,6 @@ export function extractPostId(url: string): string | null {
 }
 
 /**
- * Check if a URL is a Reddit share link (/r/<sub>/s/<code>).
- *
- * Share links cannot be resolved client-side (CORS) and are resolved by the
- * server via POST /api/resolve-share. This uses the canonical SHARE_LINK_PATTERN
- * so the client agrees exactly with what the server will accept — divergent
- * links would otherwise be sent individually and then rejected by the server.
- */
-export function isShareLink(url: string): boolean {
-  return SHARE_LINK_PATTERN.test(url);
-}
-
-/**
- * Check if a URL is a Reddit share link.
- *
- * Alias of {@link isShareLink} — both use the canonical SHARE_LINK_PATTERN.
- * Kept as a distinct export for the pre-scan call site in the embeds index,
- * which filters raw URLs before domain handling.
- */
-export const isRedditShareLink = isShareLink;
-
-/**
  * Bulk-resolve Reddit share links in a single batch API call.
  * Results are stored in shareCache so subsequent resolveShareLink() calls hit cache.
  * Fails silently — individual URLs will retry via resolveShareLink fallback.
@@ -270,7 +265,9 @@ export async function resolveShareLinks(
       // the cached postId (or null if the server returned no result for this
       // URL); on chunk failure, propagate the rejection so the awaiter retries.
       for (const url of chunk) {
-        const urlPromise = chunkSettled.then(() => shareCache.get(url) ?? null);
+        const urlPromise = chunkSettled.then(
+          () => shareCache.get(url)?.postId ?? null
+        );
         // Prevent unhandled rejections on stored promises that are never awaited.
         urlPromise.catch(() => {});
         inFlightResolutions.set(url, urlPromise);
@@ -288,9 +285,9 @@ export async function resolveShareLinks(
           const data = (await response.json()) as ResolveShareResponse;
 
           for (const url of chunk) {
-            const postId = data.results[url]?.postId;
-            if (postId) {
-              shareCache.set(url, postId);
+            const result = data.results[url];
+            if (result?.postId) {
+              cacheResolved(url, { ...result, postId: result.postId });
             }
           }
         } else {
@@ -339,9 +336,29 @@ export async function resolveShareLinks(
   // Build result map from cache for all input URLs
   const result = new Map<string, string>();
   for (const url of urls) {
-    const postId = shareCache.get(url);
+    const postId = shareCache.get(url)?.postId;
     if (postId) {
       result.set(url, postId);
+    }
+  }
+  return result;
+}
+
+/**
+ * The canonical post paths already resolved for these share links.
+ *
+ * Read-only and synchronous: callers run this straight after awaiting
+ * {@link resolveShareLinks} for the same URLs, so no extra request is issued.
+ * URLs the server could not resolve are absent from the returned map.
+ */
+export function getCachedSharePermalinks(
+  urls: string[]
+): ReadonlyMap<string, string> {
+  const result = new Map<string, string>();
+  for (const url of urls) {
+    const permalink = shareCache.get(url)?.permalink;
+    if (permalink) {
+      result.set(url, permalink);
     }
   }
   return result;
@@ -354,7 +371,7 @@ export async function resolveShareLinks(
 function resolveShareLink(url: string): Promise<string | null> {
   const cached = shareCache.get(url);
   if (cached !== undefined) {
-    return Promise.resolve(cached);
+    return Promise.resolve(cached.postId);
   }
 
   // If this URL is being resolved by a bulk resolveShareLinks call, await that
@@ -583,7 +600,7 @@ async function render(
   // Extract post ID from URL, or resolve share links via API
   let postId: string | null = null;
 
-  if (isShareLink(url)) {
+  if (isShareHref(url)) {
     // Share links require server-side resolution due to CORS.
     // A rejected resolution means the batch/individual request failed; return
     // null for THIS render so the embed simply doesn't appear, while leaving

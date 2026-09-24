@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useWorkbox } from './WorkboxContext';
 
+// Read at module-eval time, before index.tsx registers the worker. Without it
+// `clientsClaim()` fires `controlling` on a page that started uncontrolled
+// (first visit, or after the registration was evicted), reloading a page that
+// was never stale.
+const hadControllerOnLoad =
+  typeof navigator !== 'undefined' &&
+  'serviceWorker' in navigator &&
+  Boolean(navigator.serviceWorker.controller);
+
 const styles = {
   backdrop: {
     position: 'fixed',
@@ -66,13 +75,14 @@ function ServiceWorkerUpdate(): React.ReactNode {
       return;
     }
 
-    // Listen for waiting service worker
     const handleWaiting = () => {
       setShowUpdatePrompt(true);
     };
 
-    // Listen for controlling service worker (update activated)
     const handleControlling = () => {
+      if (!hadControllerOnLoad) {
+        return;
+      }
       window.location.reload();
     };
 

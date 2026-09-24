@@ -11,6 +11,8 @@ export interface PostContextData {
   actionable: boolean;
   idx: number;
   fullyOffScreen: boolean;
+  /** A comment shown outside its thread, such as in a user listing */
+  commentListing: boolean;
 }
 
 export const PostsContextData: Context<PostContextData | null> =

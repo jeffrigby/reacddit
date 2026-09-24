@@ -1,3 +1,9 @@
+/**
+ * The embed registry reaches src/utils/sanitize.ts, which calls
+ * DOMPurify.addHook() as it loads. DOMPurify only exposes that with a window.
+ *
+ * @vitest-environment happy-dom
+ */
 import { describe, it, expect } from 'vitest';
 // Initialize the embed registry first. redditcom.ts, embeds.ts and redd.ts form
 // a circular dependency (embeds.ts eager-globs the domain modules, and redd.ts
@@ -7,11 +13,7 @@ import { describe, it, expect } from 'vitest';
 // the app's real load order (index.ts imports embeds before redditcom) so every
 // module in the cycle initializes cleanly.
 import '@/components/posts/embeds/embeds';
-import {
-  extractPostId,
-  isShareLink,
-  isRedditShareLink,
-} from '@/components/posts/embeds/domains/redditcom';
+import { extractPostId } from '@/components/posts/embeds/domains/redditcom';
 
 describe('extractPostId', () => {
   it('extracts the id from a standard reddit.com comments URL', () => {
@@ -78,37 +80,5 @@ describe('extractPostId', () => {
     expect(
       extractPostId('https://www.reddit.com/r/pics/s/AbCdEf123')
     ).toBeNull();
-  });
-});
-
-describe('isShareLink', () => {
-  it('accepts a www.reddit.com share link', () => {
-    expect(isShareLink('https://www.reddit.com/r/pics/s/AbCdEf123')).toBe(true);
-  });
-
-  it('accepts a reddit.com share link without www', () => {
-    expect(isShareLink('https://reddit.com/r/AskReddit/s/Xyz789')).toBe(true);
-  });
-
-  it('rejects a standard comments URL', () => {
-    expect(
-      isShareLink('https://www.reddit.com/r/pics/comments/abc123/title/')
-    ).toBe(false);
-  });
-
-  it('rejects an http (non-https) share link', () => {
-    expect(isShareLink('http://www.reddit.com/r/pics/s/AbCdEf123')).toBe(false);
-  });
-
-  it('rejects a redd.it short link', () => {
-    expect(isShareLink('https://redd.it/abc123')).toBe(false);
-  });
-
-  it('rejects an i.redd.it image URL', () => {
-    expect(isShareLink('https://i.redd.it/wjo0b91eosah1.jpeg')).toBe(false);
-  });
-
-  it('exposes isRedditShareLink as an alias of isShareLink', () => {
-    expect(isRedditShareLink).toBe(isShareLink);
   });
 });

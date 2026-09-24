@@ -75,7 +75,9 @@ async function runTests(options: any) {
 
   // Filter endpoints if specific ones requested
   if (options.endpoints) {
-    const requestedEndpoints = options.endpoints.split(',').map((e: string) => e.trim());
+    const requestedEndpoints: string[] = options.endpoints
+      .split(',')
+      .map((e: string) => e.trim());
     endpointsToTest = endpointsToTest.filter(e => 
       requestedEndpoints.some(re => e.endpoint.includes(re))
     );

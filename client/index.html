@@ -15,6 +15,8 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.instagram.com https://platform.instagram.com https://connect.facebook.net https://platform.twitter.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' data: https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' ws: wss: https:; media-src 'self' https:; frame-src *; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
+    <meta name="robots" content="noindex, nofollow" />
+
     <link rel="canonical" href="https://reacdd.it/" />
 
     <!-- Open Graph / Social Media -->
@@ -82,7 +84,11 @@
       media="(prefers-color-scheme: light)"
     />
 
+    <meta name="mobile-web-app-capable" content="yes" />
+
     <!-- Apple Specific PWA tags -->
+    <!-- apple-mobile-web-app-capable is the pre-standard spelling, still read
+         by iOS Safari; mobile-web-app-capable above is the standard one. -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="reacddit" />
@@ -278,11 +284,10 @@
       media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)"
     />
 
-    <!-- Cache some common names used by the API -->
     <link rel="preconnect" href="https://oauth.reddit.com" />
-    <link rel="preconnect" href="https://ssl.reddit.com" />
-    <link rel="preconnect" href="https://www.reddit.com" />
     <link rel="preconnect" href="https://i.redd.it" />
+    <link rel="preconnect" href="https://preview.redd.it" />
+    <link rel="preconnect" href="https://v.redd.it" />
   </head>
   <body>
   <div id="root">

@@ -632,7 +632,69 @@ describe('API Endpoints', () => {
       );
       expect(
         response.body.results['https://www.reddit.com/r/funny/s/XYZ123']
+      ).toEqual({
+        postId: 'abc123',
+        permalink: '/r/funny/comments/abc123/some_post_title/',
+      });
+    });
+
+    it('omits the permalink when the redirect leaves reddit', async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          // A post id is still extractable from the path, but the host is not
+          // reddit, so its path is not a reddit path.
+          location: 'https://evil.example.com/r/funny/comments/abc123/title/',
+        },
+      });
+
+      const response = await request(app.callback())
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/funny/s/XYZ123'] })
+        .expect(200);
+
+      expect(
+        response.body.results['https://www.reddit.com/r/funny/s/XYZ123']
       ).toEqual({ postId: 'abc123' });
+    });
+
+    it('reports the path it saw without judging whether the client can route it', async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        // No title slug. The server passes it along; getInternalRedditPath on
+        // the client is the single place that decides routability.
+        headers: {
+          location: 'https://www.reddit.com/r/funny/comments/abc123/',
+        },
+      });
+
+      const response = await request(app.callback())
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/funny/s/XYZ123'] })
+        .expect(200);
+
+      expect(
+        response.body.results['https://www.reddit.com/r/funny/s/XYZ123']
+      ).toEqual({ postId: 'abc123', permalink: '/r/funny/comments/abc123/' });
+    });
+
+    it('strips tracking query params from the permalink', async () => {
+      (axios.head as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        headers: {
+          location:
+            'https://www.reddit.com/r/funny/comments/abc123/some_post_title/?utm_source=share&utm_medium=web',
+        },
+      });
+
+      const response = await request(app.callback())
+        .post('/api/resolve-share')
+        .send({ urls: ['https://www.reddit.com/r/funny/s/XYZ123'] })
+        .expect(200);
+
+      expect(
+        response.body.results['https://www.reddit.com/r/funny/s/XYZ123']
+      ).toEqual({
+        postId: 'abc123',
+        permalink: '/r/funny/comments/abc123/some_post_title/',
+      });
     });
 
     it('should resolve multiple share links in one request', async () => {
@@ -656,10 +718,10 @@ describe('API Endpoints', () => {
 
       expect(
         response.body.results['https://www.reddit.com/r/sub1/s/ABC']
-      ).toEqual({ postId: 'post1' });
+      ).toEqual({ postId: 'post1', permalink: '/r/sub1/comments/post1/' });
       expect(
         response.body.results['https://www.reddit.com/r/sub2/s/DEF']
-      ).toEqual({ postId: 'post2' });
+      ).toEqual({ postId: 'post2', permalink: '/r/sub2/comments/post2/' });
     });
 
     it('should reject requests without urls array', async () => {
@@ -798,7 +860,10 @@ describe('API Endpoints', () => {
       expect(axios.head).toHaveBeenCalledTimes(1);
       expect(
         response.body.results['https://www.reddit.com/r/test/s/ABC']
-      ).toEqual({ postId: 'abc123' });
+      ).toEqual({
+        postId: 'abc123',
+        permalink: '/r/test/comments/abc123/some_post_title/',
+      });
     });
 
     it('should return cached results without making additional HEAD requests', async () => {
@@ -826,7 +891,10 @@ describe('API Endpoints', () => {
       expect(axios.head).toHaveBeenCalledTimes(1);
       expect(
         response.body.results['https://www.reddit.com/r/test/s/ABC']
-      ).toEqual({ postId: 'abc123' });
+      ).toEqual({
+        postId: 'abc123',
+        permalink: '/r/test/comments/abc123/some_post_title/',
+      });
     });
 
     it('should not cache error results', async () => {
@@ -857,7 +925,10 @@ describe('API Endpoints', () => {
 
       expect(
         second.body.results['https://www.reddit.com/r/test/s/ABC']
-      ).toEqual({ postId: 'abc123' });
+      ).toEqual({
+        postId: 'abc123',
+        permalink: '/r/test/comments/abc123/some_post_title/',
+      });
       expect(axios.head).toHaveBeenCalledTimes(2);
     });
 

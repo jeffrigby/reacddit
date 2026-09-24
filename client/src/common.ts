@@ -14,20 +14,37 @@ export function setActiveOverlayElement(element: HTMLElement | null): void {
   activeOverlayElement = element;
 }
 
+/**
+ * Memoised body-vs-documentElement decision.
+ *
+ * `public/base.css` sets `overflow-x: hidden` on html and body, which computes
+ * the vertical axis to `auto`, so body is this document's scroll container for
+ * its whole lifetime — nothing at runtime can flip it.
+ *
+ * Only the positive answer is cached: the first call runs at boot (index.tsx
+ * scrolls before React renders), when the body is still the splash screen and
+ * genuinely does not overflow.
+ */
+let bodyIsScrollContainer = false;
+
 export function getScrollContainer(): Element {
   if (activeOverlayElement?.isConnected) {
     return activeOverlayElement;
   }
 
   const body = document.body;
-  const html = document.documentElement;
 
-  // Bootstrap 5 reboot sets overflow on body, making it the scroll container
-  if (body.scrollHeight > body.clientHeight) {
+  if (bodyIsScrollContainer) {
     return body;
   }
 
-  return html;
+  // scrollHeight/clientHeight force a synchronous layout, so probe only once.
+  if (body.scrollHeight > body.clientHeight) {
+    bodyIsScrollContainer = true;
+    return body;
+  }
+
+  return document.documentElement;
 }
 
 export interface ScrollViewport {
@@ -97,11 +114,12 @@ export function hotkeyStatus(): boolean {
 
   const { nodeName } = activeElement;
   const isTextArea = nodeName === 'TEXTAREA';
+  const isSelect = nodeName === 'SELECT';
   const isIframe = nodeName === 'IFRAME';
   const isTextInput =
     nodeName === 'INPUT' && (activeElement as HTMLInputElement).type === 'text';
 
-  return !isTextArea && !isIframe && !isTextInput;
+  return !isTextArea && !isSelect && !isIframe && !isTextInput;
 }
 
 export function isNumeric(value: unknown): value is number | string {
@@ -207,4 +225,31 @@ export function formatRelativeTime(timestamp: number): string {
   const month = date.toLocaleString('en-US', { month: 'short' });
   const day = date.getDate();
   return `${month} ${day}`;
+}
+
+const compactNumberFormatter = new Intl.NumberFormat('en', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+/**
+ * Format a count compactly (e.g., "394", "1.5K", "2.3M")
+ *
+ * @param value - The number to format
+ * @returns Compact string representation
+ */
+export function formatCompactNumber(value: number): string {
+  return compactNumberFormatter.format(value);
+}
+
+const numberFormatter = new Intl.NumberFormat();
+
+/**
+ * Format a count in full with group separators (e.g., "1,532,904")
+ *
+ * @param value - The number to format
+ * @returns Grouped string representation
+ */
+export function formatNumber(value: number): string {
+  return numberFormatter.format(value);
 }

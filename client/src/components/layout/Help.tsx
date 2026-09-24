@@ -1,5 +1,6 @@
 import { Modal } from 'react-bootstrap';
 import { useModals } from '@/contexts/ModalContext';
+import { ACCOUNT_LINKS } from '@/components/sidebar/accountLinks';
 
 interface Hotkey {
   keys: string[];
@@ -57,10 +58,13 @@ const leftColumnSections: HotkeySection[] = [
       { keys: ['g', 'p'], description: 'Popular', separator: 'then' },
       { keys: ['g', 'r'], description: 'Random', separator: 'then' },
       { keys: ['g', 'f'], description: 'Friends', separator: 'then' },
-      { keys: ['g', 'b'], description: 'Posts', separator: 'then' },
-      { keys: ['g', 'u'], description: 'Upvoted', separator: 'then' },
-      { keys: ['g', 'd'], description: 'Downvoted', separator: 'then' },
-      { keys: ['g', 's'], description: 'Saved', separator: 'then' },
+      ...ACCOUNT_LINKS.filter((link) => link.hotkey !== undefined).map(
+        (link) => ({
+          keys: ['g', link.hotkey as string],
+          description: link.text,
+          separator: 'then' as const,
+        })
+      ),
     ],
   },
   {

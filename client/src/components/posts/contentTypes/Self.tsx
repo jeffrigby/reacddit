@@ -1,6 +1,6 @@
 import type { MouseEvent } from 'react';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router';
+import { parsePath, useNavigate } from 'react-router';
 import clsx from 'clsx';
 import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,7 +11,8 @@ import {
 import { usePostContext, useListingsFilter } from '@/contexts';
 import { useAppSelector } from '@/redux/hooks';
 import { sanitizeHTML } from '@/utils/sanitize';
-import { isCommentsPath } from '@/utils/navigationState';
+import { isOverlayPath } from '@/utils/navigationState';
+import { getInternalRedditPath } from '@/utils/redditLinks';
 import { useDetailNavState } from '@/hooks/useDetailNavState';
 import type { EmbedContent } from '@/components/posts/embeds/types';
 import SelfInline from './SelfInline';
@@ -22,6 +23,7 @@ interface SelfContent {
   html?: string;
   inline: EmbedContent[];
   inlineLinks?: string[];
+  sharePermalinks?: ReadonlyMap<string, string>;
 }
 
 interface SelfProps {
@@ -31,46 +33,25 @@ interface SelfProps {
 
 const HTTP_URL_RE = /^https?:\/\//;
 const WHITESPACE_ONLY_RE = /^\s*$/;
-const REDDIT_HOST_RE =
-  /^https?:\/\/(?:www\.|old\.|new\.|np\.|sh\.)?reddit\.com\//i;
+const EMPTY_PERMALINKS: ReadonlyMap<string, string> = new Map();
 
-/**
- * If the href is a reddit post permalink (absolute reddit.com URL or a
- * relative path) that matches the app's comments routes, return the
- * app-relative path for SPA navigation. Anything else (including /s/ share
- * links, user/subreddit links, external domains) returns null and stays an
- * external link.
- */
-function getInternalPostPath(href: string): string | null {
-  let url: URL;
-  try {
-    // Exclude protocol-relative hrefs ('//host/...') — they point at another
-    // host, not a reddit-relative path.
-    if (href.startsWith('/') && !href.startsWith('//')) {
-      url = new URL(href, 'https://www.reddit.com');
-    } else if (REDDIT_HOST_RE.test(href)) {
-      url = new URL(href);
-    } else {
-      return null;
-    }
-  } catch {
-    return null;
-  }
-
-  if (!isCommentsPath(url.pathname)) {
-    return null;
-  }
-
-  return `${url.pathname}${url.search}${url.hash}`;
-}
-
-const cleanLinks = (html: string): string => {
+const cleanLinks = (
+  html: string,
+  sharePermalinks: ReadonlyMap<string, string>
+): string => {
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
-  // Rewrite reddit post permalinks to internal SPA links; set target and rel
-  // on all other anchor tags; shorten long URL text
+  // Rewrite reddit links the app can render itself (posts, subreddits, users,
+  // multireddits) to internal SPA links; set target and rel on all other
+  // anchor tags; shorten long URL text
   doc.querySelectorAll('a').forEach((anchor) => {
-    const internalPath = getInternalPostPath(anchor.getAttribute('href') ?? '');
+    const href = anchor.getAttribute('href') ?? '';
+    // A share link only has an in-app path once resolved, and a resolved one is
+    // never itself routable — so the map lookup and the raw href are never both
+    // meaningful for the same anchor.
+    const internalPath = getInternalRedditPath(
+      sharePermalinks.get(href) ?? href
+    );
     if (internalPath) {
       anchor.setAttribute('href', internalPath);
       anchor.removeAttribute('target');
@@ -108,6 +89,8 @@ function Self({ name, content }: SelfProps) {
   const debug = useAppSelector((state) => state.siteSettings.debug);
   const navigate = useNavigate();
   const detailNavState = useDetailNavState();
+  // Resolved upstream by the embed pipeline and cached with the content.
+  const sharePermalinks = content.sharePermalinks ?? EMPTY_PERMALINKS;
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(content?.expand ?? false);
@@ -159,10 +142,10 @@ function Self({ name, content }: SelfProps) {
     };
   }, [content.html, checkOverflow]);
 
-  // Delegated click handler: SPA-navigate rewritten reddit post permalinks
-  // (the anchors themselves are the interactive elements; keyboard activation
-  // of an anchor fires a click that bubbles here too). Modifier-clicks and
-  // non-primary buttons fall through to default behavior.
+  // Delegated click handler: SPA-navigate rewritten reddit links (the anchors
+  // themselves are the interactive elements; keyboard activation of an anchor
+  // fires a click that bubbles here too). Modifier-clicks and non-primary
+  // buttons fall through to default behavior.
   const handleContentClick = (event: MouseEvent<HTMLDivElement>): void => {
     if (
       event.defaultPrevented ||
@@ -187,7 +170,15 @@ function Self({ name, content }: SelfProps) {
       return;
     }
     event.preventDefault();
-    navigate(href, { state: detailNavState });
+    // Only post-detail targets open in the overlay; a subreddit or user
+    // listing replaces the current view, and handing it a backgroundLocation
+    // would leave stale overlay state on its history entry.
+    navigate(
+      href,
+      isOverlayPath(parsePath(href).pathname ?? href)
+        ? { state: detailNavState }
+        : undefined
+    );
   };
 
   const toggleExpansion = useCallback(() => {
@@ -198,8 +189,11 @@ function Self({ name, content }: SelfProps) {
   }, [content.expand]);
 
   const rawhtml = useMemo(
-    () => (content.html ? sanitizeHTML(cleanLinks(content.html)) : ''),
-    [content.html]
+    () =>
+      content.html
+        ? sanitizeHTML(cleanLinks(content.html, sharePermalinks))
+        : '',
+    [content.html, sharePermalinks]
   );
 
   if (!content?.html) {

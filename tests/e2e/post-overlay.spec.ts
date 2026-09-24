@@ -221,7 +221,10 @@ test.describe('Post overlay routing', () => {
 
     // Open a post; the same dropdown now exposes comment sorts.
     const firstEntry = page.locator('#entries .entry').first();
-    await firstEntry.getByRole('link', { name: 'Title' }).first().click();
+    await firstEntry
+      .locator('h6.title a.list-group-item-heading')
+      .first()
+      .click();
     await expect(page.locator('#post-overlay')).toBeVisible();
 
     await page.locator('.sort-button').click();

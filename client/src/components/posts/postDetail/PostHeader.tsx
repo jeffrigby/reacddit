@@ -17,6 +17,7 @@ import { decodeHTMLEntities, sanitizeHref } from '@/utils/sanitize';
 import { useDetailNavState } from '@/hooks/useDetailNavState';
 import type { LinkData } from '@/types/redditApi';
 import PostHeaderComment from './PostHeaderComment';
+import PostHeaderCommentListing from './PostHeaderCommentListing';
 import PostTimeAgo from './PostTimeAgo';
 import PostCommentLink from './PostCommentLink';
 import PostSubLink from './PostSubLink';
@@ -37,10 +38,12 @@ function PostHeader({
   const postContext = usePostContext();
   const { listType } = useListingsFilter();
   const detailNavState = useDetailNavState();
-  const { post, isLoaded } = postContext;
+  const { post, isLoaded, commentListing } = postContext;
   const { data, kind } = post;
 
-  // Is this a comment?
+  if (commentListing) {
+    return <PostHeaderCommentListing />;
+  }
   if (kind === 't1') {
     return <PostHeaderComment expand={expand} toggleView={toggleView} />;
   }
@@ -156,7 +159,6 @@ function PostHeader({
   if (listType === 'comments') {
     titleLink = (
       <a
-        aria-label="Title"
         className="list-group-item-heading align-middle"
         href={sanitizeHref(linkData.url)}
         rel="noopener noreferrer"
@@ -168,7 +170,6 @@ function PostHeader({
   } else {
     titleLink = (
       <Link
-        aria-label="Title"
         className="list-group-item-heading align-middle"
         state={detailNavState}
         to={linkData.permalink}

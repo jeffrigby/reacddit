@@ -1,8 +1,6 @@
 import { memo, Suspense, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import JsonView from 'react18-json-view';
-import 'react18-json-view/src/style.css';
-import 'react18-json-view/src/dark.css';
+import LazyJsonView from '@/components/posts/LazyJsonView';
 import type { BufferData, VideoDiagnosticInfo } from './types';
 
 interface VideoDebugProps {
@@ -60,14 +58,14 @@ function VideoDebug({
           <Suspense fallback={<div>Loading Debug Info...</div>}>
             <div className="code-block rounded">
               <h6>Video State</h6>
-              <JsonView dark src={videoState} theme="atom" />
+              <LazyJsonView dark src={videoState} theme="atom" />
             </div>
             <div className="code-block rounded">
               <h6>Diagnostics</h6>
               {typeof diagnosticInfo === 'string' ? (
                 <code>{diagnosticInfo}</code>
               ) : (
-                <JsonView dark src={diagnosticInfo} theme="atom" />
+                <LazyJsonView dark src={diagnosticInfo} theme="atom" />
               )}
             </div>
           </Suspense>

@@ -6,27 +6,34 @@ import { faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   filterUpdated,
-  selectSubredditFilter,
+  selectFilterActive,
+  selectFilterEngaged,
+  selectFilterIndex,
+  selectFilterText,
+  selectNavTargetCount,
+  selectSelectedNavTarget,
 } from '@/redux/slices/subredditFilterSlice';
 import { hotkeyStatus } from '@/common';
+import { useScrollSelectionIntoView } from './useScrollSelectionIntoView';
 
 function FilterReddits() {
   const filterInput = useRef<HTMLInputElement>(null);
-  const filter = useAppSelector(selectSubredditFilter);
+  const filterText = useAppSelector(selectFilterText);
+  const active = useAppSelector(selectFilterActive);
+  const engaged = useAppSelector(selectFilterEngaged);
+  const activeIndex = useAppSelector(selectFilterIndex);
+  const navTargetCount = useAppSelector(selectNavTargetCount);
+  const selectedTarget = useAppSelector(selectSelectedNavTarget);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+
+  useScrollSelectionIntoView(selectedTarget, engaged);
 
   /**
    * Set the subreddit filter data.
    */
   const filterReddits = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const filterText = event.target.value;
-    const activeIndex = 0;
-    if (!filterText) {
-      dispatch(filterUpdated({ filterText: '', activeIndex }));
-      return;
-    }
-    dispatch(filterUpdated({ filterText, activeIndex }));
+    dispatch(filterUpdated({ filterText: event.target.value, activeIndex: 0 }));
   };
 
   /**
@@ -35,9 +42,7 @@ function FilterReddits() {
    */
   const clearSearch = useCallback(
     (shouldBlur = false) => {
-      const filterText = '';
-      const activeIndex = 0;
-      dispatch(filterUpdated({ filterText, activeIndex }));
+      dispatch(filterUpdated({ filterText: '', activeIndex: 0 }));
       if (shouldBlur && filterInput.current) {
         filterInput.current.blur();
       }
@@ -53,18 +58,15 @@ function FilterReddits() {
     if (asideContent) {
       asideContent.scrollTop = 0;
     }
-    const active = true;
     filterInput.current?.select();
-    dispatch(filterUpdated({ active }));
+    dispatch(filterUpdated({ active: true }));
   };
 
   /**
    * Enable the hotkeys when not in a textbox.
    */
   const setBlur = () => {
-    const active = false;
-    const activeIndex = 0;
-    dispatch(filterUpdated({ active, activeIndex }));
+    dispatch(filterUpdated({ active: false, activeIndex: 0 }));
   };
 
   const handleFilterHotkey = useCallback(
@@ -83,35 +85,26 @@ function FilterReddits() {
           default:
             break;
         }
-      } else if (filter.active) {
+      } else if (active) {
         switch (pressedKey) {
           case 'ArrowUp': {
-            const activeIndex = filter.activeIndex - 1;
-            if (activeIndex >= 0) {
-              dispatch(filterUpdated({ activeIndex }));
+            if (engaged && activeIndex > 0) {
+              dispatch(filterUpdated({ activeIndex: activeIndex - 1 }));
             }
             event.preventDefault();
             break;
           }
           case 'ArrowDown': {
-            // Query DOM only when needed for navigation
-            const subLength = document.querySelectorAll(
-              '#sidebar-subreddits .nav-item a, #sidebar-search-results .nav-item a'
-            ).length;
-            if (subLength <= filter.activeIndex + 1) {
+            if (!engaged || activeIndex + 1 >= navTargetCount) {
               break;
             }
-            const activeIndex = filter.activeIndex + 1;
-            dispatch(filterUpdated({ activeIndex }));
+            dispatch(filterUpdated({ activeIndex: activeIndex + 1 }));
             event.preventDefault();
             break;
           }
           case 'Enter': {
-            const trigger = document.querySelector<HTMLAnchorElement>(
-              '#sidebar-subreddits .nav-item a.trigger, #sidebar-search-results .nav-item a.trigger'
-            );
-            if (trigger?.pathname) {
-              navigate(trigger.pathname);
+            if (selectedTarget) {
+              navigate(selectedTarget);
             }
             document.body.classList.remove('show-menu');
             filterInput.current?.blur();
@@ -126,7 +119,16 @@ function FilterReddits() {
         }
       }
     },
-    [filter.active, filter.activeIndex, navigate, dispatch, clearSearch]
+    [
+      active,
+      engaged,
+      activeIndex,
+      navTargetCount,
+      selectedTarget,
+      navigate,
+      dispatch,
+      clearSearch,
+    ]
   );
 
   useEffect(() => {
@@ -134,12 +136,12 @@ function FilterReddits() {
     return () => {
       document.removeEventListener('keydown', handleFilterHotkey);
     };
-  }, [filter.active, filter.activeIndex, handleFilterHotkey]);
+  }, [handleFilterHotkey]);
 
   return (
     <div
       className={`filterText w-100 d-flex m-0 p-2 ${
-        filter.active ? 'filter-focused' : 'filter-unfocused'
+        active ? 'filter-focused' : 'filter-unfocused'
       }`}
     >
       <Form.Control
@@ -149,30 +151,22 @@ function FilterReddits() {
         ref={filterInput}
         size="sm"
         type="text"
-        value={filter.filterText}
+        value={filterText}
         onBlur={setBlur}
         onChange={filterReddits}
         onFocus={setFocus}
       />
-      {filter.filterText && (
-        <FontAwesomeIcon
-          aria-hidden
-          aria-label="Clear Filter Box"
+      {filterText && (
+        <button
+          aria-label="Clear filter"
           className="form-control-clear filter-clear"
-          icon={faTimesCircle}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              clearSearch();
-            }
+          type="button"
+          onClick={() => {
+            clearSearch(true); // Clear and leave filter mode
           }}
-          onMouseDown={(e) => {
-            e.preventDefault(); // Prevent blur on mousedown
-            clearSearch();
-          }}
-        />
+        >
+          <FontAwesomeIcon aria-hidden icon={faTimesCircle} />
+        </button>
       )}
     </div>
   );
