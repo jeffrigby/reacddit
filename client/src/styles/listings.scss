@@ -14,7 +14,7 @@
     margin-left: -0.3rem !important;
   }
 
-  .entry-interior-t1 .entry-after-header {
+  .entry:not(.comment-listing) .entry-interior-t1 .entry-after-header {
     border-left: 1px solid rgba(0, 0, 0, 0.125) !important;
   }
 
@@ -121,11 +121,28 @@
       padding-top: 0;
     }
 
-    &.kind-t1 {
+    &.kind-t1:not(.comment-listing) {
       border-bottom: 0;
       padding-top: 0;
       &.condensed {
         padding-bottom: 0;
+      }
+    }
+
+    &.comment-listing {
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+
+      .comment-listing-header > div {
+        min-height: 1.5rem;
+      }
+
+      .comment-listing-title {
+        font-weight: bold;
+      }
+
+      .entry-after-header {
+        margin-top: 0.25rem;
       }
     }
 

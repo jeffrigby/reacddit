@@ -5,6 +5,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
+/** Order of the sidebar's subreddit search results */
+export type SearchSort = 'relevance' | 'subscribers' | 'name';
+
 /**
  * State shape for site settings slice
  */
@@ -29,12 +32,15 @@ export interface SiteSettingsState {
   theme?: 'dark' | 'light';
   /** Enable auto-refresh feature */
   autoRefresh?: boolean;
+  /** Order of the sidebar's subreddit search results */
+  searchSort: SearchSort;
 }
 
 /**
- * Initial state with sensible defaults
+ * Defaults, which persisted settings are merged over so a setting added
+ * after the state was saved still has a value
  */
-const initialState: SiteSettingsState = {
+export const siteSettingsInitialState: SiteSettingsState = {
   view: 'expanded',
   debug: false,
   condenseSticky: true,
@@ -45,11 +51,12 @@ const initialState: SiteSettingsState = {
   pinMenu: true,
   theme: 'dark',
   autoRefresh: false,
+  searchSort: 'relevance',
 };
 
 const siteSettingsSlice = createSlice({
   name: 'siteSettings',
-  initialState,
+  initialState: siteSettingsInitialState,
   reducers: {
     siteSettingsChanged(
       state,
@@ -58,8 +65,8 @@ const siteSettingsSlice = createSlice({
       Object.assign(state, action.payload);
     },
 
-    siteSettingsReset(state) {
-      return initialState;
+    siteSettingsReset() {
+      return siteSettingsInitialState;
     },
   },
 });

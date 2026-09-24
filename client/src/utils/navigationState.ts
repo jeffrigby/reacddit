@@ -46,7 +46,6 @@ export const USER_TARGETS = [
   'submitted',
   'saved',
   'hidden',
-  'gilded',
 ];
 
 /**

@@ -1,8 +1,7 @@
 import type { MouseEvent, KeyboardEvent } from 'react';
 import { memo } from 'react';
 import PostExpandContract from '@/components/posts/postActions/PostExpandContract';
-import PostVote from '@/components/posts/postActions/PostVote';
-import PostSave from '@/components/posts/postActions/PostSave';
+import PostCommentActions from './PostCommentActions';
 import PostMeta from './PostMeta';
 
 interface PostHeaderCommentProps {
@@ -22,10 +21,7 @@ function PostHeaderComment({
       <div className="me-auto comment-meta meta">
         <PostMeta />
       </div>
-      <div className="text-nowrap align-middle d-flex actions">
-        <PostVote />
-        <PostSave />
-      </div>
+      <PostCommentActions />
     </header>
   );
 }

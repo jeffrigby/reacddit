@@ -114,11 +114,12 @@ export function hotkeyStatus(): boolean {
 
   const { nodeName } = activeElement;
   const isTextArea = nodeName === 'TEXTAREA';
+  const isSelect = nodeName === 'SELECT';
   const isIframe = nodeName === 'IFRAME';
   const isTextInput =
     nodeName === 'INPUT' && (activeElement as HTMLInputElement).type === 'text';
 
-  return !isTextArea && !isIframe && !isTextInput;
+  return !isTextArea && !isSelect && !isIframe && !isTextInput;
 }
 
 export function isNumeric(value: unknown): value is number | string {
@@ -224,4 +225,31 @@ export function formatRelativeTime(timestamp: number): string {
   const month = date.toLocaleString('en-US', { month: 'short' });
   const day = date.getDate();
   return `${month} ${day}`;
+}
+
+const compactNumberFormatter = new Intl.NumberFormat('en', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+
+/**
+ * Format a count compactly (e.g., "394", "1.5K", "2.3M")
+ *
+ * @param value - The number to format
+ * @returns Compact string representation
+ */
+export function formatCompactNumber(value: number): string {
+  return compactNumberFormatter.format(value);
+}
+
+const numberFormatter = new Intl.NumberFormat();
+
+/**
+ * Format a count in full with group separators (e.g., "1,532,904")
+ *
+ * @param value - The number to format
+ * @returns Grouped string representation
+ */
+export function formatNumber(value: number): string {
+  return numberFormatter.format(value);
 }

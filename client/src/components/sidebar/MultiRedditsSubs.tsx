@@ -1,6 +1,10 @@
 import type { ReactElement } from 'react';
+import type { EntityState } from '@reduxjs/toolkit';
 import type { SubredditData } from '@/types/redditApi';
+import { buildSubredditHref } from './navHelpers';
 import NavigationItem from './NavigationItem';
+import { useSubscribedEntities } from './useFilteredSubreddits';
+import { useSubredditSortPath } from './useSubredditSortPath';
 
 interface SubredditItem {
   name: string;
@@ -10,7 +14,18 @@ interface MultiRedditsSubsProps {
   multiRedditSubs: SubredditItem[];
 }
 
-function genNavItems(multiRedditSubs: SubredditItem[]): ReactElement[] {
+/**
+ * Rows for a custom feed's members. A member the account also subscribes to
+ * takes its fullname from the subscribed list, which is how the polling slice
+ * keys activity, so the row ages like its subscribed twin. Reddit sends only
+ * display names for feed members, so an unsubscribed member gets a
+ * placeholder fullname and no activity.
+ */
+function genNavItems(
+  multiRedditSubs: SubredditItem[],
+  sortPath: string,
+  subscribed: EntityState<SubredditData, string>['entities']
+): ReactElement[] {
   // Create a map of subreddits keyed by lowercase display name to remove duplicates
   const multiRedditSubsKeyed = multiRedditSubs.reduce<Record<string, string>>(
     (acc, subreddit) => ({
@@ -27,7 +42,7 @@ function genNavItems(multiRedditSubs: SubredditItem[]): ReactElement[] {
       const subredditName = multiRedditSubsKeyed[key];
       const item: SubredditData = {
         id: subredditName,
-        name: `t5_${subredditName}`,
+        name: subscribed[key]?.name ?? `t5_${subredditName}`,
         display_name: subredditName,
         display_name_prefixed: `r/${subredditName}`,
         title: subredditName,
@@ -45,18 +60,28 @@ function genNavItems(multiRedditSubs: SubredditItem[]): ReactElement[] {
         icon_img: null,
         url: `/r/${subredditName}/`,
       };
-      return <NavigationItem item={item} key={item.name} trigger={false} />;
+      return (
+        <NavigationItem
+          href={buildSubredditHref(item.url, sortPath)}
+          item={item}
+          key={item.name}
+          trigger={false}
+        />
+      );
     });
 }
 
 function MultiRedditsSubs({
   multiRedditSubs,
 }: MultiRedditsSubsProps): ReactElement | null {
+  const sortPath = useSubredditSortPath();
+  const subscribed = useSubscribedEntities();
+
   if (multiRedditSubs?.length === 0) {
     return null;
   }
 
-  const navItems = genNavItems(multiRedditSubs);
+  const navItems = genNavItems(multiRedditSubs, sortPath, subscribed);
   return <ul className="nav subnav ps-2">{navItems}</ul>;
 }
 

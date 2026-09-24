@@ -1,22 +1,31 @@
-import { formatDistanceToNow } from 'date-fns';
-import { useSearchParams } from 'react-router';
+import { memo, type ReactElement } from 'react';
+import { formatDistance } from 'date-fns';
 import type { SubredditData } from '@/types/redditApi';
 import type { RootState } from '@/types/redux';
-import { trimSlashes } from '@/common';
 import { useAppSelector } from '@/redux/hooks';
-import { getDiffClassName, buildSortPath } from './navHelpers';
+import { getDiffClassName, navTargetDomId } from './navHelpers';
 import NavigationGenericNavItem from './NavigationGenericNavItem';
 import SubFavorite from './SubFavorite';
+import type { NavSectionId } from './useNavSection';
+import { useStalenessClock } from './useStalenessClock';
 
 interface NavigationItemProps {
   item: SubredditData;
+  /** Destination path, built by the list that also publishes it to the registry */
+  href: string;
   trigger: boolean;
+  /** Section that registered href, if this row is keyboard-reachable */
+  navSection?: NavSectionId;
 }
 
-function NavigationItem({ item, trigger }: NavigationItemProps) {
-  const sort = useAppSelector((state) => state.listings.currentFilter.sort);
+function NavigationItem({
+  item,
+  href,
+  trigger,
+  navSection,
+}: NavigationItemProps): ReactElement {
   const me = useAppSelector((state) => state.redditMe?.me);
-  const [searchParams] = useSearchParams();
+  const now = useStalenessClock();
 
   // Select only this item's lastPost value — the returned number is compared
   // via strict === equality, so re-renders only occur when this specific
@@ -26,20 +35,12 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
       state.subredditPolling.lastUpdatedTracking[item.name]?.lastPost ?? 0
   );
 
-  const tValues = searchParams.getAll('t');
-  const timeFilter = tValues.length > 1 ? tValues : tValues[0];
-  const sortPath = buildSortPath(sort, timeFilter);
-
-  const href =
-    item.subreddit_type === 'user'
-      ? `/${trimSlashes(item.url.trim())}/posts/${trimSlashes(sortPath.trim())}`
-      : `/${trimSlashes(item.url.trim())}/${trimSlashes(sortPath.trim())}`;
-  const classNameStr = getDiffClassName(lastUpdated, trigger);
+  const classNameStr = getDiffClassName(lastUpdated, trigger, now);
   const subLabel = classNameStr.includes('sub-new') ? 'New' : undefined;
 
   let { title } = item;
   if (lastUpdated !== 0) {
-    const timeago = formatDistanceToNow(lastUpdated * 1000);
+    const timeago = formatDistance(lastUpdated * 1000, now);
     title += ` - updated ${timeago} ago`;
   }
 
@@ -60,14 +61,14 @@ function NavigationItem({ item, trigger }: NavigationItemProps) {
           noLi
           badge={subLabel}
           classes={classNameStr}
-          id={item.id}
+          id={navSection ? navTargetDomId(navSection, href) : item.id}
           text={item.display_name}
           title={title}
-          to={href.replace(/\/$/, '')}
+          to={href}
         />
       </div>
     </li>
   );
 }
 
-export default NavigationItem;
+export default memo(NavigationItem);
