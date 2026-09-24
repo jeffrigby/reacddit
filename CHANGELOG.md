@@ -5,6 +5,44 @@ All notable changes to Reacddit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-09-24
+
+### Added
+
+- Sidebar subreddit search: the filter box now searches Reddit's subreddits as well as the subscribed list, with exact and prefix name matches ranked first, and results can be sorted by relevance, subscribers or name (the choice persists in site settings)
+- A subscribe control on each sidebar search result; a subscribed result moves into the subscribed list
+- The account menu links overview, comments and hidden listings, with `g-v` and `g-c` hotkeys for overview and comments
+- A comment in a user listing shows the subreddit and post it answers, and always stays expanded
+- Reddit links in comments and self-post text now open in the app for subreddits, users, multireddits and mobile share links, not only post permalinks
+- `robots.txt` and a `noindex` meta block crawlers, including AI crawlers that honour only their own token
+
+### Changed
+
+- Sidebar search shows only name matches, and hides private, gold-only and employee-only subreddits the account cannot open
+- Keyboard navigation in the sidebar uses a registry of navigable rows instead of querying the DOM, and keeps the selected and current rows scrolled into view
+- The follow control on a byline appears only when the account can act on it, and the name bolds as soon as follow is clicked
+- Listing comment headers, the follow control and the account links were tidied; the account menu and its hotkeys derive from one table
+- Lighthouse fixes: CLS on desktop drops from 0.434 to 0.111, the main chunk from 846kB to 269kB, and colour contrast, gallery alt text and the sort toggle's accessible name are fixed
+- Client tests run in Node instead of a real browser (0.8s instead of 2.8s), and the vitest family moves to 5
+- Dependency updates, including chalk 6, `@types/node` 26 and typescript-eslint 8.68; CI actions are pinned to commit SHAs and the deploy workflow runs on Node 24
+
+### Fixed
+
+- The service worker no longer reloads the page when it first takes control of it
+- Sidebar rows now age out of their "new" state on a shared five-minute clock, including custom-feed and friend rows
+- Custom-feed subreddits the account also subscribes to show the same activity state as their subscribed row
+- The subreddits heading can be collapsed and reloaded from the keyboard, and the filter box has a real, accessible clear button
+- Sidebar search results stay on screen while a new term loads, so the keyboard selection does not jump
+- A failed listing shows its error alone instead of over the previous listing
+- The header subscribe button no longer carries its state over to another subreddit, and updates when a subscription changes elsewhere
+- `where: 'contributor'` listings request the right endpoint
+- The api coverage thresholds are enforced again
+
+### Removed
+
+- The Gilded link in the account menu, since Reddit retired awards and the listing no longer loads
+- The unused CodeBuild specs (`buildspec.yml`, `buildspec_deploy.yml`)
+
 ## [1.6.0] - 2026-08-14
 
 ### Added
@@ -349,6 +387,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PWA support with service worker
 - Responsive design for mobile/desktop
 
+[1.7.0]: https://github.com/jeffrigby/reacddit/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/jeffrigby/reacddit/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/jeffrigby/reacddit/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/jeffrigby/reacddit/compare/v1.3.0...v1.4.0
