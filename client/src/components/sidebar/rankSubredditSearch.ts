@@ -27,8 +27,9 @@ const GATED_TYPES: ReadonlySet<SubredditType> = new Set<SubredditType>([
 
 /**
  * Whether the account cannot open a subreddit search returned. A gated
- * subreddit is open to an approved member; a subscriber would already be in
- * the subscribed list.
+ * subreddit is open to an approved member and to a subscriber; the
+ * subscriber flag is read here too because the subscribed list this search
+ * is filtered against can be behind the server.
  */
 function isGated(data: SubredditData): boolean {
   return (
