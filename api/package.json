@@ -41,7 +41,7 @@
     "@types/aws-lambda": "^8.10.159",
     "@types/koa": "^3.0.1",
     "@types/koa-logger": "^3.1.5",
-    "@types/koa-ratelimit": "^5.0.5",
+    "@types/koa-ratelimit": "^6.0.0",
     "@types/node": "^26.2.0",
     "@types/qs": "^6.9.17",
     "@types/supertest": "^7.2.0",
