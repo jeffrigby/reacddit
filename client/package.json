@@ -76,7 +76,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.0.0",
     "globals": "^17.0.0",
-    "happy-dom": "^20.14.5",
+    "happy-dom": "^21.0.4",
     "rollup-plugin-visualizer": "^7.0.1",
     "sass": "^1.94.2",
     "typescript-eslint": "^8.59.1",
