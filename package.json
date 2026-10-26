@@ -38,12 +38,12 @@
     "react-dom": "^19.0.0"
   },
   "dependencies": {
-    "dotenv": "^17.2.3"
+    "dotenv": "^18.0.5"
   },
   "devDependencies": {
     "@inquirer/prompts": "^8.0.1",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "@types/node": "^26.2.0",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "concurrently": "^10.0.3",
     "eslint": "^10.0.1",
     "open": "^11.0.0",

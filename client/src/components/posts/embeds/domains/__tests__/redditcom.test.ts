@@ -1,10 +1,11 @@
 /**
  * The embed registry reaches src/utils/sanitize.ts, which calls
- * DOMPurify.addHook() as it loads. DOMPurify only exposes that with a window.
- *
- * @vitest-environment happy-dom
+ * DOMPurify.addHook() as it loads. DOMPurify only exposes that with a window,
+ * and extractPostId never sanitizes, so a stub stands in for it. This file
+ * cannot use happy-dom instead: p-queue extends the global EventTarget and
+ * hands the queue to Node's setMaxListeners(), which rejects happy-dom's.
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 // Initialize the embed registry first. redditcom.ts, embeds.ts and redd.ts form
 // a circular dependency (embeds.ts eager-globs the domain modules, and redd.ts
 // re-exports redditcom.ts's default). Importing redditcom.ts directly as the
@@ -14,6 +15,10 @@ import { describe, it, expect } from 'vitest';
 // module in the cycle initializes cleanly.
 import '@/components/posts/embeds/embeds';
 import { extractPostId } from '@/components/posts/embeds/domains/redditcom';
+
+vi.mock('dompurify', () => ({
+  default: { addHook: vi.fn(), sanitize: vi.fn() },
+}));
 
 describe('extractPostId', () => {
   it('extracts the id from a standard reddit.com comments URL', () => {

@@ -38,7 +38,7 @@
     "lodash": "^4.17.15",
     "lru-cache": "^11.2.2",
     "p-limit": "^7.1.1",
-    "p-queue": "^9.1.0",
+    "p-queue": "^10.0.0",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.10",
     "react-device-detect": "^2.0.0",
@@ -76,12 +76,12 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.0.0",
     "globals": "^17.0.0",
-    "happy-dom": "^20.14.5",
+    "happy-dom": "^21.0.4",
     "rollup-plugin-visualizer": "^7.0.1",
     "sass": "^1.94.2",
     "typescript-eslint": "^8.59.1",
     "vite": "^8.0.0",
-    "vite-plugin-pwa": "^1.2.0",
+    "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.0.0"
   }
 }

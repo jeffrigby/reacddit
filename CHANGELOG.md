@@ -5,6 +5,26 @@ All notable changes to Reacddit will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-10-26
+
+### Changed
+
+- Dependency updates, including vite-plugin-pwa 2, p-queue 10, happy-dom 21, boxen 9, dotenv 18, react 19.3.1, react-router 8.5, vite 8.3.5 and typescript-eslint 8.72
+- `reddit-api-tester` dependencies updated, including dotenv 18 and axios 1.20
+- The `extractPostId` tests run in Node with DOMPurify stubbed instead of under happy-dom, which p-queue 10 does not run in
+
+### Removed
+
+- The api's unused `dotenv` dependency
+
+### Security
+
+- DOMPurify 3.4.17 clears the advisories against 3.4.16 and earlier; they target the `IN_PLACE`, `SAFE_FOR_TEMPLATES` and XHTML parser modes, which the client does not use
+- follow-redirects 1.16.1, used by axios in the api, fixes credential headers surviving cross-origin redirects
+- Build and test tooling clears advisories in brace-expansion, serialize-javascript, fast-uri, shell-quote, happy-dom and Vitest's mocker
+- `reddit-api-tester` moves to axios 1.20 and follow-redirects 1.16.2, clearing high-severity advisories
+- zod 3 under koa-session is still flagged (GHSA-mrhx-c7xc-m3w5): no 3.x release fixes it and koa-session 7.0.2 still requires zod 3. koa-session only validates its own startup options with it, so request data never reaches zod
+
 ## [1.7.0] - 2026-09-24
 
 ### Added
@@ -387,6 +407,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PWA support with service worker
 - Responsive design for mobile/desktop
 
+[1.7.1]: https://github.com/jeffrigby/reacddit/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/jeffrigby/reacddit/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/jeffrigby/reacddit/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/jeffrigby/reacddit/compare/v1.4.0...v1.5.0
