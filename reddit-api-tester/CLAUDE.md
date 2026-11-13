@@ -2,7 +2,7 @@
 
 Comprehensive Reddit API testing tool to validate responses against TypeScript type definitions.
 
-**Standalone package** — NOT an npm workspace. Run `npm install` inside `reddit-api-tester/` separately. TypeScript pinned to 5.8.3 (rest of project uses 6.x).
+**Standalone package** — NOT an npm workspace. Run `npm install` inside `reddit-api-tester/` separately. It has its own TypeScript 5.x (`^5.8.3`); the workspaces use TS 7 for `tsc` and TS 6 for tooling (see root CLAUDE.md).
 
 ## Purpose
 
@@ -59,9 +59,7 @@ Validates responses against `client/src/types/redditApi.ts`
 2. Full reports saved to `results/`
 3. Use reports to fix type definitions
 
-## Testing Workflow (Function Migration)
-
-When migrating JavaScript → TypeScript:
+## Testing a Single Endpoint
 
 1. **Add test config** in `src/endpoints.json`
 2. **Test specific endpoint** (much faster than all tests):
@@ -70,8 +68,5 @@ npm run test-api test -- --endpoints "/r/programming/about"
 npm run test-api test -- --endpoints "/r/programming/about,/r/programming/about/rules"
 npm run test-api test -- --reddit --endpoints "/api/v1/me"
 npm run test-api test -- --endpoints "/api/v1/me" --verbose
-DEBUG=true npm run test-api test -- --endpoints "/api/v1/me"
 ```
 3. **Check results** in `results/` directory (`.json` for details, `.md` for summaries)
-
-Results land in `results/` (`.json` for details, `.md` for summaries).

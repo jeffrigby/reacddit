@@ -1,6 +1,6 @@
 # Reacddit API
 
-Koa.js OAuth2 server for Reddit authentication and utility endpoints (TypeScript). Commands are the standard scripts in `package.json` — note `npm run build` is a SAM build for Lambda and requires Docker.
+Koa.js OAuth2 server for Reddit authentication and utility endpoints (TypeScript). Commands are the standard scripts in `package.json`; the Lambda build is `sam build` run in `api/` (see SAM Deployment).
 
 ## TypeScript Standards
 
@@ -57,7 +57,7 @@ OAuth routes (`/api/bearer`, `/api/login`, `/api/callback`, `/api/logout`) are d
 
 ## SAM Deployment
 
-**Build:** `npm run build` (requires Docker)
+**Build:** `sam build` in `api/` (CI adds `--cached --parallel`; see `DEPLOYMENT.md`)
 - Uses SAM CLI with esbuild for bundling
 - Workspace-aware - finds hoisted dependencies automatically
 - No `--build-in-source` flag needed (we don't have cross-workspace imports)

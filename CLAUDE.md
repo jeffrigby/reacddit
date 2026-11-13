@@ -6,10 +6,10 @@ Reacddit is a Reddit client with enhanced media viewing and embedded content sup
 
 Access via the domain configured in `.env` (`PROXY_DOMAIN` + `PROXY_PORT`). Default `.env.dist` uses `localhost:5173`; this project's dev URL is `https://dev.reacdd.it/` (see Important Notes).
 
-## Code Quality (CRITICAL)
+## Code Quality
 
-- **Zero warnings/errors required** before committing
-- Run `npm run lint-all` after ANY code changes
+- Commit only with zero lint warnings or errors
+- Run `npm run lint-all` after code changes (Prettier and ESLint with `--fix` in every workspace)
 
 ## Architecture
 
@@ -50,9 +50,9 @@ Microsoft's documented side-by-side recipe.
 ## Important Notes
 
 - **OAuth setup:** Use `npm run setup` wizard (handles domain/port/credentials automatically)
-- **Package docs:** Always fetch latest using context7 MCP
+- **Package docs:** when a library API may have changed since your training (React 19, React Router 8, Vite 8, ESLint 10), check its current docs with the context7 MCP if it is connected
 - **Reddit API types:** Centralized in `client/src/types/redditApi.ts` (flag if incomplete)
-- **Dev URL:** https://dev.reacdd.it/ (NEVER use localhost URLs)
+- **Dev URL:** reach the running app at https://dev.reacdd.it/, not the `.env.dist` localhost default (this project's `.env` sets `PROXY_DOMAIN` to that domain)
 - **Not implemented:** Creating posts/comments (viewing, voting, saving work)
 - **Broken upstream — adding a subreddit to a custom feed:** the client talks to
   `https://oauth.reddit.com` directly from the browser (`client/src/reddit/redditApiTs.ts`),

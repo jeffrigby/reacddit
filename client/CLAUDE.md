@@ -5,7 +5,7 @@ React 19 + Redux Toolkit + TypeScript client for Reddit with enhanced media embe
 ## Code Style
 
 **Linting (ESLint v10):**
-- Run `npm run lint` after ALL changes
+- Run `npm run lint` after changes (Prettier and ESLint with `--fix`)
 - Zero warnings/errors required before committing
 - Flat config in `eslint.config.mjs`
 
